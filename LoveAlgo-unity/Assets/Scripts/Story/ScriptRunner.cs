@@ -560,12 +560,21 @@ namespace LoveAlgo.Story
         {
             // 전환 타입 파싱
             var parts = line.Value.Split(':');
+            string bgName = parts[0];
             bool isCrossFade = parts.Length >= 2 && parts[1].Equals("Cross", System.StringComparison.OrdinalIgnoreCase);
-            
+
+            // 동일 배경이면 전환 효과 스킵 (DEMO 점프 등 환경 세팅용)
+            var background = StageManager.Instance?.Background;
+            if (background != null && !string.IsNullOrEmpty(background.CurrentBackground)
+                && background.CurrentBackground.Equals(bgName, System.StringComparison.OrdinalIgnoreCase))
+            {
+                Debug.Log($"[ScriptRunner] BG '{bgName}' 동일 → 전환 효과 스킵");
+                return;
+            }
+
             if (isCrossFade)
             {
                 // Cross: 캐릭터 유지한 채 크로스페이드
-                var background = StageManager.Instance?.Background;
                 if (background != null)
                 {
                     await background.ExecuteAsync(line.Value, ct);
@@ -577,7 +586,6 @@ namespace LoveAlgo.Story
                 // 캐릭터를 FadeOut 전에 ExitAsync 하면 퇴장이 보여서 부자연스러움
                 // → FadeOut 완료 후 즉시 ClearAll 처리
 
-                var background = StageManager.Instance?.Background;
                 var character = StageManager.Instance?.Character;
                 var screenFX = Core.ScreenFX.Instance;
 
@@ -597,7 +605,6 @@ namespace LoveAlgo.Story
                 if (background != null)
                 {
                     // 배경을 Cut으로 즉시 교체 (이미 검은 화면이므로)
-                    string bgName = parts[0];
                     await background.ChangeBackgroundAsync(bgName, BGTransition.Cut, 0f, ct);
                 }
 
