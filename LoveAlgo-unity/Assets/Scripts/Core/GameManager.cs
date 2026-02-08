@@ -28,6 +28,16 @@ namespace LoveAlgo.Core
         public int RemainingActions { get; private set; } = 3;  // 하루 남은 행동 수
         public string PlayerName { get; private set; } = "";
 
+        /// <summary>
+        /// 다음 날로 진행 (스크립트 매크로용)
+        /// </summary>
+        public void AdvanceDay(int actions = 3)
+        {
+            CurrentDay++;
+            RemainingActions = actions;
+            Debug.Log($"[GameManager] {CurrentDay}일차 시작 (actions={actions})");
+        }
+
         void Awake()
         {
             if (Instance != null && Instance != this)

@@ -686,6 +686,9 @@ namespace LoveAlgo.Story
                 case "DayEnd":
                     await ExecuteMacroDayEndAsync(parts, ct);
                     return;
+                case "DayStart":
+                    ExecuteMacroDayStart(parts);
+                    return;
             }
 
             // 대사창 제어 명령
@@ -732,32 +735,28 @@ namespace LoveAlgo.Story
         /// CSV: FX,,DayEnd[:크로스페이드시간],await
         /// 
         /// 시퀀스:
-        ///   1. BG Black:Cross — 잠드는 시각 효과 (서서히 어두워짐)
-        ///   2. ScreenFX FadeOut — 완전 암전 (안전망)
-        ///   3. 스테이지 정리 — 캐릭터/오버레이/대사창/BGM 즉시 제거 (안 보임)
-        ///   4. ScreenFX FadeIn — 페이드 해제 → BG Black만 남음
+        ///   1. EyeClose — 눈 감기 (0.8초, 자연스러운 무게감)
+        ///   2. 스테이지 정리 — 캐릭터/오버레이/대사창/BGM 즉시 제거 (눈 감은 뒤라 안 보임)
+        ///   3. BG Black — 배경 교체 (눈 감겨있어 안 보임)
+        ///   4. EyeOpen 즉시 해제 — Eye 바 제거, BG Black만 남음
         ///   5. 자동저장
         /// 
         /// DayEnd 이후 CSV에서 검은 화면 위 목소리 대사 → 아침 연출 진행
         /// </summary>
         async UniTask ExecuteMacroDayEndAsync(string[] parts, CancellationToken ct)
         {
-            float crossDuration = parts.Length > 1 && float.TryParse(parts[1], out float fd) ? fd : 1.5f;
-            Debug.Log($"[ScriptRunner] 매크로: DayEnd (cross={crossDuration}s)");
+            float eyeCloseDuration = parts.Length > 1 && float.TryParse(parts[1], out float fd) ? fd : 0.8f;
+            Debug.Log($"[ScriptRunner] 매크로: DayEnd (eyeClose={eyeCloseDuration}s)");
 
             var dialogueUI = UIManager.Instance?.DialogueUI;
             var fx = Core.ScreenFX.Instance;
             var stage = StageManager.Instance;
 
-            // 1. BG Black:Cross — 배경이 서서히 어두워짐 (잠드는 느낌)
-            await ExecuteBGAsync(
-                new ScriptLine("", LineType.BG, "", $"Black:Cross:{crossDuration}", NextType.Await), ct);
-
-            // 2. ScreenFX FadeOut — 완전 암전 (정리 작업을 가림)
+            // 1. 눈 감기 — 서서히 눈 감기는 연출 (InCubic: 무게감)
             if (fx != null)
-                await fx.ExecuteAsync("FadeOut:0.3", ct);
+                await fx.EyeCloseAsync(eyeCloseDuration, ct);
 
-            // 3. 암전 상태에서 스테이지 일괄 정리 (플레이어에게 안 보임)
+            // 2. 눈 감긴 상태에서 스테이지 일괄 정리 (플레이어에게 안 보임)
             dialogueUI?.HideImmediate();
             stage?.Character?.ClearAll();
             stage?.VirtualBG?.HideImmediate();
@@ -765,13 +764,47 @@ namespace LoveAlgo.Story
             if (AudioManager.Instance != null)
                 await AudioManager.Instance.ExecuteAsync("BGM:Stop", ct);
 
-            // 4. ScreenFX 해제 → BG Black만 남음 (다음 목소리 대사 준비)
-            if (fx != null)
-                await fx.ExecuteAsync("FadeIn:0.3", ct);
+            // 3. 배경 → 블랙 (눈 감겨있어 안 보임)
+            await ExecuteBGAsync(
+                new ScriptLine("", LineType.BG, "", "Black", NextType.Immediate), ct);
+
+            // 4. Eye 바 즉시 해제 → BG Black만 남음 (다음 목소리 대사 준비)
+            fx?.EyeOpenImmediate();
 
             // 5. 자동저장 (DayEnd 완료 → Continue 시 다음 줄부터 재개)
             Core.GameManager.Instance?.AutoSave();
             Debug.Log("[ScriptRunner] DayEnd 완료 → 자동저장");
+        }
+
+        /// <summary>
+        /// 매크로: 하루 시작 (GameState 업데이트)
+        /// CSV: FX,,DayStart[:행동수],>
+        /// 
+        /// 동작:
+        ///   - CurrentDay++ (다음 날)
+        ///   - RemainingActions 리셋 (기본 3)
+        /// 
+        /// 눈 뜨기 연출은 별도 EyeOpen/EyeBlink FX로 명시적 처리:
+        ///   FX,,DayStart,>
+        ///   ,Text,로아,...나.,click
+        ///   ,BG,,MyRoom/BG_MyRoom_Bed_Day:Cut,>
+        ///   ,FX,,EyeBlink:0.1:0.15,await
+        ///   ,FX,,EyeOpen:1.5,await
+        /// </summary>
+        void ExecuteMacroDayStart(string[] parts)
+        {
+            int actions = parts.Length > 1 && int.TryParse(parts[1], out int a) ? a : 3;
+
+            var gm = Core.GameManager.Instance;
+            if (gm != null)
+            {
+                gm.AdvanceDay(actions);
+                Debug.Log($"[ScriptRunner] 매크로: DayStart → Day {gm.CurrentDay}, Actions={actions}");
+            }
+            else
+            {
+                Debug.LogWarning("[ScriptRunner] DayStart: GameManager 없음");
+            }
         }
 
         #endregion
