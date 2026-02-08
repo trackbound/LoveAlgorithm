@@ -375,7 +375,7 @@ namespace LoveAlgo.Core
             if (!string.IsNullOrEmpty(data.ScriptName) &&
                 (data.Phase == GamePhase.Prologue || data.Phase == GamePhase.DayLoop))
             {
-                // Phase를 먼저 설정해야 입력 핸들러(DebugRemoteUI 등)가 클릭을 처리함
+                // Phase를 먼저 설정해야 입력 핸들러(StoryInputHandler)가 클릭을 처리함
                 CurrentPhase = data.Phase;
 
                 UIManager.Instance?.ShowOnly(MainUIType.Dialogue);

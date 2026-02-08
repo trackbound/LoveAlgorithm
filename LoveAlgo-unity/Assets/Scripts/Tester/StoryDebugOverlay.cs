@@ -15,12 +15,11 @@ namespace LoveAlgo.Tester
     /// - Shift+1~4: 스탯 +10 (Str/Int/Soc/Per)
     /// - Ctrl+1~5: 호감도 +10 (Roa/Yeun/Daeun/Bom/Heewon)
     /// 
-    /// ※ F1은 DebugRemoteUI (조작 리모콘)가 사용합니다.
     /// </summary>
     public class StoryDebugOverlay : MonoBehaviour
     {
         [Header("Toggle")]
-        [SerializeField] KeyCode toggleKey = KeyCode.F2;  // F1 → F2 변경 (F1은 DebugRemoteUI)
+        [SerializeField] KeyCode toggleKey = KeyCode.F2;
         
         [Header("UI References")]
         [SerializeField] GameObject overlayPanel;

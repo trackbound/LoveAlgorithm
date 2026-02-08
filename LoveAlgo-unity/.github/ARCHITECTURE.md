@@ -536,7 +536,8 @@ Assets/
 │   │   └── JoggingGame.cs       # 조깅 게임
 │   │
 │   └── Tester/                  # 테스트용
-│       └── DebugRemoteUI.cs
+│       ├── DebugJumpHelper.cs   # 데모 점프 (F2)
+│       └── StoryDebugOverlay.cs # 상태 모니터 (F2)
 │
 ├── Resources/
 │   ├── Story/                   # CSV 스크립트

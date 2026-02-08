@@ -35,7 +35,6 @@ namespace LoveAlgo.Editor
 
             // 3. Debug 그룹
             var debug = CreateRectGroup("Debug", main);
-            MoveChild(main, "DebugRemoteUI", debug);
             MoveChild(main, "DebugJumpHelper", debug);
             MoveChild(main, "Mockup", debug);
 
