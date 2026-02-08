@@ -729,53 +729,47 @@ namespace LoveAlgo.Story
 
         /// <summary>
         /// 매크로: 하루 마무리 연출
-        /// CSV에서 FX,,DayEnd[:페이드시간],await 로 호출
-        /// 기본 시퀀스:
-        ///   1. 캐릭터 퇴장
-        ///   2. 오버레이 종료 (0.3초 페이드)
-        ///   3. 대사창 페이드아웃
-        ///   4. 화면 암전 (기본 1초)
-        ///   5. 배경 → 블랙
-        ///   6. BGM 정지
+        /// CSV: FX,,DayEnd[:크로스페이드시간],await
+        /// 
+        /// 시퀀스:
+        ///   1. BG Black:Cross — 잠드는 시각 효과 (서서히 어두워짐)
+        ///   2. ScreenFX FadeOut — 완전 암전 (안전망)
+        ///   3. 스테이지 정리 — 캐릭터/오버레이/대사창/BGM 즉시 제거 (안 보임)
+        ///   4. ScreenFX FadeIn — 페이드 해제 → BG Black만 남음
+        ///   5. 자동저장
+        /// 
+        /// DayEnd 이후 CSV에서 검은 화면 위 목소리 대사 → 아침 연출 진행
         /// </summary>
         async UniTask ExecuteMacroDayEndAsync(string[] parts, CancellationToken ct)
         {
-            float fadeDuration = parts.Length > 1 && float.TryParse(parts[1], out float fd) ? fd : 1f;
-            Debug.Log($"[ScriptRunner] 매크로: DayEnd (fade={fadeDuration}s)");
+            float crossDuration = parts.Length > 1 && float.TryParse(parts[1], out float fd) ? fd : 1.5f;
+            Debug.Log($"[ScriptRunner] 매크로: DayEnd (cross={crossDuration}s)");
 
             var dialogueUI = UIManager.Instance?.DialogueUI;
             var fx = Core.ScreenFX.Instance;
+            var stage = StageManager.Instance;
 
-            // 1. 캐릭터 퇴장 (완료 대기)
-            await ExecuteCharAsync(
-                new ScriptLine("", LineType.Char, "", "C:Exit", NextType.Await), ct);
-
-            // 2. 오버레이 종료 (0.3초, 화면 암전과 병렬)
-            var overlayTask = ExecuteOverlayAsync(
-                new ScriptLine("", LineType.Overlay, "", "FadeOut:0.3", NextType.Immediate), ct);
-
-            // 3. 대사창 페이드아웃
-            dialogueUI?.Hide();
-
-            // 4. 화면 암전 (오버레이와 병렬 진행)
-            UniTask fadeTask = fx != null
-                ? fx.ExecuteAsync($"FadeOut:{fadeDuration}", ct)
-                : UniTask.CompletedTask;
-
-            await UniTask.WhenAll(overlayTask, fadeTask);
-
-            // 대사창 완전히 숨김 (화면이 덮인 후)
-            dialogueUI?.HideImmediate();
-
-            // 5. 배경 → 블랙 (암전 뒤에서 교체)
+            // 1. BG Black:Cross — 배경이 서서히 어두워짐 (잠드는 느낌)
             await ExecuteBGAsync(
-                new ScriptLine("", LineType.BG, "", "Black", NextType.Immediate), ct);
+                new ScriptLine("", LineType.BG, "", $"Black:Cross:{crossDuration}", NextType.Await), ct);
 
-            // 6. BGM 정지
-            await ExecuteSoundAsync(
-                new ScriptLine("", LineType.Sound, "", "BGM:Stop", NextType.Immediate), ct);
+            // 2. ScreenFX FadeOut — 완전 암전 (정리 작업을 가림)
+            if (fx != null)
+                await fx.ExecuteAsync("FadeOut:0.3", ct);
 
-            // 자동저장 (DayEnd 완료 상태로 저장 → Continue 시 다음 줄부터 재개)
+            // 3. 암전 상태에서 스테이지 일괄 정리 (플레이어에게 안 보임)
+            dialogueUI?.HideImmediate();
+            stage?.Character?.ClearAll();
+            stage?.VirtualBG?.HideImmediate();
+
+            if (AudioManager.Instance != null)
+                await AudioManager.Instance.ExecuteAsync("BGM:Stop", ct);
+
+            // 4. ScreenFX 해제 → BG Black만 남음 (다음 목소리 대사 준비)
+            if (fx != null)
+                await fx.ExecuteAsync("FadeIn:0.3", ct);
+
+            // 5. 자동저장 (DayEnd 완료 → Continue 시 다음 줄부터 재개)
             Core.GameManager.Instance?.AutoSave();
             Debug.Log("[ScriptRunner] DayEnd 완료 → 자동저장");
         }
