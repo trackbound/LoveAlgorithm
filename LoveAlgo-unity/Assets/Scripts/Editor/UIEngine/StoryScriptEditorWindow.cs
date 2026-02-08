@@ -677,7 +677,7 @@ namespace LoveAlgo.Editor.UIEngine
             EditorGUILayout.Space(5);
             EditorGUILayout.BeginHorizontal();
             
-            string[] effects = { "FadeOut", "FadeIn", "Flash", "CamShake", "DayEnd", "DayStart", "EyeOpen", "EyeClose", "EyeBlink" };
+            string[] effects = { "FadeOut", "FadeIn", "Flash", "CamShake", "DayEnd", "DayStart", "Setup", "EyeOpen", "EyeClose", "EyeBlink" };
             int fxIdx = EditorGUILayout.Popup(0, effects, GUILayout.Width(80));
             
             float duration = EditorGUILayout.FloatField(1f, GUILayout.Width(50));

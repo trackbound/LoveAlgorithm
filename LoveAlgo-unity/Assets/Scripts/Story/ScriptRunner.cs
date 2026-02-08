@@ -696,6 +696,9 @@ namespace LoveAlgo.Story
                 case "DayStart":
                     await ExecuteMacroDayStartAsync(parts, ct);
                     return;
+                case "Setup":
+                    await ExecuteMacroSetupAsync(line.Value, ct);
+                    return;
             }
 
             // 대사창 제어 명령
@@ -864,6 +867,101 @@ namespace LoveAlgo.Story
                 // 배경 미지정 → Eye 상태 해제 (직접 장면 전환용)
                 fx?.EyeOpenImmediate();
                 Debug.Log("[ScriptRunner] DayStart: Eye 해제 (배경 미지정)");
+            }
+        }
+
+        /// <summary>
+        /// 매크로: 장면 환경 즉시 세팅 (DEMO 점프용)
+        /// CSV: FX,,Setup:BG=경로|BGM=이름|Char=이름[:슬롯]|Overlay=이름,>
+        /// 
+        /// 각 항목은 현재 상태와 비교 → 이미 동일하면 스킵 (정상 흐름 통과 시 효과 없음)
+        /// 모든 전환은 Cut/즉시 (페이드 없음)
+        /// 
+        /// 예시:
+        ///   FX,,Setup:BG=Engineering/BG_Engineering_Classroom_Day|BGM=Daeun|Char=Daeun,>
+        /// </summary>
+        async UniTask ExecuteMacroSetupAsync(string rawValue, CancellationToken ct)
+        {
+            // "Setup:..." → ":" 이후 전부가 스펙
+            int colonIdx = rawValue.IndexOf(':');
+            if (colonIdx < 0 || colonIdx >= rawValue.Length - 1)
+            {
+                Debug.LogWarning("[ScriptRunner] Setup: 파라미터 없음");
+                return;
+            }
+
+            string spec = rawValue.Substring(colonIdx + 1);
+            var entries = spec.Split('|');
+
+            Debug.Log($"[ScriptRunner] 매크로: Setup ({entries.Length}개 항목)");
+
+            var background = StageManager.Instance?.Background;
+            var character = StageManager.Instance?.Character;
+            var overlay = StageManager.Instance?.VirtualBG;
+
+            foreach (var entry in entries)
+            {
+                var kv = entry.Split('=');
+                if (kv.Length < 2)
+                {
+                    Debug.LogWarning($"[ScriptRunner] Setup: 잘못된 항목 '{entry}'");
+                    continue;
+                }
+
+                string key = kv[0].Trim();
+                string value = kv[1].Trim();
+
+                switch (key)
+                {
+                    case "BG":
+                        // 동일 배경이면 스킵, 다르면 Cut으로 즉시 교체
+                        if (background != null && !string.Equals(
+                            background.CurrentBackground, value, System.StringComparison.OrdinalIgnoreCase))
+                        {
+                            await background.ChangeBackgroundAsync(value, BGTransition.Cut, 0f, ct);
+                            Debug.Log($"[ScriptRunner] Setup: BG → '{value}'");
+                        }
+                        break;
+
+                    case "BGM":
+                        // 동일 BGM이면 스킵
+                        if (AudioManager.Instance != null)
+                        {
+                            string currentBGM = AudioManager.Instance.CurrentBGM;
+                            if (!string.Equals(currentBGM, value, System.StringComparison.OrdinalIgnoreCase))
+                            {
+                                await AudioManager.Instance.ExecuteAsync($"BGM:{value}", ct);
+                                Debug.Log($"[ScriptRunner] Setup: BGM → '{value}'");
+                            }
+                        }
+                        break;
+
+                    case "Char":
+                        // 슬롯 지정 가능: Char=Daeun 또는 Char=Daeun:L
+                        var charParts = value.Split(':');
+                        string charName = charParts[0];
+                        string slotStr = charParts.Length >= 2 ? charParts[1] : "C";
+
+                        if (character != null && !character.IsCharacterOnStage(charName))
+                        {
+                            await character.ExecuteAsync($"{slotStr}:Enter:{charName}", ct);
+                            Debug.Log($"[ScriptRunner] Setup: Char → '{charName}' (슬롯 {slotStr})");
+                        }
+                        break;
+
+                    case "Overlay":
+                        // 오버레이 즉시 세팅
+                        if (overlay != null)
+                        {
+                            await overlay.ExecuteAsync($"{value}:FadeIn:0", ct);
+                            Debug.Log($"[ScriptRunner] Setup: Overlay → '{value}'");
+                        }
+                        break;
+
+                    default:
+                        Debug.LogWarning($"[ScriptRunner] Setup: 알 수 없는 키 '{key}'");
+                        break;
+                }
             }
         }
 
