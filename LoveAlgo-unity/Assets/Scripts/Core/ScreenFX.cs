@@ -41,6 +41,11 @@ namespace LoveAlgo.Core
         [Tooltip("Perlin Noise 시드 오프셋 (다양한 흔들림 패턴)")]
         [SerializeField] float noiseSeed = 0f;
 
+        [Header("Shake 프리셋")]
+        [SerializeField] float shakePresetWeak = 10f;
+        [SerializeField] float shakePresetMedium = 25f;
+        [SerializeField] float shakePresetStrong = 50f;
+
         void Awake()
         {
             if (Instance == null)
@@ -119,9 +124,25 @@ namespace LoveAlgo.Core
                     break;
 
                 case "CamShake":
-                    // CSV: CamShake:0.5:30 (duration:strength)
+                    // CSV: CamShake:0.5:30 또는 CamShake:0.5:Weak/Medium/Strong
                     float shakeDuration = parts.Length > 1 && float.TryParse(parts[1], out float sd) ? sd : 0.3f;
-                    float shakeStrength = parts.Length > 2 && float.TryParse(parts[2], out float ss) ? ss : 20f;
+                    float shakeStrength;
+                    if (parts.Length > 2)
+                    {
+                        switch (parts[2].ToLower())
+                        {
+                            case "weak": shakeStrength = shakePresetWeak; break;
+                            case "medium": shakeStrength = shakePresetMedium; break;
+                            case "strong": shakeStrength = shakePresetStrong; break;
+                            default:
+                                shakeStrength = float.TryParse(parts[2], out float ss) ? ss : shakePresetMedium;
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        shakeStrength = shakePresetMedium;
+                    }
                     await CamShakeAsync(shakeDuration, shakeStrength, ct);
                     break;
 

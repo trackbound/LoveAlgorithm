@@ -22,6 +22,11 @@ namespace LoveAlgo.Story
         [Header("설정")]
         [SerializeField] float fadeDuration = 0.2f;
 
+        [Header("선택지 애니메이션")]
+        [SerializeField] float choiceAppearDelay = 0.1f;   // 선택지 간 딜레이
+        [SerializeField] float choiceAppearDuration = 0.3f;
+        [SerializeField] Ease choiceAppearEase = Ease.OutCubic;
+
         List<GameObject> spawnedButtons = new();
         int selectedIndex = -1;
         bool isWaitingForChoice;
@@ -49,8 +54,25 @@ namespace LoveAlgo.Story
             ClearButtons();
             CreateButtons(validOptions);
 
-            // 표시
+            // 표시 (패널 페이드인)
             await ShowAsync(ct);
+
+            // 버튼 순차 등장 애니메이션
+            for (int i = 0; i < spawnedButtons.Count; i++)
+            {
+                var btn = spawnedButtons[i];
+                var cg = btn.GetComponent<CanvasGroup>();
+                if (cg == null) cg = btn.AddComponent<CanvasGroup>();
+                cg.alpha = 0f;
+                btn.transform.localScale = new Vector3(0.95f, 0.95f, 1f);
+
+                var seq = DOTween.Sequence();
+                seq.Append(cg.DOFade(1f, choiceAppearDuration));
+                seq.Join(btn.transform.DOScale(1f, choiceAppearDuration).SetEase(choiceAppearEase));
+
+                if (i < spawnedButtons.Count - 1)
+                    await UniTask.Delay(TimeSpan.FromSeconds(choiceAppearDelay), cancellationToken: ct);
+            }
 
             // 선택 대기
             selectedIndex = -1;

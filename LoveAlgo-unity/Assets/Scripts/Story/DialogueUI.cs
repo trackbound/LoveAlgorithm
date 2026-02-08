@@ -58,7 +58,8 @@ namespace LoveAlgo.Story
         CancellationTokenSource dotsAnimCts;
 
         [Header("설정")]
-        [SerializeField] float typingSpeed = 0.03f;
+        [SerializeField] float typingSpeed = 0.04f;
+        [SerializeField] float punctuationDelay = 0.15f;  // 문장부호 추가 딜레이
 
         // 인라인 태그 콜백
         public Action<string> OnEmoteTag;   // 표정 변경 요청
@@ -67,6 +68,11 @@ namespace LoveAlgo.Story
         bool skipRequested;
         string fullText;
         bool isHidden;
+
+        /// <summary>
+        /// 마지막 표시된 텍스트 길이 (Auto 딜레이 계산용)
+        /// </summary>
+        public int LastDisplayedTextLength => fullText?.Length ?? 0;
 
         // 대사 로그
         readonly List<DialogueLogEntry> dialogueLog = new();
@@ -153,7 +159,19 @@ namespace LoveAlgo.Story
                             // 줄바꿈·공백은 사운드/딜레이 생략
                             if (c == '\n' || c == '\r') continue;
                             PlayTypingSound();
-                            await UniTask.Delay(TimeSpan.FromSeconds(currentSpeed), cancellationToken: ct);
+
+                            // 문장부호에서 추가 딜레이
+                            float charDelay = currentSpeed;
+                            if (c == '.' || c == '!' || c == '?' || c == '~' || c == '\u2026')  // \u2026 = …
+                            {
+                                charDelay += punctuationDelay;
+                            }
+                            else if (c == ',')
+                            {
+                                charDelay += punctuationDelay * 0.5f;
+                            }
+
+                            await UniTask.Delay(TimeSpan.FromSeconds(charDelay), cancellationToken: ct);
                         }
                         break;
 
@@ -521,8 +539,11 @@ namespace LoveAlgo.Story
         Tweener indicatorBlink;
 
         [Header("인디케이터 애니메이션")]
-        [SerializeField] float blinkInterval = 0.5f;  // 깜빡임 간격
+        [SerializeField] float blinkInterval = 0.6f;  // 깜빡임 간격
+        [SerializeField] float bounceAmplitude = 4f;  // 상하 바운스 크기 (px)
         Color indicatorOriginalColor = Color.white;   // 원래 색상 저장
+        Tweener indicatorBounce;
+        float indicatorBaseY;
 
         void ShowNextIndicator()
         {
@@ -577,6 +598,7 @@ namespace LoveAlgo.Story
             Vector3 localPos = nextIndicator.parent.InverseTransformPoint(worldPos);
 
             nextIndicator.anchoredPosition = new Vector2(localPos.x + indicatorOffset.x, localPos.y + indicatorOffset.y);
+            indicatorBaseY = nextIndicator.anchoredPosition.y;
             nextIndicator.gameObject.SetActive(true);
             
             StartBlinkAnimation();
@@ -594,15 +616,21 @@ namespace LoveAlgo.Story
                 indicatorOriginalColor = img.color;
                 img.color = new Color(indicatorOriginalColor.r, indicatorOriginalColor.g, indicatorOriginalColor.b, 1f);
                 
-                // alpha만 애니메이션 (색상 RGB는 유지)
+                // alpha 깜빡임
                 indicatorBlink = DOTween.To(
                     () => img.color.a,
                     a => img.color = new Color(indicatorOriginalColor.r, indicatorOriginalColor.g, indicatorOriginalColor.b, a),
-                    0.3f,
+                    0.4f,
                     blinkInterval
                 )
                 .SetEase(Ease.InOutSine)
                 .SetLoops(-1, LoopType.Yoyo);
+
+                // 상하 바운스
+                indicatorBounce = nextIndicator
+                    .DOAnchorPosY(indicatorBaseY - bounceAmplitude, blinkInterval)
+                    .SetEase(Ease.InOutSine)
+                    .SetLoops(-1, LoopType.Yoyo);
             }
             else
             {
@@ -622,6 +650,8 @@ namespace LoveAlgo.Story
         {
             indicatorBlink?.Kill();
             indicatorBlink = null;
+            indicatorBounce?.Kill();
+            indicatorBounce = null;
             
             // 원래 색상으로 복원
             if (nextIndicator != null)
@@ -707,13 +737,35 @@ namespace LoveAlgo.Story
             PopupManager.Instance?.ShowSettings();
         }
 
+        [Header("Auto 모드 표시")]
+        [SerializeField] GameObject autoModeIndicator;  // "AUTO" 아이콘/텍스트
+        [SerializeField] Color autoButtonActiveColor = Color.yellow;
+        Color autoButtonNormalColor;
+
         void OnAutoClick()
         {
             var runner = ScriptRunner.Instance;
             if (runner != null)
             {
                 runner.ToggleAutoMode();
+                UpdateAutoVisual(runner.IsAutoMode);
             }
+        }
+
+        void UpdateAutoVisual(bool isAuto)
+        {
+            if (autoButton != null)
+            {
+                var btnImage = autoButton.GetComponent<Image>();
+                if (btnImage != null)
+                {
+                    if (autoButtonNormalColor == default)
+                        autoButtonNormalColor = btnImage.color;
+                    btnImage.color = isAuto ? autoButtonActiveColor : autoButtonNormalColor;
+                }
+            }
+            if (autoModeIndicator != null)
+                autoModeIndicator.SetActive(isAuto);
         }
 
         void OnLogClick()

@@ -31,13 +31,15 @@ namespace LoveAlgo.Story
 
         // Auto 모드
         bool autoMode;
-        float autoDelay = 2f;  // 자동 진행 딜레이 (초)
+        float autoDelayBase = 1.5f;           // 기본 딜레이
+        float autoDelayPerCharacter = 0.05f;  // 글자당 추가 시간
+        float autoDelayMin = 1.0f;
+        float autoDelayMax = 5.0f;
 
         public event Action OnScriptEnd;
 
         // Auto 모드 프로퍼티
         public bool IsAutoMode => autoMode;
-        public float AutoDelay { get => autoDelay; set => autoDelay = Mathf.Max(0.5f, value); }
         
         /// <summary>
         /// 현재 실행 중인 스크립트명 (세이브용)
@@ -468,8 +470,12 @@ namespace LoveAlgo.Story
 
             if (autoMode)
             {
-                // Auto 모드: 딜레이 후 자동 진행 OR 클릭
-                var delayTask = UniTask.Delay(TimeSpan.FromSeconds(autoDelay), cancellationToken: ct);
+                // Auto 모드: 텍스트 길이에 따라 딜레이 조절
+                int textLen = UIManager.Instance?.DialogueUI?.LastDisplayedTextLength ?? 0;
+                float dynamicDelay = autoDelayBase + (textLen * autoDelayPerCharacter);
+                dynamicDelay = Mathf.Clamp(dynamicDelay, autoDelayMin, autoDelayMax);
+
+                var delayTask = UniTask.Delay(TimeSpan.FromSeconds(dynamicDelay), cancellationToken: ct);
                 var clickTask = UniTask.WaitUntil(() => clickReceived, cancellationToken: ct);
                 await UniTask.WhenAny(delayTask, clickTask);
             }

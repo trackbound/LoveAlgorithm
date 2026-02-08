@@ -63,18 +63,25 @@ namespace LoveAlgo.Story
         }
 
         /// <summary>
-        /// 캐릭터 등장 (이미 같은 캐릭터가 있으면 스킵)
+        /// 캐릭터 등장 (같은 캐릭터+같은 표정이면 스킵, 표정만 다르면 EmoteAsync)
         /// </summary>
         public async UniTask EnterAsync(string characterName, string emote = "Default", CancellationToken ct = default)
         {
-            // 이미 같은 캐릭터가 표시 중이면 스킵
+            string resolvedEmote = string.IsNullOrEmpty(emote) ? "Default" : emote;
+
+            // 이미 같은 캐릭터가 표시 중인 경우
             if (currentCharacter == characterName && !IsEmpty)
             {
+                // 표정이 다르면 EmoteAsync로 전환
+                if (currentEmote != resolvedEmote)
+                {
+                    await EmoteAsync(resolvedEmote, ct);
+                }
                 return;
             }
 
             currentCharacter = characterName;
-            currentEmote = string.IsNullOrEmpty(emote) ? "Default" : emote;
+            currentEmote = resolvedEmote;
 
             // 스프라이트 로드
             var sprite = LoadSprite(currentCharacter, currentEmote);
