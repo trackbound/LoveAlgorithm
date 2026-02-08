@@ -28,10 +28,13 @@ namespace LoveAlgo.Tester
         {
             new JumpPoint("로아 첫 만남", "Prologue", null),  // 처음부터
             new JumpPoint("1일차 아침", "Prologue", "DEMO_day1_morning"),
+            new JumpPoint("캠퍼스", "Prologue", "DEMO_campus"),
             new JumpPoint("서다은 첫 등장", "Prologue", "DEMO_daeun_first"),
-            new JumpPoint("하예은 첫 만남", "Prologue", "yeun_intro"),
-            new JumpPoint("하예은 CG (입부신청)", "Prologue", "DEMO_yeun_cg"),
+            new JumpPoint("하예은 첫 만남", "Prologue", "DEMO_yeun_first"),
+            new JumpPoint("2일차 아침", "Prologue", "DEMO_day2_morning"),
             new JumpPoint("서다은 매점", "Prologue", "DEMO_daeun_bookstore"),
+            new JumpPoint("학생회관", "Prologue", "DEMO_student_center"),
+            new JumpPoint("하예은 CG (입부신청)", "Prologue", "DEMO_yeun_cg"),
             new JumpPoint("희원 첫만남", "Prologue", "DEMO_heewon_first"),
             new JumpPoint("봄 첫만남", "Prologue", "DEMO_bom_first"),
             new JumpPoint("프롤로그 END", "Prologue", "DEMO_prologue_end"),
