@@ -12,11 +12,15 @@ namespace LoveAlgo.Core
     /// 스토리 진행 입력 핸들러 (프로덕션)
     /// Space / 마우스 클릭 → 다음 대사
     /// A → Auto 모드 토글
-    /// Shift 꾹 → 빠른 재생 (스킵+자동진행)
+    /// Shift 꾹 → 빠른 재생 (스킵+자동진행, 쿨다운 적용)
     /// </summary>
     public class StoryInputHandler : MonoBehaviour
     {
         public static StoryInputHandler Instance { get; private set; }
+
+        [Header("Shift 스킵 설정")]
+        [SerializeField] float skipInterval = 0.08f;  // Shift 스킵 간격 (초)
+        float lastSkipTime;
 
         // Raycast 결과 캐시
         readonly List<RaycastResult> raycastResults = new();
@@ -82,12 +86,17 @@ namespace LoveAlgo.Core
                 PopupManager.Instance?.Toast("Auto Mode", mode);
             }
 
-            // ── Shift 꾹: 빠른 재생 ──
+            // ── Shift 꾹: 빠른 재생 (쿨다운 적용) ──
             if (keyboard.leftShiftKey.isPressed || keyboard.rightShiftKey.isPressed)
             {
-                if (dialogueUI != null && dialogueUI.IsTyping)
-                    dialogueUI.RequestSkip();
-                runner?.OnClick();
+                if (Time.unscaledTime - lastSkipTime >= skipInterval)
+                {
+                    lastSkipTime = Time.unscaledTime;
+
+                    if (dialogueUI != null && dialogueUI.IsTyping)
+                        dialogueUI.RequestSkip();
+                    runner?.OnClick();
+                }
             }
         }
 

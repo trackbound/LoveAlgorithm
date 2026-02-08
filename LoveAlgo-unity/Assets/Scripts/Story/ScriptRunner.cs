@@ -34,6 +34,11 @@ namespace LoveAlgo.Story
 
         // Auto 모드
         bool autoMode;
+
+        /// <summary>
+        /// Auto 모드 변경 시 발생 (UI 갱신용)
+        /// </summary>
+        public event Action<bool> OnAutoModeChanged;
         float autoDelayBase = 1.5f;           // 기본 딜레이
         float autoDelayPerCharacter = 0.05f;  // 글자당 추가 시간
         float autoDelayMin = 1.0f;
@@ -352,6 +357,7 @@ namespace LoveAlgo.Story
         {
             autoMode = !autoMode;
             Debug.Log($"[ScriptRunner] Auto Mode: {autoMode}");
+            OnAutoModeChanged?.Invoke(autoMode);
             
             // Auto 모드 켜졌을 때 클릭 대기 중이면 즉시 진행
             if (autoMode && waitingForClick)
@@ -366,6 +372,7 @@ namespace LoveAlgo.Story
         public void SetAutoMode(bool enabled)
         {
             autoMode = enabled;
+            OnAutoModeChanged?.Invoke(autoMode);
             if (autoMode && waitingForClick)
             {
                 clickReceived = true;
@@ -1081,7 +1088,11 @@ namespace LoveAlgo.Story
         {
             // 선택지에서는 Auto 모드 일시정지
             bool wasAutoMode = autoMode;
-            autoMode = false;
+            if (autoMode)
+            {
+                autoMode = false;
+                OnAutoModeChanged?.Invoke(false);
+            }
 
             // Option 라인들 수집
             var scriptOptions = CollectOptions();
@@ -1133,6 +1144,8 @@ namespace LoveAlgo.Story
 
             // Auto 모드 복원
             autoMode = wasAutoMode;
+            if (wasAutoMode)
+                OnAutoModeChanged?.Invoke(true);
         }
 
         /// <summary>

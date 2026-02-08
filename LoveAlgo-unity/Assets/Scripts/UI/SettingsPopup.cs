@@ -31,6 +31,7 @@ namespace LoveAlgo.UI
 
 
         [Header("메인 볼륨")]
+        [SerializeField] Slider masterSlider;
         [SerializeField] Slider bgmSlider;
         [SerializeField] Slider sfxSlider;
 
@@ -72,6 +73,7 @@ namespace LoveAlgo.UI
         // ── 열기 시점 스냅샷 (되돌리기용) ──
         struct SettingsSnapshot
         {
+            public float masterVolume;
             public float bgmVolume, sfxVolume;
             public float voiceYeun, voiceDaeun, voiceBom, voiceHeewon, voiceRoa;
             public float textSpeed, autoSpeed;
@@ -103,6 +105,9 @@ namespace LoveAlgo.UI
 
         void SetupSliders()
         {
+            // 마스터 볼륨
+            masterSlider?.onValueChanged.AddListener(v => { AudioManager.Instance?.SetMasterVolume(v); MarkDirty(); });
+
             // 메인 볼륨 (변경 추적)
             bgmSlider?.onValueChanged.AddListener(v => { AudioManager.Instance?.SetBGMVolume(v); MarkDirty(); });
             sfxSlider?.onValueChanged.AddListener(v => { AudioManager.Instance?.SetSFXVolume(v); MarkDirty(); });
@@ -158,6 +163,9 @@ namespace LoveAlgo.UI
             UpdateWindowModeUI();
             UpdateResolutionUI();
 
+            // 마스터 볼륨
+            masterSlider?.SetValueWithoutNotify(PlayerPrefs.GetFloat("MasterVolume", 0.8f));
+
             // 메인 볼륨
             bgmSlider?.SetValueWithoutNotify(PlayerPrefs.GetFloat("BGMVolume", 0.4f));
             sfxSlider?.SetValueWithoutNotify(PlayerPrefs.GetFloat("SFXVolume", 0.4f));
@@ -177,6 +185,9 @@ namespace LoveAlgo.UI
         void SaveSettings()
         {
             // 해상도 관련 값(Fullscreen/ResolutionIndex)은 해상도 전용 Apply 버튼에서 저장합니다.
+
+            // 마스터 볼륨
+            PlayerPrefs.SetFloat("MasterVolume", masterSlider?.value ?? 0.8f);
 
             // 메인 볼륨
             PlayerPrefs.SetFloat("BGMVolume", bgmSlider?.value ?? 0.4f);
@@ -323,10 +334,25 @@ namespace LoveAlgo.UI
 
         void OnResetClick()
         {
+            ConfirmReset().Forget();
+        }
+
+        async UniTaskVoid ConfirmReset()
+        {
+            bool confirmed = await PopupManager.Instance.ConfirmAsync("모든 설정을 기본값으로\n초기화하시겠습니까?");
+            if (!confirmed) return;
+
+            ApplyResetValues();
+        }
+
+        void ApplyResetValues()
+        {
             // 슬라이더만 기본값으로 초기화 — 해상도 영역은 건드리지 않음
+            const float defaultMaster = 0.8f;
             const float defaultVolume = 0.4f;
             const float defaultSpeed  = 0.4f;
 
+            masterSlider?.SetValueWithoutNotify(defaultMaster);
             bgmSlider?.SetValueWithoutNotify(defaultVolume);
             sfxSlider?.SetValueWithoutNotify(defaultVolume);
 
@@ -340,6 +366,7 @@ namespace LoveAlgo.UI
             autoSpeedSlider?.SetValueWithoutNotify(defaultSpeed);
 
             // 실시간 오디오 반영 (슬라이더 피드백)
+            AudioManager.Instance?.SetMasterVolume(defaultMaster);
             AudioManager.Instance?.SetBGMVolume(defaultVolume);
             AudioManager.Instance?.SetSFXVolume(defaultVolume);
             AudioManager.Instance?.SetCharacterVoiceVolume("Yeun", defaultVolume);
@@ -404,6 +431,7 @@ namespace LoveAlgo.UI
         {
             snapshot = new SettingsSnapshot
             {
+                masterVolume = PlayerPrefs.GetFloat("MasterVolume", 0.8f),
                 bgmVolume   = PlayerPrefs.GetFloat("BGMVolume", 0.4f),
                 sfxVolume   = PlayerPrefs.GetFloat("SFXVolume", 0.4f),
                 voiceYeun   = PlayerPrefs.GetFloat("Voice_Yeun", 0.4f),
@@ -421,6 +449,9 @@ namespace LoveAlgo.UI
         /// </summary>
         void RevertSettings()
         {
+            // 마스터 볼륨 복원
+            AudioManager.Instance?.SetMasterVolume(snapshot.masterVolume);
+
             // 볼륨 복원
             AudioManager.Instance?.SetBGMVolume(snapshot.bgmVolume);
             AudioManager.Instance?.SetSFXVolume(snapshot.sfxVolume);

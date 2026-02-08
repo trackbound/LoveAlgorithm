@@ -305,9 +305,30 @@ namespace LoveAlgo.Core
                 gs.AddMoney(effect.moneyChange);
             }
 
+            // 스탯 변화 피드백 토스트
+            string feedback = BuildScheduleFeedback(effect);
+            PopupManager.Instance?.Toast(effect.displayName, feedback, 2.5f);
+
             Debug.Log($"[GameManager] 스케줄 완료: {effect.displayName}");
             OnScheduleCompleted();
         }
+
+        /// <summary>
+        /// 스케줄 효과 피드백 문자열 생성
+        /// </summary>
+        string BuildScheduleFeedback(ScheduleEffect effect)
+        {
+            var parts = new System.Collections.Generic.List<string>();
+            if (effect.strengthChange != 0) parts.Add($"체력 {FormatChange(effect.strengthChange)}");
+            if (effect.intelligenceChange != 0) parts.Add($"지성 {FormatChange(effect.intelligenceChange)}");
+            if (effect.socialChange != 0) parts.Add($"사교 {FormatChange(effect.socialChange)}");
+            if (effect.perseveranceChange != 0) parts.Add($"끈기 {FormatChange(effect.perseveranceChange)}");
+            if (effect.fatigueChange != 0) parts.Add($"피로 {FormatChange(effect.fatigueChange)}");
+            if (effect.moneyChange != 0) parts.Add($"금액 {FormatChange(effect.moneyChange)}");
+            return parts.Count > 0 ? string.Join(" / ", parts) : "변화 없음";
+        }
+
+        string FormatChange(int value) => value > 0 ? $"+{value}" : value.ToString();
 
         /// <summary>
         /// 스케줄 수행 완료 (행동 소모 처리)

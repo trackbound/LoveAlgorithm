@@ -116,6 +116,9 @@ namespace LoveAlgo.Story
             LoadMonologueDotSprites();
             if (showButtonObject != null) showButtonObject.SetActive(false);
 
+            // ScriptRunner의 Auto 모드 변경 이벤트 구독
+            SubscribeAutoModeEvent();
+
             // 저장된 텍스트 속도 복원
             float savedSpeed = PlayerPrefs.GetFloat("TextSpeed", 0.4f);
             SetTextSpeed(savedSpeed);
@@ -515,6 +518,10 @@ namespace LoveAlgo.Story
         {
             StopDotsAnimation();
             KillAnimations();
+
+            // Auto 모드 이벤트 구독 해제
+            if (ScriptRunner.Instance != null)
+                ScriptRunner.Instance.OnAutoModeChanged -= UpdateAutoVisual;
         }
 
         /// <summary>
@@ -558,6 +565,29 @@ namespace LoveAlgo.Story
             {
                 skipRequested = true;
             }
+        }
+
+        /// <summary>
+        /// ScriptRunner의 Auto 모드 변경 이벤트 구독
+        /// </summary>
+        void SubscribeAutoModeEvent()
+        {
+            // Awake 시점에 ScriptRunner가 아직 없을 수 있으므로 지연 구독
+            SubscribeAutoModeEventAsync().Forget();
+        }
+
+        async UniTaskVoid SubscribeAutoModeEventAsync()
+        {
+            // ScriptRunner가 준비될 때까지 대기 (최대 5초)
+            float elapsed = 0f;
+            while (ScriptRunner.Instance == null && elapsed < 5f)
+            {
+                await UniTask.Yield();
+                elapsed += Time.deltaTime;
+            }
+
+            if (ScriptRunner.Instance != null)
+                ScriptRunner.Instance.OnAutoModeChanged += UpdateAutoVisual;
         }
 
         #region 표시/숨김
@@ -898,7 +928,7 @@ namespace LoveAlgo.Story
             }
         }
 
-        void UpdateAutoVisual(bool isAuto)
+        public void UpdateAutoVisual(bool isAuto)
         {
             if (autoButton != null)
             {

@@ -21,6 +21,7 @@ namespace LoveAlgo.UI
 
         int slotIndex;
         bool hasData;
+        bool isAutoSaveSlot;
         Action<int> onClick;
 
         void Awake()
@@ -31,10 +32,11 @@ namespace LoveAlgo.UI
         /// <summary>
         /// 슬롯 초기화
         /// </summary>
-        public void Setup(int index, Action<int> onClickCallback)
+        public void Setup(int index, Action<int> onClickCallback, bool autoSave = false)
         {
             slotIndex = index;
             onClick = onClickCallback;
+            isAutoSaveSlot = autoSave;
         }
 
         /// <summary>
@@ -45,7 +47,7 @@ namespace LoveAlgo.UI
             hasData = false;
             
             if (slotNumberText != null)
-                slotNumberText.text = $"슬롯 {slotIndex + 1}";
+                slotNumberText.text = isAutoSaveSlot ? "Auto" : $"슬롯 {slotIndex + 1}";
             
             if (emptyLabel != null)
                 emptyLabel.SetActive(true);
@@ -62,7 +64,7 @@ namespace LoveAlgo.UI
             hasData = true;
             
             if (slotNumberText != null)
-                slotNumberText.text = $"슬롯 {slotIndex + 1}";
+                slotNumberText.text = isAutoSaveSlot ? "Auto" : $"슬롯 {slotIndex + 1}";
             
             if (chapterText != null)
                 chapterText.text = chapter ?? "알 수 없음";

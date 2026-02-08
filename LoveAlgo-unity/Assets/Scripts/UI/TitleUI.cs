@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using Cysharp.Threading.Tasks;
+using DG.Tweening;
 using LoveAlgo.Story;
 using LoveAlgo.Core;
 
@@ -42,6 +43,9 @@ namespace LoveAlgo.UI
 
         GameObject currentDeco;
 
+        [Header("데코 크로스페이드")]
+        [SerializeField] float decoCrossfadeDuration = 0.2f;
+
         void Start()
         {
             // 초기 호버 텍스트 비활성화
@@ -54,7 +58,7 @@ namespace LoveAlgo.UI
 
             SetupButtons();
             SetupHoverEvents();
-            ShowDeco(decoNormal);
+            ShowDecoImmediate(decoNormal);
             UpdateContinueButton();
             PlayTitleBGM();
         }
@@ -131,18 +135,66 @@ namespace LoveAlgo.UI
         {
             if (currentDeco == deco) return;
 
-            // 모든 Deco 비활성화
-            decoNormal?.SetActive(false);
-            decoStart?.SetActive(false);
-            decoContinue?.SetActive(false);
-            decoLoad?.SetActive(false);
-            decoExtra?.SetActive(false);
-            decoSettings?.SetActive(false);
-            decoExit?.SetActive(false);
-
-            // 현재 Deco 활성화
-            deco?.SetActive(true);
+            var oldDeco = currentDeco;
             currentDeco = deco;
+
+            // 새 데코 페이드인
+            if (deco != null)
+            {
+                deco.SetActive(true);
+                var newCG = GetOrAddCanvasGroup(deco);
+                newCG.alpha = 0f;
+                newCG.DOKill();
+                newCG.DOFade(1f, decoCrossfadeDuration).SetEase(Ease.OutQuad);
+            }
+
+            // 이전 데코 페이드아웃
+            if (oldDeco != null && oldDeco != deco)
+            {
+                var oldCG = GetOrAddCanvasGroup(oldDeco);
+                oldCG.DOKill();
+                oldCG.DOFade(0f, decoCrossfadeDuration)
+                    .SetEase(Ease.InQuad)
+                    .OnComplete(() => oldDeco.SetActive(false));
+            }
+        }
+
+        CanvasGroup GetOrAddCanvasGroup(GameObject go)
+        {
+            var cg = go.GetComponent<CanvasGroup>();
+            if (cg == null) cg = go.AddComponent<CanvasGroup>();
+            return cg;
+        }
+
+        /// <summary>
+        /// 초기화 시 즉시 표시 (페이드 없음)
+        /// </summary>
+        void ShowDecoImmediate(GameObject deco)
+        {
+            // 모든 Deco 비활성화
+            HideAllDecos();
+
+            if (deco != null)
+            {
+                deco.SetActive(true);
+                var cg = GetOrAddCanvasGroup(deco);
+                cg.alpha = 1f;
+            }
+            currentDeco = deco;
+        }
+
+        void HideAllDecos()
+        {
+            GameObject[] decos = { decoNormal, decoStart, decoContinue, decoLoad, decoExtra, decoSettings, decoExit };
+            foreach (var d in decos)
+            {
+                if (d != null)
+                {
+                    d.SetActive(false);
+                    var cg = d.GetComponent<CanvasGroup>();
+                    if (cg != null) cg.alpha = 0f;
+                }
+            }
         }
 
         #endregion
@@ -152,6 +204,19 @@ namespace LoveAlgo.UI
         void OnStartClick()
         {
             Debug.Log("[TitleUI] Start - 새 게임 시작");
+            ConfirmNewGame().Forget();
+        }
+
+        async UniTaskVoid ConfirmNewGame()
+        {
+            // 세이브 데이터가 있으면 확인 팝업
+            if (HasAnySaveData())
+            {
+                bool confirmed = await PopupManager.Instance.ConfirmAsync(
+                    "새 게임을 시작하면\n저장되지 않은 진행이 사라집니다.\n계속하시겠습니까?");
+                if (!confirmed) return;
+            }
+
             GameManager.Instance?.StartNewGame();
         }
 

@@ -529,6 +529,7 @@ namespace LoveAlgo.Story
         /// </summary>
         void LoadMixerVolumes()
         {
+            SetMasterVolume(PlayerPrefs.GetFloat("MasterVolume", 0.8f));
             SetBGMVolume(PlayerPrefs.GetFloat("BGMVolume", 0.4f));
             SetSFXVolume(PlayerPrefs.GetFloat("SFXVolume", 0.4f));
         }

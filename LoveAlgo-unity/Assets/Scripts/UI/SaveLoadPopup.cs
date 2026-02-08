@@ -110,17 +110,45 @@ namespace LoveAlgo.UI
 
         void OnSlotClicked(int localIndex)
         {
-            // 슬롯 1부터 시작 (0은 자동저장)
-            int globalIndex = SaveManager.UserSlotStart + (currentPage - 1) * slotsPerPage + localIndex;
+            int globalIndex = GetGlobalSlotIndex(localIndex);
             
             if (isSaveMode)
             {
+                // 자동저장 슬롯에는 저장 불가
+                if (globalIndex == SaveManager.AutoSaveSlot) return;
                 OnSaveSlotClicked(globalIndex).Forget();
             }
             else
             {
                 OnLoadSlotClicked(globalIndex).Forget();
             }
+        }
+
+        /// <summary>
+        /// 로컬 인덱스 → 글로벌 슬롯 인덱스 변환
+        /// 로드 모드 1페이지: [0] = 자동저장, [1~] = 유저 슬롯
+        /// </summary>
+        int GetGlobalSlotIndex(int localIndex)
+        {
+            // 로드 모드 1페이지: 첫 슬롯이 자동저장
+            if (!isSaveMode && currentPage == 1)
+            {
+                if (localIndex == 0)
+                    return SaveManager.AutoSaveSlot;
+                // 나머지는 유저 슬롯 (localIndex 1 → slot 1, ...)
+                return SaveManager.UserSlotStart + localIndex - 1;
+            }
+
+            // 그 외: 기존 로직
+            int startIndex = (currentPage - 1) * slotsPerPage;
+            // 로드 모드 2페이지 이후: 1페이지에서 autoSave 1칸 + 유저 (slotsPerPage-1)칸 소모
+            if (!isSaveMode && currentPage > 1)
+            {
+                int userOffset = (slotsPerPage - 1) + (currentPage - 2) * slotsPerPage + localIndex;
+                return SaveManager.UserSlotStart + userOffset;
+            }
+
+            return SaveManager.UserSlotStart + startIndex + localIndex;
         }
 
         async UniTaskVoid OnSaveSlotClicked(int slotIndex)
@@ -164,36 +192,41 @@ namespace LoveAlgo.UI
 
         void RefreshSlots()
         {
-            int startIndex = (currentPage - 1) * slotsPerPage;
-
             for (int i = 0; i < slotItems.Count; i++)
             {
                 var slot = slotItems[i];
                 if (slot == null) continue;
 
-                // 슬롯 1부터 시작
-                int globalIndex = SaveManager.UserSlotStart + startIndex + i;
+                int globalIndex = GetGlobalSlotIndex(i);
 
-                if (startIndex + i >= userSlots)
+                // 범위 초과 체크
+                if (globalIndex > userSlots)
                 {
                     slot.gameObject.SetActive(false);
                     continue;
                 }
 
                 slot.gameObject.SetActive(true);
-                slot.Setup(i, OnSlotClicked);
+                slot.Setup(i, OnSlotClicked, isAutoSlot);
+
+                // 자동저장 슬롯 특별 처리
+                bool isAutoSlot = (globalIndex == SaveManager.AutoSaveSlot);
 
                 // 세이브 데이터 확인
                 var data = SaveManager.Load(globalIndex);
                 if (data != null)
                 {
                     var screenshot = SaveManager.LoadScreenshot(globalIndex);
-                    slot.SetData(data.ChapterName, data.SaveTime, screenshot);
+                    string label = isAutoSlot ? "자동 저장" : data.ChapterName;
+                    slot.SetData(label, data.SaveTime, screenshot);
                 }
                 else
                 {
                     slot.SetEmpty();
                 }
+
+                // 세이브 모드에서 자동저장 슬롯 비활성화 (안 보이게)
+                // → 이미 GetGlobalSlotIndex에서 세이브 모드는 자동저장 포함 안 함
             }
 
             UpdatePageUI();
