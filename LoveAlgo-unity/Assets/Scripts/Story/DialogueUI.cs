@@ -17,8 +17,9 @@ namespace LoveAlgo.Story
     /// </summary>
     public struct DialogueLogEntry
     {
-        public string Speaker;
+        public string Speaker;       // 표시 이름 (한글)
         public string Text;
+        public string CharacterId;   // 영문 ID (썸네일 로드용)
     }
 
     /// <summary>
@@ -976,10 +977,18 @@ namespace LoveAlgo.Story
         /// </summary>
         void AddToLog(string speaker, string text)
         {
+            // Speaker 이름을 CharacterId로 변환 (썸네일 로드용)
+            string charId = null;
+            if (!string.IsNullOrEmpty(speaker) && characterDatabase != null)
+            {
+                charId = characterDatabase.SpeakerToCharacterId(speaker);
+            }
+
             dialogueLog.Add(new DialogueLogEntry
             {
                 Speaker = speaker,
-                Text = text
+                Text = text,
+                CharacterId = charId
             });
         }
 
