@@ -8,22 +8,24 @@ namespace LoveAlgo.UI
 {
     /// <summary>
     /// 대사 로그 팝업 — 채팅 스타일
-    /// 캐릭터: 좌측 썸네일 + 이름표 + 말풍선
-    /// 주인공/나레이션: 이름표(다른 색상) + 말풍선(다른 색상)
+    /// 연속 같은 화자의 대사를 하나의 그룹으로 묶어 표시
     /// </summary>
     public class LogPopup : MonoBehaviour
     {
         [Header("바인딩")]
         [SerializeField] ScrollRect scrollRect;
-        [SerializeField] RectTransform contentRoot;   // ScrollRect.content
+        [SerializeField] RectTransform contentRoot;
         [SerializeField] Button closeButton;
 
         [Header("프리팹")]
-        [SerializeField] LogEntryUI entryPrefab;      // 로그 항목 프리팹
+        [SerializeField] LogEntryUI entryPrefab;
 
-        [Header("스프라이트 (텍스트박스 배경)")]
-        [SerializeField] Sprite characterTextboxSprite;   // bg_log_textbox_character
-        [SerializeField] Sprite userTextboxSprite;        // bg_log_textbox_user
+        [Header("스프라이트")]
+        [SerializeField] Sprite characterTextboxSprite;    // 캐릭터 말풍선 배경
+        [SerializeField] Sprite userTextboxSprite;         // 주인공 말풍선 배경
+
+        [Header("독백 스타일")]
+        [SerializeField] TMP_FontAsset narrationFont;      // Aggro Light
 
         [Header("캐릭터 초상화")]
         [SerializeField] List<PortraitEntry> portraits;   // Inspector에서 할당
@@ -97,30 +99,55 @@ namespace LoveAlgo.UI
 
         void BuildEntries(IReadOnlyList<DialogueLogEntry> log)
         {
+            LogEntryUI currentGroup = null;
+            string prevSpeaker = null;
+            string prevCharId = null;
+
             for (int i = 0; i < log.Count; i++)
             {
                 var entry = log[i];
-                var item = Instantiate(entryPrefab, contentRoot);
-                item.SetAssets(characterTextboxSprite, userTextboxSprite);
+                bool isNarration = string.IsNullOrEmpty(entry.Speaker);
 
-                if (string.IsNullOrEmpty(entry.Speaker))
+                // 같은 화자 연속 → 기존 그룹에 대사만 추가
+                bool sameGroup = currentGroup != null
+                    && entry.Speaker == prevSpeaker
+                    && entry.CharacterId == prevCharId;
+
+                if (!sameGroup)
                 {
-                    // 나레이션
-                    item.SetNarrationEntry(entry.Text);
-                }
-                else if (!string.IsNullOrEmpty(entry.CharacterId))
-                {
-                    // 캐릭터 대사
-                    var portrait = GetPortrait(entry.CharacterId);
-                    item.SetCharacterEntry(entry.Speaker, entry.Text, portrait);
-                }
-                else
-                {
-                    // 주인공 대사 (CharacterId 없음 = 데이터베이스에 없는 화자)
-                    item.SetUserEntry(entry.Speaker, entry.Text);
+                    // 새 그룹 생성
+                    currentGroup = Instantiate(entryPrefab, contentRoot);
+                    currentGroup.SetAssets(
+                        characterTextboxSprite, userTextboxSprite,
+                        narrationFont);
+
+                    if (isNarration)
+                    {
+                        // 케이스 4: 독백
+                        currentGroup.SetNarrationMode();
+                    }
+                    else if (!string.IsNullOrEmpty(entry.CharacterId))
+                    {
+                        // 케이스 1 or 2: 캐릭터 (초상화 유무)
+                        var portrait = GetPortrait(entry.CharacterId);
+                        if (portrait != null)
+                            currentGroup.SetCharacterWithPortrait(entry.Speaker, portrait);
+                        else
+                            currentGroup.SetExtraEntry(entry.Speaker);
+                    }
+                    else
+                    {
+                        // 케이스 3: 주인공
+                        currentGroup.SetUserEntry(entry.Speaker);
+                    }
+
+                    prevSpeaker = entry.Speaker;
+                    prevCharId = entry.CharacterId;
+                    spawnedEntries.Add(currentGroup);
                 }
 
-                spawnedEntries.Add(item);
+                // 대사 버블 추가
+                currentGroup.AddLine(entry.Text);
             }
         }
 
