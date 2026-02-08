@@ -38,10 +38,21 @@ namespace LoveAlgo.Story
         public DateTime SaveTime;
         public string ChapterName;      // 표시용 (선택)
 
-        // TODO: 장면 상태 (나중에)
-        // public string CurrentBG;
-        // public List<CharacterState> Characters;
-        // public string CurrentBGM;
+        // 장면 상태 (미술 복원용)
+        public string CurrentBG;
+        public string CurrentBGM;
+        public List<CharacterSaveInfo> Characters = new();
+    }
+
+    /// <summary>
+    /// 캐릭터 슬롯 저장 정보
+    /// </summary>
+    [Serializable]
+    public class CharacterSaveInfo
+    {
+        public string Slot;       // "L", "C", "R"
+        public string Character;  // 캐릭터 ID
+        public string Emote;      // 표정
     }
 
     /// <summary>
@@ -109,6 +120,9 @@ namespace LoveAlgo.Story
                 data.Perseverance = GameState.Instance.GetStat("Per");
                 data.Fatigue = GameState.Instance.GetStat("Fatigue");
             }
+
+            // 장면 상태 저장 (배경, 캐릭터, BGM)
+            CaptureStageState(data);
 
             try
             {
@@ -184,6 +198,46 @@ namespace LoveAlgo.Story
             {
                 File.Delete(path);
                 Debug.Log($"[SaveManager] 슬롯 {slot} 삭제");
+            }
+        }
+
+        /// <summary>
+        /// 장면 상태 캐프처 (배경, 캐릭터, BGM)
+        /// </summary>
+        static void CaptureStageState(SaveData data)
+        {
+            // 배경
+            var bg = Core.StageManager.Instance?.Background;
+            data.CurrentBG = bg?.CurrentBackground ?? "";
+
+            // BGM
+            data.CurrentBGM = AudioManager.Instance?.CurrentBGM ?? "";
+
+            // 캐릭터 슬롯
+            data.Characters.Clear();
+            var charLayer = Core.StageManager.Instance?.Character;
+            if (charLayer != null)
+            {
+                foreach (var slotName in new[] { "L", "C", "R" })
+                {
+                    SlotPosition pos;
+                    switch (slotName)
+                    {
+                        case "L": pos = SlotPosition.L; break;
+                        case "R": pos = SlotPosition.R; break;
+                        default:  pos = SlotPosition.C; break;
+                    }
+                    var slot = charLayer.GetSlot(pos);
+                    if (slot != null && !slot.IsEmpty)
+                    {
+                        data.Characters.Add(new CharacterSaveInfo
+                        {
+                            Slot = slotName,
+                            Character = slot.CurrentCharacter,
+                            Emote = slot.CurrentEmote ?? "Default"
+                        });
+                    }
+                }
             }
         }
 

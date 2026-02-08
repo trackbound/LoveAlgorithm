@@ -35,6 +35,11 @@ namespace LoveAlgo.Story
 
         string currentBGM;
         string currentCharacterBGM;
+
+        /// <summary>
+        /// 현재 재생 중인 BGM 이름 (세이브용)
+        /// </summary>
+        public string CurrentBGM => currentBGM;
         HashSet<string> presentCharacters = new();
         
         readonly Dictionary<string, float> characterVoiceVolumes = new();

@@ -139,6 +139,10 @@ namespace LoveAlgo.Core
             // Stop 전에 자동저장 (스크립트 위치 보존)
             AutoSave();
             ScriptRunner.Instance?.Stop();
+
+            // 장면 정리 (캐릭터, 배경, 오버레이 등)
+            CleanupStage();
+
             ChangePhase(GamePhase.Title);
         }
 
@@ -150,6 +154,9 @@ namespace LoveAlgo.Core
             // 이전 BGM 정리 (페이드아웃)
             Story.AudioManager.Instance?.StopBGMAsync().Forget();
             ScriptRunner.Instance?.Stop();
+
+            // 장면 정리
+            CleanupStage();
 
             // 게임 상태 초기화
             GameState.Instance?.ResetAll();
@@ -295,6 +302,9 @@ namespace LoveAlgo.Core
             Story.AudioManager.Instance?.StopBGMAsync().Forget();
             ScriptRunner.Instance?.Stop();
 
+            // 이전 장면 정리
+            CleanupStage();
+
             PlayerName = data.PlayerName;
             CurrentDay = data.CurrentDay;
             RemainingActions = data.RemainingActions;
@@ -306,7 +316,13 @@ namespace LoveAlgo.Core
             if (!string.IsNullOrEmpty(data.ScriptName) &&
                 (data.Phase == GamePhase.Prologue || data.Phase == GamePhase.DayLoop))
             {
+                // Phase를 먼저 설정해야 입력 핸들러(DebugRemoteUI 등)가 클릭을 처리함
+                CurrentPhase = data.Phase;
+
                 UIManager.Instance?.ShowOnly(MainUIType.Dialogue);
+
+                // 장면 상태 복원 (배경, 캐릭터, BGM)
+                await RestoreStageState(data);
 
                 var runner = ScriptRunner.Instance;
                 if (runner != null)
@@ -321,7 +337,6 @@ namespace LoveAlgo.Core
                     await runner.StartScriptFrom(data.ScriptName, data.LineId, data.LineIndex);
                 }
 
-                CurrentPhase = data.Phase;
                 return;
             }
 
@@ -370,6 +385,71 @@ namespace LoveAlgo.Core
                 lineIndex,
                 $"Day {CurrentDay}"
             );
+        }
+
+        #endregion
+
+        #region Stage State
+
+        /// <summary>
+        /// 장면 정리 (타이틀 복귀 시)
+        /// </summary>
+        void CleanupStage()
+        {
+            StageManager.Instance?.Character?.ClearAll();
+            StageManager.Instance?.Background?.Clear();
+            StageManager.Instance?.Overlay?.HideImmediate();
+            StageManager.Instance?.CG?.Clear();
+            ScreenFX.Instance?.SetClear();
+        }
+
+        /// <summary>
+        /// 세이브 데이터에서 장면 상태 복원 (배경, 캐릭터, BGM)
+        /// </summary>
+        async UniTask RestoreStageState(SaveData data)
+        {
+            // 배경 복원 (즉시 전환)
+            if (!string.IsNullOrEmpty(data.CurrentBG))
+            {
+                var bg = StageManager.Instance?.Background;
+                if (bg != null)
+                {
+                    await bg.ChangeBackgroundAsync(data.CurrentBG, Story.BGTransition.Cut, 0f);
+                }
+            }
+
+            // 캐릭터 복원
+            if (data.Characters != null && data.Characters.Count > 0)
+            {
+                var charLayer = StageManager.Instance?.Character;
+                if (charLayer != null)
+                {
+                    foreach (var charInfo in data.Characters)
+                    {
+                        Story.SlotPosition pos;
+                        switch (charInfo.Slot)
+                        {
+                            case "L": pos = Story.SlotPosition.L; break;
+                            case "R": pos = Story.SlotPosition.R; break;
+                            default:  pos = Story.SlotPosition.C; break;
+                        }
+                        var slot = charLayer.GetSlot(pos);
+                        if (slot != null)
+                        {
+                            await slot.EnterAsync(charInfo.Character, charInfo.Emote);
+                        }
+                    }
+                }
+            }
+
+            // BGM 복원
+            if (!string.IsNullOrEmpty(data.CurrentBGM))
+            {
+                await Story.AudioManager.Instance?.PlayBGMAsync(data.CurrentBGM, 0.5f);
+            }
+
+            // 화면 효과 클리어 (로드 시 깔끔한 상태로)
+            ScreenFX.Instance?.SetClear();
         }
 
         #endregion

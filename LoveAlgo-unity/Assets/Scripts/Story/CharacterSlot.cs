@@ -44,6 +44,7 @@ namespace LoveAlgo.Story
         Vector2 originalPosition;
 
         public string CurrentCharacter => currentCharacter;
+        public string CurrentEmote => currentEmote;
         public bool IsEmpty => string.IsNullOrEmpty(currentCharacter);
 
         void Awake()
