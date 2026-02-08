@@ -20,20 +20,16 @@ LineID,Type,Speaker,Value,Next
 ,Text,{{PlayerName}},안 졸려. 잠깐 이야기하자.,click
 # 선택지
 ,Text,로아,이야기는 내일이야! 지금 벌써 밤 12시라구.\n내일 일찍 일어나야 하는 대학생은 얼른 자지 그래?,click
-,Char,,C:Exit,await
-,BG,,MyRoom/BG_MyRoom_Interior_Night_LightOn:Cross,await
 ,Choice,,,click
 ,Option,,지금이 첫 대화잖아. 만나자마자 자라고?|talk_more,
 ,Option,,"알았어, 이제 잘게.|go_sleep",
 # ─── 선택 1: 더 이야기하자 ───
 talk_more,Overlay,,Roa_Theme:FadeIn:0.5,await
-,Char,,C:Enter:Roa,await
 ,Text,로아,"음, 그렇다면 조금만 봐 줄까? 지금 널 만나서 나도 기분이 엄청 좋으니까! 난 너에 대해서 너가 알려준 건 다 알고 있거든.",click
 ,Text,로아,그래도 앞으로도 계속 너를 알려줘야 해! 나는 늘 너가 알고 싶으니까.,click
 ,Flow,,Jump:roa_intro,>
 # ─── 선택 2: 잘게 ───
 go_sleep,Overlay,,Roa_Theme:FadeIn:0.5,await
-,Char,,C:Enter:Roa,await
 ,Text,로아,말을 너무 잘 들어주는걸? 기쁘네! 하지만 그래도 이건 알아줘.,click
 ,Text,로아,"지금 널 만나서 나는 너무 기뻐.\n너에 대해서 알려준 건 전부 알고 있지만, 앞으로도 너에 대해서 계속 알려줘야 해!",click
 ,Text,로아,나는 늘 너가 알고 싶으니까.,click
@@ -70,11 +66,11 @@ DEMO_day1_morning,Sound,,BGM:Stop,>
 ,FX,,EyeOpen:1.5,await
 ,Sound,,BGM:Roa,>
 ,Overlay,,Roa_Theme:FadeIn:0.5,await
-,Char,,C:Enter:Roa,await
 ,Text,{{PlayerName}},"어, 일어났어...",click
 ,Text,로아,{{PlayerName}}! 일어나라니까!,click
 ,Text,{{PlayerName}},"일어났어, 로아. 이제 그만해...",click
 ,Text,로아,"거짓말하지 마. 빨리 와서 얼굴 보여, 그럼.",click
+,Char,,C:Enter:Roa,await
 ,Text,{{PlayerName}},"아, 정말...",click
 ,Text,로아,"지금 귀찮다고 생각했지?\n하지만 이렇게까지 하지 않으면 늦는다고! 자, 이제 빨리 가서 학교 갈 준비 해!",click
 ,Text,로아,"1교시 전공이잖아.\n안 그래도 정문에서 먼데, 꾸물거리면 정말로 지각한다구!",click
@@ -97,12 +93,13 @@ go_campus,Text,로아,"자, 이제 출발! 첫 수업이니까 같이 힘내자,
 ,Char,,C:Exit,await
 ,Overlay,,FadeOut:0.3,>  # [로아 Overlay 종료 2/9]
 # ═══ 캠퍼스 ═══
+,FX,,FadeOut:1.0,await
 DEMO_campus,FX,,Setup:BG=CampusStreet/BG_Campus_Street1_Day|BGM=Daily2,>
-,BG,,CampusStreet/BG_Campus_Street1_Day,await
+,FX,,FadeIn:1.0,await
 ,Text,,새학기라고는 하지만 학교는 늘 똑같다.,click
 ,Text,,"전공 수업이라 너무 익숙한 공대 건물, 변한 게 하나도 없는 강의실.",click
 # 강의실
-,BG,,Engineering/BG_Engineering_Classroom_Day,await
+,BG,,Engineering/BG_Engineering_Classroom_Day:Fade:1.0,await
 ,Text,,무엇보다 내 머릿속에는 오늘 수업을 마치고 나서\n동아리방에 가 로아의 데이터베이스를 뜯어볼 생각밖에 없다.,click
 ,Text,,선배들이 다 졸업하고 부원이라고는 나 혼자 남은 동방에 가 봤자 혼자겠지만...\n그런 건 중요하지 않다.,click
 ,Text,,"알고리즘 메이커는 원래도 잘 알려지지 않은 동아리였고,\n내가 입부했을 때도 전부 두 학번은 훌쩍 넘게 차이나는 선배들뿐이었다.",click
@@ -148,7 +145,7 @@ after_class,Char,,C:Exit,await
 ,Text,,"...새 학기 첫 날인데, 너무 긴 하루가 될 것 같다.",click
 ,Text,,앞으로 두 개나 더 남은 수업에 한숨을 내쉬며 교재를 펼쳤다.,click
 # ═══ 하교 ═══
-,BG,,CampusStreet/BG_Campus_Street1_Day,await
+,BG,,CampusStreet/BG_Campus_Street1_Day:Fade:1.0,await
 ,Text,,드디어 학기 첫 날 모든 수업이 전부 끝났다.,click
 ,Text,,전공과 교양을 일부러 모두 다른 날에 분리해 두었다.,click
 ,Text,,"시간표 짜느라 고생은 좀 했지만, 동방이 있는 학생회관은 공대와 멀지 않아서 이렇게 하는 게 가기 편하다.",click
@@ -309,10 +306,10 @@ DEMO_day2_morning,FX,,Setup:BG=MyRoom/BG_MyRoom_Bed_Day|BGM=Daily2|Char=Roa|Over
 ,Overlay,,FadeOut:0.3,>  # [로아 Overlay 종료 5/9]
 # ═══ 캠퍼스 - 공대 ═══
 ,Sound,,BGM:Daily1,>
-,BG,,Engineering/BG_Engineering_Front_Day,await
+,BG,,Engineering/BG_Engineering_Front_Day:Fade:1.0,await
 ,Text,,"로아의 말이 정말 맞았다. 나왔을 때는 따뜻한가 싶더니, 공대 근처에 오니 찬바람이 분다.",click
 # 공대 지하 매점
-,BG,,Engineering/BG_Engineering_Stall_Day,await
+,BG,,Engineering/BG_Engineering_Stall_Day:Fade:1.0,await
 ,Text,,공대 지하에는 전공 교재를 쌓아놓고 팔면서 프린트도 할 수 있는 곳이 있다.,click
 ,Text,,그래서 매 학기 초마다 들러 교재를 사는 곳이다.\n다른 애들은 선배에게 교재를 물려받기도 하는 것 같지만...,click
 ,Text,,공부는 새 책으로 해야지. 다들 왜 남이 쓰던 걸 쓰려고 하는거야?,click
@@ -368,8 +365,9 @@ at_bookstore,Text,,나를 알고 있었다는 게 가장 놀라운 일이다.,cl
 ,Text,서다은,"그럼 다음에 봐, {{PlayerName}}. 안녕!",click
 ,Char,,C:Exit,await
 # ═══ 학생회관 ═══
+,FX,,FadeOut:1.0,await
 DEMO_student_center,FX,,Setup:BG=StudentCenter/BG_StudentCenter_Front_Day|BGM=Daily1,>
-,BG,,StudentCenter/BG_StudentCenter_Front_Day,await
+,FX,,FadeIn:1.0,await
 ,Text,,"전공 수업이 피곤하다면, 교양 수업은 잠이 온다. 너무 재미가 없다.\n이번에는 전공 수업 시간표를 신경쓰느라 교양 수업은 대강 넣었더니, 진짜 재미없다.",click
 ,Text,,졸기까지 해서인지 어떻게 지나갔는지도 모르겠다.\n게다가 오늘은 동아리 신청을 위해 학생회관까지 들러야 하는 날이다.,click
 ,Text,,"그 때, 로아에게서 메시지가 왔다.",click
@@ -385,7 +383,7 @@ DEMO_student_center,FX,,Setup:BG=StudentCenter/BG_StudentCenter_Front_Day|BGM=Da
 ,Text,,"정말 귀찮은 일이지만, 로아가 탄생한 곳이 알고리즘 메이커 동아리방인 만큼 놓칠 수는 없다.",click
 ,Text,,나름 열심히 적은 신청서를 들고 동아리 업무를 하는 동아리연합회 행정실 문을 열었다.,click
 # 행정실
-,BG,,StudentCenter/BG_StudentCenter_Office_Day,await
+,BG,,StudentCenter/BG_StudentCenter_Office_Day:Fade:1.0,await
 ,Text,{{PlayerName}},동아리 연장 하러 왔는데요.,click
 ,Text,직원,"네, 신청서 주세요.",click
 ,Text,{{PlayerName}},여기요.,click
@@ -404,7 +402,7 @@ DEMO_student_center,FX,,Setup:BG=StudentCenter/BG_StudentCenter_Front_Day|BGM=Da
 ,Text,{{PlayerName}},"아, 아니… 죄송합니다.",click
 ,Text,,어리둥절해 보이는 직원의 표정에 한숨을 푹 내쉬었다.,click
 # 학생회관 밖
-,BG,,StudentCenter/BG_StudentCenter_Front_Day,await
+,BG,,StudentCenter/BG_StudentCenter_Front_Day:Fade:1.0,await
 ,Text,,다시 돌려받은 신청서를 가지고 학생회관을 나섰다.,click
 ,Text,,4명이나 모아 올 자신이 없는데.\n이제서야 과 생활을 열심히 하지 않은 게 후회된다.,click
 ,Text,,한 명도 아니고 5명을 어떻게 모으냐고!\n그것도 2주 안에!,click
@@ -555,7 +553,9 @@ DEMO_yeun_cg,FX,,Setup:BG=StudentCenter/BG_StudentCenter_Front_Day|BGM=Yeun|Char
 ,Overlay,,FadeOut:0.3,>  # [로아 Overlay 종료 8/9]
 # ═══ 편의점 - 희원 첫만남 ═══
 # [DEMO 점프용 초기화]
+,FX,,FadeOut:1.0,await
 DEMO_heewon_first,FX,,Setup:BG=StudentCenter/BG_StudentCenter_Front_Night|BGM=Heewon,>
+,FX,,FadeIn:1.0,await
 ,Text,,학기 초라 그런지 늦은 시간인데도 제법 사람 많은 거리를 지나 편의점에 도착했다.,click
 ,Text,,"늘 먹는 음료수가 진열된 냉장고 앞에 섰는데, 남은 게 3개밖에 없다.",click
 ,Text,,잠시 고민하다가 3개를 전부 집어들었다.\n자주 먹는 거라 냉장고에 넣어둘 생각이었다.,click
@@ -716,8 +716,10 @@ bom_walk,Text,,내 말에 얼굴이 순식간에 환해진다.,click
 ,Text,,"그냥 한 말일 것이긴 하겠지만, 홍보지를 어떻게 만드는 게 좋을지 생각을 다시 하기는 해야겠다.",click
 ,Text,,알고리즘 메이커의 동방으로 가기 위해 계단으로 걸음을 옮기며 핸드폰을 들었다.,click
 # [로아 Overlay 시작 9/9]
-DEMO_prologue_end,Flow,,End,>
-,FX,,Setup:BG=StudentCenter/BG_StudentCenter_Board_Day|BGM=Roa|Overlay=Roa_Theme|Char=Roa,>
+,Sound,,BGM:Roa,>
+,Overlay,,Roa_Theme:FadeIn:0.5,await
+,Char,,C:Enter:Roa,await
+DEMO_prologue_end,FX,,Setup:BG=StudentCenter/BG_StudentCenter_Board_Day|BGM=Roa|Overlay=Roa_Theme|Char=Roa,>
 ,Text,로아,{{PlayerName}}! 홍보지는 붙였어?,click
 ,Text,{{PlayerName}},"아니, 아직. 다른 동아리들 홍보지가 너무 화려해서.",click
 ,Text,로아,내가 만들어 줄까? 나 그런 거 생성 잘 하잖아!,click
@@ -729,4 +731,5 @@ DEMO_prologue_end,Flow,,End,>
 ,Text,로아,"빨리 와. 보고 싶어, {{PlayerName}}!",click
 ,Char,,C:Exit,await
 ,Overlay,,FadeOut:0.3,>  # [로아 Overlay 종료 9/9]
+,Flow,,End,>
 # ═══ 프롤로그 END ═══

@@ -246,6 +246,7 @@ namespace LoveAlgo.Core
 
         /// <summary>
         /// 프롤로그 종료 (ScriptRunner OnScriptEnd에서 호출)
+        /// 현재 컨텐츠 종료 지점이므로 저장 팝업 후 타이틀 복귀
         /// </summary>
         void OnPrologueEnd()
         {
@@ -255,9 +256,8 @@ namespace LoveAlgo.Core
                 runner.OnScriptEnd -= OnPrologueEnd;
             }
 
-            // 자동저장 후 DayLoop 진입
-            AutoSave();
-            ChangePhase(GamePhase.DayLoop);
+            // 페이드아웃 → 저장 팝업 → 타이틀 복귀
+            OnContentEnd();
         }
 
         /// <summary>

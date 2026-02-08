@@ -31,7 +31,7 @@ namespace LoveAlgo.Story
         [SerializeField] RectTransform imageContainer;  // 이미지들의 부모 (스케일/오프셋 적용용)
 
         [Header("설정")]
-        [SerializeField] float fadeDuration = 0.7f;
+        [SerializeField] float fadeDuration = 1.0f;
         [SerializeField] float exitDuration = 0.4f;
         [SerializeField] float emoteFadeDuration = 0.2f;
         [SerializeField] float enterOffset = 100f;       // 등장 시 슬라이드 거리
