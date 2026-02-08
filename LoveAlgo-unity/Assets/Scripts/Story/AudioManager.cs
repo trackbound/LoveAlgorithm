@@ -31,7 +31,7 @@ namespace LoveAlgo.Story
         [SerializeField] AudioSettings audioSettings;
 
         [Header("설정")]
-        [SerializeField] float defaultFadeDuration = 1f;
+        [SerializeField] float defaultFadeDuration = 3f;
 
         string currentBGM;
         string currentCharacterBGM;
@@ -67,6 +67,9 @@ namespace LoveAlgo.Story
         {
             if (bgmSource == null)
                 Debug.LogWarning("[AudioManager] bgmSource가 바인딩되지 않았습니다.");
+            else
+                bgmSource.loop = true;  // BGM은 항상 무한반복
+
             if (sfxSource == null)
                 Debug.LogWarning("[AudioManager] sfxSource가 바인딩되지 않았습니다.");
             if (voiceSource == null)
@@ -126,7 +129,7 @@ namespace LoveAlgo.Story
             }
 
             // BGM:Name or BGM:Name:Fade:1.0
-            float crossfadeDuration = 0f;
+            float crossfadeDuration = -1f;  // -1 = 기본 페이드 (3초)
             if (parts.Length >= 4 && parts[2] == "Fade" && float.TryParse(parts[3], out float cfd))
             {
                 crossfadeDuration = cfd;
@@ -135,7 +138,7 @@ namespace LoveAlgo.Story
             await PlayBGMAsync(name, crossfadeDuration, ct);
         }
 
-        public async UniTask PlayBGMAsync(string name, float fadeDuration = 0f, CancellationToken ct = default)
+        public async UniTask PlayBGMAsync(string name, float fadeDuration = -1f, CancellationToken ct = default)
         {
             if (currentBGM == name) return;
 
@@ -147,16 +150,30 @@ namespace LoveAlgo.Story
                 return;
             }
 
+            // -1이면 기본 페이드 (3초)
+            if (fadeDuration < 0) fadeDuration = defaultFadeDuration;
+
             currentBGM = name;
+            bgmSource.loop = true;
+
+            float targetVolume = 1f;
 
             if (fadeDuration > 0 && bgmSource.isPlaying)
             {
                 // 크로스페이드: 현재 곡 페이드아웃 후 새 곡 페이드인
-                float originalVolume = bgmSource.volume;
-                await bgmSource.DOFade(0f, fadeDuration / 2f).ToUniTask(cancellationToken: ct);
+                targetVolume = bgmSource.volume;
+                await bgmSource.DOFade(0f, fadeDuration).ToUniTask(cancellationToken: ct);
                 bgmSource.clip = clip;
                 bgmSource.Play();
-                await bgmSource.DOFade(originalVolume, fadeDuration / 2f).ToUniTask(cancellationToken: ct);
+                await bgmSource.DOFade(targetVolume, fadeDuration).ToUniTask(cancellationToken: ct);
+            }
+            else if (fadeDuration > 0)
+            {
+                // 새로 시작: 페이드인만
+                bgmSource.volume = 0f;
+                bgmSource.clip = clip;
+                bgmSource.Play();
+                await bgmSource.DOFade(targetVolume, fadeDuration).ToUniTask(cancellationToken: ct);
             }
             else
             {
@@ -165,9 +182,12 @@ namespace LoveAlgo.Story
             }
         }
 
-        public async UniTask StopBGMAsync(float fadeDuration = 0f, CancellationToken ct = default)
+        public async UniTask StopBGMAsync(float fadeDuration = -1f, CancellationToken ct = default)
         {
             if (!bgmSource.isPlaying) return;
+
+            // -1이면 기본 페이드 (3초)
+            if (fadeDuration < 0) fadeDuration = defaultFadeDuration;
 
             currentBGM = null;
             float originalVolume = bgmSource.volume;
@@ -184,7 +204,39 @@ namespace LoveAlgo.Story
         public void StopBGMImmediate()
         {
             bgmSource.Stop();
+            bgmSource.volume = 1f;
             currentBGM = null;
+        }
+
+        /// <summary>
+        /// 앱 포커스 잃음/복귀 시 BGM 일시정지/재개
+        /// </summary>
+        void OnApplicationFocus(bool hasFocus)
+        {
+            if (bgmSource == null) return;
+
+            if (!hasFocus)
+            {
+                bgmSource.Pause();
+            }
+            else if (bgmSource.clip != null && !bgmSource.isPlaying)
+            {
+                bgmSource.UnPause();
+            }
+        }
+
+        void OnApplicationPause(bool pauseStatus)
+        {
+            if (bgmSource == null) return;
+
+            if (pauseStatus)
+            {
+                bgmSource.Pause();
+            }
+            else if (bgmSource.clip != null && !bgmSource.isPlaying)
+            {
+                bgmSource.UnPause();
+            }
         }
 
         #endregion
@@ -280,20 +332,26 @@ namespace LoveAlgo.Story
         /// <summary>
         /// AudioClip으로 직접 BGM 재생 (페이드 지원)
         /// </summary>
-        public async UniTask PlayBGMClipAsync(AudioClip clip, float fadeDuration = 0f, CancellationToken ct = default)
+        public async UniTask PlayBGMClipAsync(AudioClip clip, float fadeDuration = -1f, CancellationToken ct = default)
         {
             if (clip == null) return;
             if (bgmSource.clip == clip && bgmSource.isPlaying) return;
 
+            // -1이면 기본 페이드 (3초)
+            if (fadeDuration < 0) fadeDuration = defaultFadeDuration;
+
             currentBGM = clip.name;
+            bgmSource.loop = true;
+
+            float targetVolume = 1f;
 
             if (fadeDuration > 0 && bgmSource.isPlaying)
             {
-                float originalVolume = bgmSource.volume;
+                targetVolume = bgmSource.volume;
                 await bgmSource.DOFade(0f, fadeDuration).ToUniTask(cancellationToken: ct);
                 bgmSource.clip = clip;
                 bgmSource.Play();
-                await bgmSource.DOFade(originalVolume, fadeDuration).ToUniTask(cancellationToken: ct);
+                await bgmSource.DOFade(targetVolume, fadeDuration).ToUniTask(cancellationToken: ct);
             }
             else if (fadeDuration > 0)
             {
@@ -301,7 +359,6 @@ namespace LoveAlgo.Story
                 bgmSource.volume = 0f;
                 bgmSource.clip = clip;
                 bgmSource.Play();
-                float targetVolume = 1f; // 또는 설정된 볼륨
                 await bgmSource.DOFade(targetVolume, fadeDuration).ToUniTask(cancellationToken: ct);
             }
             else

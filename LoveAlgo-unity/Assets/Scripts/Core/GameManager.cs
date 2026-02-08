@@ -3,6 +3,7 @@ using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using LoveAlgo.Story;
 using LoveAlgo.UI;
+using LoveAlgo.Schedule;
 
 namespace LoveAlgo.Core
 {
@@ -58,10 +59,10 @@ namespace LoveAlgo.Core
 
             Debug.Log($"[GameManager] Phase: {prevPhase} → {newPhase}");
 
-            // 타이틀에서 나갈 때 BGM 페이드아웃
+            // 타이틀에서 나갈 때 BGM 페이드아웃 (기본 3초)
             if (prevPhase == GamePhase.Title && newPhase != GamePhase.Title)
             {
-                AudioManager.Instance?.StopBGMAsync(1f).Forget();
+                AudioManager.Instance?.StopBGMAsync().Forget();
             }
 
             switch (newPhase)
@@ -114,6 +115,10 @@ namespace LoveAlgo.Core
         {
             // 스케줄 UI 표시
             UIManager.Instance?.ShowOnly(MainUIType.Schedule);
+
+            // ScheduleUI에 콜백 연결
+            var scheduleUI = UIManager.Instance?.ScheduleUI;
+            scheduleUI?.ShowAsync(OnScheduleSelected).Forget();
         }
 
         void EnterEnding()
@@ -131,6 +136,9 @@ namespace LoveAlgo.Core
         /// </summary>
         public void GoToTitle()
         {
+            // Stop 전에 자동저장 (스크립트 위치 보존)
+            AutoSave();
+            ScriptRunner.Instance?.Stop();
             ChangePhase(GamePhase.Title);
         }
 
@@ -139,9 +147,13 @@ namespace LoveAlgo.Core
         /// </summary>
         public void StartNewGame()
         {
-            // 이전 BGM 정리
-            Story.AudioManager.Instance?.StopBGMImmediate();
-            
+            // 이전 BGM 정리 (페이드아웃)
+            Story.AudioManager.Instance?.StopBGMAsync().Forget();
+            ScriptRunner.Instance?.Stop();
+
+            // 게임 상태 초기화
+            GameState.Instance?.ResetAll();
+
             PlayerName = "";
             CurrentDay = 1;
             RemainingActions = 3;
@@ -182,7 +194,29 @@ namespace LoveAlgo.Core
         }
 
         /// <summary>
-        /// 스케줄 수행 완료 (ScheduleUI에서 호출)
+        /// 스케줄 선택 완료 → 스탯 적용 → 행동 소모
+        /// </summary>
+        void OnScheduleSelected(ScheduleType type)
+        {
+            var effect = ScheduleTable.Get(type);
+            var gs = GameState.Instance;
+
+            if (gs != null)
+            {
+                gs.AddStat("Str", effect.strengthChange);
+                gs.AddStat("Int", effect.intelligenceChange);
+                gs.AddStat("Soc", effect.socialChange);
+                gs.AddStat("Per", effect.perseveranceChange);
+                gs.AddStat("Fatigue", effect.fatigueChange);
+                gs.AddMoney(effect.moneyChange);
+            }
+
+            Debug.Log($"[GameManager] 스케줄 완료: {effect.displayName}");
+            OnScheduleCompleted();
+        }
+
+        /// <summary>
+        /// 스케줄 수행 완료 (행동 소모 처리)
         /// </summary>
         public void OnScheduleCompleted()
         {
@@ -194,8 +228,10 @@ namespace LoveAlgo.Core
             }
             else
             {
-                // 스케줄 UI 유지
+                // 스케줄 UI 다시 표시 (ScheduleUI.OnScheduleClick에서 HideAsync 호출됨)
                 UIManager.Instance?.ShowOnly(MainUIType.Schedule);
+                var scheduleUI = UIManager.Instance?.ScheduleUI;
+                scheduleUI?.ShowAsync(OnScheduleSelected).Forget();
             }
         }
 
@@ -219,14 +255,23 @@ namespace LoveAlgo.Core
         /// </summary>
         public void ContinueGame()
         {
-            var data = SaveManager.Load(SaveManager.AutoSaveSlot);
-            if (data == null)
+            // 자동저장 우선
+            if (SaveManager.Exists(SaveManager.AutoSaveSlot))
             {
-                Debug.LogWarning("[GameManager] 자동저장 없음");
+                LoadGame(SaveManager.AutoSaveSlot);
                 return;
             }
 
-            LoadFromSaveData(data);
+            // 자동저장 없으면 최근 수동 저장 찾기
+            var saves = SaveManager.GetAllUserSaves();
+            if (saves.Count > 0)
+            {
+                saves.Sort((a, b) => b.data.SaveTime.CompareTo(a.data.SaveTime));
+                LoadGame(saves[0].slot);
+                return;
+            }
+
+            Debug.LogWarning("[GameManager] 세이브 데이터 없음");
         }
 
         /// <summary>
@@ -241,14 +286,15 @@ namespace LoveAlgo.Core
                 return;
             }
 
-            LoadFromSaveData(data);
+            LoadFromSaveData(data).Forget();
         }
 
-        void LoadFromSaveData(SaveData data)
+        async UniTaskVoid LoadFromSaveData(SaveData data)
         {
-            // 이전 BGM 정리
-            Story.AudioManager.Instance?.StopBGMImmediate();
-            
+            // 이전 BGM 정리 (페이드아웃)
+            Story.AudioManager.Instance?.StopBGMAsync().Forget();
+            ScriptRunner.Instance?.Stop();
+
             PlayerName = data.PlayerName;
             CurrentDay = data.CurrentDay;
             RemainingActions = data.RemainingActions;
@@ -256,14 +302,30 @@ namespace LoveAlgo.Core
             // GameState 전체 복원 (스탯, 호감도, 플래그, 돈 등)
             SaveManager.ApplyToGameState(data);
 
-            // TODO: 스크립트 위치 복원
-            // if (!string.IsNullOrEmpty(data.ScriptName))
-            // {
-            //     await ScriptRunner.Instance?.StartScript(data.ScriptName);
-            //     // JumpToIndex 메서드 필요
-            // }
+            // 스크립트 위치 복원 (스토리 실행 중이었던 경우)
+            if (!string.IsNullOrEmpty(data.ScriptName) &&
+                (data.Phase == GamePhase.Prologue || data.Phase == GamePhase.DayLoop))
+            {
+                UIManager.Instance?.ShowOnly(MainUIType.Dialogue);
 
-            // Phase로 복귀
+                var runner = ScriptRunner.Instance;
+                if (runner != null)
+                {
+                    // 프롤로그면 종료 이벤트 연결
+                    if (data.Phase == GamePhase.Prologue)
+                    {
+                        runner.OnScriptEnd -= OnPrologueEnd;
+                        runner.OnScriptEnd += OnPrologueEnd;
+                    }
+
+                    await runner.StartScriptFrom(data.ScriptName, data.LineId, data.LineIndex);
+                }
+
+                CurrentPhase = data.Phase;
+                return;
+            }
+
+            // 스크립트가 없으면 Phase로 복귀
             ChangePhase(data.Phase);
         }
 
@@ -285,11 +347,18 @@ namespace LoveAlgo.Core
         /// </summary>
         public void Save(int slot)
         {
-            // 스크립트 위치 정보
+            // 스크립트 위치 정보 (실행 중일 때만 저장)
             var runner = ScriptRunner.Instance;
-            string scriptName = runner?.CurrentScriptName ?? "";
-            string lineId = runner?.CurrentLine?.LineID ?? "";
-            int lineIndex = runner?.CurrentIndex ?? 0;
+            string scriptName = "";
+            string lineId = "";
+            int lineIndex = 0;
+
+            if (runner != null && runner.IsRunning)
+            {
+                scriptName = runner.CurrentScriptName ?? "";
+                lineId = runner.CurrentLine?.LineID ?? "";
+                lineIndex = runner.CurrentIndex;
+            }
 
             SaveManager.Save(
                 slot,

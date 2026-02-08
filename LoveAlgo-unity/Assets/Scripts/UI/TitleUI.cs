@@ -41,11 +41,18 @@ namespace LoveAlgo.UI
             PlayTitleBGM();
         }
 
+        void OnEnable()
+        {
+            // 타이틀로 돌아올 때 Continue 버튼 상태 갱신
+            UpdateContinueButton();
+            PlayTitleBGM();
+        }
+
         void PlayTitleBGM()
         {
             if (!string.IsNullOrEmpty(titleBGM))
             {
-                AudioManager.Instance?.PlayBGMAsync(titleBGM).Forget();
+                AudioManager.Instance?.PlayBGMAsync(titleBGM).Forget();  // 기본 3초 페이드인
             }
         }
 

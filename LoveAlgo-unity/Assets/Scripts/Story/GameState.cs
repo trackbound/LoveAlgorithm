@@ -148,6 +148,13 @@ namespace LoveAlgo.Story
         {
             if (string.IsNullOrEmpty(condition)) return true;
 
+            // 언더스코어 형식 정규화: Love_Roa>5 → Love:Roa>5
+            if (condition.StartsWith("Love_") || condition.StartsWith("Stat_"))
+            {
+                int idx = condition.IndexOf('_');
+                condition = condition.Substring(0, idx) + ":" + condition.Substring(idx + 1);
+            }
+
             // 부정 플래그: !Flag:Name
             if (condition.StartsWith("!Flag:"))
             {

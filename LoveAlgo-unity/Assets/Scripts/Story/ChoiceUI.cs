@@ -170,6 +170,7 @@ namespace LoveAlgo.Story
             switch (type)
             {
                 case "Love":
+                case "AddLove":    // Command 별칭
                     // Love:Character:Value
                     if (parts.Length >= 3 && int.TryParse(parts[2], out int loveValue))
                     {
@@ -178,6 +179,7 @@ namespace LoveAlgo.Story
                     break;
 
                 case "Stat":
+                case "AddStat":    // Command 별칭
                     // Stat:StatName:Value
                     if (parts.Length >= 3 && int.TryParse(parts[2], out int statValue))
                     {
@@ -186,6 +188,7 @@ namespace LoveAlgo.Story
                     break;
 
                 case "Flag":
+                case "Set":        // Command 별칭
                     // Flag:Name:true/false
                     if (parts.Length >= 3)
                     {
@@ -200,6 +203,7 @@ namespace LoveAlgo.Story
                     break;
 
                 case "Money":
+                case "AddMoney":   // Command 별칭
                     // Money:Value
                     if (int.TryParse(parts[1], out int moneyValue))
                     {

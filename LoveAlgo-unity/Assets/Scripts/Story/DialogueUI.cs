@@ -150,6 +150,8 @@ namespace LoveAlgo.Story
                         {
                             if (skipRequested) { CompleteText(); break; }
                             dialogueText.text += c;
+                            // 줄바꿈·공백은 사운드/딜레이 생략
+                            if (c == '\n' || c == '\r') continue;
                             PlayTypingSound();
                             await UniTask.Delay(TimeSpan.FromSeconds(currentSpeed), cancellationToken: ct);
                         }

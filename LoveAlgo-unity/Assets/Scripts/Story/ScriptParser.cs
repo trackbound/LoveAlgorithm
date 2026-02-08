@@ -88,6 +88,9 @@ namespace LoveAlgo.Story
             string value = columns[3].Trim();
             string nextStr = columns.Length >= 5 ? columns[4].Trim() : "";
 
+            // 리터럴 \n을 실제 줄바꿈으로 치환 (타이핑 효과에서 \가 잠깐 보이는 버그 방지)
+            value = value.Replace("\\n", "\n");
+
             // Type 파싱
             if (!TryParseType(typeStr, out LineType type))
             {

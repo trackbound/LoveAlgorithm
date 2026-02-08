@@ -83,6 +83,7 @@ namespace LoveAlgo.Story
             lines = ScriptParser.Parse(asset);
             lineIndex = ScriptParser.BuildLineIndex(lines);
             currentIndex = 0;
+            currentScriptName = asset.name;  // 스크립트명 저장 (세이브용)
         }
 
         /// <summary>
@@ -109,6 +110,54 @@ namespace LoveAlgo.Story
             currentScriptName = scriptName;  // 스크립트명 저장 (세이브용)
             LoadScript(asset);
             Run();
+            // 완료될 때까지 대기
+            await UniTask.WaitUntil(() => !isRunning);
+        }
+
+        /// <summary>
+        /// 스크립트 로드 후 특정 위치부터 실행 (로드용)
+        /// LineId 우선, 없으면 인덱스 사용
+        /// </summary>
+        public async UniTask StartScriptFrom(string scriptName, string lineId, int lineIdx)
+        {
+            var asset = Resources.Load<TextAsset>($"Story/{scriptName}");
+            if (asset == null)
+            {
+                Debug.LogError($"[ScriptRunner] 스크립트 '{scriptName}' 없음 (Resources/Story/{scriptName})");
+                return;
+            }
+
+            currentScriptName = scriptName;
+            LoadScript(asset);
+
+            // LineId가 있으면 LineId로 점프
+            if (!string.IsNullOrEmpty(lineId) && lineIndex.TryGetValue(lineId, out int idx))
+            {
+                Stop();
+                currentIndex = idx;
+                cts = new CancellationTokenSource();
+                isRunning = true;
+                RunAsync(cts.Token).Forget();
+            }
+            else if (lineIdx > 0 && lineIdx < lines.Count)
+            {
+                Stop();
+                currentIndex = lineIdx;
+                cts = new CancellationTokenSource();
+                isRunning = true;
+                RunAsync(cts.Token).Forget();
+            }
+            else if (lineIdx >= lines.Count)
+            {
+                // 스크립트 끝까지 진행된 상태 → 실행하지 않음
+                Debug.Log($"[ScriptRunner] StartScriptFrom: 스크립트 이미 완료 (index={lineIdx}, total={lines.Count})");
+                isRunning = false;
+            }
+            else
+            {
+                Run();
+            }
+
             // 완료될 때까지 대기
             await UniTask.WaitUntil(() => !isRunning);
         }
@@ -566,8 +615,8 @@ namespace LoveAlgo.Story
             switch (command)
             {
                 case "FadeOut":
-                    // FadeOut 시 대사창 숨기기
-                    dialogueUI?.Hide();
+                    // FadeOut 후 대사창 숨기기 (즉시 Hide하면 깜박임 발생)
+                    // → 페이드 완료 후 숨김
                     break;
                     
                 case "DialogueHide":
@@ -590,6 +639,12 @@ namespace LoveAlgo.Story
             else
             {
                 Debug.Log($"[FX] {line.Value}");
+            }
+
+            // FadeOut 완료 후 대사창 숨김 (화면이 완전히 덮인 후)
+            if (command == "FadeOut")
+            {
+                dialogueUI?.Hide();
             }
         }
 
@@ -730,6 +785,9 @@ namespace LoveAlgo.Story
                     }
                 }
             }
+
+            // Auto 모드 복원
+            autoMode = wasAutoMode;
         }
 
         /// <summary>
