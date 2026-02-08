@@ -56,6 +56,7 @@ namespace LoveAlgo.Story
                 // DontDestroyOnLoad(gameObject);  // 데모: 단일 씬
                 ValidateAudioSources();
                 LoadCharacterVoiceVolumes();
+                LoadMixerVolumes();
                 
                 if (audioSettings == null)
                 {
@@ -523,19 +524,27 @@ namespace LoveAlgo.Story
 
         #region 캐릭터별 음성 볼륨
 
+        /// <summary>
+        /// PlayerPrefs에서 BGM/SFX 볼륨 복원 (게임 시작 시 호출)
+        /// </summary>
+        void LoadMixerVolumes()
+        {
+            SetBGMVolume(PlayerPrefs.GetFloat("BGMVolume", 0.4f));
+            SetSFXVolume(PlayerPrefs.GetFloat("SFXVolume", 0.4f));
+        }
+
         void LoadCharacterVoiceVolumes()
         {
             string[] characters = { "Yeun", "Daeun", "Bom", "Heewon", "Roa" };
             foreach (var c in characters)
             {
-                characterVoiceVolumes[c] = PlayerPrefs.GetFloat($"Voice_{c}", 1f);
+                characterVoiceVolumes[c] = PlayerPrefs.GetFloat($"Voice_{c}", 0.4f);
             }
         }
 
         public void SetCharacterVoiceVolume(string character, float volume)
         {
             characterVoiceVolumes[character] = Mathf.Clamp01(volume);
-            PlayerPrefs.SetFloat($"Voice_{character}", volume);
         }
 
         public float GetCharacterVoiceVolume(string character)

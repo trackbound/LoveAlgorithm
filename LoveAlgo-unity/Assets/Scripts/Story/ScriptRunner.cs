@@ -68,7 +68,7 @@ namespace LoveAlgo.Story
             Instance = this;
 
             // 저장된 Auto 속도 복원
-            float savedAutoSpeed = PlayerPrefs.GetFloat("AutoSpeed", 0.5f);
+            float savedAutoSpeed = PlayerPrefs.GetFloat("AutoSpeed", 0.4f);
             SetAutoDelay(savedAutoSpeed);
             
             if (scriptAsset != null)

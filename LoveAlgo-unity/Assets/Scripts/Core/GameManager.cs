@@ -52,11 +52,32 @@ namespace LoveAlgo.Core
             DOTween.Init(recycleAllByDefault: true, useSafeMode: true, logBehaviour: LogBehaviour.ErrorsOnly);
             DOTween.SetTweensCapacity(tweenersCapacity, sequencesCapacity);
             Debug.Log($"[GameManager] DOTween initialized: Tweeners={tweenersCapacity}, Sequences={sequencesCapacity}");
+
+            // 저장된 해상도/전체화면 설정 복원
+            RestoreResolution();
         }
 
         void Start()
         {
             ChangePhase(GamePhase.Title);
+        }
+
+        /// <summary>
+        /// PlayerPrefs에서 해상도/전체화면 설정 복원
+        /// </summary>
+        void RestoreResolution()
+        {
+            int resIdx = PlayerPrefs.GetInt("ResolutionIndex", -1);
+            if (resIdx < 0) return;  // 저장된 설정 없으면 Unity 기본값 사용
+
+            bool fullscreen = PlayerPrefs.GetInt("Fullscreen", 1) == 1;
+            var resolutions = new (int w, int h)[] {
+                (800, 450), (960, 540), (1280, 720), (1440, 810), (1920, 1080)
+            };
+            resIdx = Mathf.Clamp(resIdx, 0, resolutions.Length - 1);
+            var res = resolutions[resIdx];
+            Screen.SetResolution(res.w, res.h, fullscreen ? FullScreenMode.FullScreenWindow : FullScreenMode.Windowed);
+            Debug.Log($"[GameManager] 해상도 복원: {res.w}x{res.h}, 전체화면: {fullscreen}");
         }
 
         /// <summary>

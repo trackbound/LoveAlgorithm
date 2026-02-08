@@ -68,8 +68,15 @@ namespace LoveAlgo.UI
         // 변경사항 추적
         bool isDirty;               // 해상도 제외(볼륨/속도/캐릭터 음성 등)
         bool isResolutionDirty;     // 해상도/전체화면 변경 여부
-        float savedBgmVolume, savedSfxVolume;
-        float savedTextSpeed, savedAutoSpeed;
+
+        // ── 열기 시점 스냅샷 (되돌리기용) ──
+        struct SettingsSnapshot
+        {
+            public float bgmVolume, sfxVolume;
+            public float voiceYeun, voiceDaeun, voiceBom, voiceHeewon, voiceRoa;
+            public float textSpeed, autoSpeed;
+        }
+        SettingsSnapshot snapshot;
 
         protected override void Awake()
         {
@@ -127,7 +134,9 @@ namespace LoveAlgo.UI
         public override void Show()
         {
             LoadSettings();
-            isDirty = false;  // 로드 직후 dirty 초기화
+            TakeSnapshot();
+            isDirty = false;
+            isResolutionDirty = false;
             base.Show();
         }
 
@@ -173,7 +182,7 @@ namespace LoveAlgo.UI
             PlayerPrefs.SetFloat("BGMVolume", bgmSlider?.value ?? 0.4f);
             PlayerPrefs.SetFloat("SFXVolume", sfxSlider?.value ?? 0.4f);
 
-            // 캐릭터별 음성
+            // 캐릭터별 음성 (런타임 딕셔너리 + PlayerPrefs 동기화)
             PlayerPrefs.SetFloat("Voice_Yeun", voiceYeunSlider?.value ?? 0.4f);
             PlayerPrefs.SetFloat("Voice_Daeun", voiceDaeunSlider?.value ?? 0.4f);
             PlayerPrefs.SetFloat("Voice_Bom", voiceBomSlider?.value ?? 0.4f);
@@ -389,18 +398,43 @@ namespace LoveAlgo.UI
         }
 
         /// <summary>
-        /// 변경 전 값으로 복원
+        /// 현재 저장값(PlayerPrefs) 기준 스냅샷 저장
+        /// </summary>
+        void TakeSnapshot()
+        {
+            snapshot = new SettingsSnapshot
+            {
+                bgmVolume   = PlayerPrefs.GetFloat("BGMVolume", 0.4f),
+                sfxVolume   = PlayerPrefs.GetFloat("SFXVolume", 0.4f),
+                voiceYeun   = PlayerPrefs.GetFloat("Voice_Yeun", 0.4f),
+                voiceDaeun  = PlayerPrefs.GetFloat("Voice_Daeun", 0.4f),
+                voiceBom    = PlayerPrefs.GetFloat("Voice_Bom", 0.4f),
+                voiceHeewon = PlayerPrefs.GetFloat("Voice_Heewon", 0.4f),
+                voiceRoa    = PlayerPrefs.GetFloat("Voice_Roa", 0.4f),
+                textSpeed   = PlayerPrefs.GetFloat("TextSpeed", 0.4f),
+                autoSpeed   = PlayerPrefs.GetFloat("AutoSpeed", 0.4f),
+            };
+        }
+
+        /// <summary>
+        /// 스냅샷 값으로 모든 런타임 설정 복원 (저장 안 하고 닫기 시)
         /// </summary>
         void RevertSettings()
         {
-            LoadSettings();
-            
             // 볼륨 복원
-            AudioManager.Instance?.SetBGMVolume(bgmSlider?.value ?? 0.4f);
-            AudioManager.Instance?.SetSFXVolume(sfxSlider?.value ?? 0.4f);
+            AudioManager.Instance?.SetBGMVolume(snapshot.bgmVolume);
+            AudioManager.Instance?.SetSFXVolume(snapshot.sfxVolume);
 
-            // NOTE: 해상도(실제 화면)는 ApplyResolutionButton_Click에서만 즉시 변경됩니다.
-            // RevertSettings는 UI 값을 저장된 값으로 복원합니다.
+            // 캐릭터 음성 복원
+            AudioManager.Instance?.SetCharacterVoiceVolume("Yeun", snapshot.voiceYeun);
+            AudioManager.Instance?.SetCharacterVoiceVolume("Daeun", snapshot.voiceDaeun);
+            AudioManager.Instance?.SetCharacterVoiceVolume("Bom", snapshot.voiceBom);
+            AudioManager.Instance?.SetCharacterVoiceVolume("Heewon", snapshot.voiceHeewon);
+            AudioManager.Instance?.SetCharacterVoiceVolume("Roa", snapshot.voiceRoa);
+
+            // 속도 복원
+            UIManager.Instance?.DialogueUI?.SetTextSpeed(snapshot.textSpeed);
+            ScriptRunner.Instance?.SetAutoDelay(snapshot.autoSpeed);
         }
 
         #endregion
