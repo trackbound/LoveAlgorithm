@@ -7,8 +7,9 @@ namespace LoveAlgo.UI
 {
     /// <summary>
     /// 확장 호버 버튼
-    /// - SpriteSwap + ColorTint 동시 지원
-    /// - 자식 오브젝트 Active 토글 방식 지원
+    /// - SpriteSwap: 같은 Image의 sprite 교체
+    /// - ChildSwap: 자식 오브젝트 Active 토글 (텍스트 색상 변경 등)
+    /// - ColorTint 방식은 DOTween 복귀 버그로 제거됨
     /// </summary>
     [RequireComponent(typeof(Button))]
     public class HoverButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerDownHandler, IPointerUpHandler
@@ -35,14 +36,6 @@ namespace LoveAlgo.UI
         [SerializeField] GameObject hoverChild;
         [SerializeField] GameObject pressedChild;
 
-        [Header("ColorTint 설정 (항상 적용)")]
-        [SerializeField] bool useColorTint = true;
-        [SerializeField] Graphic colorTarget;
-        [SerializeField] Color normalColor = Color.white;
-        [SerializeField] Color hoverColor = new Color(0.96f, 0.96f, 0.96f, 1f);
-        [SerializeField] Color pressedColor = new Color(0.85f, 0.85f, 0.85f, 1f);
-        [SerializeField] float colorFadeDuration = 0.1f;
-
         [Header("스케일 효과 (선택)")]
         [SerializeField] bool useScaleEffect = false;
         [SerializeField] float hoverScale = 1.05f;
@@ -54,23 +47,16 @@ namespace LoveAlgo.UI
         bool isPressed;
         Vector3 originalScale;
         Tween currentScaleTween;
-        Tween currentColorTween;
 
         void Awake()
         {
             button = GetComponent<Button>();
-
-            // Button 내장 ColorTint가 커스텀 호버 효과와 충돌 방지
-            if (button.transition == Selectable.Transition.ColorTint)
-                button.transition = Selectable.Transition.None;
 
             originalScale = transform.localScale;
 
             // 자동 바인딩
             if (targetImage == null)
                 targetImage = GetComponent<Image>();
-            if (colorTarget == null)
-                colorTarget = targetImage;
             if (normalSprite == null && targetImage != null)
                 normalSprite = targetImage.sprite;
 
@@ -92,7 +78,6 @@ namespace LoveAlgo.UI
             isPressed = false;
             
             // 즉시 normal 상태 적용 (애니메이션 없이)
-            currentColorTween?.Kill();
             currentScaleTween?.Kill();
             
             ApplyNormalImmediate();
@@ -116,12 +101,6 @@ namespace LoveAlgo.UI
                 if (normalChild != null) normalChild.SetActive(true);
                 if (hoverChild != null) hoverChild.SetActive(false);
                 if (pressedChild != null) pressedChild.SetActive(false);
-            }
-
-            // ColorTint - 즉시 적용
-            if (useColorTint && colorTarget != null)
-            {
-                colorTarget.color = normalColor;
             }
 
             // Scale - 즉시 적용
@@ -191,12 +170,6 @@ namespace LoveAlgo.UI
                 if (pressedChild != null) pressedChild.SetActive(false);
             }
 
-            // ColorTint
-            if (useColorTint)
-            {
-                TweenColor(normalColor);
-            }
-
             // Scale
             if (useScaleEffect)
             {
@@ -219,12 +192,6 @@ namespace LoveAlgo.UI
                 if (normalChild != null) normalChild.SetActive(false);
                 if (hoverChild != null) hoverChild.SetActive(true);
                 if (pressedChild != null) pressedChild.SetActive(false);
-            }
-
-            // ColorTint
-            if (useColorTint)
-            {
-                TweenColor(hoverColor);
             }
 
             // Scale
@@ -262,32 +229,10 @@ namespace LoveAlgo.UI
                 }
             }
 
-            // ColorTint
-            if (useColorTint)
-            {
-                TweenColor(pressedColor);
-            }
-
             // Scale
             if (useScaleEffect)
             {
                 TweenScale(originalScale * pressedScale);
-            }
-        }
-
-        void TweenColor(Color targetColor)
-        {
-            if (colorTarget == null) return;
-
-            currentColorTween?.Kill();
-
-            if (colorFadeDuration > 0)
-            {
-                currentColorTween = colorTarget.DOColor(targetColor, colorFadeDuration);
-            }
-            else
-            {
-                colorTarget.color = targetColor;
             }
         }
 
