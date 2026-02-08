@@ -13,13 +13,6 @@ namespace LoveAlgo.UI
     /// </summary>
     public class SettingsPopup : ModalPopupBase
     {
-        [Header("애니메이션")]
-        [SerializeField] RectTransform panelRect;
-        [SerializeField] CanvasGroup canvasGroup;
-        [SerializeField] float showDuration = 0.3f;
-        [SerializeField] float hideDuration = 0.2f;
-        [SerializeField] float slideOffset = 300f;
-
         [Header("화면 설정")]
         [SerializeField] Button fullscreenButton;
         [SerializeField] Button windowedButton;
@@ -74,10 +67,9 @@ namespace LoveAlgo.UI
         float savedBgmVolume, savedSfxVolume;
         float savedTextSpeed, savedAutoSpeed;
 
-        protected void Awake()
+        protected override void Awake()
         {
-            if (panelRect != null)
-                originalPosition = panelRect.anchoredPosition;
+            base.Awake();
 
             SetupButtons();
             SetupSliders();
@@ -126,54 +118,19 @@ namespace LoveAlgo.UI
             isResolutionDirty = true;
         }
 
-        #region Show/Hide (슬라이드 애니메이션)
+        #region Show/Hide
 
         public override void Show()
         {
             LoadSettings();
             isDirty = false;  // 로드 직후 dirty 초기화
-            gameObject.SetActive(true);
-            PlayShowAnimation().Forget();
+            base.Show();
         }
 
         public override void Hide()
         {
             SaveSettings();
-            PlayHideAnimation().Forget();
-        }
-
-        async UniTaskVoid PlayShowAnimation()
-        {
-            if (panelRect == null || canvasGroup == null)
-            {
-                base.Show();
-                return;
-            }
-
-            canvasGroup.alpha = 0f;
-            panelRect.anchoredPosition = originalPosition + new Vector2(slideOffset, 0);
-
-            await DOTween.Sequence()
-                .Append(canvasGroup.DOFade(1f, showDuration))
-                .Join(panelRect.DOAnchorPos(originalPosition, showDuration).SetEase(Ease.OutQuad))
-                .AsyncWaitForCompletion();
-        }
-
-        async UniTaskVoid PlayHideAnimation()
-        {
-            if (panelRect == null || canvasGroup == null)
-            {
-                base.Hide();
-                return;
-            }
-
-            // 슬라이드 먼저 시작, 페이드는 후반부에만
-            await DOTween.Sequence()
-                .Append(panelRect.DOAnchorPos(originalPosition + new Vector2(slideOffset, 0), hideDuration).SetEase(Ease.InQuad))
-                .Insert(hideDuration * 0.6f, canvasGroup.DOFade(0f, hideDuration * 0.4f))
-                .AsyncWaitForCompletion();
-
-            gameObject.SetActive(false);
+            base.Hide();
         }
 
         #endregion
