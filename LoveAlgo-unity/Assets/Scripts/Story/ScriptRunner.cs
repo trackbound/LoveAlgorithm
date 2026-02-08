@@ -611,6 +611,7 @@ namespace LoveAlgo.Story
 
                 var character = StageManager.Instance?.Character;
                 var screenFX = Core.ScreenFX.Instance;
+                var dialogueUI = UIManager.Instance?.DialogueUI;
 
                 // 전환 파라미터 파싱 (BackgroundLayer.ExecuteAsync와 동일 로직)
                 float duration = 2.0f;  // BackgroundLayer defaultDuration
@@ -618,7 +619,9 @@ namespace LoveAlgo.Story
                     duration = d;
                 float halfDuration = duration * 0.5f;
 
-                // 1) FadeOut
+                // 1) 대사창 숨김 + FadeOut
+                dialogueUI?.HideImmediate();
+
                 if (screenFX != null)
                     await screenFX.FadeOutAsync(halfDuration, ct);
 
@@ -631,7 +634,7 @@ namespace LoveAlgo.Story
                     await background.ChangeBackgroundAsync(bgName, BGTransition.Cut, 0f, ct);
                 }
 
-                // 3) FadeIn
+                // 3) FadeIn (대사창은 다음 Text 줄에서 자동 표시)
                 if (screenFX != null)
                     await screenFX.FadeInAsync(halfDuration, ct);
 
