@@ -85,6 +85,11 @@ namespace LoveAlgo.Core
             EnsureBindings();
         }
 
+        void OnDestroy()
+        {
+            KillEyeSequence();
+        }
+
         void EnsureBindings()
         {
             if (stageCanvas == null) return;
@@ -175,10 +180,11 @@ namespace LoveAlgo.Core
                     break;
 
                 case "EyeBlink":
-                    // 눈 깜빡임: EyeBlink[:closeDuration:openDuration]
+                    // 눈 깜빡임: EyeBlink[:closeDuration:openDuration[:holdTime]]
                     float blinkClose = parts.Length > 1 && float.TryParse(parts[1], out float bc) ? bc : 0.1f;
                     float blinkOpen = parts.Length > 2 && float.TryParse(parts[2], out float bo) ? bo : 0.15f;
-                    await EyeBlinkAsync(blinkClose, blinkOpen, ct);
+                    float blinkHold = parts.Length > 3 && float.TryParse(parts[3], out float bh) ? bh : 0.05f;
+                    await EyeBlinkAsync(blinkClose, blinkOpen, blinkHold, ct);
                     break;
 
                 case "CharShake":
@@ -390,104 +396,137 @@ namespace LoveAlgo.Core
 
         #region Eye Open/Close (눈 뜨기/감기 효과)
 
+        // Eye 바 캐싱
+        RectTransform rtEyeTop;
+        RectTransform rtEyeBottom;
+        float eyeHalfHeight;
+        bool eyeInitialized;
+        Sequence eyeSequence;
+
         /// <summary>
-        /// Eye 바 설정 헬퍼
-        /// eyeTop: 앵커 상단 중앙, pivot 하단 (0.5, 0) → anchoredPosition.y = 0이면 상단에 붙음
-        /// eyeBottom: 앵커 하단 중앙, pivot 상단 (0.5, 1) → anchoredPosition.y = 0이면 하단에 붙음
+        /// Eye 바 초기화 (최초 1회)
         /// </summary>
-        void SetupEyeBars(out RectTransform rtTop, out RectTransform rtBottom, out float screenHeight)
+        void EnsureEyeSetup()
         {
-            rtTop = eyeTop.rectTransform;
-            rtBottom = eyeBottom.rectTransform;
-            
-            // 부모(캔버스) 크기
-            var parentRect = (RectTransform)rtTop.parent;
-            screenHeight = parentRect.rect.height;
+            if (eyeInitialized) return;
+            if (eyeTop == null || eyeBottom == null) return;
+
+            rtEyeTop = eyeTop.rectTransform;
+            rtEyeBottom = eyeBottom.rectTransform;
+
+            var parentRect = (RectTransform)rtEyeTop.parent;
+            float screenHeight = parentRect.rect.height;
             float screenWidth = parentRect.rect.width;
-            float halfHeight = screenHeight / 2f;
-            
-            // eyeTop: 화면 상단 중앙에 앵커, pivot은 하단
-            rtTop.anchorMin = new Vector2(0.5f, 1f);
-            rtTop.anchorMax = new Vector2(0.5f, 1f);
-            rtTop.pivot = new Vector2(0.5f, 0f);  // 하단 중심
-            rtTop.sizeDelta = new Vector2(screenWidth + 100f, halfHeight + 50f);
-            
-            // eyeBottom: 화면 하단 중앙에 앵커, pivot은 상단
-            rtBottom.anchorMin = new Vector2(0.5f, 0f);
-            rtBottom.anchorMax = new Vector2(0.5f, 0f);
-            rtBottom.pivot = new Vector2(0.5f, 1f);  // 상단 중심
-            rtBottom.sizeDelta = new Vector2(screenWidth + 100f, halfHeight + 50f);
+            eyeHalfHeight = screenHeight / 2f;
+
+            // eyeTop: 상단 앵커, pivot 하단
+            rtEyeTop.anchorMin = new Vector2(0.5f, 1f);
+            rtEyeTop.anchorMax = new Vector2(0.5f, 1f);
+            rtEyeTop.pivot = new Vector2(0.5f, 0f);
+            rtEyeTop.sizeDelta = new Vector2(screenWidth + 100f, eyeHalfHeight + 50f);
+
+            // eyeBottom: 하단 앵커, pivot 상단
+            rtEyeBottom.anchorMin = new Vector2(0.5f, 0f);
+            rtEyeBottom.anchorMax = new Vector2(0.5f, 0f);
+            rtEyeBottom.pivot = new Vector2(0.5f, 1f);
+            rtEyeBottom.sizeDelta = new Vector2(screenWidth + 100f, eyeHalfHeight + 50f);
+
+            eyeInitialized = true;
         }
 
         /// <summary>
-        /// 눈 뜨는 효과 (위아래 검은 바가 위아래로 열림)
+        /// 진행 중인 Eye 트윈 정리
+        /// </summary>
+        void KillEyeSequence()
+        {
+            if (eyeSequence != null && eyeSequence.IsActive())
+            {
+                eyeSequence.Kill();
+            }
+            eyeSequence = null;
+        }
+
+        /// <summary>
+        /// 눈 뜨는 효과 — 2단계: 살짝 틈 → 확 열림
+        /// EyeOpen[:totalDuration]
+        /// Phase 1 (30%): 살짝 열림 — 눈부심으로 멈칫 (OutSine)
+        /// Phase 2 (70%): 부드럽게 완전히 열림 (OutCubic)
         /// </summary>
         public async UniTask EyeOpenAsync(float duration = 1f, CancellationToken ct = default)
         {
             if (eyeTop == null || eyeBottom == null)
             {
-                Debug.LogWarning("[ScreenFX] Eye 바인딩이 없습니다. eyeTop/eyeBottom을 설정하세요.");
+                Debug.LogWarning("[ScreenFX] Eye 바인딩이 없습니다.");
                 await FadeInAsync(duration, ct);
                 return;
             }
 
-            SetupEyeBars(out var rtTop, out var rtBottom, out float screenHeight);
-            float halfHeight = screenHeight / 2f;
-            float barHeight = rtTop.sizeDelta.y;
+            EnsureEyeSetup();
+            KillEyeSequence();
 
-            // 시작 위치: 눈 감은 상태 (바가 화면 중앙까지 내려옴)
-            // eyeTop의 pivot이 하단이므로, anchoredPosition.y = -halfHeight면 바의 하단이 화면 중앙
-            rtTop.anchoredPosition = new Vector2(0, -halfHeight);
-            rtBottom.anchoredPosition = new Vector2(0, halfHeight);
-
+            // 시작: 눈 감은 상태
+            rtEyeTop.anchoredPosition = new Vector2(0, -eyeHalfHeight);
+            rtEyeBottom.anchoredPosition = new Vector2(0, eyeHalfHeight);
             eyeTop.gameObject.SetActive(true);
             eyeBottom.gameObject.SetActive(true);
 
-            // 끝 위치: 화면 밖 (바가 완전히 숨겨짐)
-            // eyeTop: y = 0 이면 바가 화면 위로 숨김
-            // eyeBottom: y = 0 이면 바가 화면 아래로 숨김
-            await DOTween.Sequence()
-                .Join(rtTop.DOAnchorPosY(0, duration).SetEase(Ease.OutQuad))
-                .Join(rtBottom.DOAnchorPosY(0, duration).SetEase(Ease.OutQuad))
-                .ToUniTask(cancellationToken: ct);
+            float peekRatio = 0.15f;  // 살짝 열리는 양 (15%)
+            float peekY = eyeHalfHeight * (1f - peekRatio);
+            float phase1 = duration * 0.3f;
+            float phase2 = duration * 0.7f;
+
+            eyeSequence = DOTween.Sequence()
+                // Phase 1: 살짝 열림 (눈부심 멈칫)
+                .Append(rtEyeTop.DOAnchorPosY(-peekY, phase1).SetEase(Ease.OutSine))
+                .Join(rtEyeBottom.DOAnchorPosY(peekY, phase1).SetEase(Ease.OutSine))
+                // Phase 2: 완전히 열림
+                .Append(rtEyeTop.DOAnchorPosY(0, phase2).SetEase(Ease.OutCubic))
+                .Join(rtEyeBottom.DOAnchorPosY(0, phase2).SetEase(Ease.OutCubic));
+
+            await eyeSequence.ToUniTask(cancellationToken: ct);
 
             eyeTop.gameObject.SetActive(false);
             eyeBottom.gameObject.SetActive(false);
+            eyeSequence = null;
         }
 
         /// <summary>
-        /// 눈 감는 효과 (위아래 검은 바가 중앙으로 닫힘)
+        /// 눈 감는 효과 — 서서히 → 끝에서 가속 (눈꺼풀 무게감)
+        /// EyeClose[:duration]
         /// </summary>
         public async UniTask EyeCloseAsync(float duration = 1f, CancellationToken ct = default)
         {
             if (eyeTop == null || eyeBottom == null)
             {
-                Debug.LogWarning("[ScreenFX] Eye 바인딩이 없습니다. eyeTop/eyeBottom을 설정하세요.");
+                Debug.LogWarning("[ScreenFX] Eye 바인딩이 없습니다.");
                 await FadeOutAsync(duration, ct);
                 return;
             }
 
-            SetupEyeBars(out var rtTop, out var rtBottom, out float screenHeight);
-            float halfHeight = screenHeight / 2f;
+            EnsureEyeSetup();
+            KillEyeSequence();
 
-            // 시작 위치: 화면 밖 (숨겨진 상태)
-            rtTop.anchoredPosition = new Vector2(0, 0);
-            rtBottom.anchoredPosition = new Vector2(0, 0);
-
+            // 시작: 눈 뜬 상태
+            rtEyeTop.anchoredPosition = new Vector2(0, 0);
+            rtEyeBottom.anchoredPosition = new Vector2(0, 0);
             eyeTop.gameObject.SetActive(true);
             eyeBottom.gameObject.SetActive(true);
 
-            // 끝 위치: 눈 감은 상태 (화면 중앙에서 만남)
-            await DOTween.Sequence()
-                .Join(rtTop.DOAnchorPosY(-halfHeight, duration).SetEase(Ease.InQuad))
-                .Join(rtBottom.DOAnchorPosY(halfHeight, duration).SetEase(Ease.InQuad))
-                .ToUniTask(cancellationToken: ct);
+            eyeSequence = DOTween.Sequence()
+                .Append(rtEyeTop.DOAnchorPosY(-eyeHalfHeight, duration).SetEase(Ease.InCubic))
+                .Join(rtEyeBottom.DOAnchorPosY(eyeHalfHeight, duration).SetEase(Ease.InCubic));
+
+            await eyeSequence.ToUniTask(cancellationToken: ct);
+            eyeSequence = null;
         }
 
         /// <summary>
-        /// 눈 깜빡임 효과 (빠르게 닫았다 열기)
+        /// 눈 깜빡임 — 닫기 → 잠깐 유지(hold) → 열기
+        /// EyeBlink[:closeDuration:openDuration[:holdTime]]
+        /// hold가 없으면 기본 0.05초 (자연스러운 멈춤)
         /// </summary>
-        public async UniTask EyeBlinkAsync(float closeDuration = 0.1f, float openDuration = 0.15f, CancellationToken ct = default)
+        public async UniTask EyeBlinkAsync(float closeDuration = 0.1f, float openDuration = 0.15f,
+            float holdTime = 0.05f, CancellationToken ct = default)
         {
             if (eyeTop == null || eyeBottom == null)
             {
@@ -496,29 +535,30 @@ namespace LoveAlgo.Core
                 return;
             }
 
-            SetupEyeBars(out var rtTop, out var rtBottom, out float screenHeight);
-            float halfHeight = screenHeight / 2f;
+            EnsureEyeSetup();
+            KillEyeSequence();
 
-            // 시작: 눈 뜬 상태 (화면 밖)
-            rtTop.anchoredPosition = new Vector2(0, 0);
-            rtBottom.anchoredPosition = new Vector2(0, 0);
+            // 시작: 눈 뜬 상태
+            rtEyeTop.anchoredPosition = new Vector2(0, 0);
+            rtEyeBottom.anchoredPosition = new Vector2(0, 0);
             eyeTop.gameObject.SetActive(true);
             eyeBottom.gameObject.SetActive(true);
 
-            // 닫기
-            await DOTween.Sequence()
-                .Join(rtTop.DOAnchorPosY(-halfHeight, closeDuration).SetEase(Ease.InQuad))
-                .Join(rtBottom.DOAnchorPosY(halfHeight, closeDuration).SetEase(Ease.InQuad))
-                .ToUniTask(cancellationToken: ct);
+            eyeSequence = DOTween.Sequence()
+                // 닫기 (빠르게, 가속)
+                .Append(rtEyeTop.DOAnchorPosY(-eyeHalfHeight, closeDuration).SetEase(Ease.InQuad))
+                .Join(rtEyeBottom.DOAnchorPosY(eyeHalfHeight, closeDuration).SetEase(Ease.InQuad))
+                // 닫힌 상태 유지
+                .AppendInterval(holdTime)
+                // 열기 (부드럽게, 감속)
+                .Append(rtEyeTop.DOAnchorPosY(0, openDuration).SetEase(Ease.OutCubic))
+                .Join(rtEyeBottom.DOAnchorPosY(0, openDuration).SetEase(Ease.OutCubic));
 
-            // 열기
-            await DOTween.Sequence()
-                .Join(rtTop.DOAnchorPosY(0, openDuration).SetEase(Ease.OutQuad))
-                .Join(rtBottom.DOAnchorPosY(0, openDuration).SetEase(Ease.OutQuad))
-                .ToUniTask(cancellationToken: ct);
+            await eyeSequence.ToUniTask(cancellationToken: ct);
 
             eyeTop.gameObject.SetActive(false);
             eyeBottom.gameObject.SetActive(false);
+            eyeSequence = null;
         }
 
         /// <summary>
@@ -528,11 +568,11 @@ namespace LoveAlgo.Core
         {
             if (eyeTop == null || eyeBottom == null) return;
 
-            SetupEyeBars(out var rtTop, out var rtBottom, out float screenHeight);
-            float halfHeight = screenHeight / 2f;
+            EnsureEyeSetup();
+            KillEyeSequence();
 
-            rtTop.anchoredPosition = new Vector2(0, -halfHeight);
-            rtBottom.anchoredPosition = new Vector2(0, halfHeight);
+            rtEyeTop.anchoredPosition = new Vector2(0, -eyeHalfHeight);
+            rtEyeBottom.anchoredPosition = new Vector2(0, eyeHalfHeight);
 
             eyeTop.gameObject.SetActive(true);
             eyeBottom.gameObject.SetActive(true);
@@ -543,6 +583,7 @@ namespace LoveAlgo.Core
         /// </summary>
         public void EyeOpenImmediate()
         {
+            KillEyeSequence();
             if (eyeTop != null) eyeTop.gameObject.SetActive(false);
             if (eyeBottom != null) eyeBottom.gameObject.SetActive(false);
         }
