@@ -587,7 +587,7 @@ namespace LoveAlgo.Story
         async UniTask ExecuteOverlayAsync(ScriptLine line, CancellationToken ct)
         {
             // 오버레이 레이어 제어
-            var overlay = StageManager.Instance?.Overlay;
+            var overlay = StageManager.Instance?.VirtualBG;
             if (overlay != null)
             {
                 await overlay.ExecuteAsync(line.Value, ct);

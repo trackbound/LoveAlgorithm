@@ -159,7 +159,7 @@ namespace LoveAlgo.Tester
             if (stage != null)
             {
                 stage.Character?.ClearAll();
-                stage.Overlay?.HideImmediate();
+                stage.VirtualBG?.HideImmediate();
             }
             
             // 5. 스크립트 로드 및 실행

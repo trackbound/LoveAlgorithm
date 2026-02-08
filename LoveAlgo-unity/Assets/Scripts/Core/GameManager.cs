@@ -398,7 +398,7 @@ namespace LoveAlgo.Core
         {
             StageManager.Instance?.Character?.ClearAll();
             StageManager.Instance?.Background?.Clear();
-            StageManager.Instance?.Overlay?.HideImmediate();
+            StageManager.Instance?.VirtualBG?.HideImmediate();
             StageManager.Instance?.CG?.Clear();
             ScreenFX.Instance?.SetClear();
         }

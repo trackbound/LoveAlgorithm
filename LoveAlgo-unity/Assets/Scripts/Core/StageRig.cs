@@ -13,14 +13,14 @@ namespace LoveAlgo.Core
 
         [Header("레이어 바인딩")]
         [SerializeField] BackgroundLayer backgroundLayer;
-        [SerializeField] OverlayLayer overlayLayer;
+        [SerializeField] VirtualBGOverlay virtualBGOverlay;
         [SerializeField] CharacterLayer characterLayer;
         [SerializeField] CGLayer cgLayer;
         [SerializeField] ScreenFX screenFX;
 
         public Canvas StageCanvas => stageCanvas;
         public BackgroundLayer Background => backgroundLayer;
-        public OverlayLayer Overlay => overlayLayer;
+        public VirtualBGOverlay VirtualBG => virtualBGOverlay;
         public CharacterLayer Character => characterLayer;
         public CGLayer CG => cgLayer;
         public ScreenFX ScreenFX => screenFX;
@@ -43,9 +43,9 @@ namespace LoveAlgo.Core
             {
                 backgroundLayer = GetComponentInChildren<BackgroundLayer>(true);
             }
-            if (overlayLayer == null)
+            if (virtualBGOverlay == null)
             {
-                overlayLayer = GetComponentInChildren<OverlayLayer>(true);
+                virtualBGOverlay = GetComponentInChildren<VirtualBGOverlay>(true);
             }
             if (characterLayer == null)
             {

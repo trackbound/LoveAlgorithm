@@ -16,7 +16,7 @@ namespace LoveAlgo.Core
 
         // 외부 접근용 프로퍼티 - StageRig를 통해 접근
         public BackgroundLayer Background => stageRig?.Background;
-        public OverlayLayer Overlay => stageRig?.Overlay;
+        public VirtualBGOverlay VirtualBG => stageRig?.VirtualBG;
         public CharacterLayer Character => stageRig?.Character;
         public CGLayer CG => stageRig?.CG;
 

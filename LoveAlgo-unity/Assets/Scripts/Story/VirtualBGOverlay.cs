@@ -7,10 +7,10 @@ using DG.Tweening;
 namespace LoveAlgo.Story
 {
     /// <summary>
-    /// 오버레이 레이어 - 배경 위에 옅은 보조 배경 표시
-    /// 캐릭터별 테마 배경 등에 사용
+    /// 가상 배경 오버레이 - 배경 위에 옅은 보조 배경 표시
+    /// 로아의 가상공간 등 캐릭터별 테마 배경에 사용
     /// </summary>
-    public class OverlayLayer : MonoBehaviour
+    public class VirtualBGOverlay : MonoBehaviour
     {
         [Header("바인딩")]
         [SerializeField] Image overlayImage;
@@ -118,7 +118,7 @@ namespace LoveAlgo.Story
             var sprite = LoadSprite(overlayName);
             if (sprite == null)
             {
-                Debug.LogWarning($"[OverlayLayer] 스프라이트 없음: {overlayName}");
+                Debug.LogWarning($"[VirtualBGOverlay] 스프라이트 없음: {overlayName}");
                 return;
             }
 
