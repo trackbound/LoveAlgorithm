@@ -680,6 +680,14 @@ namespace LoveAlgo.Story
             var command = parts[0];
             var dialogueUI = UIManager.Instance?.DialogueUI;
             
+            // 매크로 명령 (여러 서브시스템을 한번에 실행)
+            switch (command)
+            {
+                case "DayEnd":
+                    await ExecuteMacroDayEndAsync(parts, ct);
+                    return;
+            }
+
             // 대사창 제어 명령
             switch (command)
             {
@@ -716,6 +724,59 @@ namespace LoveAlgo.Story
                 dialogueUI?.HideImmediate();
             }
         }
+
+        #region Macros
+
+        /// <summary>
+        /// 매크로: 하루 마무리 연출
+        /// CSV에서 FX,,DayEnd[:페이드시간],await 로 호출
+        /// 기본 시퀀스:
+        ///   1. 캐릭터 퇴장
+        ///   2. 오버레이 종료 (0.3초 페이드)
+        ///   3. 대사창 페이드아웃
+        ///   4. 화면 암전 (기본 1초)
+        ///   5. 배경 → 블랙
+        ///   6. BGM 정지
+        /// </summary>
+        async UniTask ExecuteMacroDayEndAsync(string[] parts, CancellationToken ct)
+        {
+            float fadeDuration = parts.Length > 1 && float.TryParse(parts[1], out float fd) ? fd : 1f;
+            Debug.Log($"[ScriptRunner] 매크로: DayEnd (fade={fadeDuration}s)");
+
+            var dialogueUI = UIManager.Instance?.DialogueUI;
+            var fx = Core.ScreenFX.Instance;
+
+            // 1. 캐릭터 퇴장 (완료 대기)
+            await ExecuteCharAsync(
+                new ScriptLine("", LineType.Char, "", "C:Exit", NextType.Await), ct);
+
+            // 2. 오버레이 종료 (0.3초, 화면 암전과 병렬)
+            var overlayTask = ExecuteOverlayAsync(
+                new ScriptLine("", LineType.Overlay, "", "FadeOut:0.3", NextType.Immediate), ct);
+
+            // 3. 대사창 페이드아웃
+            dialogueUI?.Hide();
+
+            // 4. 화면 암전 (오버레이와 병렬 진행)
+            UniTask fadeTask = fx != null
+                ? fx.ExecuteAsync($"FadeOut:{fadeDuration}", ct)
+                : UniTask.CompletedTask;
+
+            await UniTask.WhenAll(overlayTask, fadeTask);
+
+            // 대사창 완전히 숨김 (화면이 덮인 후)
+            dialogueUI?.HideImmediate();
+
+            // 5. 배경 → 블랙 (암전 뒤에서 교체)
+            await ExecuteBGAsync(
+                new ScriptLine("", LineType.BG, "", "Black", NextType.Immediate), ct);
+
+            // 6. BGM 정지
+            await ExecuteSoundAsync(
+                new ScriptLine("", LineType.Sound, "", "BGM:Stop", NextType.Immediate), ct);
+        }
+
+        #endregion
 
         async UniTask<bool> ExecuteFlowAsync(ScriptLine line, CancellationToken ct)
         {
