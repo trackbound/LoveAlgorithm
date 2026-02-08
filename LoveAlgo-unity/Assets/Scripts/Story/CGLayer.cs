@@ -93,6 +93,9 @@ namespace LoveAlgo.Story
             currentCG = cgName;
             isShowing = true;
 
+            // GameObject 활성화 (비활성 상태일 수 있음)
+            gameObject.SetActive(true);
+
             // 이미지 설정
             cgImage.sprite = sprite;
             cgImage.enabled = true;
@@ -137,6 +140,7 @@ namespace LoveAlgo.Story
             cgImage.sprite = null;
             currentCG = null;
             isShowing = false;
+            gameObject.SetActive(false);
 
             Debug.Log("[CGLayer] CG 숨김");
         }
@@ -157,6 +161,7 @@ namespace LoveAlgo.Story
             }
             currentCG = null;
             isShowing = false;
+            gameObject.SetActive(false);
         }
 
         /// <summary>
