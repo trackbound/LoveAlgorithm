@@ -5,64 +5,98 @@ using UnityEngine.UI;
 namespace LoveAlgo.UI
 {
     /// <summary>
-    /// UI Canvas 위에서 벚꽃잎이 회전하며 흩날리는 파티클 이펙트
-    /// RectTransform 기반으로 동작하여 UI 레이어 순서 제어 가능
+    /// UI Canvas 위에서 벚꽃잎이 바람에 하늘하늘 흩날리는 파티클 이펙트.
+    /// - 3D 뒤집힘을 scaleX/scaleY 오실레이션으로 시뮬레이션
+    /// - 2중 사인파 + 글로벌 윈드로 자연스러운 궤적
+    /// - 낙하 속도 변속(공기저항 느낌)
     /// </summary>
     public class PetalParticleUI : MonoBehaviour
     {
         [Header("꽃잎 설정")]
         [SerializeField] Sprite petalSprite;
-        [SerializeField] int maxPetals = 25;
-        [SerializeField] float spawnInterval = 0.4f;
+        [SerializeField] int maxPetals = 30;
+        [SerializeField] float spawnInterval = 0.35f;
 
         [Header("크기")]
-        [SerializeField] float minSize = 20f;
-        [SerializeField] float maxSize = 45f;
+        [SerializeField] float minSize = 18f;
+        [SerializeField] float maxSize = 40f;
 
-        [Header("속도")]
-        [SerializeField] float minFallSpeed = 30f;
-        [SerializeField] float maxFallSpeed = 80f;
-        [SerializeField] float minHorizontalSpeed = -25f;
-        [SerializeField] float maxHorizontalSpeed = 15f;
+        [Header("낙하")]
+        [SerializeField] float minFallSpeed = 18f;
+        [SerializeField] float maxFallSpeed = 55f;
 
-        [Header("흔들림 (사인파)")]
-        [SerializeField] float minSwayAmplitude = 15f;
-        [SerializeField] float maxSwayAmplitude = 40f;
-        [SerializeField] float minSwayFrequency = 0.5f;
-        [SerializeField] float maxSwayFrequency = 1.5f;
+        [Header("바람")]
+        [Tooltip("글로벌 바람 — 모든 꽃잎에 영향")]
+        [SerializeField] float windBaseX = 12f;          // 기본 횡방향(+ = 오른쪽)
+        [SerializeField] float windGustStrength = 30f;   // 돌풍 강도
+        [SerializeField] float windGustSpeed = 0.25f;    // 돌풍 주기 (Hz)
+        [SerializeField] float windVertGust = 8f;        // 수직 돌풍 (위로 솟구침)
 
-        [Header("회전")]
-        [SerializeField] float minRotateSpeed = 30f;
-        [SerializeField] float maxRotateSpeed = 120f;
+        [Header("개별 흔들림 (2중 사인파)")]
+        [SerializeField] float minSwayAmp1 = 20f;
+        [SerializeField] float maxSwayAmp1 = 50f;
+        [SerializeField] float minSwayFreq1 = 0.3f;
+        [SerializeField] float maxSwayFreq1 = 0.8f;
+        [SerializeField] float minSwayAmp2 = 8f;
+        [SerializeField] float maxSwayAmp2 = 20f;
+        [SerializeField] float minSwayFreq2 = 1.2f;
+        [SerializeField] float maxSwayFreq2 = 2.5f;
+
+        [Header("3D 회전 시뮬레이션")]
+        [Tooltip("ScaleX/Y를 사인파로 줄였다 늘려 뒤집히는 듯한 효과")]
+        [SerializeField] float minFlipSpeed = 0.4f;
+        [SerializeField] float maxFlipSpeed = 1.2f;
+        [SerializeField] float flipMinScale = 0.15f;     // 최소 scale (0이면 완전 옆면)
+        [SerializeField] float minTiltSpeed = 0.3f;
+        [SerializeField] float maxTiltSpeed = 0.9f;
+
+        [Header("Z 회전 (느린 기울기 변화)")]
+        [SerializeField] float minZRotSpeed = 8f;
+        [SerializeField] float maxZRotSpeed = 35f;
 
         [Header("투명도")]
         [SerializeField] float startAlpha = 0f;
-        [SerializeField] float peakAlpha = 0.7f;
-        [SerializeField] float fadeInRatio = 0.1f;   // 전체 수명 중 fade-in 비율
-        [SerializeField] float fadeOutRatio = 0.2f;  // 전체 수명 중 fade-out 비율
+        [SerializeField] float peakAlpha = 0.75f;
+        [SerializeField] float fadeInRatio = 0.12f;
+        [SerializeField] float fadeOutRatio = 0.25f;
 
-        [Header("스폰 영역 (RectTransform 기준)")]
-        [SerializeField] float spawnMarginTop = 50f;     // 상단 위로 얼마나 더 올릴지
-        [SerializeField] float spawnMarginSide = 100f;   // 좌우로 얼마나 넓힐지
+        [Header("스폰 영역")]
+        [SerializeField] float spawnMarginTop = 60f;
+        [SerializeField] float spawnMarginSide = 120f;
 
         RectTransform rectTransform;
-        List<Petal> activePetals = new List<Petal>();
+        readonly List<Petal> activePetals = new List<Petal>();
         float spawnTimer;
         int petalIndex;
+        float globalTime;  // 글로벌 바람 시간
 
         class Petal
         {
             public RectTransform rect;
             public Image image;
+
+            // 낙하
             public float fallSpeed;
-            public float horizontalSpeed;
-            public float swayAmplitude;
-            public float swayFrequency;
-            public float swayPhase;
-            public float rotateSpeed;
-            public float baseX;
-            public float lifetime;
-            public float maxLifetime;
+            public float fallAccel;       // 미세 가감속
+
+            // 흔들림 — 2중 사인파
+            public float swayAmp1, swayFreq1, swayPhase1;
+            public float swayAmp2, swayFreq2, swayPhase2;
+
+            // 3D 뒤집힘
+            public float flipSpeed, flipPhase;      // scaleX 오실레이션
+            public float tiltSpeed, tiltPhase;      // scaleY 오실레이션
+
+            // Z 회전 (느린)
+            public float zRotSpeed;
+
+            // 위치 추적
+            public float posX, posY;
+            public float baseX;       // 스폰 X (drift 기준)
+            public float driftSpeed;  // 개별 횡이동
+
+            // 수명
+            public float lifetime, maxLifetime;
             public float alpha;
             public float size;
         }
@@ -79,11 +113,10 @@ namespace LoveAlgo.UI
 
         void OnDisable()
         {
-            // 비활성화 시 모든 꽃잎 정리
-            foreach (var petal in activePetals)
+            foreach (var p in activePetals)
             {
-                if (petal.rect != null)
-                    Destroy(petal.rect.gameObject);
+                if (p.rect != null)
+                    Destroy(p.rect.gameObject);
             }
             activePetals.Clear();
         }
@@ -91,8 +124,15 @@ namespace LoveAlgo.UI
         void Update()
         {
             float dt = Time.deltaTime;
+            globalTime += dt;
 
-            // 스폰
+            // ── 글로벌 바람 ──
+            float windX = windBaseX
+                + windGustStrength * Mathf.Sin(globalTime * windGustSpeed * Mathf.PI * 2f)
+                + windGustStrength * 0.4f * Mathf.Sin(globalTime * windGustSpeed * 1.73f * Mathf.PI * 2f);
+            float windY = windVertGust * Mathf.Sin(globalTime * windGustSpeed * 0.7f * Mathf.PI * 2f);
+
+            // ── 스폰 ──
             spawnTimer += dt;
             if (spawnTimer >= spawnInterval && activePetals.Count < maxPetals)
             {
@@ -100,46 +140,60 @@ namespace LoveAlgo.UI
                 SpawnPetal();
             }
 
-            // 업데이트
+            // ── 꽃잎 업데이트 ──
             Rect area = rectTransform.rect;
-            float bottomY = area.yMin - 50f;
+            float bottomY = area.yMin - 80f;
 
             for (int i = activePetals.Count - 1; i >= 0; i--)
             {
                 var p = activePetals[i];
                 p.lifetime += dt;
 
-                // 이동
-                float sway = p.swayAmplitude * Mathf.Sin(p.swayFrequency * p.lifetime * Mathf.PI * 2f + p.swayPhase);
-                float x = p.baseX + sway + p.horizontalSpeed * p.lifetime;
-                float y = p.rect.anchoredPosition.y - p.fallSpeed * dt;
-                p.rect.anchoredPosition = new Vector2(x, y);
+                // 낙하 — 미세 가감속으로 공기 저항 느낌
+                float currentFall = p.fallSpeed + p.fallAccel * Mathf.Sin(p.lifetime * 0.7f);
+                // 수직 돌풍: 바람이 불면 살짝 떠오르기도
+                float vertOffset = windY * (0.6f + 0.4f * Mathf.Sin(p.lifetime * 1.3f + p.swayPhase1));
+                p.posY -= (currentFall - Mathf.Max(0f, vertOffset)) * dt;
 
-                // 회전
-                float rot = p.rect.localEulerAngles.z + p.rotateSpeed * dt;
-                p.rect.localEulerAngles = new Vector3(0, 0, rot);
+                // 횡이동: 글로벌 바람 + 개별 drift + 2중 사인파 흔들림
+                float sway1 = p.swayAmp1 * Mathf.Sin(p.swayFreq1 * p.lifetime * Mathf.PI * 2f + p.swayPhase1);
+                float sway2 = p.swayAmp2 * Mathf.Sin(p.swayFreq2 * p.lifetime * Mathf.PI * 2f + p.swayPhase2);
+                float xOffset = sway1 + sway2;
 
-                // 알파 (fade-in → 유지 → fade-out)
+                p.posX = p.baseX + xOffset + (windX + p.driftSpeed) * p.lifetime;
+
+                p.rect.anchoredPosition = new Vector2(p.posX, p.posY);
+
+                // ── 3D 회전 시뮬레이션 ──
+                // scaleX: 사인파로 줄였다 늘림 → 좌우 뒤집히는 효과
+                float flipT = Mathf.Sin(p.flipSpeed * p.lifetime * Mathf.PI * 2f + p.flipPhase);
+                float scaleX = Mathf.Lerp(flipMinScale, 1f, (flipT + 1f) * 0.5f);
+
+                // scaleY: 다른 주기로 위아래 압축 → 앞뒤 기울어지는 효과
+                float tiltT = Mathf.Sin(p.tiltSpeed * p.lifetime * Mathf.PI * 2f + p.tiltPhase);
+                float scaleY = Mathf.Lerp(flipMinScale + 0.2f, 1f, (tiltT + 1f) * 0.5f);
+
+                p.rect.localScale = new Vector3(scaleX, scaleY, 1f);
+
+                // Z 회전: 느리게 기울기가 변하는 정도
+                float rot = p.rect.localEulerAngles.z + p.zRotSpeed * dt;
+                p.rect.localEulerAngles = new Vector3(0f, 0f, rot);
+
+                // ── 알파 ──
                 float lifeRatio = p.lifetime / p.maxLifetime;
                 if (lifeRatio < fadeInRatio)
-                {
                     p.alpha = Mathf.Lerp(startAlpha, peakAlpha, lifeRatio / fadeInRatio);
-                }
                 else if (lifeRatio > (1f - fadeOutRatio))
-                {
                     p.alpha = Mathf.Lerp(peakAlpha, 0f, (lifeRatio - (1f - fadeOutRatio)) / fadeOutRatio);
-                }
                 else
-                {
                     p.alpha = peakAlpha;
-                }
 
                 var c = p.image.color;
                 c.a = p.alpha;
                 p.image.color = c;
 
-                // 화면 밖이거나 수명 초과 시 제거
-                if (y < bottomY || p.lifetime > p.maxLifetime)
+                // 제거
+                if (p.posY < bottomY || p.lifetime > p.maxLifetime)
                 {
                     Destroy(p.rect.gameObject);
                     activePetals.RemoveAt(i);
@@ -151,46 +205,61 @@ namespace LoveAlgo.UI
         {
             Rect area = rectTransform.rect;
 
-            // 꽃잎 GameObject 생성
-            var go = new GameObject($"Petal_{petalIndex++}", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+            var go = new GameObject($"Petal_{petalIndex++}",
+                typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
             go.transform.SetParent(transform, false);
 
             var rt = go.GetComponent<RectTransform>();
             var img = go.GetComponent<Image>();
 
-            // 스프라이트 설정
             img.sprite = petalSprite;
             img.raycastTarget = false;
-            img.color = new Color(1f, 1f, 1f, 0f); // 시작 시 투명
+            img.color = new Color(1f, 1f, 1f, 0f);
 
-            // 크기
+            // 크기 — 약간 직사각형으로 꽃잎 느낌
             float size = Random.Range(minSize, maxSize);
-            rt.sizeDelta = new Vector2(size, size);
+            float aspect = Random.Range(0.7f, 1f);
+            rt.sizeDelta = new Vector2(size, size * aspect);
 
-            // 시작 위치 — 상단 + 약간의 마진에서 랜덤
+            // 스폰 위치
             float spawnX = Random.Range(area.xMin - spawnMarginSide, area.xMax + spawnMarginSide);
             float spawnY = area.yMax + spawnMarginTop;
             rt.anchoredPosition = new Vector2(spawnX, spawnY);
 
-            // 초기 회전
-            rt.localEulerAngles = new Vector3(0, 0, Random.Range(0f, 360f));
+            // 초기 Z 회전
+            rt.localEulerAngles = new Vector3(0f, 0f, Random.Range(0f, 360f));
 
-            // 낙하 거리로 최대 수명 계산
-            float fallDistance = spawnY - (area.yMin - 50f);
+            // 낙하
             float fallSpeed = Random.Range(minFallSpeed, maxFallSpeed);
-            float maxLife = fallDistance / fallSpeed + 1f; // 여유 마진
+            float fallDistance = spawnY - (area.yMin - 80f);
+            float maxLife = fallDistance / fallSpeed + 2f;
 
             var petal = new Petal
             {
                 rect = rt,
                 image = img,
                 fallSpeed = fallSpeed,
-                horizontalSpeed = Random.Range(minHorizontalSpeed, maxHorizontalSpeed),
-                swayAmplitude = Random.Range(minSwayAmplitude, maxSwayAmplitude),
-                swayFrequency = Random.Range(minSwayFrequency, maxSwayFrequency),
-                swayPhase = Random.Range(0f, Mathf.PI * 2f),
-                rotateSpeed = Random.Range(minRotateSpeed, maxRotateSpeed) * (Random.value > 0.5f ? 1f : -1f),
+                fallAccel = fallSpeed * Random.Range(0.15f, 0.35f), // 속도 변동폭
+
+                swayAmp1 = Random.Range(minSwayAmp1, maxSwayAmp1),
+                swayFreq1 = Random.Range(minSwayFreq1, maxSwayFreq1),
+                swayPhase1 = Random.Range(0f, Mathf.PI * 2f),
+                swayAmp2 = Random.Range(minSwayAmp2, maxSwayAmp2),
+                swayFreq2 = Random.Range(minSwayFreq2, maxSwayFreq2),
+                swayPhase2 = Random.Range(0f, Mathf.PI * 2f),
+
+                flipSpeed = Random.Range(minFlipSpeed, maxFlipSpeed),
+                flipPhase = Random.Range(0f, Mathf.PI * 2f),
+                tiltSpeed = Random.Range(minTiltSpeed, maxTiltSpeed),
+                tiltPhase = Random.Range(0f, Mathf.PI * 2f),
+
+                zRotSpeed = Random.Range(minZRotSpeed, maxZRotSpeed) * (Random.value > 0.5f ? 1f : -1f),
+
                 baseX = spawnX,
+                posX = spawnX,
+                posY = spawnY,
+                driftSpeed = Random.Range(-8f, 5f),
+
                 lifetime = 0f,
                 maxLifetime = maxLife,
                 alpha = 0f,
