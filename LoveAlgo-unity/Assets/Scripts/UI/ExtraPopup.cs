@@ -89,9 +89,9 @@ namespace LoveAlgo.UI
 
         void SelectTab(int index)
         {
-            sceneContainer?.SetActive(index == 0);
-            cgContainer?.SetActive(index == 1);
-            collectionContainer?.SetActive(index == 2);
+            if (sceneContainer != null) sceneContainer.SetActive(index == 0);
+            if (cgContainer != null) cgContainer.SetActive(index == 1);
+            if (collectionContainer != null) collectionContainer.SetActive(index == 2);
         }
     }
 }

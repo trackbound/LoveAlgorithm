@@ -270,7 +270,7 @@ namespace LoveAlgo.UI
         {
             foreach (var prefab in modalPrefabs)
             {
-                if (prefab.GetComponent<T>() != null)
+                if (prefab != null && prefab.GetComponent<T>() != null)
                     return prefab;
             }
             return null;
