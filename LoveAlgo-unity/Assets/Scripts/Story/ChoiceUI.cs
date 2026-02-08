@@ -67,8 +67,8 @@ namespace LoveAlgo.Story
                 btn.transform.localScale = new Vector3(0.95f, 0.95f, 1f);
 
                 var seq = DOTween.Sequence();
-                seq.Append(cg.DOFade(1f, choiceAppearDuration));
-                seq.Join(btn.transform.DOScale(1f, choiceAppearDuration).SetEase(choiceAppearEase));
+                _ = seq.Append(cg.DOFade(1f, choiceAppearDuration));
+                _ = seq.Join(btn.transform.DOScale(1f, choiceAppearDuration).SetEase(choiceAppearEase));
 
                 if (i < spawnedButtons.Count - 1)
                     await UniTask.Delay(TimeSpan.FromSeconds(choiceAppearDelay), cancellationToken: ct);

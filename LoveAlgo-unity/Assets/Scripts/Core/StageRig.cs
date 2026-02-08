@@ -15,6 +15,7 @@ namespace LoveAlgo.Core
         [SerializeField] BackgroundLayer backgroundLayer;
         [SerializeField] VirtualBGOverlay virtualBGOverlay;
         [SerializeField] CharacterLayer characterLayer;
+        [SerializeField] MonologueDim monologueDim;
         [SerializeField] CGLayer cgLayer;
         [SerializeField] ScreenFX screenFX;
 
@@ -22,6 +23,7 @@ namespace LoveAlgo.Core
         public BackgroundLayer Background => backgroundLayer;
         public VirtualBGOverlay VirtualBG => virtualBGOverlay;
         public CharacterLayer Character => characterLayer;
+        public MonologueDim MonologueDim => monologueDim;
         public CGLayer CG => cgLayer;
         public ScreenFX ScreenFX => screenFX;
 
@@ -50,6 +52,10 @@ namespace LoveAlgo.Core
             if (characterLayer == null)
             {
                 characterLayer = GetComponentInChildren<CharacterLayer>(true);
+            }
+            if (monologueDim == null)
+            {
+                monologueDim = GetComponentInChildren<MonologueDim>(true);
             }
             if (cgLayer == null)
             {

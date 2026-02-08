@@ -101,6 +101,11 @@ namespace LoveAlgo.Core
         {
             UIManager.Instance?.ShowOnly(MainUIType.Dialogue);
 
+            // 대화창을 숨김 상태로 시작 (첨 대사 시점에 자동 표시)
+            var dialogueUI = UIManager.Instance?.DialogueUI;
+            dialogueUI?.Clear();
+            dialogueUI?.Hide();
+
             // 프롤로그 스크립트 실행
             var runner = ScriptRunner.Instance;
             if (runner != null)
@@ -339,8 +344,11 @@ namespace LoveAlgo.Core
 
         async UniTaskVoid LoadFromSaveData(SaveData data)
         {
-            // 이전 BGM 정리 (페이드아웃)
-            Story.AudioManager.Instance?.StopBGMAsync().Forget();
+            // 이전 BGM 정리 (페이드아웃 완료 대기)
+            if (Story.AudioManager.Instance != null)
+            {
+                Story.AudioManager.Instance.StopBGMImmediate();
+            }
             ScriptRunner.Instance?.Stop();
 
             // 이전 장면 정리
@@ -361,6 +369,11 @@ namespace LoveAlgo.Core
                 CurrentPhase = data.Phase;
 
                 UIManager.Instance?.ShowOnly(MainUIType.Dialogue);
+
+                // 대화창을 숨김 상태로 시작 (첨 대사 시점에 자동 표시)
+                var dialogueUI = UIManager.Instance?.DialogueUI;
+                dialogueUI?.Clear();
+                dialogueUI?.Hide();
 
                 // 장면 상태 복원 (배경, 캐릭터, BGM)
                 await RestoreStageState(data);
@@ -436,19 +449,33 @@ namespace LoveAlgo.Core
         #region Stage State
 
         /// <summary>
-        /// 장면 정리 (타이틀 복귀 시)
+        /// 장면 정리 (타이틀 복귀 / 로드 시)
         /// </summary>
         void CleanupStage()
         {
+            // 레이어 정리
             StageManager.Instance?.Character?.ClearAll();
             StageManager.Instance?.Background?.Clear();
             StageManager.Instance?.VirtualBG?.HideImmediate();
             StageManager.Instance?.CG?.Clear();
-            ScreenFX.Instance?.SetClear();
+            StageManager.Instance?.MonologueDim?.HideImmediate();
+
+            // 화면 효과 정리
+            if (ScreenFX.Instance != null)
+            {
+                ScreenFX.Instance.SetClear();
+                ScreenFX.Instance.EyeOpenImmediate();
+            }
+
+            // 오디오 정리
+            Story.AudioManager.Instance?.StopVoice();
+
+            // DOTween 동즁 트윈 정리 (Safe Mode로 사용 중이므로 KillAll 대신 유휴 트윈만 정리)
+            DOTween.KillAll();
         }
 
         /// <summary>
-        /// 세이브 데이터에서 장면 상태 복원 (배경, 캐릭터, BGM)
+        /// 세이브 데이터에서 장면 상태 복원 (배경, 캐릭터, BGM, CG, 오버레이, 딤, FX)
         /// </summary>
         async UniTask RestoreStageState(SaveData data)
         {
@@ -486,14 +513,49 @@ namespace LoveAlgo.Core
                 }
             }
 
+            // CG 복원
+            if (!string.IsNullOrEmpty(data.CurrentCG))
+            {
+                var cg = StageManager.Instance?.CG;
+                if (cg != null)
+                {
+                    await cg.ShowAsync(data.CurrentCG, 0f);  // 즉시 표시
+                }
+            }
+
+            // VirtualBG 오버레이 복원
+            if (!string.IsNullOrEmpty(data.CurrentOverlay))
+            {
+                var overlay = StageManager.Instance?.VirtualBG;
+                if (overlay != null)
+                {
+                    await overlay.ShowAsync(data.CurrentOverlay, 0f);  // 즉시 표시
+                }
+            }
+
+            // 독백 딤 복원
+            if (data.IsMonologueDimShowing)
+            {
+                StageManager.Instance?.MonologueDim?.ShowImmediate();
+            }
+
+            // 화면 효과 복원
+            var fx = ScreenFX.Instance;
+            if (fx != null)
+            {
+                if (data.IsEyeClosed)
+                    fx.EyeCloseImmediate();
+                else if (data.IsFadeBlack)
+                    fx.SetBlack();
+                else
+                    fx.SetClear();
+            }
+
             // BGM 복원
             if (!string.IsNullOrEmpty(data.CurrentBGM) && Story.AudioManager.Instance != null)
             {
                 await Story.AudioManager.Instance.PlayBGMAsync(data.CurrentBGM, 0.5f);
             }
-
-            // 화면 효과 클리어 (로드 시 깔끔한 상태로)
-            ScreenFX.Instance?.SetClear();
         }
 
         #endregion

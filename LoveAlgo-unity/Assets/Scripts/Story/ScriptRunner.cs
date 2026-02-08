@@ -223,6 +223,15 @@ namespace LoveAlgo.Story
             cts?.Cancel();
             cts?.Dispose();
             cts = null;
+
+            // 독백 상태 즉시 초기화 (로드/점프 시 잔여 상태 방지)
+            UIManager.Instance?.DialogueUI?.ResetMonologueState();
+            var monologueDim = StageManager.Instance?.MonologueDim;
+            if (monologueDim != null && monologueDim.IsShowing)
+                monologueDim.HideImmediate();
+
+            // 음성 정지
+            AudioManager.Instance?.StopVoice();
         }
 
         /// <summary>
@@ -506,6 +515,21 @@ namespace LoveAlgo.Story
 
         async UniTask ExecuteTextAsync(ScriptLine line, CancellationToken ct)
         {
+            // 독백 딤 처리
+            bool isMonologue = string.IsNullOrEmpty(line.Speaker);
+            var monologueDim = StageManager.Instance?.MonologueDim;
+            if (monologueDim != null)
+            {
+                if (isMonologue && !monologueDim.IsShowing)
+                {
+                    await monologueDim.ShowAsync(ct: ct);
+                }
+                else if (!isMonologue && monologueDim.IsShowing)
+                {
+                    await monologueDim.HideAsync(ct: ct);
+                }
+            }
+
             // 대사 UI에 텍스트 표시
             var dialogueUI = UIManager.Instance?.DialogueUI;
             if (dialogueUI != null)
@@ -534,29 +558,55 @@ namespace LoveAlgo.Story
 
         async UniTask ExecuteBGAsync(ScriptLine line, CancellationToken ct)
         {
-            // 전환 타입 파싱 (Cross가 아니면 캐릭터 퇴장)
+            // 전환 타입 파싱
             var parts = line.Value.Split(':');
             bool isCrossFade = parts.Length >= 2 && parts[1].Equals("Cross", System.StringComparison.OrdinalIgnoreCase);
             
-            if (!isCrossFade)
+            if (isCrossFade)
             {
-                // Fade, Cut 등은 장면 전환 → 캐릭터 자동 퇴장
-                var character = StageManager.Instance?.Character;
-                if (character != null)
+                // Cross: 캐릭터 유지한 채 크로스페이드
+                var background = StageManager.Instance?.Background;
+                if (background != null)
                 {
-                    await character.ExitAllAsync(ct);
+                    await background.ExecuteAsync(line.Value, ct);
                 }
-            }
-            
-            // 배경 전환
-            var background = StageManager.Instance?.Background;
-            if (background != null)
-            {
-                await background.ExecuteAsync(line.Value, ct);
             }
             else
             {
-                Debug.Log($"[BG] {line.Value}");
+                // Fade/Cut: FadeOut 시작 → 검은 화면에서 캐릭터 즉시 제거 + 배경 교체 → FadeIn
+                // 캐릭터를 FadeOut 전에 ExitAsync 하면 퇴장이 보여서 부자연스러움
+                // → FadeOut 완료 후 즉시 ClearAll 처리
+
+                var background = StageManager.Instance?.Background;
+                var character = StageManager.Instance?.Character;
+                var screenFX = Core.ScreenFX.Instance;
+
+                // 전환 파라미터 파싱 (BackgroundLayer.ExecuteAsync와 동일 로직)
+                float duration = 2.0f;  // BackgroundLayer defaultDuration
+                if (parts.Length >= 3 && float.TryParse(parts[2], out float d))
+                    duration = d;
+                float halfDuration = duration * 0.5f;
+
+                // 1) FadeOut
+                if (screenFX != null)
+                    await screenFX.FadeOutAsync(halfDuration, ct);
+
+                // 2) 검은 화면 상태에서 캐릭터 즉시 제거 + 배경 즉시 교체
+                character?.ClearAll();
+
+                if (background != null)
+                {
+                    // 배경을 Cut으로 즉시 교체 (이미 검은 화면이므로)
+                    string bgName = parts[0];
+                    await background.ChangeBackgroundAsync(bgName, BGTransition.Cut, 0f, ct);
+                }
+
+                // 3) FadeIn
+                if (screenFX != null)
+                    await screenFX.FadeInAsync(halfDuration, ct);
+
+                // AudioManager에 캐릭터 퇴장 알림
+                AudioManager.Instance?.OnAllCharactersExit();
             }
         }
 

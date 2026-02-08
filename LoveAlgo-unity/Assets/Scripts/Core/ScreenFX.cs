@@ -46,6 +46,12 @@ namespace LoveAlgo.Core
         [SerializeField] float shakePresetMedium = 25f;
         [SerializeField] float shakePresetStrong = 50f;
 
+        /// <summary>페이드 오버레이가 검은 상태인지 (세이브용)</summary>
+        public bool IsFadeBlack => fadeOverlay != null && fadeOverlay.color.a >= 0.95f;
+
+        /// <summary>눈 감기 효과가 활성 상태인지 (세이브용)</summary>
+        public bool IsEyeClosed => eyeTop != null && eyeTop.gameObject.activeSelf;
+
         void Awake()
         {
             if (Instance == null)
@@ -349,29 +355,35 @@ namespace LoveAlgo.Core
             float seedX = noiseSeed;
             float seedY = noiseSeed + 100f;
             
-            while (elapsed < duration)
+            try
             {
-                ct.ThrowIfCancellationRequested();
-                
-                float t = elapsed / duration;
-                // 감쇠 커브: 시작은 강하고 끝으로 갈수록 약해짐
-                float falloff = 1f - t;
-                falloff = falloff * falloff; // 이차 감쇠 (더 자연스러움)
-                
-                // Perlin Noise로 부드러운 랜덤 오프셋 생성 (-1 ~ 1 범위)
-                float noiseX = (Mathf.PerlinNoise(shakeFrequency * elapsed, seedX) * 2f - 1f);
-                float noiseY = (Mathf.PerlinNoise(shakeFrequency * elapsed, seedY) * 2f - 1f);
-                
-                // 강도와 감쇠 적용
-                Vector2 offset = new Vector2(noiseX, noiseY) * strength * falloff;
-                rt.anchoredPosition = originalPos + offset;
-                
-                elapsed += Time.deltaTime;
-                await UniTask.Yield(ct);
+                while (elapsed < duration)
+                {
+                    ct.ThrowIfCancellationRequested();
+                    
+                    float t = elapsed / duration;
+                    // 감쇠 커브: 시작은 강하고 끝으로 갈수록 약해짐
+                    float falloff = 1f - t;
+                    falloff = falloff * falloff; // 이차 감쇠 (더 자연스러움)
+                    
+                    // Perlin Noise로 부드러운 랜덤 오프셋 생성 (-1 ~ 1 범위)
+                    float noiseX = (Mathf.PerlinNoise(shakeFrequency * elapsed, seedX) * 2f - 1f);
+                    float noiseY = (Mathf.PerlinNoise(shakeFrequency * elapsed, seedY) * 2f - 1f);
+                    
+                    // 강도와 감쇠 적용
+                    Vector2 offset = new Vector2(noiseX, noiseY) * strength * falloff;
+                    rt.anchoredPosition = originalPos + offset;
+                    
+                    elapsed += Time.deltaTime;
+                    await UniTask.Yield(ct);
+                }
             }
-            
-            // 원래 위치로 복원
-            rt.anchoredPosition = originalPos;
+            finally
+            {
+                // 취소되더라도 반드시 원래 위치로 복원
+                if (rt != null)
+                    rt.anchoredPosition = originalPos;
+            }
         }
 
         #endregion
@@ -524,6 +536,15 @@ namespace LoveAlgo.Core
 
             eyeTop.gameObject.SetActive(true);
             eyeBottom.gameObject.SetActive(true);
+        }
+
+        /// <summary>
+        /// 눈 즉시 열림 (애니메이션 없이, Eye 바 비활성화)
+        /// </summary>
+        public void EyeOpenImmediate()
+        {
+            if (eyeTop != null) eyeTop.gameObject.SetActive(false);
+            if (eyeBottom != null) eyeBottom.gameObject.SetActive(false);
         }
 
         #endregion

@@ -158,6 +158,9 @@ namespace LoveAlgo.Story
             // -1이면 기본 페이드 (3초)
             if (fadeDuration < 0) fadeDuration = defaultFadeDuration;
 
+            // 기존 BGM 페이드 트윈 정리 (경합 방지)
+            DOTween.Kill(bgmSource);
+
             currentBGM = name;
             bgmSource.loop = true;
 
@@ -194,6 +197,9 @@ namespace LoveAlgo.Story
             // -1이면 기본 페이드 (3초)
             if (fadeDuration < 0) fadeDuration = defaultFadeDuration;
 
+            // 기존 페이드 트윈 정리
+            DOTween.Kill(bgmSource);
+
             currentBGM = null;
             float originalVolume = bgmSource.volume;
 
@@ -208,39 +214,46 @@ namespace LoveAlgo.Story
 
         public void StopBGMImmediate()
         {
+            DOTween.Kill(bgmSource);
             bgmSource.Stop();
             bgmSource.volume = 1f;
             currentBGM = null;
         }
 
         /// <summary>
-        /// 앱 포커스 잃음/복귀 시 BGM 일시정지/재개
+        /// 앱 포커스 잃음/복귀 시 오디오 일시정지/재개
         /// </summary>
         void OnApplicationFocus(bool hasFocus)
         {
-            if (bgmSource == null) return;
-
             if (!hasFocus)
             {
-                bgmSource.Pause();
+                if (bgmSource != null) bgmSource.Pause();
+                if (sfxSource != null) sfxSource.Pause();
+                if (voiceSource != null) voiceSource.Pause();
             }
-            else if (bgmSource.clip != null && !bgmSource.isPlaying)
+            else
             {
-                bgmSource.UnPause();
+                if (bgmSource != null && bgmSource.clip != null && !bgmSource.isPlaying)
+                    bgmSource.UnPause();
+                if (sfxSource != null) sfxSource.UnPause();
+                if (voiceSource != null) voiceSource.UnPause();
             }
         }
 
         void OnApplicationPause(bool pauseStatus)
         {
-            if (bgmSource == null) return;
-
             if (pauseStatus)
             {
-                bgmSource.Pause();
+                if (bgmSource != null) bgmSource.Pause();
+                if (sfxSource != null) sfxSource.Pause();
+                if (voiceSource != null) voiceSource.Pause();
             }
-            else if (bgmSource.clip != null && !bgmSource.isPlaying)
+            else
             {
-                bgmSource.UnPause();
+                if (bgmSource != null && bgmSource.clip != null && !bgmSource.isPlaying)
+                    bgmSource.UnPause();
+                if (sfxSource != null) sfxSource.UnPause();
+                if (voiceSource != null) voiceSource.UnPause();
             }
         }
 

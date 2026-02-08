@@ -42,6 +42,13 @@ namespace LoveAlgo.Story
         public string CurrentBG;
         public string CurrentBGM;
         public List<CharacterSaveInfo> Characters = new();
+
+        // 추가 레이어 상태
+        public string CurrentCG;          // CG 이름 (null이면 없음)
+        public string CurrentOverlay;     // VirtualBG 오버레이 이름
+        public bool IsMonologueDimShowing; // 독백 딤 표시 여부
+        public bool IsFadeBlack;          // 페이드 오버레이 활성 여부
+        public bool IsEyeClosed;          // 눈 감기 효과 활성 여부
     }
 
     /// <summary>
@@ -202,20 +209,21 @@ namespace LoveAlgo.Story
         }
 
         /// <summary>
-        /// 장면 상태 캐프처 (배경, 캐릭터, BGM)
+        /// 장면 상태 캡처 (배경, 캐릭터, BGM, CG, 오버레이, 딤, FX)
         /// </summary>
         static void CaptureStageState(SaveData data)
         {
+            var stage = Core.StageManager.Instance;
+
             // 배경
-            var bg = Core.StageManager.Instance?.Background;
-            data.CurrentBG = bg?.CurrentBackground ?? "";
+            data.CurrentBG = stage?.Background?.CurrentBackground ?? "";
 
             // BGM
             data.CurrentBGM = AudioManager.Instance?.CurrentBGM ?? "";
 
             // 캐릭터 슬롯
             data.Characters.Clear();
-            var charLayer = Core.StageManager.Instance?.Character;
+            var charLayer = stage?.Character;
             if (charLayer != null)
             {
                 foreach (var slotName in new[] { "L", "C", "R" })
@@ -239,6 +247,22 @@ namespace LoveAlgo.Story
                     }
                 }
             }
+
+            // CG 레이어
+            var cg = stage?.CG;
+            data.CurrentCG = (cg != null && cg.IsShowing) ? cg.CurrentCG : null;
+
+            // VirtualBG 오버레이
+            var overlay = stage?.VirtualBG;
+            data.CurrentOverlay = (overlay != null && overlay.IsShowing) ? overlay.CurrentOverlay : null;
+
+            // 독백 딤
+            data.IsMonologueDimShowing = stage?.MonologueDim?.IsShowing ?? false;
+
+            // 화면 효과 상태
+            var fx = Core.ScreenFX.Instance;
+            data.IsFadeBlack = fx?.IsFadeBlack ?? false;
+            data.IsEyeClosed = fx?.IsEyeClosed ?? false;
         }
 
         /// <summary>

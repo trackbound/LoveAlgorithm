@@ -18,6 +18,7 @@ namespace LoveAlgo.Core
         public BackgroundLayer Background => stageRig?.Background;
         public VirtualBGOverlay VirtualBG => stageRig?.VirtualBG;
         public CharacterLayer Character => stageRig?.Character;
+        public MonologueDim MonologueDim => stageRig?.MonologueDim;
         public CGLayer CG => stageRig?.CG;
 
         void Awake()
@@ -41,7 +42,6 @@ namespace LoveAlgo.Core
 
         void FindStageRig()
         {
-            if (stageRig == null)
             if (stageRig == null)
             {
                 stageRig = GetComponentInChildren<StageRig>(true);

@@ -150,13 +150,19 @@ namespace LoveAlgo.Story
             _ = sequence.Join(backCanvasGroup.DOFade(1f, duration));
             _ = sequence.Join(frontCanvasGroup.DOFade(0f, duration));
 
-            await sequence.ToUniTask(cancellationToken: ct);
-
-            // 완료 후 스왑: Back → Front
-            imageFront.sprite = imageBack.sprite;
-            SetImageAlpha(frontCanvasGroup, 1f);
-            SetImageAlpha(backCanvasGroup, 0f);
-            imageBack.enabled = false;
+            try
+            {
+                await sequence.ToUniTask(cancellationToken: ct);
+            }
+            finally
+            {
+                // 취소되더라도 반드시 스왑 완료 (일관된 상태 보장)
+                sequence.Kill();
+                imageFront.sprite = imageBack.sprite;
+                SetImageAlpha(frontCanvasGroup, 1f);
+                SetImageAlpha(backCanvasGroup, 0f);
+                imageBack.enabled = false;
+            }
         }
 
         /// <summary>

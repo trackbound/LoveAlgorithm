@@ -69,13 +69,61 @@ namespace LoveAlgo.UI
             if (normalSprite == null && targetImage != null)
                 normalSprite = targetImage.sprite;
 
-            // 초기 상태
-            ApplyState(false, false);
+            // 초기 상태 리셋
+            ResetState();
         }
 
         void OnEnable()
         {
-            ApplyState(false, false);
+            ResetState();
+        }
+
+        /// <summary>
+        /// 상태 리셋 (버튼 재사용/활성화 시)
+        /// </summary>
+        void ResetState()
+        {
+            isHovered = false;
+            isPressed = false;
+            
+            // 즉시 normal 상태 적용 (애니메이션 없이)
+            currentColorTween?.Kill();
+            currentScaleTween?.Kill();
+            
+            ApplyNormalImmediate();
+        }
+
+        /// <summary>
+        /// Normal 상태 즉시 적용 (애니메이션 없이)
+        /// </summary>
+        void ApplyNormalImmediate()
+        {
+            // SpriteSwap
+            if (hoverMode == HoverMode.SpriteSwap || hoverMode == HoverMode.Both)
+            {
+                if (targetImage != null && normalSprite != null)
+                    targetImage.sprite = normalSprite;
+            }
+
+            // ChildSwap
+            if (hoverMode == HoverMode.ChildSwap || hoverMode == HoverMode.Both)
+            {
+                if (normalChild != null) normalChild.SetActive(true);
+                if (hoverChild != null) hoverChild.SetActive(false);
+                if (pressedChild != null) pressedChild.SetActive(false);
+            }
+
+            // ColorTint - 즉시 적용
+            if (useColorTint && colorTarget != null)
+            {
+                colorTarget.color = normalColor;
+            }
+
+            // Scale - 즉시 적용
+            if (useScaleEffect)
+            {
+                transform.localScale = originalScale;
+            }
         }
 
         public void OnPointerEnter(PointerEventData eventData)

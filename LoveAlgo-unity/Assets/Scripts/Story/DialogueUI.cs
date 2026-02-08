@@ -126,9 +126,6 @@ namespace LoveAlgo.Story
         /// </summary>
         public async UniTask ShowTextAsync(string speaker, string text, CancellationToken ct)
         {
-            // 대사창 표시 (Hide 상태가 아닐 때만)
-            if (!isHidden) Show();
-            
             // 변수 치환 ({{PlayerName}} 등)
             speaker = SubstituteVariables(speaker);
             text = SubstituteVariables(text);
@@ -136,19 +133,22 @@ namespace LoveAlgo.Story
             // 로그에 추가
             AddToLog(speaker, text);
 
-            // 화자 설정
+            // 화자 설정 (Show 전에 호출 → 이전 텍스트 잔상 방지)
             SetSpeaker(speaker);
 
             // 인라인 태그 파싱
             var segments = ParseInlineTags(text);
 
-            // 타이핑 시작
+            // 타이핑 준비 (텍스트 비우기 → Show 전에 처리)
             fullText = GetCleanText(segments);
             isTyping = true;
             skipRequested = false;
             HideNextIndicator();
-
             dialogueText.text = "";
+
+            // 대사창 표시 (Hide 상태가 아닐 때만, 텍스트가 비워진 후 보여줌)
+            if (!isHidden) Show();
+
             float currentSpeed = typingSpeed;
 
             foreach (var seg in segments)
@@ -318,9 +318,10 @@ namespace LoveAlgo.Story
             {
                 if (isMonologue && monologueDotSprites != null && monologueDotSprites.Length > 0)
                 {
-                    // 독백: dots 애니메이션 시작
+                    // 독백: dots 이미 재생 중이면 유지 (연속 독백 시 끊김 방지)
                     monologueDotsImage.gameObject.SetActive(true);
-                    StartDotsAnimation();
+                    if (!IsDotsAnimating)
+                        StartDotsAnimation();
                     
                     // 이름 텍스트 숨김
                     if (nameText != null) nameText.gameObject.SetActive(false);
@@ -368,6 +369,11 @@ namespace LoveAlgo.Story
         }
 
         #region 독백 Dots 애니메이션
+
+        /// <summary>
+        /// Dots 애니메이션이 재생 중인지
+        /// </summary>
+        public bool IsDotsAnimating => dotsAnimCts != null && !dotsAnimCts.IsCancellationRequested;
 
         /// <summary>
         /// 독백 dots 스프라이트 로드
@@ -434,6 +440,16 @@ namespace LoveAlgo.Story
         void OnDestroy()
         {
             StopDotsAnimation();
+        }
+
+        /// <summary>
+        /// 독백 상태 즉시 초기화 (세이브/로드/점프 시 호출)
+        /// </summary>
+        public void ResetMonologueState()
+        {
+            StopDotsAnimation();
+            if (monologueDotsImage != null)
+                monologueDotsImage.gameObject.SetActive(false);
         }
 
         #endregion

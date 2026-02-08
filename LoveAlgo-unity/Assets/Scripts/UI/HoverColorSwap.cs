@@ -24,13 +24,30 @@ namespace LoveAlgo.UI
         {
             button = GetComponent<Button>();
 
-            // 초기 색상 적용
-            ApplyState(false, false);
+            // 초기 상태 리셋 및 색상 적용
+            ResetState();
         }
 
         void OnEnable()
         {
-            ApplyState(false, false);
+            ResetState();
+        }
+
+        /// <summary>
+        /// 상태 리셋 (버튼 재사용/활성화 시)
+        /// </summary>
+        void ResetState()
+        {
+            isHovered = false;
+            isPressed = false;
+            
+            // 즉시 색상 적용 (애니메이션 없이)
+            foreach (var target in targets)
+            {
+                if (target.target == null) continue;
+                target.currentTween?.Kill();
+                target.target.color = target.normalColor;
+            }
         }
 
         public void OnPointerEnter(PointerEventData eventData)
