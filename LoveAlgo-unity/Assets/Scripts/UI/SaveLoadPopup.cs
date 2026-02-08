@@ -25,6 +25,12 @@ namespace LoveAlgo.UI
         [SerializeField] TMP_Text pageText;
         [SerializeField] Button prevButton;
         [SerializeField] Button nextButton;
+        [SerializeField] Image prevButtonImage;
+        [SerializeField] Image nextButtonImage;
+        [SerializeField] Sprite prevSprite;
+        [SerializeField] Sprite prevDisabledSprite;
+        [SerializeField] Sprite nextSprite;
+        [SerializeField] Sprite nextDisabledSprite;
 
         [Header("Settings")]
         [SerializeField] int slotsPerPage = 6;
@@ -197,19 +203,37 @@ namespace LoveAlgo.UI
         {
             if (pageText != null)
                 pageText.text = $"{currentPage}";
+
+            UpdatePageButtonUI();
+        }
+
+        void UpdatePageButtonUI()
+        {
+            bool isFirst = currentPage <= 1;
+            bool isLast = currentPage >= totalPages;
+
+            if (prevButton != null)
+                prevButton.interactable = !isFirst;
+            if (prevButtonImage != null)
+                prevButtonImage.sprite = isFirst ? prevDisabledSprite : prevSprite;
+
+            if (nextButton != null)
+                nextButton.interactable = !isLast;
+            if (nextButtonImage != null)
+                nextButtonImage.sprite = isLast ? nextDisabledSprite : nextSprite;
         }
 
         void PrevPage()
         {
-            // 첫 페이지에서 이전 → 마지막 페이지 (Loop)
-            currentPage = currentPage > 1 ? currentPage - 1 : totalPages;
+            if (currentPage <= 1) return;
+            currentPage--;
             RefreshSlots();
         }
 
         void NextPage()
         {
-            // 마지막 페이지에서 다음 → 첫 페이지 (Loop)
-            currentPage = currentPage < totalPages ? currentPage + 1 : 1;
+            if (currentPage >= totalPages) return;
+            currentPage++;
             RefreshSlots();
         }
 

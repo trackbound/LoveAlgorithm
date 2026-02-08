@@ -54,15 +54,15 @@ namespace LoveAlgo.UI
         [Header("해상도 적용 버튼")]
         [SerializeField] Button applyButton; // 해상도 전용 즉시 적용 + 저장 (ResolutionIndex / Fullscreen)
 
-        // 해상도 목록 (스프라이트 순서와 대응)
+        // 해상도 목록 (오름차순: ← 작아짐 / → 커짐)
         readonly (int w, int h)[] resolutions = {
-            (1920, 1080),
-            (1440, 810),
-            (1280, 720),
+            (800, 450),
             (960, 540),
-            (800, 450)
+            (1280, 720),
+            (1440, 810),
+            (1920, 1080)
         };
-        int currentResolutionIndex = 0; // 기본 1920x1080
+        int currentResolutionIndex = 4; // 기본 1920x1080
         bool isFullscreen = true;
 
         // 변경사항 추적
@@ -145,7 +145,7 @@ namespace LoveAlgo.UI
         {
             // 화면 설정
             isFullscreen = PlayerPrefs.GetInt("Fullscreen", 1) == 1;
-            currentResolutionIndex = PlayerPrefs.GetInt("ResolutionIndex", 0);
+            currentResolutionIndex = PlayerPrefs.GetInt("ResolutionIndex", 4);
             UpdateWindowModeUI();
             UpdateResolutionUI();
 
@@ -359,7 +359,7 @@ namespace LoveAlgo.UI
             {
                 // UI만 저장값으로 복원 (실제 화면은 Apply 안 했으므로 변경 없음)
                 isFullscreen = PlayerPrefs.GetInt("Fullscreen", 1) == 1;
-                currentResolutionIndex = PlayerPrefs.GetInt("ResolutionIndex", 0);
+                currentResolutionIndex = PlayerPrefs.GetInt("ResolutionIndex", 4);
                 UpdateWindowModeUI();
                 UpdateResolutionUI();
                 isResolutionDirty = false;
