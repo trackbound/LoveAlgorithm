@@ -1402,12 +1402,21 @@ MonoBehaviour:
   startButton: {fileID: 1545814550449797529}
   continueButton: {fileID: 8170388322864604002}
   loadButton: {fileID: 817673862807227438}
+  extraButton: {fileID: 1125234878068036321}
   settingsButton: {fileID: 1738046204963482621}
   exitButton: {fileID: 1469889267871446789}
+  hoverTextStart: {fileID: 0}
+  hoverTextContinue: {fileID: 0}
+  hoverTextLoad: {fileID: 0}
+  hoverTextExtra: {fileID: 0}
+  hoverTextSettings: {fileID: 0}
+  hoverTextExit: {fileID: 0}
+  titleBGM: Title
   decoNormal: {fileID: 8513212078574858821}
   decoStart: {fileID: 652997503862260673}
   decoContinue: {fileID: 5427502735897792878}
   decoLoad: {fileID: 4807744174667067962}
+  decoExtra: {fileID: 1581455501170607240}
   decoSettings: {fileID: 6572524988630780267}
   decoExit: {fileID: 8185319221586888327}
 --- !u!1 &4807744174667067962
