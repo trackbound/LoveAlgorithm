@@ -480,7 +480,7 @@ namespace LoveAlgo.Editor
             msgTmp.alignment = TextAlignmentOptions.TopLeft;
             msgTmp.color = new Color(0.15f, 0.15f, 0.15f, 1f);
             msgTmp.raycastTarget = false;
-            msgTmp.enableWordWrapping = true;
+            msgTmp.textWrappingMode = TextWrappingModes.Normal;
             if (font) msgTmp.font = font;
 
             // ── LogEntryUI 컴포넌트 바인딩 ──
