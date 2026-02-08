@@ -217,7 +217,31 @@ namespace LoveAlgo.Core
             }
             
             Debug.Log($"[GameManager] 플레이어 이름: {playerName}");
+            TransitionToPrologueAsync().Forget();
+        }
+
+        /// <summary>
+        /// Username → Prologue 전환 (페이드로 빈 화면 가림)
+        /// </summary>
+        async UniTaskVoid TransitionToPrologueAsync()
+        {
+            var fx = ScreenFX.Instance;
+
+            // 1) 페이드 아웃 (검은 화면)
+            if (fx != null)
+                await fx.FadeOutAsync(0.5f);
+            else
+                await UniTask.Yield();
+
+            // 2) 검은 화면 상태에서 UI 전환 + 프롤로그 준비
             ChangePhase(GamePhase.Prologue);
+
+            // 3) 1프레임 대기 (레이아웃 정리)
+            await UniTask.Yield();
+
+            // 4) 페이드 인
+            if (fx != null)
+                await fx.FadeInAsync(0.8f);
         }
 
         /// <summary>
