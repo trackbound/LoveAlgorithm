@@ -47,8 +47,10 @@ namespace LoveAlgo.UI
         {
             if (panelRect == null || canvasGroup == null) return;
 
-            // 초기 상태: 우측 밖, 투명, 살짝 축소
+            // 초기 상태: 우측 밖, 투명, 살짝 축소, 인터랙션 차단
             canvasGroup.alpha = 0f;
+            canvasGroup.interactable = false;
+            canvasGroup.blocksRaycasts = false;
             panelRect.anchoredPosition = originalPosition + new Vector2(slideOffset, 0);
             panelRect.localScale = new Vector3(0.97f, 0.97f, 1f);
 
@@ -62,6 +64,13 @@ namespace LoveAlgo.UI
 
             // 스케일: 0.97 → 1.0
             seq.Join(panelRect.DOScale(1f, showDuration).SetEase(Ease.OutQuart));
+
+            // 애니메이션 완료 후 인터랙션 활성화
+            seq.OnComplete(() =>
+            {
+                canvasGroup.interactable = true;
+                canvasGroup.blocksRaycasts = true;
+            });
 
             seq.SetUpdate(true);
             currentSequence = seq;
@@ -78,6 +87,10 @@ namespace LoveAlgo.UI
                 gameObject.SetActive(false);
                 return;
             }
+
+            // 즉시 인터랙션 차단
+            canvasGroup.interactable = false;
+            canvasGroup.blocksRaycasts = false;
 
             var seq = DOTween.Sequence();
 

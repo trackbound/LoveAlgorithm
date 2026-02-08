@@ -129,6 +129,58 @@ namespace LoveAlgo.UI
             toastPopup?.gameObject.SetActive(false);
             logPopup?.gameObject.SetActive(false);
             dimmer?.SetActive(false);
+
+            // Dimmer 클릭 시 Modal 닫기 (디머에 Button 컴포넌트 추가)
+            if (dimmer != null)
+            {
+                var dimBtn = dimmer.GetComponent<Button>();
+                if (dimBtn == null)
+                    dimBtn = dimmer.AddComponent<Button>();
+                dimBtn.transition = Selectable.Transition.None;
+                dimBtn.onClick.AddListener(OnDimmerClicked);
+            }
+
+            // Modal 프리팩 사전 생성 (Lazy 대신 즉시 캐싱 → 첫 클릭 렉 방지)
+            PreWarmModals();
+        }
+
+        /// <summary>
+        /// Modal 프리팩을 미리 생성하여 캐시 (Instantiate 렉 방지)
+        /// </summary>
+        void PreWarmModals()
+        {
+            foreach (var prefab in modalPrefabs)
+            {
+                if (prefab == null) continue;
+                var popup = prefab.GetComponent<ModalPopupBase>();
+                if (popup == null) continue;
+
+                var type = popup.GetType();
+                if (modalCache.ContainsKey(type)) continue;
+
+                var instance = Instantiate(prefab, layerModal);
+                instance.SetActive(false);
+                modalCache[type] = instance;
+
+                // 버튼 사운드 사전 바인딩
+                UISoundManager.Instance?.BindButtonsInTransform(instance.transform);
+            }
+        }
+
+        /// <summary>
+        /// Dimmer 클릭 처리: Modal만 닫기 (Top 팝업은 닫지 않음)
+        /// </summary>
+        void OnDimmerClicked()
+        {
+            // Top 팝업이 열려있으면 디머 클릭 무시 (alert, confirm 등)
+            if ((confirmPopup != null && confirmPopup.IsVisible) ||
+                (scheduleConfirmPopup != null && scheduleConfirmPopup.IsVisible) ||
+                (alertPopup != null && alertPopup.IsVisible))
+                return;
+
+            // Modal 팝업 닫기
+            if (currentModal != null)
+                TryCloseModalAsync().Forget();
         }
 
         #region Top 팝업 (즉시 사용)
@@ -240,9 +292,6 @@ namespace LoveAlgo.UI
             // Show() 메서드 호출 (슬라이딩 애니메이션 실행)
             var popup = instance.GetComponent<T>();
             popup?.Show();
-
-            // 동적 생성된 팝업의 버튼에 사운드 바인딩
-            UISoundManager.Instance?.BindButtonsInTransform(instance.transform);
 
             return popup;
         }
