@@ -104,7 +104,7 @@ namespace LoveAlgo.Core
             // 대화창을 숨김 상태로 시작 (첨 대사 시점에 자동 표시)
             var dialogueUI = UIManager.Instance?.DialogueUI;
             dialogueUI?.Clear();
-            dialogueUI?.Hide();
+            dialogueUI?.HideImmediate();
 
             // 프롤로그 스크립트 실행
             var runner = ScriptRunner.Instance;
@@ -373,7 +373,7 @@ namespace LoveAlgo.Core
                 // 대화창을 숨김 상태로 시작 (첨 대사 시점에 자동 표시)
                 var dialogueUI = UIManager.Instance?.DialogueUI;
                 dialogueUI?.Clear();
-                dialogueUI?.Hide();
+                dialogueUI?.HideImmediate();
 
                 // 장면 상태 복원 (배경, 캐릭터, BGM)
                 await RestoreStageState(data);

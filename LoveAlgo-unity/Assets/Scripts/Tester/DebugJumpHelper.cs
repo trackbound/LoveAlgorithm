@@ -145,7 +145,7 @@ namespace LoveAlgo.Tester
             
             // 2. UI 정리
             UIManager.Instance?.ShowOnly(MainUIType.Dialogue);
-            UIManager.Instance?.DialogueUI?.Show();  // CanvasGroup alpha 복원
+            UIManager.Instance?.DialogueUI?.ShowImmediate();  // CanvasGroup alpha 복원
             
             // 3. 화면 효과 초기화
             var fx = ScreenFX.Instance;

@@ -57,6 +57,16 @@ namespace LoveAlgo.Story
         Sprite[] monologueDotSprites;  // Resources에서 로드
         CancellationTokenSource dotsAnimCts;
 
+        [Header("대사창 애니메이션")]
+        [SerializeField] float fadeDuration = 0.15f;       // Show/Hide 페이드 속도
+        [SerializeField] float slideDuration = 0.25f;      // 버튼 슬라이드 속도
+        [SerializeField] float slideDistance = 200f;       // 슬라이드 거리 (px)
+
+        Tweener showHideTween;     // 현재 fade 애니메이션
+        Sequence slideSequence;    // 슬라이드 시퀀스
+        RectTransform rectTransform;
+        float originalY;
+
         [Header("설정")]
         [SerializeField] float typingSpeed = 0.04f;
         [SerializeField] float punctuationDelay = 0.15f;  // 문장부호 추가 딜레이
@@ -93,6 +103,10 @@ namespace LoveAlgo.Story
 
         void Awake()
         {
+            rectTransform = GetComponent<RectTransform>();
+            if (rectTransform != null)
+                originalY = rectTransform.anchoredPosition.y;
+
             HideNextIndicator();
             SetupButtons();
             LoadMonologueDotSprites();
@@ -440,6 +454,7 @@ namespace LoveAlgo.Story
         void OnDestroy()
         {
             StopDotsAnimation();
+            KillAnimations();
         }
 
         /// <summary>
@@ -486,8 +501,57 @@ namespace LoveAlgo.Story
 
         #region 표시/숨김
 
+        /// <summary>
+        /// 대사창 페이드 인 (빠른 알파 애니메이션)
+        /// </summary>
         public void Show()
         {
+            if (canvasGroup == null) { gameObject.SetActive(true); return; }
+
+            KillAnimations();
+
+            // 슬라이드 위치 복원
+            if (rectTransform != null)
+                rectTransform.anchoredPosition = new Vector2(rectTransform.anchoredPosition.x, originalY);
+
+            canvasGroup.interactable = true;
+            canvasGroup.blocksRaycasts = true;
+            showHideTween = canvasGroup.DOFade(1f, fadeDuration)
+                .SetEase(Ease.OutQuad)
+                .SetUpdate(true);
+        }
+
+        /// <summary>
+        /// 대사창 페이드 아웃 (빠른 알파 애니메이션)
+        /// </summary>
+        public void Hide()
+        {
+            StopDotsAnimation();
+
+            if (canvasGroup == null) { gameObject.SetActive(false); return; }
+
+            KillAnimations();
+
+            showHideTween = canvasGroup.DOFade(0f, fadeDuration)
+                .SetEase(Ease.OutQuad)
+                .SetUpdate(true)
+                .OnComplete(() =>
+                {
+                    canvasGroup.interactable = false;
+                    canvasGroup.blocksRaycasts = false;
+                });
+        }
+
+        /// <summary>
+        /// 즉시 표시 (로드/복원 시 사용)
+        /// </summary>
+        public void ShowImmediate()
+        {
+            KillAnimations();
+
+            if (rectTransform != null)
+                rectTransform.anchoredPosition = new Vector2(rectTransform.anchoredPosition.x, originalY);
+
             if (canvasGroup != null)
             {
                 canvasGroup.alpha = 1f;
@@ -500,10 +564,17 @@ namespace LoveAlgo.Story
             }
         }
 
-        public void Hide()
+        /// <summary>
+        /// 즉시 숨김 (초기화/로드 시 사용)
+        /// </summary>
+        public void HideImmediate()
         {
-            StopDotsAnimation();  // 독백 dots 정지
-            
+            StopDotsAnimation();
+            KillAnimations();
+
+            if (rectTransform != null)
+                rectTransform.anchoredPosition = new Vector2(rectTransform.anchoredPosition.x, originalY);
+
             if (canvasGroup != null)
             {
                 canvasGroup.alpha = 0f;
@@ -516,48 +587,15 @@ namespace LoveAlgo.Story
             }
         }
 
-        public async UniTask FadeInAsync(float duration, CancellationToken ct)
+        /// <summary>
+        /// 진행 중인 Show/Hide/Slide 애니메이션 정리
+        /// </summary>
+        void KillAnimations()
         {
-            if (canvasGroup == null)
-            {
-                Show();
-                return;
-            }
-
-            canvasGroup.interactable = true;
-            canvasGroup.blocksRaycasts = true;
-
-            float elapsed = 0f;
-            while (elapsed < duration)
-            {
-                ct.ThrowIfCancellationRequested();
-                elapsed += Time.deltaTime;
-                canvasGroup.alpha = Mathf.Clamp01(elapsed / duration);
-                await UniTask.Yield(ct);
-            }
-            canvasGroup.alpha = 1f;
-        }
-
-        public async UniTask FadeOutAsync(float duration, CancellationToken ct)
-        {
-            if (canvasGroup == null)
-            {
-                Hide();
-                return;
-            }
-
-            float elapsed = 0f;
-            while (elapsed < duration)
-            {
-                ct.ThrowIfCancellationRequested();
-                elapsed += Time.deltaTime;
-                canvasGroup.alpha = 1f - Mathf.Clamp01(elapsed / duration);
-                await UniTask.Yield(ct);
-            }
-
-            canvasGroup.alpha = 0f;
-            canvasGroup.interactable = false;
-            canvasGroup.blocksRaycasts = false;
+            showHideTween?.Kill();
+            showHideTween = null;
+            slideSequence?.Kill();
+            slideSequence = null;
         }
 
         #endregion
@@ -805,15 +843,50 @@ namespace LoveAlgo.Story
         void OnHideClick()
         {
             isHidden = true;
-            Hide();
-            if (showButtonObject != null) showButtonObject.SetActive(true);
+            StopDotsAnimation();
+            KillAnimations();
+
+            // 슬라이드 다운 + 페이드 아웃
+            slideSequence = DOTween.Sequence();
+            if (canvasGroup != null)
+                slideSequence.Join(canvasGroup.DOFade(0f, slideDuration).SetEase(Ease.InCubic));
+            if (rectTransform != null)
+                slideSequence.Join(rectTransform.DOAnchorPosY(originalY - slideDistance, slideDuration).SetEase(Ease.InCubic));
+            slideSequence.SetUpdate(true);
+            slideSequence.OnComplete(() =>
+            {
+                if (canvasGroup != null)
+                {
+                    canvasGroup.interactable = false;
+                    canvasGroup.blocksRaycasts = false;
+                }
+                if (showButtonObject != null) showButtonObject.SetActive(true);
+            });
         }
 
         void OnShowClick()
         {
             isHidden = false;
-            Show();
             if (showButtonObject != null) showButtonObject.SetActive(false);
+            KillAnimations();
+
+            // 시작 위치: 아래에서
+            if (rectTransform != null)
+                rectTransform.anchoredPosition = new Vector2(rectTransform.anchoredPosition.x, originalY - slideDistance);
+            if (canvasGroup != null)
+            {
+                canvasGroup.alpha = 0f;
+                canvasGroup.interactable = true;
+                canvasGroup.blocksRaycasts = true;
+            }
+
+            // 슬라이드 업 + 페이드 인
+            slideSequence = DOTween.Sequence();
+            if (canvasGroup != null)
+                slideSequence.Join(canvasGroup.DOFade(1f, slideDuration).SetEase(Ease.OutCubic));
+            if (rectTransform != null)
+                slideSequence.Join(rectTransform.DOAnchorPosY(originalY, slideDuration).SetEase(Ease.OutCubic));
+            slideSequence.SetUpdate(true);
         }
 
         #endregion

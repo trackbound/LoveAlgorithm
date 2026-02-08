@@ -164,7 +164,7 @@ namespace LoveAlgo.Tester
             runner?.Stop();
             
             // UI 초기화
-            UIManager.Instance?.DialogueUI?.Show();
+            UIManager.Instance?.DialogueUI?.ShowImmediate();
             StageManager.Instance?.Character?.ClearAll();
             StageManager.Instance?.VirtualBG?.HideImmediate();
             ScreenFX.Instance?.SetClear();

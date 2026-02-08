@@ -713,7 +713,7 @@ namespace LoveAlgo.Story
             // FadeOut 완료 후 대사창 숨김 (화면이 완전히 덮인 후)
             if (command == "FadeOut")
             {
-                dialogueUI?.Hide();
+                dialogueUI?.HideImmediate();
             }
         }
 
