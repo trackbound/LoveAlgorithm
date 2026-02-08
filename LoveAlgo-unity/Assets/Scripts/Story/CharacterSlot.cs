@@ -31,9 +31,11 @@ namespace LoveAlgo.Story
         [SerializeField] RectTransform imageContainer;  // 이미지들의 부모 (스케일/오프셋 적용용)
 
         [Header("설정")]
-        [SerializeField] float fadeDuration = 1.0f;
+        [SerializeField] float fadeDuration = 0.7f;
+        [SerializeField] float exitDuration = 0.4f;
         [SerializeField] float emoteFadeDuration = 0.2f;
-        [SerializeField] float enterOffset = 100f;      // 등장 시 슬라이드 거리
+        [SerializeField] float enterOffset = 100f;       // 등장 시 슬라이드 거리
+        [SerializeField] float exitSlideDistance = 40f;  // 퇴장 시 슬라이드 거리
 
         [Header("캐릭터 DB")]
         [SerializeField] CharacterDatabase characterDatabase;
@@ -112,11 +114,11 @@ namespace LoveAlgo.Story
             var sequence = DOTween.Sequence();
             if (rectTransform != null)
             {
-                _ = sequence.Join(rectTransform.DOAnchorPos(originalPosition, fadeDuration).SetEase(Ease.OutCubic));
+                _ = sequence.Join(rectTransform.DOAnchorPos(originalPosition, fadeDuration).SetEase(Ease.OutQuart));
             }
             if (slotCanvasGroup != null)
             {
-                _ = sequence.Join(slotCanvasGroup.DOFade(1f, fadeDuration));
+                _ = sequence.Join(slotCanvasGroup.DOFade(1f, fadeDuration).SetEase(Ease.OutCubic));
             }
 
             await sequence.ToUniTask(cancellationToken: ct);
@@ -183,13 +185,26 @@ namespace LoveAlgo.Story
 
             string exitingCharacter = currentCharacter;
 
-            // 퇴장 애니메이션: 슬롯 전체 페이드 아웃
+            // 퇴장 애니메이션: 슬라이드 다운 + 페이드 아웃
+            var sequence = DOTween.Sequence();
+            if (rectTransform != null)
+            {
+                _ = sequence.Join(rectTransform.DOAnchorPos(
+                    originalPosition + new Vector2(0, -exitSlideDistance), exitDuration)
+                    .SetEase(Ease.InCubic));
+            }
             if (slotCanvasGroup != null)
             {
-                await slotCanvasGroup.DOFade(0f, fadeDuration).ToUniTask(cancellationToken: ct);
+                _ = sequence.Join(slotCanvasGroup.DOFade(0f, exitDuration).SetEase(Ease.InQuad));
             }
+            await sequence.ToUniTask(cancellationToken: ct);
+
+            // 위치 복원 (다음 입장용)
+            if (rectTransform != null)
+                rectTransform.anchoredPosition = originalPosition;
 
             EnableImages(false);
+            ResetCharacterTransform();
             currentCharacter = null;
             currentEmote = null;
             

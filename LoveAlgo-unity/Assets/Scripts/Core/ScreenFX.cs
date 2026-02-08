@@ -214,7 +214,7 @@ namespace LoveAlgo.Core
             }
 
             fadeOverlay.raycastTarget = true;
-            await fadeOverlay.DOFade(1f, duration).ToUniTask(cancellationToken: ct);
+            await fadeOverlay.DOFade(1f, duration).SetEase(Ease.InQuad).ToUniTask(cancellationToken: ct);
         }
 
         /// <summary>
@@ -228,7 +228,7 @@ namespace LoveAlgo.Core
                 return;
             }
 
-            await fadeOverlay.DOFade(0f, duration).ToUniTask(cancellationToken: ct);
+            await fadeOverlay.DOFade(0f, duration).SetEase(Ease.OutCubic).ToUniTask(cancellationToken: ct);
             fadeOverlay.raycastTarget = false;
         }
 

@@ -29,6 +29,9 @@ namespace LoveAlgo.Story
         bool waitingForClick;
         bool clickReceived;
 
+        // 연출→대사 호흡 (시각 연출 후 대사 시작 전 짧은 뜸)
+        bool needsPreTextBeat;
+
         // Auto 모드
         bool autoMode;
         float autoDelayBase = 1.5f;           // 기본 딜레이
@@ -395,6 +398,18 @@ namespace LoveAlgo.Story
                 // Next 처리
                 await HandleNextAsync(line, ct);
 
+                // 시각 연출 후 대사 시작 전 호흡 플래그
+                switch (line.Type)
+                {
+                    case LineType.Char:
+                    case LineType.BG:
+                    case LineType.CG:
+                    case LineType.Overlay:
+                    case LineType.FX:
+                        needsPreTextBeat = true;
+                        break;
+                }
+
                 currentIndex++;
             }
 
@@ -515,6 +530,14 @@ namespace LoveAlgo.Story
 
         async UniTask ExecuteTextAsync(ScriptLine line, CancellationToken ct)
         {
+            // 연출→대사 호흡: 시각 연출(캐릭터 등장/배경 전환 등) 직후
+            // 대사가 바로 시작되면 급박하게 느껴지므로 짧은 뜸을 둠
+            if (needsPreTextBeat)
+            {
+                needsPreTextBeat = false;
+                await UniTask.Delay(TimeSpan.FromSeconds(0.15f), cancellationToken: ct);
+            }
+
             // 독백 딤 처리
             bool isMonologue = string.IsNullOrEmpty(line.Speaker);
             var monologueDim = StageManager.Instance?.MonologueDim;

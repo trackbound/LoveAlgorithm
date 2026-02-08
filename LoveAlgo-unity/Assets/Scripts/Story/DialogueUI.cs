@@ -578,7 +578,7 @@ namespace LoveAlgo.Story
             canvasGroup.interactable = true;
             canvasGroup.blocksRaycasts = true;
             showHideTween = canvasGroup.DOFade(1f, fadeDuration)
-                .SetEase(Ease.OutQuad)
+                .SetEase(Ease.OutCubic)
                 .SetUpdate(true);
         }
 
@@ -595,7 +595,7 @@ namespace LoveAlgo.Story
             KillAnimations();
 
             showHideTween = canvasGroup.DOFade(0f, fadeDuration)
-                .SetEase(Ease.OutQuad)
+                .SetEase(Ease.InCubic)
                 .SetUpdate(true)
                 .OnComplete(() =>
                 {
