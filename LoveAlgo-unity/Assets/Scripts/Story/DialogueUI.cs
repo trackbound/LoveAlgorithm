@@ -58,7 +58,7 @@ namespace LoveAlgo.Story
         CancellationTokenSource dotsAnimCts;
 
         [Header("대사창 애니메이션")]
-        [SerializeField] float fadeDuration = 0.15f;       // Show/Hide 페이드 속도
+        [SerializeField] float fadeDuration = 0.25f;       // Show/Hide 페이드 속도
         [SerializeField] float slideDuration = 0.25f;      // 버튼 슬라이드 속도
         [SerializeField] float slideDistance = 200f;       // 슬라이드 거리 (px)
 
@@ -78,6 +78,7 @@ namespace LoveAlgo.Story
         bool skipRequested;
         string fullText;
         bool isHidden;
+        bool needsFadeIn;  // 다음 Show 시 페이드인 필요 여부
 
         /// <summary>
         /// 마지막 표시된 텍스트 길이 (Auto 딜레이 계산용)
@@ -160,8 +161,14 @@ namespace LoveAlgo.Story
             HideNextIndicator();
             dialogueText.text = "";
 
-            // 대사창 표시 (Hide 상태가 아닐 때만, 텍스트가 비워진 후 보여줌)
-            if (!isHidden) Show();
+            // 대사창 표시 (Hide 상태가 아닐 때만, 텍스트가 비워진 후 보여줄)
+            if (!isHidden)
+            {
+                bool shouldWaitFade = needsFadeIn;
+                Show();
+                if (shouldWaitFade)
+                    await UniTask.Delay(System.TimeSpan.FromSeconds(fadeDuration), cancellationToken: ct);
+            }
 
             float currentSpeed = typingSpeed;
 
@@ -506,9 +513,10 @@ namespace LoveAlgo.Story
         /// </summary>
         public void Show()
         {
-            if (canvasGroup == null) { gameObject.SetActive(true); return; }
+            if (canvasGroup == null) { gameObject.SetActive(true); needsFadeIn = false; return; }
 
             KillAnimations();
+            needsFadeIn = false;
 
             // 슬라이드 위치 복원
             if (rectTransform != null)
@@ -527,6 +535,7 @@ namespace LoveAlgo.Story
         public void Hide()
         {
             StopDotsAnimation();
+            needsFadeIn = true;
 
             if (canvasGroup == null) { gameObject.SetActive(false); return; }
 
@@ -548,6 +557,7 @@ namespace LoveAlgo.Story
         public void ShowImmediate()
         {
             KillAnimations();
+            needsFadeIn = false;
 
             if (rectTransform != null)
                 rectTransform.anchoredPosition = new Vector2(rectTransform.anchoredPosition.x, originalY);
@@ -571,6 +581,7 @@ namespace LoveAlgo.Story
         {
             StopDotsAnimation();
             KillAnimations();
+            needsFadeIn = true;
 
             if (rectTransform != null)
                 rectTransform.anchoredPosition = new Vector2(rectTransform.anchoredPosition.x, originalY);
