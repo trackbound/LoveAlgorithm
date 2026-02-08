@@ -124,13 +124,13 @@ namespace LoveAlgo.UI
             if (hasData)
             {
                 // 덮어쓰기 확인
-                bool confirm = await PopupManager.Instance.ConfirmAsync("기존 데이터를 덮어쓰시겠습니까?");
+                bool confirm = await PopupManager.Instance.ConfirmAsync("슬롯의 기존 데이터는 사라집니다.\n저장을 계속하시겠습니까?");
                 if (!confirm) return;
             }
             else
             {
                 // 새 슬롯에 저장 확인
-                bool confirm = await PopupManager.Instance.ConfirmAsync($"슬롯 {slotIndex}에 저장하시겠습니까?");
+                bool confirm = await PopupManager.Instance.ConfirmAsync("해당 슬롯에 저장하시겠습니까?");
                 if (!confirm) return;
             }
 
