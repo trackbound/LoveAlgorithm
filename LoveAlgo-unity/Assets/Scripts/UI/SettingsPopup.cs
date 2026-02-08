@@ -49,14 +49,15 @@ namespace LoveAlgo.UI
         [Header("해상도 적용 버튼")]
         [SerializeField] Button applyButton; // 해상도 전용 즉시 적용 + 저장 (ResolutionIndex / Fullscreen)
 
-        // 해상도 목록
+        // 해상도 목록 (스프라이트 순서와 대응)
         readonly (int w, int h)[] resolutions = {
-            (1280, 720),
-            (1600, 900),
             (1920, 1080),
-            (2560, 1440)
+            (1440, 810),
+            (1280, 720),
+            (960, 540),
+            (800, 450)
         };
-        int currentResolutionIndex = 2; // 기본 1920x1080
+        int currentResolutionIndex = 0; // 기본 1920x1080
         bool isFullscreen = true;
 
         // 변경사항 추적
@@ -127,7 +128,7 @@ namespace LoveAlgo.UI
 
         public override void Hide()
         {
-            SaveSettings();
+            // 저장은 적용 버튼 또는 닫기 확인에서만 수행
             base.Hide();
         }
 
@@ -139,7 +140,7 @@ namespace LoveAlgo.UI
         {
             // 화면 설정
             isFullscreen = PlayerPrefs.GetInt("Fullscreen", 1) == 1;
-            currentResolutionIndex = PlayerPrefs.GetInt("ResolutionIndex", 2);
+            currentResolutionIndex = PlayerPrefs.GetInt("ResolutionIndex", 0);
             UpdateWindowModeUI();
             UpdateResolutionUI();
 
@@ -285,40 +286,42 @@ namespace LoveAlgo.UI
 
         void OnConfirmClick()
         {
-            // 상단 우측의 '적용' 버튼(Confirm)은 "해상도 제외" 설정을 저장하고 창을 닫습니다.
+            // '적용' 버튼: 슬라이더 설정만 저장 (해상도 미포함, 창 닫지 않음)
             SaveSettings();
             isDirty = false;
             PopupManager.Instance?.Toast("적용", "설정이 저장되었습니다.");
-            Close();
         }
 
         void OnResetClick()
         {
-            // 기본값으로 초기화 (해상도 포함 UI 값 리셋하되 해상도는 'Apply'로 별도 적용)
-            isFullscreen = true;
-            currentResolutionIndex = 2; // 1920x1080
-            UpdateWindowModeUI();
-            UpdateResolutionUI();
-            MarkResolutionDirty();
+            // 슬라이더만 기본값(0.5)으로 초기화 — 해상도 영역은 건드리지 않음
+            const float defaultValue = 0.5f;
 
-            bgmSlider?.SetValueWithoutNotify(0.8f);
-            sfxSlider?.SetValueWithoutNotify(1f);
+            bgmSlider?.SetValueWithoutNotify(defaultValue);
+            sfxSlider?.SetValueWithoutNotify(defaultValue);
 
-            voiceYeunSlider?.SetValueWithoutNotify(1f);
-            voiceDaeunSlider?.SetValueWithoutNotify(1f);
-            voiceBomSlider?.SetValueWithoutNotify(1f);
-            voiceHeewonSlider?.SetValueWithoutNotify(1f);
-            voiceRoaSlider?.SetValueWithoutNotify(1f);
+            voiceYeunSlider?.SetValueWithoutNotify(defaultValue);
+            voiceDaeunSlider?.SetValueWithoutNotify(defaultValue);
+            voiceBomSlider?.SetValueWithoutNotify(defaultValue);
+            voiceHeewonSlider?.SetValueWithoutNotify(defaultValue);
+            voiceRoaSlider?.SetValueWithoutNotify(defaultValue);
 
-            textSpeedSlider?.SetValueWithoutNotify(0.5f);
-            autoSpeedSlider?.SetValueWithoutNotify(0.5f);
+            textSpeedSlider?.SetValueWithoutNotify(defaultValue);
+            autoSpeedSlider?.SetValueWithoutNotify(defaultValue);
 
-            // 볼륨 즉시 적용 (피드백을 위해 즉시 적용)
-            AudioManager.Instance?.SetBGMVolume(0.8f);
-            AudioManager.Instance?.SetSFXVolume(1f);
+            // 실시간 오디오 반영 (슬라이더 피드백)
+            AudioManager.Instance?.SetBGMVolume(defaultValue);
+            AudioManager.Instance?.SetSFXVolume(defaultValue);
+            AudioManager.Instance?.SetCharacterVoiceVolume("Yeun", defaultValue);
+            AudioManager.Instance?.SetCharacterVoiceVolume("Daeun", defaultValue);
+            AudioManager.Instance?.SetCharacterVoiceVolume("Bom", defaultValue);
+            AudioManager.Instance?.SetCharacterVoiceVolume("Heewon", defaultValue);
+            AudioManager.Instance?.SetCharacterVoiceVolume("Roa", defaultValue);
+            UIManager.Instance?.DialogueUI?.SetTextSpeed(defaultValue);
+            ScriptRunner.Instance?.SetAutoDelay(defaultValue);
 
             isDirty = true;
-            PopupManager.Instance?.Toast("초기화", "설정이 기본값으로 초기화되었습니다.");
+            PopupManager.Instance?.Toast("초기화", "슬라이더가 기본값으로 초기화되었습니다.");
         }
 
         #endregion
@@ -330,25 +333,38 @@ namespace LoveAlgo.UI
         /// </summary>
         public override async UniTask<bool> TryCloseAsync()
         {
-            if (!isDirty && !isResolutionDirty)
+            // 해상도 변경은 Resolution 적용 버튼 전용 → 닫을 때 무시(확인팝업 없이 폐기)
+            if (isResolutionDirty)
             {
-                return true;  // 변경 없으면 바로 닫기
+                // UI만 저장값으로 복원 (실제 화면은 Apply 안 했으므로 변경 없음)
+                isFullscreen = PlayerPrefs.GetInt("Fullscreen", 1) == 1;
+                currentResolutionIndex = PlayerPrefs.GetInt("ResolutionIndex", 0);
+                UpdateWindowModeUI();
+                UpdateResolutionUI();
+                isResolutionDirty = false;
             }
 
-            // 확인 팝업 표시
-            bool confirm = await PopupManager.Instance.ConfirmAsync(
-                "변경사항이 저장되지 않았습니다.\n저장하지 않고 닫으시겠습니까?");
-
-            if (confirm)
+            // 슬라이더 변경사항 없으면 바로 닫기
+            if (!isDirty)
             {
-                // 저장 안 하고 닫기 - 이전 값 복원
-                RevertSettings();
-                isDirty = false;
-                isResolutionDirty = false;
                 return true;
             }
 
-            return false;  // 취소 - 닫지 않음
+            // 슬라이더 변경사항이 있으면 확인 팝업
+            bool save = await PopupManager.Instance.ConfirmAsync("변경된 정보가 있습니다.\n저장 하시겠습니까?",
+                confirmText: "예", cancelText: "아니요");
+
+            if (save)
+            {
+                SaveSettings();
+            }
+            else
+            {
+                RevertSettings();
+            }
+
+            isDirty = false;
+            return true;  // 어느 쪽이든 닫기
         }
 
         /// <summary>

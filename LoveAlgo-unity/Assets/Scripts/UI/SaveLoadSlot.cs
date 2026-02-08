@@ -68,7 +68,7 @@ namespace LoveAlgo.UI
                 chapterText.text = chapter ?? "알 수 없음";
             
             if (dateText != null)
-                dateText.text = saveTime.ToString("yyyy.MM.dd HH:mm");
+                dateText.text = saveTime.ToString("yyyy/MM/dd HH:mm");
 
             if (screenshotImage != null)
             {

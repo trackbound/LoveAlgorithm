@@ -19,6 +19,7 @@ namespace LoveAlgo.UI
 
         protected Vector2 originalPosition;
         Sequence currentSequence;
+        UniTaskCompletionSource hideCompletionSource;
 
         protected virtual void Awake()
         {
@@ -37,6 +38,16 @@ namespace LoveAlgo.UI
         {
             KillSequence();
             PlayHideAnimation();
+        }
+
+        /// <summary>
+        /// Hide 애니메이션 완료까지 대기 가능한 버전
+        /// </summary>
+        public virtual UniTask HideAsync()
+        {
+            hideCompletionSource = new UniTaskCompletionSource();
+            Hide();
+            return hideCompletionSource.Task;
         }
 
         /// <summary>
@@ -85,6 +96,7 @@ namespace LoveAlgo.UI
             if (panelRect == null || canvasGroup == null)
             {
                 gameObject.SetActive(false);
+                hideCompletionSource?.TrySetResult();
                 return;
             }
 
@@ -111,6 +123,7 @@ namespace LoveAlgo.UI
             {
                 panelRect.localScale = Vector3.one;
                 gameObject.SetActive(false);
+                hideCompletionSource?.TrySetResult();
             });
 
             currentSequence = seq;

@@ -134,24 +134,24 @@ namespace LoveAlgo.UI
                 if (!confirm) return;
             }
 
+            // 저장 실행 + 슬롯 갱신 (팝업은 유지)
             onSlotSelected?.Invoke(slotIndex);
-            Close();
+            RefreshSlots();
         }
 
         async UniTaskVoid OnLoadSlotClicked(int slotIndex)
         {
-            if (!SaveManager.Exists(slotIndex))
-            {
-                PopupManager.Instance?.Toast("빈 슬롯", "저장된 데이터가 없습니다.");
-                return;
-            }
+            // 빈 슬롯은 무반응
+            if (!SaveManager.Exists(slotIndex)) return;
 
-            // 로드 확인 (현재 진행 데이터 유실 경고)
-            bool confirm = await PopupManager.Instance.ConfirmAsync("현재 진행 중인 데이터는 사라집니다.\n불러오시겠습니까?");
+            // 로드 확인
+            bool confirm = await PopupManager.Instance.ConfirmAsync("해당 데이터를 불러오시겠습니까?");
             if (!confirm) return;
 
+            // 로드는 씬 전환이므로 팝업 닫고 실행
+            await PopupManager.Instance.CloseModalAsync();
+            await UniTask.Delay(150);
             onSlotSelected?.Invoke(slotIndex);
-            Close();
         }
 
         #region Pagination
@@ -196,31 +196,21 @@ namespace LoveAlgo.UI
         void UpdatePageUI()
         {
             if (pageText != null)
-                pageText.text = $"{currentPage} / {totalPages}";
-
-            if (prevButton != null)
-                prevButton.interactable = currentPage > 1;
-
-            if (nextButton != null)
-                nextButton.interactable = currentPage < totalPages;
+                pageText.text = $"{currentPage}";
         }
 
         void PrevPage()
         {
-            if (currentPage > 1)
-            {
-                currentPage--;
-                RefreshSlots();
-            }
+            // 첫 페이지에서 이전 → 마지막 페이지 (Loop)
+            currentPage = currentPage > 1 ? currentPage - 1 : totalPages;
+            RefreshSlots();
         }
 
         void NextPage()
         {
-            if (currentPage < totalPages)
-            {
-                currentPage++;
-                RefreshSlots();
-            }
+            // 마지막 페이지에서 다음 → 첫 페이지 (Loop)
+            currentPage = currentPage < totalPages ? currentPage + 1 : 1;
+            RefreshSlots();
         }
 
         #endregion

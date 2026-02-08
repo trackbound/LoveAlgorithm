@@ -189,14 +189,14 @@ namespace LoveAlgo.UI
         /// <summary>
         /// 확인 팝업 (예/아니오) - Async 버전
         /// </summary>
-        public UniTask<bool> ConfirmAsync(string message)
+        public UniTask<bool> ConfirmAsync(string message, string confirmText = null, string cancelText = null)
         {
             if (confirmPopup == null)
             {
                 Debug.LogWarning("[PopupManager] confirmPopup이 바인딩되지 않음");
                 return UniTask.FromResult(false);
             }
-            return confirmPopup.ShowAsync(message, sub: null);
+            return confirmPopup.ShowAsync(message, sub: null, confirmText: confirmText, cancelText: cancelText);
         }
 
         /// <summary>
@@ -313,6 +313,25 @@ namespace LoveAlgo.UI
                     
                 currentModal = null;
                 ShowDimmer(false);
+            }
+        }
+
+        /// <summary>
+        /// 현재 Modal 닫기 (애니메이션 완료까지 대기)
+        /// </summary>
+        public async UniTask CloseModalAsync()
+        {
+            if (currentModal != null)
+            {
+                var popup = currentModal.GetComponent<ModalPopupBase>();
+                ShowDimmer(false);  // 디머와 패널 동시 페이드
+
+                if (popup != null)
+                    await popup.HideAsync();
+                else
+                    currentModal.SetActive(false);
+
+                currentModal = null;
             }
         }
 
