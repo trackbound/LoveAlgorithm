@@ -59,6 +59,11 @@ namespace LoveAlgo.UI
         void Awake()
         {
             button = GetComponent<Button>();
+
+            // Button 내장 ColorTint가 커스텀 호버 효과와 충돌 방지
+            if (button.transition == Selectable.Transition.ColorTint)
+                button.transition = Selectable.Transition.None;
+
             originalScale = transform.localScale;
 
             // 자동 바인딩

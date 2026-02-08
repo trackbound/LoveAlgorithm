@@ -24,6 +24,11 @@ namespace LoveAlgo.UI
         {
             button = GetComponent<Button>();
 
+            // Button 내장 ColorTint가 DOColor 트윈과 충돌하면
+            // OnPointerExit 시 normalColor로 복귀가 안 되는 버그 발생
+            if (button != null && button.transition == Selectable.Transition.ColorTint)
+                button.transition = Selectable.Transition.None;
+
             // 초기 상태 리셋 및 색상 적용
             ResetState();
         }
@@ -107,7 +112,14 @@ namespace LoveAlgo.UI
 
             if (fadeDuration > 0 && gameObject.activeInHierarchy)
             {
-                target.currentTween = target.target.DOColor(color, fadeDuration);
+                var endColor = color;
+                target.currentTween = target.target.DOColor(endColor, fadeDuration)
+                    .OnComplete(() =>
+                    {
+                        // DOTween 완료 시 최종 색상 보장 (엔진 리빌드 시 색상 유실 방지)
+                        if (target.target != null)
+                            target.target.color = endColor;
+                    });
             }
             else
             {
