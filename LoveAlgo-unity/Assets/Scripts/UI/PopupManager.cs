@@ -406,6 +406,9 @@ namespace LoveAlgo.UI
         {
             if (dimmer == null) return;
 
+            // 기존 dimmer 트윈 정리 (DOTween.KillAll() 등으로 OnComplete 누락 방지)
+            dimmerCanvasGroup?.DOKill();
+
             if (show)
             {
                 dimmer.SetActive(true);
@@ -421,7 +424,7 @@ namespace LoveAlgo.UI
                 {
                     dimmerCanvasGroup.DOFade(0f, dimmerFadeDuration)
                         .SetEase(Ease.InQuad)
-                        .OnComplete(() => dimmer.SetActive(false));
+                        .OnKill(() => { if (dimmer != null) dimmer.SetActive(false); });
                 }
                 else
                 {

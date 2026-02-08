@@ -376,7 +376,7 @@ DEMO_student_center,FX,,Setup:BG=StudentCenter/BG_StudentCenter_Front_Day|BGM=Da
 ,Overlay,,Roa_Theme:FadeIn:0.5,await
 ,Char,,C:Enter:Roa,await
 ,Text,로아,"중앙동아리 신청서 내러 가야 해, 잊지 마!",click
-,Text,{{PlayerName}},볌써 학생회관 앞이야.,click
+,Text,{{PlayerName}},벌써 학생회관 앞이야.,click
 ,Char,,C:Exit,await
 ,Overlay,,FadeOut:0.3,>  # [로아 Overlay 종료 6/9]
 ,Text,,중앙동아리 자격을 연장하려면 매 학기마다 신청서를 내야 한다.,click
@@ -472,8 +472,8 @@ DEMO_yeun_cg,FX,,Setup:BG=StudentCenter/BG_StudentCenter_Front_Day|BGM=Yeun|Char
 ,Text,{{PlayerName}},"그렇다고 무슨 다리를,",click
 ,Text,하예은,"아씨, 답답하게 진짜!",click
 ,Char,,C:Exit,await
-,CG,,CG/Yeun_LegDesk:Fade:1.0,await
-,FX,,DialogueShow,>
+,CG,,CG/CG_Yeun_01:Fade:1.0,click
+,FX,,DialogueShow,await
 ,Text,,예은이 덥석 내 왼쪽 무릎 뒤편에 손바닥을 대고 잡아올려 옆의 화단에 올려두었다.\n그러고는 망설임 없이 가입신청서를 내 허벅지에 올려두고는 작성하기 시작했다.,click
 ,Text,하예은,"태권도…학과, 이름, 하…예, 은.",click
 ,Text,,작은 목소리로 하나하나 칸을 채워가는 예은의 손이 움직일 때마다\n다리 위에서 볼펜이 지나가는 자국이 간지러웠다.,click
@@ -536,6 +536,7 @@ DEMO_yeun_cg,FX,,Setup:BG=StudentCenter/BG_StudentCenter_Front_Day|BGM=Yeun|Char
 ,Text,,하지만 솔직히 영 감이 오지 않는다.\n3명을 어디서 더 구하는 게 좋지?,click
 ,Text,,로아의 코드를 이것저것 살펴보다가도 그 생각에 좀처럼 집중하기가 어려웠다.,click
 ,Text,,"그러다 보니 시간이 흐르는 걸 눈치채지 못했는데, 어느새 어두워졌다.",click# [로아 Overlay 시작 8/9]
+,Char,,C:Enter:Roa,await
 ,Overlay,,Roa_Theme:FadeIn:0.5,await
 ,Text,로아,"{{PlayerName}}, 벌써 새벽 1시야. 자야지!",click
 ,Text,,새벽 1시라고? 그 말에 시계를 바라보니 정말로 1시가 훌쩍 넘어 있었다.,click

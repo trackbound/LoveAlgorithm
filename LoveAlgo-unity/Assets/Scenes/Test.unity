@@ -2263,26 +2263,35 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.UI.PetalParticleUI
   petalSprite: {fileID: 21300000, guid: 1c5849883347bf540bebd85c1640cf25, type: 3}
-  maxPetals: 25
-  spawnInterval: 0.4
-  minSize: 20
-  maxSize: 45
-  minFallSpeed: 30
-  maxFallSpeed: 80
-  minHorizontalSpeed: -25
-  maxHorizontalSpeed: 15
-  minSwayAmplitude: 15
-  maxSwayAmplitude: 40
-  minSwayFrequency: 0.5
-  maxSwayFrequency: 1.5
-  minRotateSpeed: 30
-  maxRotateSpeed: 120
+  maxPetals: 55
+  spawnInterval: 0.3
+  minSize: 32
+  maxSize: 50
+  gravity: 8
+  terminalSpeed: 16
+  airDrag: 1.8
+  windDriftX: 3
+  windNoiseStrength: 6
+  windNoiseSpeed: 0.15
+  windVertStrength: 5
+  windVertNoiseSpeed: 0.1
+  swayStrength: 30
+  swaySpeed: 0.3
+  hoverStrength: 12
+  hoverNoiseSpeed: 0.08
+  flipMinScale: 0.15
+  flipNoiseSpeed: 0.25
+  tiltNoiseSpeed: 0.2
+  minZRotSpeed: 8
+  maxZRotSpeed: 35
+  zRotNoiseSpeed: 0.15
   startAlpha: 0
   peakAlpha: 0.7
   fadeInRatio: 0.1
   fadeOutRatio: 0.2
   spawnMarginTop: 50
   spawnMarginSide: 100
+  warmUpFill: 0.85
 --- !u!1 &828200860
 GameObject:
   m_ObjectHideFlags: 0
@@ -4965,6 +4974,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 25110f17adb02384badaa4d16ebbc5c3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.Core.StoryInputHandler
+  skipInterval: 0.08
 --- !u!1 &2117758893
 GameObject:
   m_ObjectHideFlags: 0

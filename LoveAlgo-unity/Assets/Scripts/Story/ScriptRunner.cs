@@ -748,7 +748,8 @@ namespace LoveAlgo.Story
                     return; // ScreenFX 실행 안 함
                     
                 case "DialogueShow":
-                    // 대사창 표시 (단독 명령)
+                    // 대사창 표시 (단독 명령) — 이전 대사 제거 후 표시
+                    dialogueUI?.Clear();
                     dialogueUI?.Show();
                     return; // ScreenFX 실행 안 함
             }
