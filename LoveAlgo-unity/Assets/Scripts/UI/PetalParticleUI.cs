@@ -15,50 +15,50 @@ namespace LoveAlgo.UI
         [Header("꽃잎 설정")]
         [SerializeField] Sprite petalSprite;
         [SerializeField] int maxPetals = 30;
-        [SerializeField] float spawnInterval = 0.35f;
+        [SerializeField] float spawnInterval = 0.55f;
 
         [Header("크기")]
-        [SerializeField] float minSize = 18f;
-        [SerializeField] float maxSize = 40f;
+        [SerializeField] float minSize = 16f;
+        [SerializeField] float maxSize = 36f;
 
         [Header("낙하")]
-        [SerializeField] float minFallSpeed = 12f;
-        [SerializeField] float maxFallSpeed = 35f;
+        [SerializeField] float minFallSpeed = 5f;
+        [SerializeField] float maxFallSpeed = 14f;
 
         [Header("바람 (은은한 산들바람)")]
         [Tooltip("글로벌 바람 — 모든 꽃잎에 영향, 개별 감도로 다양성 확보")]
-        [SerializeField] float windBaseX = 5f;            // 기본 횡방향(+ = 오른쪽)
-        [SerializeField] float windGustStrength = 10f;    // 돌풍 강도
-        [SerializeField] float windGustSpeed = 0.12f;     // 돌풍 주기 (Hz) — 느리게
-        [SerializeField] float windVertGust = 4f;         // 수직 돌풍 (위로 솟구침)
+        [SerializeField] float windBaseX = 3f;            // 기본 횡방향(+ = 오른쪽)
+        [SerializeField] float windGustStrength = 5f;     // 돌풍 강도
+        [SerializeField] float windGustSpeed = 0.06f;     // 돌풍 주기 (Hz) — 아주 느리게
+        [SerializeField] float windVertGust = 3f;         // 수직 돌풍 (위로 솟구침)
 
         [Header("개별 흔들림 (2중 사인파)")]
-        [SerializeField] float minSwayAmp1 = 10f;
-        [SerializeField] float maxSwayAmp1 = 25f;
-        [SerializeField] float minSwayFreq1 = 0.15f;
-        [SerializeField] float maxSwayFreq1 = 0.45f;
-        [SerializeField] float minSwayAmp2 = 4f;
-        [SerializeField] float maxSwayAmp2 = 10f;
-        [SerializeField] float minSwayFreq2 = 0.6f;
-        [SerializeField] float maxSwayFreq2 = 1.4f;
+        [SerializeField] float minSwayAmp1 = 15f;
+        [SerializeField] float maxSwayAmp1 = 35f;
+        [SerializeField] float minSwayFreq1 = 0.08f;
+        [SerializeField] float maxSwayFreq1 = 0.2f;
+        [SerializeField] float minSwayAmp2 = 5f;
+        [SerializeField] float maxSwayAmp2 = 12f;
+        [SerializeField] float minSwayFreq2 = 0.25f;
+        [SerializeField] float maxSwayFreq2 = 0.6f;
 
         [Header("3D 회전 시뮬레이션 (은은하게)")]
         [Tooltip("ScaleX/Y를 사인파로 줄였다 늘려 뒤집히는 듯한 효과")]
-        [SerializeField] float minFlipSpeed = 0.15f;
-        [SerializeField] float maxFlipSpeed = 0.5f;
-        [SerializeField] float flipMinScale = 0.4f;      // 최소 scale — 너무 얇아지지 않게
-        [SerializeField] float minTiltSpeed = 0.1f;
-        [SerializeField] float maxTiltSpeed = 0.4f;
+        [SerializeField] float minFlipSpeed = 0.06f;
+        [SerializeField] float maxFlipSpeed = 0.2f;
+        [SerializeField] float flipMinScale = 0.45f;     // 최소 scale — 너무 얇아지지 않게
+        [SerializeField] float minTiltSpeed = 0.05f;
+        [SerializeField] float maxTiltSpeed = 0.18f;
 
         [Header("Z 회전 (느린 기울기 변화)")]
-        [SerializeField] float minZRotSpeed = 5f;
-        [SerializeField] float maxZRotSpeed = 18f;
+        [SerializeField] float minZRotSpeed = 2f;
+        [SerializeField] float maxZRotSpeed = 8f;
 
         [Header("투명도")]
         [SerializeField] float startAlpha = 0f;
-        [SerializeField] float peakAlpha = 0.75f;
-        [SerializeField] float fadeInRatio = 0.12f;
-        [SerializeField] float fadeOutRatio = 0.25f;
+        [SerializeField] float peakAlpha = 0.7f;
+        [SerializeField] float fadeInRatio = 0.2f;
+        [SerializeField] float fadeOutRatio = 0.3f;
 
         [Header("스폰 영역")]
         [SerializeField] float spawnMarginTop = 60f;
@@ -240,7 +240,7 @@ namespace LoveAlgo.UI
                 rect = rt,
                 image = img,
                 fallSpeed = fallSpeed,
-                fallAccel = fallSpeed * Random.Range(0.1f, 0.25f), // 속도 변동폭
+                fallAccel = fallSpeed * Random.Range(0.05f, 0.15f), // 미세 속도 변동
 
                 swayAmp1 = Random.Range(minSwayAmp1, maxSwayAmp1),
                 swayFreq1 = Random.Range(minSwayFreq1, maxSwayFreq1),
@@ -259,8 +259,8 @@ namespace LoveAlgo.UI
                 baseX = spawnX,
                 posX = spawnX,
                 posY = spawnY,
-                driftSpeed = Random.Range(-4f, 3f),
-                windSensitivity = Random.Range(0.3f, 1.4f), // 꽃잎마다 바람 반응 다름
+                driftSpeed = Random.Range(-2f, 1.5f),
+                windSensitivity = Random.Range(0.3f, 1.2f), // 꽃잎마다 바람 반응 다름
 
                 lifetime = 0f,
                 maxLifetime = maxLife,
