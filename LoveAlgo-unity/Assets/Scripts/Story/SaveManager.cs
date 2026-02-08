@@ -256,5 +256,92 @@ namespace LoveAlgo.Story
             }
             return saves;
         }
+
+        #region Screenshot
+
+        /// <summary>
+        /// 스크린샷 저장 경로
+        /// </summary>
+        static string GetScreenshotPath(int slot)
+        {
+            string folder = Path.Combine(Application.persistentDataPath, SaveFolder);
+            if (!Directory.Exists(folder))
+                Directory.CreateDirectory(folder);
+            return Path.Combine(folder, $"save_{slot:D2}_thumb.png");
+        }
+
+        /// <summary>
+        /// 스크린샷 캐퍼 및 저장
+        /// </summary>
+        public static void CaptureScreenshot(int slot)
+        {
+            try
+            {
+                var tex = ScreenCapture.CaptureScreenshotAsTexture();
+                // 썬네일 크기로 축소 (256x144)
+                var thumb = ScaleTexture(tex, 256, 144);
+                byte[] png = thumb.EncodeToPNG();
+                File.WriteAllBytes(GetScreenshotPath(slot), png);
+                
+                UnityEngine.Object.Destroy(tex);
+                UnityEngine.Object.Destroy(thumb);
+                Debug.Log($"[SaveManager] 슬롯 {slot} 스크린샷 저장");
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning($"[SaveManager] 스크린샷 저장 실패: {e.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 스크린샷 로드 (슬롯 UI용)
+        /// </summary>
+        public static Sprite LoadScreenshot(int slot)
+        {
+            string path = GetScreenshotPath(slot);
+            if (!File.Exists(path)) return null;
+
+            try
+            {
+                byte[] png = File.ReadAllBytes(path);
+                var tex = new Texture2D(2, 2);
+                tex.LoadImage(png);
+                return Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), Vector2.one * 0.5f);
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning($"[SaveManager] 스크린샷 로드 실패: {e.Message}");
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// 텍스쳐 축소
+        /// </summary>
+        static Texture2D ScaleTexture(Texture2D source, int targetWidth, int targetHeight)
+        {
+            var rt = RenderTexture.GetTemporary(targetWidth, targetHeight);
+            Graphics.Blit(source, rt);
+            var prev = RenderTexture.active;
+            RenderTexture.active = rt;
+            var result = new Texture2D(targetWidth, targetHeight, TextureFormat.RGB24, false);
+            result.ReadPixels(new Rect(0, 0, targetWidth, targetHeight), 0, 0);
+            result.Apply();
+            RenderTexture.active = prev;
+            RenderTexture.ReleaseTemporary(rt);
+            return result;
+        }
+
+        /// <summary>
+        /// 스크린샷 삭제
+        /// </summary>
+        public static void DeleteScreenshot(int slot)
+        {
+            string path = GetScreenshotPath(slot);
+            if (File.Exists(path))
+                File.Delete(path);
+        }
+
+        #endregion
     }
 }

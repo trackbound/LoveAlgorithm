@@ -74,6 +74,15 @@ namespace LoveAlgo.Story
         /// </summary>
         public int LastDisplayedTextLength => fullText?.Length ?? 0;
 
+        /// <summary>
+        /// 텍스트 속도 설정 (0=느림, 1=빠름)
+        /// </summary>
+        public void SetTextSpeed(float normalized)
+        {
+            // 0=느림(0.08s/char), 1=빠름(0.01s/char)
+            typingSpeed = Mathf.Lerp(0.08f, 0.01f, normalized);
+        }
+
         // 대사 로그
         readonly List<DialogueLogEntry> dialogueLog = new();
         public IReadOnlyList<DialogueLogEntry> DialogueLog => dialogueLog;
@@ -88,6 +97,10 @@ namespace LoveAlgo.Story
             SetupButtons();
             LoadMonologueDotSprites();
             if (showButtonObject != null) showButtonObject.SetActive(false);
+
+            // 저장된 텍스트 속도 복원
+            float savedSpeed = PlayerPrefs.GetFloat("TextSpeed", 0.5f);
+            SetTextSpeed(savedSpeed);
         }
 
         void SetupButtons()

@@ -316,15 +316,12 @@ namespace LoveAlgo.UI
 
         void OnTextSpeedChanged(float value)
         {
-            // 0 = 느림, 1 = 빠름 (DialogueUI에서 사용)
-            // TODO: DialogueUI.Instance?.SetTextSpeed(value);
+            UIManager.Instance?.DialogueUI?.SetTextSpeed(value);
         }
 
         void OnAutoSpeedChanged(float value)
         {
-            // 0 = 느림 (긴 대기), 1 = 빠름 (짧은 대기)
-            // ScriptRunner의 autoDelay에 반영 (예: 4초 ~ 1초)
-            // TODO: ScriptRunner와 연동
+            ScriptRunner.Instance?.SetAutoDelay(value);
         }
 
         #endregion

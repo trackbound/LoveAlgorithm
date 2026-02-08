@@ -201,6 +201,33 @@ namespace LoveAlgo.Core
         }
 
         /// <summary>
+        /// 콘텐츠(데모) 분량 종료 시 호출
+        /// 페이드아웃 → 저장 팝업 → 타이틀 복귀
+        /// </summary>
+        public void OnContentEnd()
+        {
+            ShowEndOfContentAsync().Forget();
+        }
+
+        async UniTaskVoid ShowEndOfContentAsync()
+        {
+            // 페이드 아웃
+            await ScreenFX.Instance.FadeOutAsync(2f);
+
+            // 저장 확인
+            bool save = await PopupManager.Instance.ConfirmAsync("저장하시겠습니까?");
+            if (save)
+            {
+                AutoSave();
+                PopupManager.Instance?.Toast("저장", "저장되었습니다.");
+                await UniTask.Delay(1000);
+            }
+
+            // 타이틀로 복귀
+            GoToTitle();
+        }
+
+        /// <summary>
         /// 스케줄 선택 완료 → 스탯 적용 → 행동 소모
         /// </summary>
         void OnScheduleSelected(ScheduleType type)
@@ -243,18 +270,32 @@ namespace LoveAlgo.Core
         }
 
         /// <summary>
-        /// 하루 종료
+        /// 하루 종료 (블랙 페이드 연출 포함)
         /// </summary>
         void EndDay()
         {
+            EndDayAsync().Forget();
+        }
+
+        async UniTaskVoid EndDayAsync()
+        {
+            // 페이드 아웃 (2.5초)
+            await ScreenFX.Instance.FadeOutAsync(2.5f);
+
             CurrentDay++;
             RemainingActions = 3;
 
-            // TODO: 일과 종료 이벤트, 저녁 스토리 등
             Debug.Log($"[GameManager] {CurrentDay}일차 시작");
 
             AutoSave();
+
+            // 잠시 블랙 유지
+            await UniTask.Delay(500);
+
             ChangePhase(GamePhase.DayLoop);
+
+            // 페이드 인 (2초)
+            await ScreenFX.Instance.FadeInAsync(2.0f);
         }
 
         /// <summary>
@@ -385,6 +426,9 @@ namespace LoveAlgo.Core
                 lineIndex,
                 $"Day {CurrentDay}"
             );
+
+            // 스크린샷 캡처
+            SaveManager.CaptureScreenshot(slot);
         }
 
         #endregion

@@ -1,0 +1,48 @@
+# 금지어 목록 (한 줄에 하나씩, #으로 시작하는 줄은 무시)
+# Google Sheets 금지어 목록에서 복사하여 추가할 것
+# https://docs.google.com/spreadsheets/d/1sdx0o8sF5pYV1LQz8eJD63XrEG25aZx2xlDyKNgchhQ
+
+# 시스템
+admin
+관리자
+운영자
+gm
+
+# 욕설
+시발
+씨발
+시벌
+씨벌
+시팔
+씨팔
+ㅅㅂ
+ㅆㅂ
+병신
+ㅂㅅ
+지랄
+ㅈㄹ
+개새끼
+새끼
+미친
+ㅁㅊ
+꺼져
+닥쳐
+죽어
+ㅈㄴ
+존나
+
+# 비하/차별
+장애인
+느금마
+니엄마
+니애미
+니애비
+
+# 성적 표현
+섹스
+sex
+fuck
+shit
+bitch
+dick
+pussy

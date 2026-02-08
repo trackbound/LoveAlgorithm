@@ -1,4 +1,6 @@
+using System.Linq;
 using System.Text.RegularExpressions;
+using UnityEngine;
 
 namespace LoveAlgo.Core
 {
@@ -15,8 +17,23 @@ namespace LoveAlgo.Core
         // 허용 패턴: 한글, 영문, 숫자만
         static readonly Regex ValidPattern = new Regex(@"^[가-힣a-zA-Z0-9]+$");
 
-        // 금지어 (필요시 확장)
-        static readonly string[] BannedWords = { "admin", "관리자", "운영자", "gm", "GM" };
+        // 금지어 (Resources/Data/BannedWords.txt 에서 로드, 없으면 기본값)
+        static string[] _bannedWords;
+        static string[] BannedWords => _bannedWords ??= LoadBannedWords();
+
+        static string[] LoadBannedWords()
+        {
+            var asset = Resources.Load<TextAsset>("Data/BannedWords");
+            if (asset != null)
+            {
+                return asset.text
+                    .Split(new[] { '\n', '\r' }, System.StringSplitOptions.RemoveEmptyEntries)
+                    .Select(w => w.Trim())
+                    .Where(w => !string.IsNullOrEmpty(w) && !w.StartsWith("#"))
+                    .ToArray();
+            }
+            return new[] { "admin", "관리자", "운영자", "gm" };
+        }
 
         public enum Result
         {

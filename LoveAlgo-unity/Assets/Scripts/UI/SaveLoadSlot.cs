@@ -14,6 +14,7 @@ namespace LoveAlgo.UI
         [SerializeField] TMP_Text slotNumberText;
         [SerializeField] TMP_Text chapterText;
         [SerializeField] TMP_Text dateText;
+        [SerializeField] Image screenshotImage;
         [SerializeField] GameObject emptyLabel;
         [SerializeField] GameObject dataContainer;
         [SerializeField] Button button;
@@ -56,7 +57,7 @@ namespace LoveAlgo.UI
         /// <summary>
         /// 데이터가 있는 슬롯으로 표시
         /// </summary>
-        public void SetData(string chapter, DateTime saveTime)
+        public void SetData(string chapter, DateTime saveTime, Sprite screenshot = null)
         {
             hasData = true;
             
@@ -68,6 +69,19 @@ namespace LoveAlgo.UI
             
             if (dateText != null)
                 dateText.text = saveTime.ToString("yyyy.MM.dd HH:mm");
+
+            if (screenshotImage != null)
+            {
+                if (screenshot != null)
+                {
+                    screenshotImage.sprite = screenshot;
+                    screenshotImage.enabled = true;
+                }
+                else
+                {
+                    screenshotImage.enabled = false;
+                }
+            }
             
             if (emptyLabel != null)
                 emptyLabel.SetActive(false);

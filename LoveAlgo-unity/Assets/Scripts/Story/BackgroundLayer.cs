@@ -30,7 +30,7 @@ namespace LoveAlgo.Story
         [SerializeField] CanvasGroup backCanvasGroup;
 
         [Header("설정")]
-        [SerializeField] float defaultDuration = 0.5f;
+        [SerializeField] float defaultDuration = 2.0f;
 
         string currentBackground;
 

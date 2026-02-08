@@ -28,6 +28,7 @@ namespace LoveAlgo.UI
         [Header("설정")]
         [SerializeField] float shakeDuration = 0.3f;
         [SerializeField] float shakeStrength = 15f;
+        [SerializeField] string defaultName = "도윤";
 
         void Start()
         {
@@ -50,6 +51,12 @@ namespace LoveAlgo.UI
             inputField.characterLimit = NameValidator.MaxLengthEnglish;
             inputField.onValueChanged.AddListener(OnInputChanged);
             inputField.onSubmit.AddListener(OnInputSubmit);
+
+            // 기본 이름 플레이스홀더
+            if (inputField.placeholder is TMP_Text placeholder)
+            {
+                placeholder.text = $"{defaultName} (기본)";
+            }
         }
 
         void SetupButtons()
@@ -69,17 +76,15 @@ namespace LoveAlgo.UI
 
         void OnInputSubmit(string value)
         {
-            // Enter 키로 제출
-            if (!string.IsNullOrWhiteSpace(value))
-            {
-                OnConfirmClick();
-            }
+            // Enter 키로 제출 (빈 입력시 기본 이름 사용)
+            OnConfirmClick();
         }
 
         void UpdateConfirmButton()
         {
             if (confirmButton == null) return;
-            confirmButton.interactable = !string.IsNullOrWhiteSpace(inputField?.text);
+            // 빈 입력이어도 기본 이름이 있으므로 항상 활성화
+            confirmButton.interactable = true;
         }
 
         void ResetInput()
@@ -105,6 +110,8 @@ namespace LoveAlgo.UI
         void OnConfirmClick()
         {
             string name = inputField?.text?.Trim() ?? "";
+            if (string.IsNullOrWhiteSpace(name))
+                name = defaultName;
 
             var result = NameValidator.Validate(name);
 

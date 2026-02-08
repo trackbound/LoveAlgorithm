@@ -40,6 +40,15 @@ namespace LoveAlgo.Story
 
         // Auto 모드 프로퍼티
         public bool IsAutoMode => autoMode;
+
+        /// <summary>
+        /// Auto 딜레이 설정 (0=느림, 1=빠름)
+        /// </summary>
+        public void SetAutoDelay(float normalized)
+        {
+            // 0=느림(4초), 1=빠름(0.5초)
+            autoDelayBase = Mathf.Lerp(4.0f, 0.5f, normalized);
+        }
         
         /// <summary>
         /// 현재 실행 중인 스크립트명 (세이브용)
@@ -54,6 +63,10 @@ namespace LoveAlgo.Story
                 return;
             }
             Instance = this;
+
+            // 저장된 Auto 속도 복원
+            float savedAutoSpeed = PlayerPrefs.GetFloat("AutoSpeed", 0.5f);
+            SetAutoDelay(savedAutoSpeed);
             
             if (scriptAsset != null)
             {

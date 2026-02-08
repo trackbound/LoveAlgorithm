@@ -223,7 +223,8 @@ namespace LoveAlgo.UI
                 var data = SaveManager.Load(globalIndex);
                 if (data != null)
                 {
-                    slot.SetData(data.ChapterName, data.SaveTime);
+                    var screenshot = SaveManager.LoadScreenshot(globalIndex);
+                    slot.SetData(data.ChapterName, data.SaveTime, screenshot);
                 }
                 else
                 {
