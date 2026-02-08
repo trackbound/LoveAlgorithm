@@ -245,7 +245,7 @@ namespace LoveAlgo.Core
         }
 
         /// <summary>
-        /// 즉시 투명
+        /// 즉시 투명 — fadeOverlay + Eye 바 모두 초기화
         /// </summary>
         public void SetClear()
         {
@@ -254,6 +254,9 @@ namespace LoveAlgo.Core
                 SetOverlayAlpha(fadeOverlay, 0f);
                 fadeOverlay.raycastTarget = false;
             }
+
+            // Eye 바도 비활성화 (DayEnd 후 잔존 방지)
+            EyeOpenImmediate();
         }
 
         #endregion
