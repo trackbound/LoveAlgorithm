@@ -49,8 +49,6 @@ namespace LoveAlgo.UI
         [Header("해상도 적용 버튼")]
         [SerializeField] Button applyButton; // 해상도 전용 즉시 적용 + 저장 (ResolutionIndex / Fullscreen)
 
-        Vector2 originalPosition;
-        
         // 해상도 목록
         readonly (int w, int h)[] resolutions = {
             (1280, 720),
