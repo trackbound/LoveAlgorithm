@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
+using TMPro;
 using DG.Tweening;
 
 namespace LoveAlgo.UI
@@ -258,6 +259,28 @@ namespace LoveAlgo.UI
         }
 
         #region 에디터 헬퍼
+
+        /// <summary>
+        /// ChildSwap의 normal/hover 자식 텍스트를 동시에 설정
+        /// </summary>
+        public void SetText(string text)
+        {
+            if (normalChild != null)
+            {
+                var tmp = normalChild.GetComponent<TMP_Text>();
+                if (tmp != null) tmp.text = text;
+            }
+            if (hoverChild != null)
+            {
+                var tmp = hoverChild.GetComponent<TMP_Text>();
+                if (tmp != null) tmp.text = text;
+            }
+            if (pressedChild != null)
+            {
+                var tmp = pressedChild.GetComponent<TMP_Text>();
+                if (tmp != null) tmp.text = text;
+            }
+        }
 
         /// <summary>
         /// 호버 스프라이트 설정 (에디터용)
