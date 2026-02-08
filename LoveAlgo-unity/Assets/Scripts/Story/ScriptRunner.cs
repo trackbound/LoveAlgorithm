@@ -774,6 +774,10 @@ namespace LoveAlgo.Story
             // 6. BGM 정지
             await ExecuteSoundAsync(
                 new ScriptLine("", LineType.Sound, "", "BGM:Stop", NextType.Immediate), ct);
+
+            // 자동저장 (DayEnd 완료 상태로 저장 → Continue 시 다음 줄부터 재개)
+            Core.GameManager.Instance?.AutoSave();
+            Debug.Log("[ScriptRunner] DayEnd 완료 → 자동저장");
         }
 
         #endregion
