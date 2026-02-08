@@ -303,8 +303,8 @@ namespace LoveAlgo.UI
 
         void OnDisable()
         {
-            currentColorTween?.Kill();
-            currentScaleTween?.Kill();
+            // 호버 중 비활성화 시 색상이 hoverColor에 멈추는 버그 방지
+            ResetState();
         }
 
         #region 에디터 헬퍼
