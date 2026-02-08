@@ -23,9 +23,8 @@ namespace LoveAlgo.Story
         [SerializeField] float fadeDuration = 0.2f;
 
         [Header("선택지 애니메이션")]
-        [SerializeField] float choiceAppearDelay = 0.1f;   // 선택지 간 딜레이
         [SerializeField] float choiceAppearDuration = 0.3f;
-        [SerializeField] Ease choiceAppearEase = Ease.OutCubic;
+        [SerializeField] Ease choiceAppearEase = Ease.OutQuad;
 
         List<GameObject> spawnedButtons = new();
         int selectedIndex = -1;
@@ -54,25 +53,25 @@ namespace LoveAlgo.Story
             ClearButtons();
             CreateButtons(validOptions);
 
-            // 표시 (패널 페이드인)
-            await ShowAsync(ct);
-
-            // 버튼 순차 등장 애니메이션
-            for (int i = 0; i < spawnedButtons.Count; i++)
+            // 버튼 초기 상태: 투명 (패널 페이드인 전에 세팅)
+            foreach (var btn in spawnedButtons)
             {
-                var btn = spawnedButtons[i];
                 var cg = btn.GetComponent<CanvasGroup>();
                 if (cg == null) cg = btn.AddComponent<CanvasGroup>();
                 cg.alpha = 0f;
-                btn.transform.localScale = new Vector3(0.95f, 0.95f, 1f);
-
-                var seq = DOTween.Sequence();
-                _ = seq.Append(cg.DOFade(1f, choiceAppearDuration));
-                _ = seq.Join(btn.transform.DOScale(1f, choiceAppearDuration).SetEase(choiceAppearEase));
-
-                if (i < spawnedButtons.Count - 1)
-                    await UniTask.Delay(TimeSpan.FromSeconds(choiceAppearDelay), cancellationToken: ct);
             }
+
+            // 패널 페이드인
+            await ShowAsync(ct);
+
+            // 전체 선택지 동시 페이드인 (스케일 없이 깔끔하게)
+            foreach (var btn in spawnedButtons)
+            {
+                var cg = btn.GetComponent<CanvasGroup>();
+                if (cg != null)
+                    cg.DOFade(1f, choiceAppearDuration).SetEase(choiceAppearEase);
+            }
+            await UniTask.Delay(TimeSpan.FromSeconds(choiceAppearDuration), cancellationToken: ct);
 
             // 선택 대기
             selectedIndex = -1;

@@ -747,7 +747,9 @@ namespace LoveAlgo.Story
         async UniTask ExecuteMacroDayEndAsync(string[] parts, CancellationToken ct)
         {
             float fadeDuration = parts.Length > 1 && float.TryParse(parts[1], out float fd) ? fd : 0.8f;
-            Debug.Log($"[ScriptRunner] 매크로: DayEnd (fade={fadeDuration}s)");
+            float totalDuration = 5.0f;  // DayEnd 시작 ~ 다음 대사까지 총 시간
+            float startTime = Time.time;
+            Debug.Log($"[ScriptRunner] 매크로: DayEnd (fade={fadeDuration}s, total={totalDuration}s)");
 
             var dialogueUI = UIManager.Instance?.DialogueUI;
             var fx = Core.ScreenFX.Instance;
@@ -774,9 +776,18 @@ namespace LoveAlgo.Story
             if (fx != null)
                 await fx.FadeInAsync(0.3f, ct);
 
-            // 5. 자동저장 (DayEnd 완료 → Continue 시 다음 줄부터 재개)
+            // 5. 자동저장
             Core.GameManager.Instance?.AutoSave();
-            Debug.Log("[ScriptRunner] DayEnd 완료 → 자동저장");
+
+            // 6. 남은 시간 대기 (총 5초 맞추기)
+            float elapsed = Time.time - startTime;
+            float remaining = totalDuration - elapsed;
+            if (remaining > 0f)
+            {
+                Debug.Log($"[ScriptRunner] DayEnd: 연출 {elapsed:F1}s 소요, {remaining:F1}s 대기");
+                await UniTask.Delay(TimeSpan.FromSeconds(remaining), cancellationToken: ct);
+            }
+            Debug.Log("[ScriptRunner] DayEnd 완료");
         }
 
         /// <summary>
