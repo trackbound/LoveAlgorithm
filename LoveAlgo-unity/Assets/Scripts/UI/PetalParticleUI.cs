@@ -66,6 +66,10 @@ namespace LoveAlgo.UI
         [SerializeField] float spawnMarginTop = 60f;
         [SerializeField] float spawnMarginSide = 160f;     // 더 넓은 영역에서 생성
 
+        [Header("웜업 (타이틀 진입 시 이미 흩날리는 상태)")]
+        [Tooltip("OnEnable 시 화면 전체에 미리 배치할 꽃잎 수 (maxPetals의 비율 0~1)")]
+        [SerializeField, Range(0f, 1f)] float warmUpFill = 0.7f;  // 70% 채우고 시작
+
         RectTransform rectTransform;
         readonly List<Petal> activePetals = new();
         float spawnTimer;
@@ -112,6 +116,31 @@ namespace LoveAlgo.UI
         void OnEnable()
         {
             spawnTimer = 0f;
+            WarmUp();
+        }
+
+        /// <summary>
+        /// 화면 전체에 꽃잎을 미리 배치 — 타이틀 등장 시 이미 흩날리는 상태.
+        /// 각 꽃잎은 화면 내 랜덤 위치에 생성되고, 수명도 중간부터 시작.
+        /// </summary>
+        void WarmUp()
+        {
+            if (rectTransform == null) return;
+            Rect area = rectTransform.rect;
+
+            int count = Mathf.RoundToInt(maxPetals * warmUpFill);
+            for (int i = 0; i < count; i++)
+            {
+                // 화면 내 랜덤 Y (위~아래 전체 분포)
+                float randomY = Random.Range(area.yMin + 40f, area.yMax - 20f);
+                // 수명 진행도: 위쪽이면 초반, 아래쪽이면 후반 (자연스러운 분포)
+                float yRatio = (randomY - area.yMin) / Mathf.Max(1f, area.yMax - area.yMin);
+                // 수명 진행도를 랜덤하게 — fadeIn은 넘긴 상태로
+                float lifeFraction = Mathf.Lerp(0.15f, 0.7f, 1f - yRatio) + Random.Range(-0.1f, 0.1f);
+                lifeFraction = Mathf.Clamp01(lifeFraction);
+
+                SpawnPetal(randomY, lifeFraction);
+            }
         }
 
         void OnDisable()
@@ -242,7 +271,10 @@ namespace LoveAlgo.UI
             }
         }
 
-        void SpawnPetal()
+        /// <summary>
+        /// 꽃잎 생성. overrideY/lifeFraction은 WarmUp에서 화면 내 배치 시 사용.
+        /// </summary>
+        void SpawnPetal(float overrideY = float.NaN, float lifeFraction = 0f)
         {
             Rect area = rectTransform.rect;
 
@@ -266,7 +298,7 @@ namespace LoveAlgo.UI
 
             // 스폰 위치
             float spawnX = Random.Range(area.xMin - spawnMarginSide, area.xMax + spawnMarginSide);
-            float spawnY = area.yMax + spawnMarginTop;
+            float spawnY = float.IsNaN(overrideY) ? area.yMax + spawnMarginTop : overrideY;
             rt.anchoredPosition = new Vector2(spawnX, spawnY);
 
             // 초기 Z 회전
@@ -277,24 +309,31 @@ namespace LoveAlgo.UI
             float mass = Mathf.Lerp(0.5f, 1.5f, normalizedSize);
 
             // 깊이감: 작은 꽃잎 = 먼 거리 = 더 투명 + 느림
-            // normalizedSize 0(작)→1(큼), depthAlpha 0.35(투명)→1.0(선명)
             float depthAlpha = Mathf.Lerp(0.35f, 1f, Mathf.Pow(normalizedSize, 0.6f));
 
-            // 낙하 거리 기준 수명 계산 (gravity 기반 추정)
-            float fallDistance = spawnY - (area.yMin - 80f);
+            // 낙하 거리 기준 수명 계산
+            float topY = area.yMax + spawnMarginTop;
+            float fallDistance = topY - (area.yMin - 80f);
             float avgFall = gravity / (airDrag * 0.5f + 0.1f);
-            float maxLife = fallDistance / Mathf.Max(avgFall, 1f) + 5f;  // 더 오래 떠다님
+            float maxLife = fallDistance / Mathf.Max(avgFall, 1f) + 5f;
 
-            // Perlin noise 시드 — 꽃잎마다 완전히 다른 노이즈 경로
+            // WarmUp: 수명을 중간부터 시작 (이미 떨어지고 있던 것처럼)
+            float startLife = maxLife * lifeFraction;
+
+            // Perlin noise 시드
             float seed = Random.Range(0f, 1000f);
+
+            // WarmUp 꽃잎은 이미 알파가 올라온 상태
+            float basePeak = peakAlpha * depthAlpha;
+            float startAlphaVal = lifeFraction > fadeInRatio ? basePeak : 0f;
 
             var petal = new Petal
             {
                 rect = rt,
                 image = img,
 
-                velX = Random.Range(-1f, 1f),   // 약간의 초기 속도
-                velY = Random.Range(0.5f, 2f),  // 천천히 낙하 시작
+                velX = Random.Range(-1.5f, 1.5f),
+                velY = Random.Range(0.5f, 2f),
 
                 posX = spawnX,
                 posY = spawnY,
@@ -314,10 +353,18 @@ namespace LoveAlgo.UI
 
                 depthAlpha = depthAlpha,
 
-                lifetime = 0f,
+                lifetime = startLife,
                 maxLifetime = maxLife,
-                alpha = 0f
+                alpha = startAlphaVal
             };
+
+            // WarmUp 꽃잎은 바로 보이게
+            if (startAlphaVal > 0f)
+            {
+                var c = img.color;
+                c.a = startAlphaVal;
+                img.color = c;
+            }
 
             activePetals.Add(petal);
         }
