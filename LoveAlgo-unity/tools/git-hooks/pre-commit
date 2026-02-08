@@ -1,0 +1,17 @@
+#!/bin/bash
+# LoveAlgo Git Pre-commit Hook
+# .git/hooks/pre-commit 에 복사하거나 심볼릭 링크 생성
+
+echo "Running LoveAlgo pre-commit validation..."
+
+# PowerShell 스크립트 실행
+if command -v pwsh &> /dev/null; then
+    pwsh -ExecutionPolicy Bypass -File "$(dirname "$0")/../../tools/pre-commit.ps1"
+elif command -v powershell &> /dev/null; then
+    powershell -ExecutionPolicy Bypass -File "$(dirname "$0")/../../tools/pre-commit.ps1"
+else
+    echo "PowerShell not found, skipping validation"
+    exit 0
+fi
+
+exit $?

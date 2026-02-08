@@ -1,0 +1,342 @@
+{
+  "characters": [
+    {
+      "displayName": "Bom",
+      "id": "Bom",
+      "emotes": [
+        {
+          "ppu": 0,
+          "width": 948,
+          "fileName": "Bright.png",
+          "guid": "66a42734edfbe9544962531a868b6945",
+          "key": "Bright",
+          "height": 2000,
+          "resourcePath": "Characters/Bom/Bright"
+        },
+        {
+          "ppu": 0,
+          "width": 948,
+          "fileName": "Default.png",
+          "guid": "2c021f3f09b8fd7478a47f30020bd277",
+          "key": "Default",
+          "height": 2000,
+          "resourcePath": "Characters/Bom/Default"
+        },
+        {
+          "ppu": 0,
+          "width": 948,
+          "fileName": "EyeSmile.png",
+          "guid": "ea1bf40ff20606d4fa7b327c9b75a9c6",
+          "key": "EyeSmile",
+          "height": 2000,
+          "resourcePath": "Characters/Bom/EyeSmile"
+        },
+        {
+          "ppu": 0,
+          "width": 948,
+          "fileName": "Glare.png",
+          "guid": "84f088ea6d49f3248adab270b6f2938c",
+          "key": "Glare",
+          "height": 2000,
+          "resourcePath": "Characters/Bom/Glare"
+        },
+        {
+          "ppu": 0,
+          "width": 948,
+          "fileName": "Happy.png",
+          "guid": "5b007bd97ce09dd4ba217cc2dc150106",
+          "key": "Happy",
+          "height": 2000,
+          "resourcePath": "Characters/Bom/Happy"
+        },
+        {
+          "ppu": 0,
+          "width": 948,
+          "fileName": "Surprise.png",
+          "guid": "0b0be70c106f7014395069538128d569",
+          "key": "Surprise",
+          "height": 2000,
+          "resourcePath": "Characters/Bom/Surprise"
+        },
+        {
+          "ppu": 0,
+          "width": 948,
+          "fileName": "Tearful.png",
+          "guid": "193fda416aaa0264e978ffe4dc6178fa",
+          "key": "Tearful",
+          "height": 2000,
+          "resourcePath": "Characters/Bom/Tearful"
+        }
+      ]
+    },
+    {
+      "displayName": "Daeun",
+      "id": "Daeun",
+      "emotes": [
+        {
+          "ppu": 0,
+          "width": 952,
+          "fileName": "Bright.png",
+          "guid": "f6a5ce1fb3ddd7c4bbc078cd58051ae5",
+          "key": "Bright",
+          "height": 2000,
+          "resourcePath": "Characters/Daeun/Bright"
+        },
+        {
+          "ppu": 0,
+          "width": 952,
+          "fileName": "Default.png",
+          "guid": "96e62d7715b37454bb155ef48f89b16e",
+          "key": "Default",
+          "height": 2000,
+          "resourcePath": "Characters/Daeun/Default"
+        },
+        {
+          "ppu": 0,
+          "width": 952,
+          "fileName": "EyeSmile.png",
+          "guid": "c91fda1a0ed0da54aabd5ecad92ade91",
+          "key": "EyeSmile",
+          "height": 2000,
+          "resourcePath": "Characters/Daeun/EyeSmile"
+        },
+        {
+          "ppu": 0,
+          "width": 952,
+          "fileName": "Glare.png",
+          "guid": "98384648c6790a64fb9a5dce89c3211d",
+          "key": "Glare",
+          "height": 2000,
+          "resourcePath": "Characters/Daeun/Glare"
+        },
+        {
+          "ppu": 0,
+          "width": 952,
+          "fileName": "Happy.png",
+          "guid": "f290774625c38ee4a989e63c0126696a",
+          "key": "Happy",
+          "height": 2000,
+          "resourcePath": "Characters/Daeun/Happy"
+        },
+        {
+          "ppu": 0,
+          "width": 952,
+          "fileName": "Surprise.png",
+          "guid": "955a60677baa3da4bbc0dccceee77fa0",
+          "key": "Surprise",
+          "height": 2000,
+          "resourcePath": "Characters/Daeun/Surprise"
+        },
+        {
+          "ppu": 0,
+          "width": 952,
+          "fileName": "Tearful.png",
+          "guid": "cdc3b316b1e657042932a96c304ff4a0",
+          "key": "Tearful",
+          "height": 2000,
+          "resourcePath": "Characters/Daeun/Tearful"
+        }
+      ]
+    },
+    {
+      "displayName": "Heewon",
+      "id": "Heewon",
+      "emotes": [
+        {
+          "ppu": 0,
+          "width": 1021,
+          "fileName": "Bright.png",
+          "guid": "a38b51483dacf5b44bb2cf7a0746c15e",
+          "key": "Bright",
+          "height": 2000,
+          "resourcePath": "Characters/Heewon/Bright"
+        },
+        {
+          "ppu": 0,
+          "width": 1021,
+          "fileName": "Default.png",
+          "guid": "83a5af511e5b489438ac9db50c3d211e",
+          "key": "Default",
+          "height": 2000,
+          "resourcePath": "Characters/Heewon/Default"
+        },
+        {
+          "ppu": 0,
+          "width": 1021,
+          "fileName": "EyeSmile.png",
+          "guid": "b2bc374734197ba429424afb59448f7c",
+          "key": "EyeSmile",
+          "height": 2000,
+          "resourcePath": "Characters/Heewon/EyeSmile"
+        },
+        {
+          "ppu": 0,
+          "width": 1021,
+          "fileName": "Glare.png",
+          "guid": "d86ce54b1503a8a48a64c9c08b1e2d7c",
+          "key": "Glare",
+          "height": 2000,
+          "resourcePath": "Characters/Heewon/Glare"
+        },
+        {
+          "ppu": 0,
+          "width": 1021,
+          "fileName": "Happy.png",
+          "guid": "f16de56055a6b6846baa2469ff4ffbed",
+          "key": "Happy",
+          "height": 2000,
+          "resourcePath": "Characters/Heewon/Happy"
+        },
+        {
+          "ppu": 0,
+          "width": 1021,
+          "fileName": "Surprise.png",
+          "guid": "c8e5285761c4db74cba6b7f02ca61112",
+          "key": "Surprise",
+          "height": 2000,
+          "resourcePath": "Characters/Heewon/Surprise"
+        },
+        {
+          "ppu": 0,
+          "width": 1021,
+          "fileName": "Tearful.png",
+          "guid": "bcd3d6afb5417154b8f34c4f00bc376f",
+          "key": "Tearful",
+          "height": 2000,
+          "resourcePath": "Characters/Heewon/Tearful"
+        }
+      ]
+    },
+    {
+      "displayName": "Roa",
+      "id": "Roa",
+      "emotes": [
+        {
+          "ppu": 0,
+          "width": 1203,
+          "fileName": "Bright.png",
+          "guid": "e637b468978d5db44b371398532bf0f2",
+          "key": "Bright",
+          "height": 2000,
+          "resourcePath": "Characters/Roa/Bright"
+        },
+        {
+          "ppu": 0,
+          "width": 1203,
+          "fileName": "Default.png",
+          "guid": "e4167e2b140973d489320f1b855f66a8",
+          "key": "Default",
+          "height": 2000,
+          "resourcePath": "Characters/Roa/Default"
+        },
+        {
+          "ppu": 0,
+          "width": 1203,
+          "fileName": "Glare.png",
+          "guid": "8e3406569301892469194935bf48a83d",
+          "key": "Glare",
+          "height": 2000,
+          "resourcePath": "Characters/Roa/Glare"
+        },
+        {
+          "ppu": 0,
+          "width": 1203,
+          "fileName": "Happy.png",
+          "guid": "9414e5ad1215e1b46bcd52aafa0b31d0",
+          "key": "Happy",
+          "height": 2000,
+          "resourcePath": "Characters/Roa/Happy"
+        },
+        {
+          "ppu": 0,
+          "width": 1203,
+          "fileName": "Surprise.png",
+          "guid": "7da5e459b80ccd34d80726f54832ce6c",
+          "key": "Surprise",
+          "height": 2000,
+          "resourcePath": "Characters/Roa/Surprise"
+        },
+        {
+          "ppu": 0,
+          "width": 1203,
+          "fileName": "Tearful.png",
+          "guid": "78cac3d8ab6d12b42b3967a99681fcd4",
+          "key": "Tearful",
+          "height": 2000,
+          "resourcePath": "Characters/Roa/Tearful"
+        }
+      ]
+    },
+    {
+      "displayName": "Yeun",
+      "id": "Yeun",
+      "emotes": [
+        {
+          "ppu": 0,
+          "width": 8800,
+          "fileName": "Bright.png",
+          "guid": "314de477dcd8b8f48ac5a888aa534514",
+          "key": "Bright",
+          "height": 17696,
+          "resourcePath": "Characters/Yeun/Bright"
+        },
+        {
+          "ppu": 0,
+          "width": 8800,
+          "fileName": "Default.png",
+          "guid": "c406514000337ed4d9b64184d0860c57",
+          "key": "Default",
+          "height": 17696,
+          "resourcePath": "Characters/Yeun/Default"
+        },
+        {
+          "ppu": 0,
+          "width": 8800,
+          "fileName": "EyeSmile.png",
+          "guid": "cb417b1d34e95214bbedf0b8eef325dc",
+          "key": "EyeSmile",
+          "height": 17696,
+          "resourcePath": "Characters/Yeun/EyeSmile"
+        },
+        {
+          "ppu": 0,
+          "width": 8800,
+          "fileName": "Glare.png",
+          "guid": "ddd8da93ad6441d45b7c80e13af14f06",
+          "key": "Glare",
+          "height": 17696,
+          "resourcePath": "Characters/Yeun/Glare"
+        },
+        {
+          "ppu": 0,
+          "width": 8800,
+          "fileName": "Happy.png",
+          "guid": "3894712c6ccaed14083440df2741e49d",
+          "key": "Happy",
+          "height": 17696,
+          "resourcePath": "Characters/Yeun/Happy"
+        },
+        {
+          "ppu": 0,
+          "width": 8800,
+          "fileName": "Surprise.png",
+          "guid": "c5b853c5bdaaf7d4c83d3582463324d8",
+          "key": "Surprise",
+          "height": 17696,
+          "resourcePath": "Characters/Yeun/Surprise"
+        },
+        {
+          "ppu": 0,
+          "width": 8800,
+          "fileName": "Tearful.png",
+          "guid": "ff25d2d989c17a14ab611f1f556958e6",
+          "key": "Tearful",
+          "height": 17696,
+          "resourcePath": "Characters/Yeun/Tearful"
+        }
+      ]
+    }
+  ],
+  "generatedAt": "2026-01-25 14:11:23",
+  "version": 1
+}

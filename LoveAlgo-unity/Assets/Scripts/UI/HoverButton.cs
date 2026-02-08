@@ -1,0 +1,285 @@
+using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.EventSystems;
+using DG.Tweening;
+
+namespace LoveAlgo.UI
+{
+    /// <summary>
+    /// 확장 호버 버튼
+    /// - SpriteSwap + ColorTint 동시 지원
+    /// - 자식 오브젝트 Active 토글 방식 지원
+    /// </summary>
+    [RequireComponent(typeof(Button))]
+    public class HoverButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerDownHandler, IPointerUpHandler
+    {
+        public enum HoverMode
+        {
+            None,
+            SpriteSwap,         // 같은 Image의 sprite 교체
+            ChildSwap,          // 자식 오브젝트 Active 토글
+            Both                // SpriteSwap + ChildSwap 동시
+        }
+
+        [Header("호버 모드")]
+        [SerializeField] HoverMode hoverMode = HoverMode.SpriteSwap;
+
+        [Header("SpriteSwap 설정")]
+        [SerializeField] Image targetImage;
+        [SerializeField] Sprite normalSprite;
+        [SerializeField] Sprite hoverSprite;
+        [SerializeField] Sprite pressedSprite;
+
+        [Header("ChildSwap 설정")]
+        [SerializeField] GameObject normalChild;
+        [SerializeField] GameObject hoverChild;
+        [SerializeField] GameObject pressedChild;
+
+        [Header("ColorTint 설정 (항상 적용)")]
+        [SerializeField] bool useColorTint = true;
+        [SerializeField] Graphic colorTarget;
+        [SerializeField] Color normalColor = Color.white;
+        [SerializeField] Color hoverColor = new Color(0.96f, 0.96f, 0.96f, 1f);
+        [SerializeField] Color pressedColor = new Color(0.85f, 0.85f, 0.85f, 1f);
+        [SerializeField] float colorFadeDuration = 0.1f;
+
+        [Header("스케일 효과 (선택)")]
+        [SerializeField] bool useScaleEffect = false;
+        [SerializeField] float hoverScale = 1.05f;
+        [SerializeField] float pressedScale = 0.95f;
+        [SerializeField] float scaleDuration = 0.1f;
+
+        Button button;
+        bool isHovered;
+        bool isPressed;
+        Vector3 originalScale;
+        Tween currentScaleTween;
+        Tween currentColorTween;
+
+        void Awake()
+        {
+            button = GetComponent<Button>();
+            originalScale = transform.localScale;
+
+            // 자동 바인딩
+            if (targetImage == null)
+                targetImage = GetComponent<Image>();
+            if (colorTarget == null)
+                colorTarget = targetImage;
+            if (normalSprite == null && targetImage != null)
+                normalSprite = targetImage.sprite;
+
+            // 초기 상태
+            ApplyState(false, false);
+        }
+
+        void OnEnable()
+        {
+            ApplyState(false, false);
+        }
+
+        public void OnPointerEnter(PointerEventData eventData)
+        {
+            if (button != null && !button.interactable) return;
+            isHovered = true;
+            ApplyState(true, isPressed);
+        }
+
+        public void OnPointerExit(PointerEventData eventData)
+        {
+            isHovered = false;
+            ApplyState(false, isPressed);
+        }
+
+        public void OnPointerDown(PointerEventData eventData)
+        {
+            if (button != null && !button.interactable) return;
+            isPressed = true;
+            ApplyState(isHovered, true);
+        }
+
+        public void OnPointerUp(PointerEventData eventData)
+        {
+            isPressed = false;
+            ApplyState(isHovered, false);
+        }
+
+        void ApplyState(bool hover, bool pressed)
+        {
+            // 우선순위: pressed > hover > normal
+            if (pressed)
+            {
+                ApplyPressed();
+            }
+            else if (hover)
+            {
+                ApplyHover();
+            }
+            else
+            {
+                ApplyNormal();
+            }
+        }
+
+        void ApplyNormal()
+        {
+            // SpriteSwap
+            if (hoverMode == HoverMode.SpriteSwap || hoverMode == HoverMode.Both)
+            {
+                if (targetImage != null && normalSprite != null)
+                    targetImage.sprite = normalSprite;
+            }
+
+            // ChildSwap
+            if (hoverMode == HoverMode.ChildSwap || hoverMode == HoverMode.Both)
+            {
+                if (normalChild != null) normalChild.SetActive(true);
+                if (hoverChild != null) hoverChild.SetActive(false);
+                if (pressedChild != null) pressedChild.SetActive(false);
+            }
+
+            // ColorTint
+            if (useColorTint)
+            {
+                TweenColor(normalColor);
+            }
+
+            // Scale
+            if (useScaleEffect)
+            {
+                TweenScale(originalScale);
+            }
+        }
+
+        void ApplyHover()
+        {
+            // SpriteSwap
+            if (hoverMode == HoverMode.SpriteSwap || hoverMode == HoverMode.Both)
+            {
+                if (targetImage != null && hoverSprite != null)
+                    targetImage.sprite = hoverSprite;
+            }
+
+            // ChildSwap
+            if (hoverMode == HoverMode.ChildSwap || hoverMode == HoverMode.Both)
+            {
+                if (normalChild != null) normalChild.SetActive(false);
+                if (hoverChild != null) hoverChild.SetActive(true);
+                if (pressedChild != null) pressedChild.SetActive(false);
+            }
+
+            // ColorTint
+            if (useColorTint)
+            {
+                TweenColor(hoverColor);
+            }
+
+            // Scale
+            if (useScaleEffect)
+            {
+                TweenScale(originalScale * hoverScale);
+            }
+        }
+
+        void ApplyPressed()
+        {
+            // SpriteSwap - pressed가 없으면 hover 사용
+            if (hoverMode == HoverMode.SpriteSwap || hoverMode == HoverMode.Both)
+            {
+                if (targetImage != null)
+                {
+                    targetImage.sprite = pressedSprite != null ? pressedSprite : 
+                                         (hoverSprite != null ? hoverSprite : normalSprite);
+                }
+            }
+
+            // ChildSwap - pressed가 없으면 hover 사용
+            if (hoverMode == HoverMode.ChildSwap || hoverMode == HoverMode.Both)
+            {
+                if (normalChild != null) normalChild.SetActive(false);
+                
+                if (pressedChild != null)
+                {
+                    if (hoverChild != null) hoverChild.SetActive(false);
+                    pressedChild.SetActive(true);
+                }
+                else
+                {
+                    if (hoverChild != null) hoverChild.SetActive(true);
+                }
+            }
+
+            // ColorTint
+            if (useColorTint)
+            {
+                TweenColor(pressedColor);
+            }
+
+            // Scale
+            if (useScaleEffect)
+            {
+                TweenScale(originalScale * pressedScale);
+            }
+        }
+
+        void TweenColor(Color targetColor)
+        {
+            if (colorTarget == null) return;
+
+            currentColorTween?.Kill();
+
+            if (colorFadeDuration > 0)
+            {
+                currentColorTween = colorTarget.DOColor(targetColor, colorFadeDuration);
+            }
+            else
+            {
+                colorTarget.color = targetColor;
+            }
+        }
+
+        void TweenScale(Vector3 targetScale)
+        {
+            currentScaleTween?.Kill();
+
+            if (scaleDuration > 0)
+            {
+                currentScaleTween = transform.DOScale(targetScale, scaleDuration)
+                    .SetEase(Ease.OutQuad);
+            }
+            else
+            {
+                transform.localScale = targetScale;
+            }
+        }
+
+        void OnDisable()
+        {
+            currentColorTween?.Kill();
+            currentScaleTween?.Kill();
+        }
+
+        #region 에디터 헬퍼
+
+        /// <summary>
+        /// 호버 스프라이트 설정 (에디터용)
+        /// </summary>
+        public void SetHoverSprite(Sprite sprite)
+        {
+            hoverSprite = sprite;
+            hoverMode = HoverMode.SpriteSwap;
+        }
+
+        /// <summary>
+        /// 자식 오브젝트 설정 (에디터용)
+        /// </summary>
+        public void SetChildSwap(GameObject normal, GameObject hover)
+        {
+            normalChild = normal;
+            hoverChild = hover;
+            hoverMode = HoverMode.ChildSwap;
+        }
+
+        #endregion
+    }
+}

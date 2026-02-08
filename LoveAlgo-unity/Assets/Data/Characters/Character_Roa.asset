@@ -1,0 +1,38 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eedab442ef721a64c9716423b62b6b70, type: 3}
+  m_Name: Character_Roa
+  m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.Story.CharacterData
+  characterId: Roa
+  displayName: "\uB85C\uC544"
+  defaultSlotString: C
+  defaultSprite: {fileID: 21300000, guid: e4167e2b140973d489320f1b855f66a8, type: 3}
+  emoteSprites:
+  - emoteName: Bright
+    sprite: {fileID: 21300000, guid: e637b468978d5db44b371398532bf0f2, type: 3}
+  - emoteName: Happy
+    sprite: {fileID: 21300000, guid: 9414e5ad1215e1b46bcd52aafa0b31d0, type: 3}
+  - emoteName: Glare
+    sprite: {fileID: 21300000, guid: 8e3406569301892469194935bf48a83d, type: 3}
+  - emoteName: Surprise
+    sprite: {fileID: 21300000, guid: 7da5e459b80ccd34d80726f54832ce6c, type: 3}
+  - emoteName: Tearful
+    sprite: {fileID: 21300000, guid: 78cac3d8ab6d12b42b3967a99681fcd4, type: 3}
+  spriteScale: 1
+  offsetX: 0
+  offsetY: -1508.3
+  pivotY: 0
+  themeBGM: {fileID: 8300000, guid: 5628e4489f6cd354497a64c96930339d, type: 3}
+  typingSFX: {fileID: 0}
+  loveEvents: []
+  routeRequiredFlags: []
+  routeRequiredLove: 0

@@ -1,0 +1,163 @@
+using System;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.EventSystems;
+using DG.Tweening;
+
+namespace LoveAlgo.UI
+{
+    /// <summary>
+    /// 호버 시 복수 타겟의 색상 전환
+    /// HoverButton과 함께 또는 독립적으로 사용 가능
+    /// </summary>
+    public class HoverColorSwap : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerDownHandler, IPointerUpHandler
+    {
+        [SerializeField] List<ColorSwapTarget> targets = new List<ColorSwapTarget>();
+        [SerializeField] float fadeDuration = 0.1f;
+
+        Button button;
+        bool isHovered;
+        bool isPressed;
+
+        void Awake()
+        {
+            button = GetComponent<Button>();
+
+            // 초기 색상 적용
+            ApplyState(false, false);
+        }
+
+        void OnEnable()
+        {
+            ApplyState(false, false);
+        }
+
+        public void OnPointerEnter(PointerEventData eventData)
+        {
+            if (button != null && !button.interactable) return;
+            isHovered = true;
+            ApplyState(true, isPressed);
+        }
+
+        public void OnPointerExit(PointerEventData eventData)
+        {
+            isHovered = false;
+            ApplyState(false, isPressed);
+        }
+
+        public void OnPointerDown(PointerEventData eventData)
+        {
+            if (button != null && !button.interactable) return;
+            isPressed = true;
+            ApplyState(isHovered, true);
+        }
+
+        public void OnPointerUp(PointerEventData eventData)
+        {
+            isPressed = false;
+            ApplyState(isHovered, false);
+        }
+
+        void ApplyState(bool hover, bool pressed)
+        {
+            foreach (var target in targets)
+            {
+                if (target.target == null) continue;
+
+                Color targetColor;
+
+                if (pressed && target.usePressedColor)
+                {
+                    targetColor = target.pressedColor;
+                }
+                else if (hover)
+                {
+                    targetColor = target.hoverColor;
+                }
+                else
+                {
+                    targetColor = target.normalColor;
+                }
+
+                TweenColor(target, targetColor);
+            }
+        }
+
+        void TweenColor(ColorSwapTarget target, Color color)
+        {
+            target.currentTween?.Kill();
+
+            if (fadeDuration > 0 && gameObject.activeInHierarchy)
+            {
+                target.currentTween = target.target.DOColor(color, fadeDuration);
+            }
+            else
+            {
+                target.target.color = color;
+            }
+        }
+
+        void OnDisable()
+        {
+            foreach (var target in targets)
+            {
+                target.currentTween?.Kill();
+            }
+        }
+
+        #region 에디터 헬퍼
+
+        /// <summary>
+        /// 타겟 추가 (에디터/런타임)
+        /// </summary>
+        public void AddTarget(Graphic graphic, Color normal, Color hover, Color? pressed = null)
+        {
+            var target = new ColorSwapTarget
+            {
+                target = graphic,
+                normalColor = normal,
+                hoverColor = hover,
+                usePressedColor = pressed.HasValue,
+                pressedColor = pressed ?? hover
+            };
+            targets.Add(target);
+        }
+
+        /// <summary>
+        /// 현재 색상으로 Normal 설정
+        /// </summary>
+        public void CaptureNormalColors()
+        {
+            foreach (var target in targets)
+            {
+                if (target.target != null)
+                    target.normalColor = target.target.color;
+            }
+        }
+
+        #endregion
+    }
+
+    [Serializable]
+    public class ColorSwapTarget
+    {
+        [Tooltip("색상을 변경할 대상 (TMP_Text, Image 등)")]
+        public Graphic target;
+
+        [Tooltip("기본 색상")]
+        public Color normalColor = Color.black;
+
+        [Tooltip("호버 시 색상")]
+        public Color hoverColor = Color.white;
+
+        [Tooltip("Pressed 색상 사용 여부")]
+        public bool usePressedColor = false;
+
+        [Tooltip("클릭 시 색상")]
+        public Color pressedColor = Color.gray;
+
+        // 런타임용
+        [NonSerialized] public Tween currentTween;
+    }
+}

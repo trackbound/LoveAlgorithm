@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Characters Emotes Manifest",
+  "type": "object",
+  "required": ["version","generatedAt","characters"],
+  "properties": {
+    "version": { "type": "integer" },
+    "generatedAt": { "type": "string" },
+    "characters": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id","displayName","emotes"],
+        "properties": {
+          "id": { "type": "string" },
+          "displayName": { "type": "string" },
+          "emotes": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["key","fileName","resourcePath","guid"],
+              "properties": {
+                "key": { "type": "string" },
+                "fileName": { "type": "string" },
+                "resourcePath": { "type": "string" },
+                "guid": { "type": "string" },
+                "width": { "type": "integer" },
+                "height": { "type": "integer" },
+                "ppu": { "type": "number" }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

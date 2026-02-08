@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a0757f89eab7c654d9819a880a61820a, type: 3}
+  m_Name: CharacterDatabase
+  m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.Story.CharacterDatabase
+  characters:
+  - {fileID: 11400000, guid: b79c3a5a2e78df34a8b6d3e21b8ac8a3, type: 2}
+  - {fileID: 11400000, guid: 571ffab162934dd4e969a7fa2d04eb8c, type: 2}
+  - {fileID: 11400000, guid: ec91482cbe3dd8d47b24a8fc13ff0cf6, type: 2}
+  - {fileID: 11400000, guid: 7375cbef4021bb346ace0a72c524e166, type: 2}
+  - {fileID: 11400000, guid: 1daf387174ca0be47ad563676083b8bf, type: 2}
+  speakerMappings:
+  - speakerName: "\uB85C\uC544"
+    characterId: Roa
+  - speakerName: "\uD558\uC608\uC740"
+    characterId: Yeun
+  - speakerName: "\uC11C\uB2E4\uC740"
+    characterId: Daeun
+  - speakerName: "\uC774\uBD04"
+    characterId: Bom
+  - speakerName: "\uB3C4\uD76C\uC6D0"
+    characterId: Heewon
