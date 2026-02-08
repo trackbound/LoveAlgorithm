@@ -98,7 +98,6 @@ go_campus,Text,로아,"자, 이제 출발! 첫 수업이니까 같이 힘내자,
 ,Overlay,,FadeOut:0.3,>  # [로아 Overlay 종료 2/9]
 # ═══ 캠퍼스 ═══
 DEMO_campus,FX,,Setup:BG=CampusStreet/BG_Campus_Street1_Day|BGM=Daily2,>
-,Sound,,BGM:Daily2,>
 ,BG,,CampusStreet/BG_Campus_Street1_Day,await
 ,Text,,새학기라고는 하지만 학교는 늘 똑같다.,click
 ,Text,,"전공 수업이라 너무 익숙한 공대 건물, 변한 게 하나도 없는 강의실.",click
@@ -370,7 +369,6 @@ at_bookstore,Text,,나를 알고 있었다는 게 가장 놀라운 일이다.,cl
 ,Char,,C:Exit,await
 # ═══ 학생회관 ═══
 DEMO_student_center,FX,,Setup:BG=StudentCenter/BG_StudentCenter_Front_Day|BGM=Daily1,>
-,Sound,,BGM:Daily1,>
 ,BG,,StudentCenter/BG_StudentCenter_Front_Day,await
 ,Text,,"전공 수업이 피곤하다면, 교양 수업은 잠이 온다. 너무 재미가 없다.\n이번에는 전공 수업 시간표를 신경쓰느라 교양 수업은 대강 넣었더니, 진짜 재미없다.",click
 ,Text,,졸기까지 해서인지 어떻게 지나갔는지도 모르겠다.\n게다가 오늘은 동아리 신청을 위해 학생회관까지 들러야 하는 날이다.,click
@@ -565,7 +563,6 @@ DEMO_heewon_first,FX,,Setup:BG=StudentCenter/BG_StudentCenter_Front_Night|BGM=He
 ,Text,,3개를 모두 계산하고 그냥 손에 들고 나왔다.,click
 ,Text,,서둘러 집으로 걸음을 옮기려는데 뒤에서 누군가가 나를 붙잡았다.,click
 # 희원 등장
-,Sound,,BGM:Heewon,>
 ,Char,,C:Enter:Heewon,await
 ,Text,희원,저기요!,click
 ,Text,,뒤를 돌아보자 화려한 외모의 여자가 서 있었다.\n있는대로 꾸민 신입생들이 가득한 거리에서도 단연 눈에 띌 정도였다.,click
@@ -631,7 +628,6 @@ DEMO_bom_first,FX,,Setup:BG=StudentCenter/BG_StudentCenter_Board_Day|BGM=Bom,>
 ,Text,,"홍보지는 다들 엄청나게 화려하기도 했다.\n아니, 다들 동아리에 이렇게까지 시간을 쏟으면 생활은 어떻게 하는거지? 이해가 안 간다.",click
 ,Text,,게시판을 보며 나는 대체 어떻게 해야 할지를 고민하는데 옆에 인기척이 났다.,click
 # 봄 등장
-,Sound,,BGM:Bom,>
 ,Char,,C:Enter:Bom,await
 ,Text,봄,"아니, 나 진짜로 모르겠다고…\n여기가 훨씬 복잡하단 말이야…",click
 ,Text,,무의식중에 쳐다보았는데 시선이 아래로 내려간다.\n그 정도로 작은 여자애였다.,click
