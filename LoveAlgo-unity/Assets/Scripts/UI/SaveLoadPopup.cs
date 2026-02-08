@@ -207,10 +207,11 @@ namespace LoveAlgo.UI
                 }
 
                 slot.gameObject.SetActive(true);
-                slot.Setup(i, OnSlotClicked, isAutoSlot);
 
                 // 자동저장 슬롯 특별 처리
                 bool isAutoSlot = (globalIndex == SaveManager.AutoSaveSlot);
+
+                slot.Setup(i, OnSlotClicked, isAutoSlot);
 
                 // 세이브 데이터 확인
                 var data = SaveManager.Load(globalIndex);
