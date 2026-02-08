@@ -12,7 +12,6 @@ GameObject:
   - component: {fileID: 2460842589839629843}
   - component: {fileID: 208063071667754382}
   - component: {fileID: 8271351912653479281}
-  - component: {fileID: 2627014166351351459}
   m_Layer: 0
   m_Name: btn_config_mode_window
   m_TagString: Untagged
@@ -97,13 +96,13 @@ MonoBehaviour:
     m_SelectOnDown: {fileID: 0}
     m_SelectOnLeft: {fileID: 0}
     m_SelectOnRight: {fileID: 0}
-  m_Transition: 0
+  m_Transition: 1
   m_Colors:
     m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
     m_HighlightedColor: {r: 1, g: 1, b: 1, a: 1}
     m_PressedColor: {r: 0.78, g: 0.78, b: 0.78, a: 1}
     m_SelectedColor: {r: 1, g: 1, b: 1, a: 1}
-    m_DisabledColor: {r: 0.78, g: 0.78, b: 0.78, a: 0.5}
+    m_DisabledColor: {r: 1, g: 1, b: 1, a: 1}
     m_ColorMultiplier: 1
     m_FadeDuration: 0.1
   m_SpriteState:
@@ -122,36 +121,6 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
---- !u!114 &2627014166351351459
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 24390947242111290}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2bcfa84d821221c4e941d580e5597a98, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.UI.HoverButton
-  hoverMode: 1
-  targetImage: {fileID: 0}
-  normalSprite: {fileID: 0}
-  hoverSprite: {fileID: 0}
-  pressedSprite: {fileID: 0}
-  normalChild: {fileID: 0}
-  hoverChild: {fileID: 0}
-  pressedChild: {fileID: 0}
-  useColorTint: 1
-  colorTarget: {fileID: 0}
-  normalColor: {r: 1, g: 1, b: 1, a: 1}
-  hoverColor: {r: 0.96, g: 0.96, b: 0.96, a: 1}
-  pressedColor: {r: 0.85, g: 0.85, b: 0.85, a: 1}
-  colorFadeDuration: 0.1
-  useScaleEffect: 0
-  hoverScale: 1.05
-  pressedScale: 0.95
-  scaleDuration: 0.1
 --- !u!1 &286711707019290228
 GameObject:
   m_ObjectHideFlags: 0
@@ -435,8 +404,14 @@ MonoBehaviour:
   slideOffset: 300
   fullscreenButton: {fileID: 3940989854472250993}
   windowedButton: {fileID: 8271351912653479281}
+  modeOnSprite: {fileID: 21300000, guid: b124e03b1d76b5c47ac032151ba723cb, type: 3}
+  modeOffSprite: {fileID: 21300000, guid: 239808a3393250d468e76e35fa51213f, type: 3}
   resolutionPrevButton: {fileID: 7020648613768668390}
   resolutionNextButton: {fileID: 4724859847590133867}
+  arrowLeftSprite: {fileID: 21300000, guid: fdff06d598d65c84d90b1b91b49fcf88, type: 3}
+  arrowLeftDisabled: {fileID: 21300000, guid: 440fe4d792209d04282de1e27f55f068, type: 3}
+  arrowRightSprite: {fileID: 21300000, guid: 84320bcdb2b3aa149a2c247a4fbac401, type: 3}
+  arrowRightDisabled: {fileID: 21300000, guid: 65c892094d670f5469b55e02fffc13aa, type: 3}
   resolutionImage: {fileID: 1224022585129510193}
   resolutionSprites:
   - {fileID: 21300000, guid: b2e5eae8e284d014a8cd36009da912fa, type: 3}
@@ -1348,7 +1323,6 @@ GameObject:
   - component: {fileID: 357927951706402206}
   - component: {fileID: 8003132806371883568}
   - component: {fileID: 3940989854472250993}
-  - component: {fileID: 1690159759558348556}
   m_Layer: 0
   m_Name: btn_config_mode_fullscreen
   m_TagString: Untagged
@@ -1433,13 +1407,13 @@ MonoBehaviour:
     m_SelectOnDown: {fileID: 0}
     m_SelectOnLeft: {fileID: 0}
     m_SelectOnRight: {fileID: 0}
-  m_Transition: 0
+  m_Transition: 1
   m_Colors:
     m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
     m_HighlightedColor: {r: 1, g: 1, b: 1, a: 1}
     m_PressedColor: {r: 0.78, g: 0.78, b: 0.78, a: 1}
     m_SelectedColor: {r: 1, g: 1, b: 1, a: 1}
-    m_DisabledColor: {r: 0.78, g: 0.78, b: 0.78, a: 0.5}
+    m_DisabledColor: {r: 1, g: 1, b: 1, a: 1}
     m_ColorMultiplier: 1
     m_FadeDuration: 0.1
   m_SpriteState:
@@ -1458,36 +1432,6 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
---- !u!114 &1690159759558348556
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2943988538045867924}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2bcfa84d821221c4e941d580e5597a98, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.UI.HoverButton
-  hoverMode: 1
-  targetImage: {fileID: 0}
-  normalSprite: {fileID: 0}
-  hoverSprite: {fileID: 0}
-  pressedSprite: {fileID: 0}
-  normalChild: {fileID: 0}
-  hoverChild: {fileID: 0}
-  pressedChild: {fileID: 0}
-  useColorTint: 1
-  colorTarget: {fileID: 0}
-  normalColor: {r: 1, g: 1, b: 1, a: 1}
-  hoverColor: {r: 0.96, g: 0.96, b: 0.96, a: 1}
-  pressedColor: {r: 0.85, g: 0.85, b: 0.85, a: 1}
-  colorFadeDuration: 0.1
-  useScaleEffect: 0
-  hoverScale: 1.05
-  pressedScale: 0.95
-  scaleDuration: 0.1
 --- !u!1 &3354911987094287511
 GameObject:
   m_ObjectHideFlags: 0
@@ -1710,7 +1654,6 @@ GameObject:
   - component: {fileID: 5326744885547934744}
   - component: {fileID: 348833813370694626}
   - component: {fileID: 7020648613768668390}
-  - component: {fileID: 1096239711653598256}
   m_Layer: 0
   m_Name: btn_config_arrow_left
   m_TagString: Untagged
@@ -1794,13 +1737,13 @@ MonoBehaviour:
     m_SelectOnDown: {fileID: 0}
     m_SelectOnLeft: {fileID: 0}
     m_SelectOnRight: {fileID: 0}
-  m_Transition: 0
+  m_Transition: 1
   m_Colors:
     m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
     m_HighlightedColor: {r: 1, g: 1, b: 1, a: 1}
     m_PressedColor: {r: 0.78, g: 0.78, b: 0.78, a: 1}
     m_SelectedColor: {r: 1, g: 1, b: 1, a: 1}
-    m_DisabledColor: {r: 0.78, g: 0.78, b: 0.78, a: 0.5}
+    m_DisabledColor: {r: 1, g: 1, b: 1, a: 1}
     m_ColorMultiplier: 1
     m_FadeDuration: 0.1
   m_SpriteState:
@@ -1819,36 +1762,6 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
---- !u!114 &1096239711653598256
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5138739226889205877}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2bcfa84d821221c4e941d580e5597a98, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.UI.HoverButton
-  hoverMode: 1
-  targetImage: {fileID: 0}
-  normalSprite: {fileID: 0}
-  hoverSprite: {fileID: 0}
-  pressedSprite: {fileID: 0}
-  normalChild: {fileID: 0}
-  hoverChild: {fileID: 0}
-  pressedChild: {fileID: 0}
-  useColorTint: 1
-  colorTarget: {fileID: 0}
-  normalColor: {r: 1, g: 1, b: 1, a: 1}
-  hoverColor: {r: 0.96, g: 0.96, b: 0.96, a: 1}
-  pressedColor: {r: 0.85, g: 0.85, b: 0.85, a: 1}
-  colorFadeDuration: 0.1
-  useScaleEffect: 0
-  hoverScale: 1.05
-  pressedScale: 0.95
-  scaleDuration: 0.1
 --- !u!1 &5205917121388854968
 GameObject:
   m_ObjectHideFlags: 0
@@ -3044,7 +2957,6 @@ GameObject:
   - component: {fileID: 324195211783508431}
   - component: {fileID: 3915140848412068118}
   - component: {fileID: 4724859847590133867}
-  - component: {fileID: 2704676291392458053}
   m_Layer: 0
   m_Name: btn_config_arrow_right
   m_TagString: Untagged
@@ -3128,13 +3040,13 @@ MonoBehaviour:
     m_SelectOnDown: {fileID: 0}
     m_SelectOnLeft: {fileID: 0}
     m_SelectOnRight: {fileID: 0}
-  m_Transition: 0
+  m_Transition: 1
   m_Colors:
     m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
     m_HighlightedColor: {r: 1, g: 1, b: 1, a: 1}
     m_PressedColor: {r: 0.78, g: 0.78, b: 0.78, a: 1}
     m_SelectedColor: {r: 1, g: 1, b: 1, a: 1}
-    m_DisabledColor: {r: 0.78, g: 0.78, b: 0.78, a: 0.5}
+    m_DisabledColor: {r: 1, g: 1, b: 1, a: 1}
     m_ColorMultiplier: 1
     m_FadeDuration: 0.1
   m_SpriteState:
@@ -3153,36 +3065,6 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
---- !u!114 &2704676291392458053
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7711388843804782293}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2bcfa84d821221c4e941d580e5597a98, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.UI.HoverButton
-  hoverMode: 1
-  targetImage: {fileID: 0}
-  normalSprite: {fileID: 0}
-  hoverSprite: {fileID: 0}
-  pressedSprite: {fileID: 0}
-  normalChild: {fileID: 0}
-  hoverChild: {fileID: 0}
-  pressedChild: {fileID: 0}
-  useColorTint: 1
-  colorTarget: {fileID: 0}
-  normalColor: {r: 1, g: 1, b: 1, a: 1}
-  hoverColor: {r: 0.96, g: 0.96, b: 0.96, a: 1}
-  pressedColor: {r: 0.85, g: 0.85, b: 0.85, a: 1}
-  colorFadeDuration: 0.1
-  useScaleEffect: 0
-  hoverScale: 1.05
-  pressedScale: 0.95
-  scaleDuration: 0.1
 --- !u!1 &7858650477423021120
 GameObject:
   m_ObjectHideFlags: 0

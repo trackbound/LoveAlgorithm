@@ -298,12 +298,12 @@ MonoBehaviour:
   showDuration: 0.3
   hideDuration: 0.2
   slideOffset: 300
-  tabScene: {fileID: 8562948023946423359}
-  tabCG: {fileID: 7687164452204154387}
-  tabCollection: {fileID: 1847224551043113450}
-  sceneContainer: {fileID: 0}
-  cgContainer: {fileID: 0}
-  collectionContainer: {fileID: 0}
+  sceneButton: {fileID: 8562948023946423359}
+  cgButton: {fileID: 7687164452204154387}
+  collectionButton: {fileID: 1847224551043113450}
+  closeButton: {fileID: 4028377527193526035}
+  hoverOffset: 20
+  hoverDuration: 0.2
 --- !u!1 &6134706601272866481
 GameObject:
   m_ObjectHideFlags: 0
@@ -840,6 +840,17 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 24634abf78a75f842b12270c7d32f006, type: 3}
+--- !u!114 &4028377527193526035 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 6081524714518306605, guid: 24634abf78a75f842b12270c7d32f006, type: 3}
+  m_PrefabInstance: {fileID: 7170371094377267262}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Button
 --- !u!224 &6991615301506675299 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 181678456389218909, guid: 24634abf78a75f842b12270c7d32f006, type: 3}
