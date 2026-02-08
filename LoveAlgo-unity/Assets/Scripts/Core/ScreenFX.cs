@@ -4,7 +4,6 @@ using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 using DG.Tweening;
-using MoreMountains.Feedbacks;
 
 namespace LoveAlgo.Core
 {
@@ -31,8 +30,6 @@ namespace LoveAlgo.Core
         [SerializeField] Camera stageCamera;        // Screen Space - Camera 모드용
         [Tooltip("Overlay Canvas 사용 시 Stage RectTransform 바인딩 (폴백)")]
         [SerializeField] RectTransform stageTransform; // 폴백용
-        [Tooltip("FEEL Camera Shake 피드백 (선택)")]
-        [SerializeField] MMF_Player cameraShakeFeedback;
 
         [Header("설정")]
         [SerializeField] float defaultFadeDuration = 1f;
@@ -101,13 +98,7 @@ namespace LoveAlgo.Core
             var parts = value.Split(':');
             string effect = parts[0];
 
-            // 1. FeedbackManager에서 먼저 시도 (FEEL 피드백 또는 커스텀 피드백)
-            var fm = FeedbackManager.Instance;
-            if (fm != null && fm.HasFeedback(effect))
-            {
-                await fm.PlayAsync(effect, ct);
-                return;
-            }
+        
 
             // 2. 기본 내장 효과 (DOTween 기반)
             switch (effect)
@@ -282,14 +273,6 @@ namespace LoveAlgo.Core
         /// </summary>
         public async UniTask CamShakeAsync(float duration, float strength, CancellationToken ct = default)
         {
-            // 1. FEEL MMF_Player가 직접 바인딩되어 있으면 사용
-            if (cameraShakeFeedback != null)
-            {
-                cameraShakeFeedback.PlayFeedbacks();
-                await UniTask.WaitUntil(() => !cameraShakeFeedback.IsPlaying, cancellationToken: ct);
-                return;
-            }
-
             // 2. Screen Space - Camera 모드일 때는 RectTransform을 흔들어야 효과가 보임
             //    (카메라를 흔들면 Canvas가 따라가서 시각적 효과 없음)
             if (stageCanvas != null && stageCanvas.renderMode == RenderMode.ScreenSpaceCamera && stageTransform != null)

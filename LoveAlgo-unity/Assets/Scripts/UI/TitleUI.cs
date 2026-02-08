@@ -16,8 +16,17 @@ namespace LoveAlgo.UI
         [SerializeField] Button startButton;
         [SerializeField] Button continueButton;
         [SerializeField] Button loadButton;
+        [SerializeField] Button extraButton;
         [SerializeField] Button settingsButton;
         [SerializeField] Button exitButton;
+
+        [Header("호버 텍스트 (자식 오브젝트)")]
+        [SerializeField] GameObject hoverTextStart;
+        [SerializeField] GameObject hoverTextContinue;
+        [SerializeField] GameObject hoverTextLoad;
+        [SerializeField] GameObject hoverTextExtra;
+        [SerializeField] GameObject hoverTextSettings;
+        [SerializeField] GameObject hoverTextExit;
 
         [Header("타이틀 BGM")]
         [SerializeField] string titleBGM = "Title";
@@ -27,6 +36,7 @@ namespace LoveAlgo.UI
         [SerializeField] GameObject decoStart;
         [SerializeField] GameObject decoContinue;
         [SerializeField] GameObject decoLoad;
+        [SerializeField] GameObject decoExtra;
         [SerializeField] GameObject decoSettings;
         [SerializeField] GameObject decoExit;
 
@@ -34,6 +44,14 @@ namespace LoveAlgo.UI
 
         void Start()
         {
+            // 초기 호버 텍스트 비활성화
+            SetHoverText(hoverTextStart, false);
+            SetHoverText(hoverTextContinue, false);
+            SetHoverText(hoverTextLoad, false);
+            SetHoverText(hoverTextExtra, false);
+            SetHoverText(hoverTextSettings, false);
+            SetHoverText(hoverTextExit, false);
+
             SetupButtons();
             SetupHoverEvents();
             ShowDeco(decoNormal);
@@ -61,20 +79,22 @@ namespace LoveAlgo.UI
             startButton?.onClick.AddListener(OnStartClick);
             continueButton?.onClick.AddListener(OnContinueClick);
             loadButton?.onClick.AddListener(OnLoadClick);
+            extraButton?.onClick.AddListener(OnExtraClick);
             settingsButton?.onClick.AddListener(OnSettingsClick);
             exitButton?.onClick.AddListener(OnExitClick);
         }
 
         void SetupHoverEvents()
         {
-            AddHoverEvent(startButton, decoStart);
-            AddHoverEvent(continueButton, decoContinue);
-            AddHoverEvent(loadButton, decoLoad);
-            AddHoverEvent(settingsButton, decoSettings);
-            AddHoverEvent(exitButton, decoExit);
+            AddHoverEvent(startButton, decoStart, hoverTextStart);
+            AddHoverEvent(continueButton, decoContinue, hoverTextContinue);
+            AddHoverEvent(loadButton, decoLoad, hoverTextLoad);
+            AddHoverEvent(extraButton, decoExtra, hoverTextExtra);
+            AddHoverEvent(settingsButton, decoSettings, hoverTextSettings);
+            AddHoverEvent(exitButton, decoExit, hoverTextExit);
         }
 
-        void AddHoverEvent(Button button, GameObject deco)
+        void AddHoverEvent(Button button, GameObject deco, GameObject hoverText)
         {
             if (button == null) return;
 
@@ -84,13 +104,25 @@ namespace LoveAlgo.UI
 
             // Pointer Enter
             var enterEntry = new EventTrigger.Entry { eventID = EventTriggerType.PointerEnter };
-            enterEntry.callback.AddListener(_ => ShowDeco(deco));
+            enterEntry.callback.AddListener(_ => {
+                ShowDeco(deco);
+                SetHoverText(hoverText, true);
+            });
             trigger.triggers.Add(enterEntry);
 
             // Pointer Exit
             var exitEntry = new EventTrigger.Entry { eventID = EventTriggerType.PointerExit };
-            exitEntry.callback.AddListener(_ => ShowDeco(decoNormal));
+            exitEntry.callback.AddListener(_ => {
+                ShowDeco(decoNormal);
+                SetHoverText(hoverText, false);
+            });
             trigger.triggers.Add(exitEntry);
+        }
+
+        void SetHoverText(GameObject hoverText, bool active)
+        {
+            if (hoverText == null) return;
+            hoverText.SetActive(active);
         }
 
         #region 데코 관리
@@ -104,6 +136,7 @@ namespace LoveAlgo.UI
             decoStart?.SetActive(false);
             decoContinue?.SetActive(false);
             decoLoad?.SetActive(false);
+            decoExtra?.SetActive(false);
             decoSettings?.SetActive(false);
             decoExit?.SetActive(false);
 
@@ -143,6 +176,12 @@ namespace LoveAlgo.UI
         {
             Debug.Log("[TitleUI] Settings - 설정");
             PopupManager.Instance?.ShowSettings();
+        }
+
+        void OnExtraClick()
+        {
+            Debug.Log("[TitleUI] Extra - 엑스트라");
+            PopupManager.Instance?.ShowModal<ExtraPopup>();
         }
 
         void OnExitClick()
