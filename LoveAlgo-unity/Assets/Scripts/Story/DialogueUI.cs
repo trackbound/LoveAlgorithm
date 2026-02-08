@@ -69,7 +69,9 @@ namespace LoveAlgo.Story
 
         [Header("설정")]
         [SerializeField] float typingSpeed = 0.04f;
-        [SerializeField] float punctuationDelay = 0.15f;  // 문장부호 추가 딜레이
+        [SerializeField] float punctuationDelay = 0.12f;  // 문장부호 최대 추가 딜레이
+        [SerializeField] float jitterAmount = 0.15f;       // 타이핑 리듬 랜덤 변동 (±15%)
+        [SerializeField] int punctuationLookahead = 2;     // 문장부호 N글자 전부터 감속 시작
 
         // 인라인 태그 콜백
         public Action<string> OnEmoteTag;   // 표정 변경 요청
@@ -138,6 +140,7 @@ namespace LoveAlgo.Story
 
         /// <summary>
         /// 대사 표시 (타이핑 효과 + 인라인 태그)
+        /// maxVisibleCharacters 방식으로 리치텍스트 호환 + 부드러운 리듬
         /// </summary>
         public async UniTask ShowTextAsync(string speaker, string text, CancellationToken ct)
         {
@@ -154,12 +157,16 @@ namespace LoveAlgo.Story
             // 인라인 태그 파싱
             var segments = ParseInlineTags(text);
 
-            // 타이핑 준비 (텍스트 비우기 → Show 전에 처리)
+            // 타이핑 준비
             fullText = GetCleanText(segments);
             isTyping = true;
             skipRequested = false;
             HideNextIndicator();
-            dialogueText.text = "";
+
+            // maxVisibleCharacters 방식: 전체 텍스트를 미리 세팅하고 글자만 드러냄
+            dialogueText.text = fullText;
+            dialogueText.ForceMeshUpdate();
+            dialogueText.maxVisibleCharacters = 0;
 
             // 대사창 표시 (Hide 상태가 아닐 때만, 텍스트가 비워진 후 보여줄)
             if (!isHidden)
@@ -171,6 +178,7 @@ namespace LoveAlgo.Story
             }
 
             float currentSpeed = typingSpeed;
+            int visibleCount = 0;
 
             foreach (var seg in segments)
             {
@@ -185,25 +193,36 @@ namespace LoveAlgo.Story
                 switch (seg.Type)
                 {
                     case SegmentType.Text:
-                        // 글자별 타이핑
-                        foreach (char c in seg.Content)
+                        // 글자별 타이핑 — 부드러운 리듬
+                        string content = seg.Content;
+                        for (int i = 0; i < content.Length; i++)
                         {
-                            if (skipRequested) { CompleteText(); break; }
-                            dialogueText.text += c;
+                            if (skipRequested) { CompleteText(); goto done; }
+
+                            char c = content[i];
+                            visibleCount++;
+                            dialogueText.maxVisibleCharacters = visibleCount;
+
                             // 줄바꿈·공백은 사운드/딜레이 생략
                             if (c == '\n' || c == '\r') continue;
+
                             PlayTypingSound();
 
-                            // 문장부호에서 추가 딜레이
+                            // ── 부드러운 딜레이 계산 ──
                             float charDelay = currentSpeed;
-                            if (c == '.' || c == '!' || c == '?' || c == '~' || c == '\u2026')  // \u2026 = …
+
+                            // 문장부호 감속: 문장부호 자체 + N글자 전부터 점진 감속
+                            float punctWeight = GetPunctuationWeight(c, content, i);
+                            if (punctWeight > 0f)
                             {
-                                charDelay += punctuationDelay;
+                                // EaseOutQuad 커브로 부드럽게 감속
+                                float easedWeight = punctWeight * punctWeight;  // InQuad: 점진적으로 느려짐
+                                charDelay += punctuationDelay * easedWeight;
                             }
-                            else if (c == ',')
-                            {
-                                charDelay += punctuationDelay * 0.5f;
-                            }
+
+                            // 자연스러운 리듬 변동 (미세한 랜덤 지터)
+                            float jitter = 1f + UnityEngine.Random.Range(-jitterAmount, jitterAmount);
+                            charDelay *= jitter;
 
                             await UniTask.Delay(TimeSpan.FromSeconds(charDelay), cancellationToken: ct);
                         }
@@ -233,9 +252,42 @@ namespace LoveAlgo.Story
                 }
             }
 
+            done:
             isTyping = false;
-            // 독백 dots는 계속 재생 (클릭 시까지)
+            dialogueText.maxVisibleCharacters = fullText.Length;  // 안전: 혹시 누락 방지
             ShowNextIndicator();
+        }
+
+        /// <summary>
+        /// 문장부호 가중치 계산 — 문장부호 N글자 전부터 점진 감속
+        /// 0.0 = 일반 글자, 1.0 = 문장부호 자체
+        /// </summary>
+        float GetPunctuationWeight(char c, string text, int index)
+        {
+            // 현재 글자가 문장부호면 최대 가중치
+            if (IsMajorPunctuation(c)) return 1.0f;
+            if (c == ',') return 0.4f;  // 쉼표는 약한 감속
+
+            // 다음 N글자 안에 문장부호가 있으면 점진 감속
+            int lookahead = punctuationLookahead;
+            for (int ahead = 1; ahead <= lookahead && index + ahead < text.Length; ahead++)
+            {
+                char nextC = text[index + ahead];
+                if (IsMajorPunctuation(nextC))
+                {
+                    // ahead=1이면 weight 높고, ahead=lookahead이면 낮음
+                    // 선형 보간: 가까울수록 더 느려짐
+                    float t = 1f - ((float)ahead / (lookahead + 1));
+                    return t * 0.5f;  // 최대 0.5 (문장부호 자체보다는 약하게)
+                }
+            }
+
+            return 0f;
+        }
+
+        bool IsMajorPunctuation(char c)
+        {
+            return c == '.' || c == '!' || c == '?' || c == '~' || c == '\u2026';  // \u2026 = …
         }
 
         #region 인라인 태그 파싱
@@ -485,6 +537,7 @@ namespace LoveAlgo.Story
             {
                 skipRequested = true;
                 dialogueText.text = fullText;
+                dialogueText.maxVisibleCharacters = fullText?.Length ?? 0;
                 isTyping = false;
                 ShowNextIndicator();
             }
@@ -619,6 +672,7 @@ namespace LoveAlgo.Story
         [Header("인디케이터 애니메이션")]
         [SerializeField] float blinkInterval = 0.6f;  // 깜빡임 간격
         [SerializeField] float bounceAmplitude = 4f;  // 상하 바운스 크기 (px)
+        [SerializeField] float indicatorPopDuration = 0.25f;  // 등장 애니메이션 시간
         Color indicatorOriginalColor = Color.white;   // 원래 색상 저장
         Tweener indicatorBounce;
         float indicatorBaseY;
@@ -659,8 +713,12 @@ namespace LoveAlgo.Story
             {
                 // 보이는 글자가 없으면 텍스트 시작 위치 사용
                 nextIndicator.anchoredPosition = Vector2.zero + indicatorOffset;
+                indicatorBaseY = nextIndicator.anchoredPosition.y;
+                nextIndicator.localScale = Vector3.zero;
                 nextIndicator.gameObject.SetActive(true);
-                StartBlinkAnimation();
+                nextIndicator.DOScale(Vector3.one, indicatorPopDuration)
+                    .SetEase(Ease.OutBack)
+                    .OnComplete(StartBlinkAnimation);
                 indicatorShown = true;
                 return;
             }
@@ -677,9 +735,14 @@ namespace LoveAlgo.Story
 
             nextIndicator.anchoredPosition = new Vector2(localPos.x + indicatorOffset.x, localPos.y + indicatorOffset.y);
             indicatorBaseY = nextIndicator.anchoredPosition.y;
+
+            // 팝인 등장: 스케일 0 → 1 (OutBack: 살짝 튕기는 느낌)
+            nextIndicator.localScale = Vector3.zero;
             nextIndicator.gameObject.SetActive(true);
-            
-            StartBlinkAnimation();
+            nextIndicator.DOScale(Vector3.one, indicatorPopDuration)
+                .SetEase(Ease.OutBack)
+                .OnComplete(StartBlinkAnimation);
+
             indicatorShown = true;
         }
 
@@ -752,7 +815,11 @@ namespace LoveAlgo.Story
             StopBlinkAnimation();
             
             if (nextIndicator != null)
+            {
+                nextIndicator.DOKill();  // 팝인 스케일 애니메이션도 정리
+                nextIndicator.localScale = Vector3.one;
                 nextIndicator.gameObject.SetActive(false);
+            }
             indicatorShown = false;
         }
 

@@ -732,31 +732,32 @@ namespace LoveAlgo.Story
 
         /// <summary>
         /// 매크로: 하루 마무리 연출
-        /// CSV: FX,,DayEnd[:크로스페이드시간],await
+        /// CSV: FX,,DayEnd[:페이드시간],await
         /// 
         /// 시퀀스:
-        ///   1. EyeClose — 눈 감기 (0.8초, 자연스러운 무게감)
-        ///   2. 스테이지 정리 — 캐릭터/오버레이/대사창/BGM 즉시 제거 (눈 감은 뒤라 안 보임)
-        ///   3. BG Black — 배경 교체 (눈 감겨있어 안 보임)
-        ///   4. EyeOpen 즉시 해제 — Eye 바 제거, BG Black만 남음
+        ///   1. ScreenFX FadeOut — 화면 암전 (0.8초)
+        ///   2. 암전 뒤에서 스테이지 정리 — 캐릭터/오버레이/대사창/BGM 제거 (안 보임)
+        ///   3. BG Black + EyeCloseImmediate — 배경 교체 + 눈 감긴 상태 세팅
+        ///      (BG도 검정, Eye 바도 검정이라 구분 안 됨)
+        ///   4. ScreenFX FadeIn — 페이드 오버레이 해제 (BG Black + Eye Bar 보이지만 전부 검정)
         ///   5. 자동저장
         /// 
-        /// DayEnd 이후 CSV에서 검은 화면 위 목소리 대사 → 아침 연출 진행
+        /// 다음 아침: DayStart → 대사 → BG 교체 → EyeOpen 으로 눈 뜨기 연출
         /// </summary>
         async UniTask ExecuteMacroDayEndAsync(string[] parts, CancellationToken ct)
         {
-            float eyeCloseDuration = parts.Length > 1 && float.TryParse(parts[1], out float fd) ? fd : 0.8f;
-            Debug.Log($"[ScriptRunner] 매크로: DayEnd (eyeClose={eyeCloseDuration}s)");
+            float fadeDuration = parts.Length > 1 && float.TryParse(parts[1], out float fd) ? fd : 0.8f;
+            Debug.Log($"[ScriptRunner] 매크로: DayEnd (fade={fadeDuration}s)");
 
             var dialogueUI = UIManager.Instance?.DialogueUI;
             var fx = Core.ScreenFX.Instance;
             var stage = StageManager.Instance;
 
-            // 1. 눈 감기 — 서서히 눈 감기는 연출 (InCubic: 무게감)
+            // 1. 화면 암전 (FadeOut)
             if (fx != null)
-                await fx.EyeCloseAsync(eyeCloseDuration, ct);
+                await fx.FadeOutAsync(fadeDuration, ct);
 
-            // 2. 눈 감긴 상태에서 스테이지 일괄 정리 (플레이어에게 안 보임)
+            // 2. 암전 뒤에서 스테이지 일괄 정리 (플레이어에게 안 보임)
             dialogueUI?.HideImmediate();
             stage?.Character?.ClearAll();
             stage?.VirtualBG?.HideImmediate();
@@ -764,12 +765,14 @@ namespace LoveAlgo.Story
             if (AudioManager.Instance != null)
                 await AudioManager.Instance.ExecuteAsync("BGM:Stop", ct);
 
-            // 3. 배경 → 블랙 (눈 감겨있어 안 보임)
+            // 3. 배경 → 블랙 + 눈 감긴 상태 세팅 (다음 아침 EyeOpen용)
             await ExecuteBGAsync(
                 new ScriptLine("", LineType.BG, "", "Black", NextType.Immediate), ct);
+            fx?.EyeCloseImmediate();
 
-            // 4. Eye 바 즉시 해제 → BG Black만 남음 (다음 목소리 대사 준비)
-            fx?.EyeOpenImmediate();
+            // 4. 페이드 오버레이 해제 (BG Black + Eye Bar 모두 검정, 시각적 차이 없음)
+            if (fx != null)
+                await fx.FadeInAsync(0.3f, ct);
 
             // 5. 자동저장 (DayEnd 완료 → Continue 시 다음 줄부터 재개)
             Core.GameManager.Instance?.AutoSave();
