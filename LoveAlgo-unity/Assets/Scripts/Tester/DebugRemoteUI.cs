@@ -1,10 +1,6 @@
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
-using UnityEngine.UI;
 using TMPro;
-using Cysharp.Threading.Tasks;
 using LoveAlgo.Story;
 using LoveAlgo.UI;
 using LoveAlgo.Core;
@@ -13,7 +9,9 @@ namespace LoveAlgo.Tester
 {
     /// <summary>
     /// 테스터용 디버그 리모콘 UI
-    /// 화면 구석에 단축키 안내 표시 + 테스트 편의 기능
+    /// 화면 구석에 단축키 안내 표시 + 디버그 전용 기능
+    /// 
+    /// ※ 스토리 진행 입력(Space/Click, Auto, Skip)은 StoryInputHandler가 처리
     /// </summary>
     public class DebugRemoteUI : MonoBehaviour
     {
@@ -27,19 +25,17 @@ namespace LoveAlgo.Tester
         [SerializeField] KeyCode toggleKey = KeyCode.F1;  // Inspector에서 참조용
         #pragma warning restore CS0414
 
-        // Raycast 결과 캐시
-        readonly List<RaycastResult> raycastResults = new();
-        PointerEventData pointerEventData;
-
         bool isVisible;
 
         const string HelpContent = @"<b>[테스터 리모콘]</b>
 <color=#FFD700>F1</color>  리모콘 표시/숨김
 <color=#FFD700>F2</color>  데모 점프 헬퍼
 <color=#FFD700>F3</color>  상태 모니터 (스탯/호감도)
-<color=#FFD700>Space/Click</color>  다음 대사
-<color=#FFD700>A</color>  자동 진행 ON/OFF
-<color=#FFD700>S</color>  스킵 모드 (Shift 누르는 동안)
+<color=#aaaaaa>─── 프로덕션 (StoryInputHandler) ───</color>
+<color=#88CC88>Space/Click</color>  다음 대사
+<color=#88CC88>A</color>  자동 진행 ON/OFF
+<color=#88CC88>Shift+S</color>  스킵 모드
+<color=#aaaaaa>─── 디버그 전용 ───</color>
 <color=#FFD700>R</color>  처음부터 다시
 <color=#FFD700>N</color>  다음 10줄 스킵
 <color=#FFD700>B</color>  방금 줄 다시 (연출 포함)
@@ -67,11 +63,7 @@ namespace LoveAlgo.Tester
         void HandleInput()
         {
             var keyboard = Keyboard.current;
-            var mouse = Mouse.current;
             if (keyboard == null) return;
-
-            var runner = ScriptRunner.Instance;
-            var dialogueUI = UIManager.Instance?.DialogueUI;
 
             // F1: 리모콘 표시/숨김
             if (keyboard.f1Key.wasPressedThisFrame)
@@ -79,57 +71,10 @@ namespace LoveAlgo.Tester
                 ToggleVisible();
             }
 
-            // 스토리 진행 중일 때만 처리
-            if (GameManager.Instance?.CurrentPhase != GamePhase.Prologue &&
-                GameManager.Instance?.CurrentPhase != GamePhase.DayLoop)
-            {
+            // 스토리 진행 중일 때만 디버그 기능 처리
+            var phase = GameManager.Instance?.CurrentPhase;
+            if (phase != GamePhase.Prologue && phase != GamePhase.DayLoop)
                 return;
-            }
-
-            // Space 또는 마우스 클릭: 다음 대사
-            bool spacePressed = keyboard.spaceKey.wasPressedThisFrame;
-            bool mouseClicked = mouse != null && mouse.leftButton.wasPressedThisFrame;
-
-            // 마우스 클릭은 버튼 위에서는 무시
-            if (mouseClicked && IsPointerOverButton())
-            {
-                mouseClicked = false;
-            }
-
-            if (spacePressed || mouseClicked)
-            {
-                if (dialogueUI != null && dialogueUI.IsTyping)
-                {
-                    dialogueUI.RequestSkip();
-                }
-                else
-                {
-                    LoveAlgo.UI.UISoundManager.Instance?.PlayDialogueNext();
-                    runner?.OnClick();
-                }
-            }
-
-            // A: 자동 진행 토글
-            if (keyboard.aKey.wasPressedThisFrame)
-            {
-                runner?.ToggleAutoMode();
-                var mode = runner?.IsAutoMode == true ? "ON" : "OFF";
-                PopupManager.Instance?.Toast("Auto Mode", mode);
-            }
-
-            // S (Shift 누르는 동안): 스킵 모드
-            if (keyboard.leftShiftKey.isPressed || keyboard.rightShiftKey.isPressed)
-            {
-                // 빠른 스킵 - 연속 클릭
-                if (keyboard.sKey.wasPressedThisFrame || keyboard.sKey.isPressed)
-                {
-                    if (dialogueUI != null && dialogueUI.IsTyping)
-                    {
-                        dialogueUI.RequestSkip();
-                    }
-                    runner?.OnClick();
-                }
-            }
 
             // R: 처음부터 다시
             if (keyboard.rKey.wasPressedThisFrame)
@@ -156,7 +101,7 @@ namespace LoveAlgo.Tester
             }
         }
 
-        #region 기능
+        #region 디버그 기능
 
         void RestartScript()
         {
@@ -179,7 +124,6 @@ namespace LoveAlgo.Tester
             var runner = ScriptRunner.Instance;
             if (runner == null) return;
 
-            // 빠르게 클릭 시뮬레이션
             for (int i = 0; i < count; i++)
             {
                 UIManager.Instance?.DialogueUI?.RequestSkip();
@@ -213,31 +157,6 @@ namespace LoveAlgo.Tester
             {
                 panel.SetActive(visible);
             }
-        }
-
-        bool IsPointerOverButton()
-        {
-            if (EventSystem.current == null) return false;
-
-            var mouse = Mouse.current;
-            if (mouse == null) return false;
-
-            pointerEventData ??= new PointerEventData(EventSystem.current);
-            pointerEventData.position = mouse.position.ReadValue();
-
-            raycastResults.Clear();
-            EventSystem.current.RaycastAll(pointerEventData, raycastResults);
-
-            foreach (var result in raycastResults)
-            {
-                if (result.gameObject.GetComponent<Button>() != null ||
-                    result.gameObject.GetComponentInParent<Button>() != null)
-                {
-                    return true;
-                }
-            }
-
-            return false;
         }
 
         #endregion

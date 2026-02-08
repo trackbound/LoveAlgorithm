@@ -458,7 +458,8 @@ namespace LoveAlgo.UI
         public bool IsAnyPopupOpen => 
             currentModal != null || 
             (confirmPopup != null && confirmPopup.IsVisible) ||
-            (alertPopup != null && alertPopup.IsVisible);
+            (alertPopup != null && alertPopup.IsVisible) ||
+            (logPopup != null && logPopup.IsVisible);
 
         #endregion
     }
