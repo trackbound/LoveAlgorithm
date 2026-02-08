@@ -443,9 +443,9 @@ namespace LoveAlgo.Core
             }
 
             // BGM 복원
-            if (!string.IsNullOrEmpty(data.CurrentBGM))
+            if (!string.IsNullOrEmpty(data.CurrentBGM) && Story.AudioManager.Instance != null)
             {
-                await Story.AudioManager.Instance?.PlayBGMAsync(data.CurrentBGM, 0.5f);
+                await Story.AudioManager.Instance.PlayBGMAsync(data.CurrentBGM, 0.5f);
             }
 
             // 화면 효과 클리어 (로드 시 깔끔한 상태로)
