@@ -22,37 +22,37 @@ namespace LoveAlgo.UI
         [SerializeField] float maxSize = 40f;
 
         [Header("낙하")]
-        [SerializeField] float minFallSpeed = 18f;
-        [SerializeField] float maxFallSpeed = 55f;
+        [SerializeField] float minFallSpeed = 12f;
+        [SerializeField] float maxFallSpeed = 35f;
 
-        [Header("바람")]
-        [Tooltip("글로벌 바람 — 모든 꽃잎에 영향")]
-        [SerializeField] float windBaseX = 12f;          // 기본 횡방향(+ = 오른쪽)
-        [SerializeField] float windGustStrength = 30f;   // 돌풍 강도
-        [SerializeField] float windGustSpeed = 0.25f;    // 돌풍 주기 (Hz)
-        [SerializeField] float windVertGust = 8f;        // 수직 돌풍 (위로 솟구침)
+        [Header("바람 (은은한 산들바람)")]
+        [Tooltip("글로벌 바람 — 모든 꽃잎에 영향, 개별 감도로 다양성 확보")]
+        [SerializeField] float windBaseX = 5f;            // 기본 횡방향(+ = 오른쪽)
+        [SerializeField] float windGustStrength = 10f;    // 돌풍 강도
+        [SerializeField] float windGustSpeed = 0.12f;     // 돌풍 주기 (Hz) — 느리게
+        [SerializeField] float windVertGust = 4f;         // 수직 돌풍 (위로 솟구침)
 
         [Header("개별 흔들림 (2중 사인파)")]
-        [SerializeField] float minSwayAmp1 = 20f;
-        [SerializeField] float maxSwayAmp1 = 50f;
-        [SerializeField] float minSwayFreq1 = 0.3f;
-        [SerializeField] float maxSwayFreq1 = 0.8f;
-        [SerializeField] float minSwayAmp2 = 8f;
-        [SerializeField] float maxSwayAmp2 = 20f;
-        [SerializeField] float minSwayFreq2 = 1.2f;
-        [SerializeField] float maxSwayFreq2 = 2.5f;
+        [SerializeField] float minSwayAmp1 = 10f;
+        [SerializeField] float maxSwayAmp1 = 25f;
+        [SerializeField] float minSwayFreq1 = 0.15f;
+        [SerializeField] float maxSwayFreq1 = 0.45f;
+        [SerializeField] float minSwayAmp2 = 4f;
+        [SerializeField] float maxSwayAmp2 = 10f;
+        [SerializeField] float minSwayFreq2 = 0.6f;
+        [SerializeField] float maxSwayFreq2 = 1.4f;
 
-        [Header("3D 회전 시뮬레이션")]
+        [Header("3D 회전 시뮬레이션 (은은하게)")]
         [Tooltip("ScaleX/Y를 사인파로 줄였다 늘려 뒤집히는 듯한 효과")]
-        [SerializeField] float minFlipSpeed = 0.4f;
-        [SerializeField] float maxFlipSpeed = 1.2f;
-        [SerializeField] float flipMinScale = 0.15f;     // 최소 scale (0이면 완전 옆면)
-        [SerializeField] float minTiltSpeed = 0.3f;
-        [SerializeField] float maxTiltSpeed = 0.9f;
+        [SerializeField] float minFlipSpeed = 0.15f;
+        [SerializeField] float maxFlipSpeed = 0.5f;
+        [SerializeField] float flipMinScale = 0.4f;      // 최소 scale — 너무 얇아지지 않게
+        [SerializeField] float minTiltSpeed = 0.1f;
+        [SerializeField] float maxTiltSpeed = 0.4f;
 
         [Header("Z 회전 (느린 기울기 변화)")]
-        [SerializeField] float minZRotSpeed = 8f;
-        [SerializeField] float maxZRotSpeed = 35f;
+        [SerializeField] float minZRotSpeed = 5f;
+        [SerializeField] float maxZRotSpeed = 18f;
 
         [Header("투명도")]
         [SerializeField] float startAlpha = 0f;
@@ -94,6 +94,7 @@ namespace LoveAlgo.UI
             public float posX, posY;
             public float baseX;       // 스폰 X (drift 기준)
             public float driftSpeed;  // 개별 횡이동
+            public float windSensitivity; // 바람 감도 (0~1+) — 꽃잎마다 다르게
 
             // 수명
             public float lifetime, maxLifetime;
@@ -126,10 +127,10 @@ namespace LoveAlgo.UI
             float dt = Time.deltaTime;
             globalTime += dt;
 
-            // ── 글로벌 바람 ──
+            // ── 글로벌 바람 (부드러운 산들바람) ──
             float windX = windBaseX
                 + windGustStrength * Mathf.Sin(globalTime * windGustSpeed * Mathf.PI * 2f)
-                + windGustStrength * 0.4f * Mathf.Sin(globalTime * windGustSpeed * 1.73f * Mathf.PI * 2f);
+                + windGustStrength * 0.3f * Mathf.Sin(globalTime * windGustSpeed * 1.73f * Mathf.PI * 2f);
             float windY = windVertGust * Mathf.Sin(globalTime * windGustSpeed * 0.7f * Mathf.PI * 2f);
 
             // ── 스폰 ──
@@ -150,17 +151,17 @@ namespace LoveAlgo.UI
                 p.lifetime += dt;
 
                 // 낙하 — 미세 가감속으로 공기 저항 느낌
-                float currentFall = p.fallSpeed + p.fallAccel * Mathf.Sin(p.lifetime * 0.7f);
-                // 수직 돌풍: 바람이 불면 살짝 떠오르기도
-                float vertOffset = windY * (0.6f + 0.4f * Mathf.Sin(p.lifetime * 1.3f + p.swayPhase1));
+                float currentFall = p.fallSpeed + p.fallAccel * Mathf.Sin(p.lifetime * 0.5f);
+                // 수직 돌풍: 바람에 따라 살짝 떠오르기도 (개별 감도 반영)
+                float vertOffset = windY * p.windSensitivity * (0.6f + 0.4f * Mathf.Sin(p.lifetime * 0.9f + p.swayPhase1));
                 p.posY -= (currentFall - Mathf.Max(0f, vertOffset)) * dt;
 
-                // 횡이동: 글로벌 바람 + 개별 drift + 2중 사인파 흔들림
+                // 횡이동: 글로벌 바람(개별 감도) + 개별 drift + 2중 사인파 흔들림
                 float sway1 = p.swayAmp1 * Mathf.Sin(p.swayFreq1 * p.lifetime * Mathf.PI * 2f + p.swayPhase1);
                 float sway2 = p.swayAmp2 * Mathf.Sin(p.swayFreq2 * p.lifetime * Mathf.PI * 2f + p.swayPhase2);
                 float xOffset = sway1 + sway2;
 
-                p.posX = p.baseX + xOffset + (windX + p.driftSpeed) * p.lifetime;
+                p.posX = p.baseX + xOffset + (windX * p.windSensitivity + p.driftSpeed) * p.lifetime;
 
                 p.rect.anchoredPosition = new Vector2(p.posX, p.posY);
 
@@ -239,7 +240,7 @@ namespace LoveAlgo.UI
                 rect = rt,
                 image = img,
                 fallSpeed = fallSpeed,
-                fallAccel = fallSpeed * Random.Range(0.15f, 0.35f), // 속도 변동폭
+                fallAccel = fallSpeed * Random.Range(0.1f, 0.25f), // 속도 변동폭
 
                 swayAmp1 = Random.Range(minSwayAmp1, maxSwayAmp1),
                 swayFreq1 = Random.Range(minSwayFreq1, maxSwayFreq1),
@@ -258,7 +259,8 @@ namespace LoveAlgo.UI
                 baseX = spawnX,
                 posX = spawnX,
                 posY = spawnY,
-                driftSpeed = Random.Range(-8f, 5f),
+                driftSpeed = Random.Range(-4f, 3f),
+                windSensitivity = Random.Range(0.3f, 1.4f), // 꽃잎마다 바람 반응 다름
 
                 lifetime = 0f,
                 maxLifetime = maxLife,
