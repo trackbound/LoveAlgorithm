@@ -129,6 +129,7 @@ namespace LoveAlgo.Story
 
         /// <summary>
         /// 표정 변경 (크로스페이드)
+        /// Back에 새 표정을 준비하고 동시에 페이드 → 완료 후 Front로 승격
         /// </summary>
         public async UniTask EmoteAsync(string emote, CancellationToken ct = default)
         {
@@ -150,28 +151,25 @@ namespace LoveAlgo.Story
                 return;
             }
 
-            // Back 이미지에 새 표정 설정 (뒤에서 페이드인)
+            // Back 이미지에 새 표정 설정 (뒤에서 준비)
             imageBack.sprite = sprite;
             imageBack.enabled = true;
             backCanvasGroup.alpha = 0f;
             
-            // Back 이미지 트랜스폼 적용
-            ApplyCharacterTransform(currentCharacter, currentEmote, applyOffset: false);
-            
-            // 크로스페이드: Back 페이드인하면서 Front 페이드아웃
-            await DOTween.Sequence()
-                .Join(backCanvasGroup.DOFade(1f, emoteFadeDuration).SetEase(Ease.Linear))
-                .Join(frontCanvasGroup.DOFade(0f, emoteFadeDuration).SetEase(Ease.Linear))
+            // 크로스페이드: Front 위에 Back을 페이드인 (Front는 유지)
+            // Front를 페이드아웃하면 Back이 아직 불투명하지 않을 때 빈 곳이 보여 깜빡임 발생
+            // → Back만 올려서 자연스럽게 덮기
+            await backCanvasGroup.DOFade(1f, emoteFadeDuration)
+                .SetEase(Ease.InOutSine)
                 .ToUniTask(cancellationToken: ct);
 
-            // 스왑: Back의 내용을 Front로 복사
-            // 중요: Back이 완전히 보이는 상태(alpha=1)에서 Front를 업데이트
+            // 스왑: Back이 완전히 덮은 상태에서 Front를 교체
+            // Back alpha=1 유지 → Front sprite 교체 → Front alpha=1 → Back 숨김
+            // 이 순서라면 화면에는 항상 무언가 보이므로 깜빡임 없음
             imageFront.sprite = imageBack.sprite;
-            imageFront.enabled = true;
-            
-            // Front를 다시 보이게 하고 Back은 숨김
-            // 이 순간 둘 다 같은 이미지이므로 깜빡임 없음
             frontCanvasGroup.alpha = 1f;
+            
+            // Back 정리 (Front가 이미 같은 이미지로 덮고 있으므로 안전)
             backCanvasGroup.alpha = 0f;
             imageBack.enabled = false;
         }
