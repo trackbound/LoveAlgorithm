@@ -256,6 +256,9 @@ MonoBehaviour:
   buttonPrefab: {fileID: 4961197146932592112, guid: bc93bda81b8570943aeee0889de5c767, type: 3}
   canvasGroup: {fileID: 4256496022308243339}
   fadeDuration: 0.2
+  choiceAppearDelay: 0.1
+  choiceAppearDuration: 0.3
+  choiceAppearEase: 0
 --- !u!1001 &748540797753140616
 PrefabInstance:
   m_ObjectHideFlags: 0
