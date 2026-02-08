@@ -687,7 +687,7 @@ namespace LoveAlgo.Story
                     await ExecuteMacroDayEndAsync(parts, ct);
                     return;
                 case "DayStart":
-                    ExecuteMacroDayStart(parts);
+                    await ExecuteMacroDayStartAsync(parts, ct);
                     return;
             }
 
@@ -742,7 +742,7 @@ namespace LoveAlgo.Story
         ///   4. ScreenFX FadeIn — 페이드 오버레이 해제 (BG Black + Eye Bar 보이지만 전부 검정)
         ///   5. 자동저장
         /// 
-        /// 다음 아침: DayStart → 대사 → BG 교체 → EyeOpen 으로 눈 뜨기 연출
+        /// 다음 아침: DayStart:배경 → 대사 → EyeOpen 으로 눈 뜨기 연출
         /// </summary>
         async UniTask ExecuteMacroDayEndAsync(string[] parts, CancellationToken ct)
         {
@@ -780,24 +780,47 @@ namespace LoveAlgo.Story
         }
 
         /// <summary>
-        /// 매크로: 하루 시작 (GameState 업데이트)
-        /// CSV: FX,,DayStart[:행동수],>
+        /// 매크로: 하루 시작 (GameState 업데이트 + 배경 사전 세팅)
+        /// CSV: FX,,DayStart[:배경[:행동수]],>
         /// 
         /// 동작:
-        ///   - CurrentDay++ (다음 날)
-        ///   - RemainingActions 리셋 (기본 3)
+        ///   - CurrentDay++ (다음 날), RemainingActions 리셋 (기본 3)
+        ///   - 배경 지정 시: 눈 감긴 상태에서 BG 교체 (EyeOpen 시 자연스럽게 보임)
+        ///   - 배경 미지정 시: Eye 상태 해제 (직접 장면 전환용)
         /// 
-        /// 눈 뜨기 연출은 별도 EyeOpen/EyeBlink FX로 명시적 처리:
-        ///   FX,,DayStart,>
+        /// 예시 (아침 기상):
+        ///   FX,,DayEnd,await
+        ///   FX,,DayStart:MyRoom/BG_MyRoom_Bed_Day,>
         ///   ,Text,로아,...나.,click
-        ///   ,BG,,MyRoom/BG_MyRoom_Bed_Day:Cut,>
         ///   ,FX,,EyeBlink:0.1:0.15,await
         ///   ,FX,,EyeOpen:1.5,await
+        /// 
+        /// 예시 (장면 전환, 눈 뜨기 없음):
+        ///   FX,,DayEnd,await
+        ///   FX,,DayStart,>
+        ///   ,BG,,StudentCenter/BG_StudentCenter_Board_Day,>
         /// </summary>
-        void ExecuteMacroDayStart(string[] parts)
+        async UniTask ExecuteMacroDayStartAsync(string[] parts, CancellationToken ct)
         {
-            int actions = parts.Length > 1 && int.TryParse(parts[1], out int a) ? a : 3;
+            // 파싱: DayStart[:bg[:actions]] 또는 DayStart[:actions]
+            string bgPath = null;
+            int actions = 3;
 
+            if (parts.Length > 1)
+            {
+                if (int.TryParse(parts[1], out int a))
+                {
+                    actions = a;  // DayStart:3
+                }
+                else
+                {
+                    bgPath = parts[1];  // DayStart:MyRoom/BG_MyRoom_Bed_Day
+                    if (parts.Length > 2 && int.TryParse(parts[2], out int a2))
+                        actions = a2;   // DayStart:MyRoom/BG_MyRoom_Bed_Day:3
+                }
+            }
+
+            // GameState 업데이트
             var gm = Core.GameManager.Instance;
             if (gm != null)
             {
@@ -807,6 +830,22 @@ namespace LoveAlgo.Story
             else
             {
                 Debug.LogWarning("[ScriptRunner] DayStart: GameManager 없음");
+            }
+
+            var fx = Core.ScreenFX.Instance;
+
+            if (bgPath != null)
+            {
+                // 눈 감긴 상태에서 배경 미리 세팅 (Eye 바 뒤에 숨겨짐)
+                await ExecuteBGAsync(
+                    new ScriptLine("", LineType.BG, "", $"{bgPath}:Cut", NextType.Immediate), ct);
+                Debug.Log($"[ScriptRunner] DayStart: BG '{bgPath}' 세팅 완료 (EyeClose 뒤)");
+            }
+            else
+            {
+                // 배경 미지정 → Eye 상태 해제 (직접 장면 전환용)
+                fx?.EyeOpenImmediate();
+                Debug.Log("[ScriptRunner] DayStart: Eye 해제 (배경 미지정)");
             }
         }
 
