@@ -82,8 +82,11 @@ DEMO_day1_morning,Sound,,BGM:Stop,>
 ,Text,로아,일어나!,click
 ,Text,로아,{{PlayerName}}! 일어나라고!,click
 
-# 눈 뜸 - 배경 크로스페이드로 밝아짐 [로아 Overlay 시작 2/9]
-,BG,,MyRoom/BG_MyRoom_Bed_Day:Cross:1.5,>
+# 눈 뜸 - EyeBlink 후 EyeOpen [로아 Overlay 시작 2/9]
+,BG,,MyRoom/BG_MyRoom_Bed_Day:Cut,>
+,FX,,EyeCloseImmediate,>
+,FX,,EyeBlink:0.1:0.15,await
+,FX,,EyeOpen:1.5,await
 ,Sound,,BGM:Roa,>
 ,Overlay,,Roa_Theme:FadeIn:0.5,await
 ,Char,,C:Enter:Roa,await
