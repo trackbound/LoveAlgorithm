@@ -848,6 +848,7 @@ namespace LoveAlgo.Core
             StageManager.Instance?.Background?.Clear();
             StageManager.Instance?.VirtualBG?.HideImmediate();
             StageManager.Instance?.CG?.Clear();
+            StageManager.Instance?.SDCutscene?.Clear();
             StageManager.Instance?.MonologueDim?.HideImmediate();
 
             // 화면 효과 정리
@@ -862,6 +863,12 @@ namespace LoveAlgo.Core
 
             // DOTween 동시 트윈 정리 (Safe Mode로 사용 중이므로 KillAll 대신 유휴 트윈만 정리)
             DOTween.KillAll();
+
+            // 캐릭터 스프라이트 캐시 정리
+            CharacterSlot.ClearSpriteCache();
+
+            // 미사용 에셋 메모리 해제
+            Resources.UnloadUnusedAssets();
         }
 
         /// <summary>
@@ -910,6 +917,16 @@ namespace LoveAlgo.Core
                 if (cg != null)
                 {
                     await cg.ShowAsync(data.CurrentCG, 0f);  // 즉시 표시
+                }
+            }
+
+            // SD 컷씬 복원
+            if (!string.IsNullOrEmpty(data.CurrentSD))
+            {
+                var sd = StageManager.Instance?.SDCutscene;
+                if (sd != null)
+                {
+                    await sd.ShowAsync(data.CurrentSD, 0f);  // 즉시 표시
                 }
             }
 

@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
@@ -7,14 +8,28 @@ using DG.Tweening;
 namespace LoveAlgo.Story
 {
     /// <summary>
+    /// 오버레이 스프라이트 매핑 (Inspector에서 설정)
+    /// </summary>
+    [Serializable]
+    public struct OverlayEntry
+    {
+        [Tooltip("CSV에서 사용할 이름 (예: Roa_Theme)")]
+        public string name;
+        public Sprite sprite;
+    }
+
+    /// <summary>
     /// 가상 배경 오버레이 - 배경 위에 옅은 보조 배경 표시
-    /// 로아의 가상공간 등 캐릭터별 테마 배경에 사용
+    /// 로아의 가상공간 테마 배경에 사용 (고정 3장, 직접 바인딩)
     /// </summary>
     public class VirtualBGOverlay : MonoBehaviour
     {
         [Header("바인딩")]
         [SerializeField] Image overlayImage;
         [SerializeField] CanvasGroup canvasGroup;
+
+        [Header("오버레이 스프라이트 (Inspector에서 등록)")]
+        [SerializeField] OverlayEntry[] overlayEntries;
 
         [Header("설정")]
         [SerializeField] float defaultDuration = 0.5f;
@@ -114,8 +129,8 @@ namespace LoveAlgo.Story
         /// </summary>
         public async UniTask ShowAsync(string overlayName, float duration = 0.5f, float targetAlpha = 0.7f, CancellationToken ct = default)
         {
-            // 스프라이트 로드
-            var sprite = LoadSprite(overlayName);
+            // 스프라이트 찾기 (Inspector 바인딩)
+            var sprite = FindSprite(overlayName);
             if (sprite == null)
             {
                 Debug.LogWarning($"[VirtualBGOverlay] 스프라이트 없음: {overlayName}");
@@ -169,17 +184,20 @@ namespace LoveAlgo.Story
         }
 
         /// <summary>
-        /// 스프라이트 로드 (Resources/Overlays/에서)
+        /// 이름으로 스프라이트 찾기 (Inspector 바인딩에서)
         /// </summary>
-        Sprite LoadSprite(string name)
+        Sprite FindSprite(string name)
         {
-            // Resources/Overlays/이름 에서 로드
-            var sprite = Resources.Load<Sprite>($"Overlays/{name}");
-            if (sprite != null) return sprite;
+            if (overlayEntries == null) return null;
 
-            // 없으면 Resources/Backgrounds/에서 시도
-            sprite = Resources.Load<Sprite>($"Backgrounds/{name}");
-            return sprite;
+            foreach (var entry in overlayEntries)
+            {
+                if (string.Equals(entry.name, name, System.StringComparison.OrdinalIgnoreCase))
+                    return entry.sprite;
+            }
+
+            Debug.LogWarning($"[VirtualBGOverlay] 등록되지 않은 오버레이: {name} (Inspector에서 overlayEntries에 추가하세요)");
+            return null;
         }
 
         /// <summary>

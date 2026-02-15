@@ -27,6 +27,16 @@ namespace LoveAlgo.Story
         /// 스프라이트 캐시 (Resources.Load 중복 호출 방지)
         /// </summary>
         static readonly Dictionary<string, Sprite> spriteCache = new();
+
+        /// <summary>
+        /// 스프라이트 캐시 전체 클리어 (장면 전환 시 호출하여 메모리 해제)
+        /// </summary>
+        public static void ClearSpriteCache()
+        {
+            spriteCache.Clear();
+            Debug.Log($"[CharacterSlot] 스프라이트 캐시 클리어");
+        }
+
         [Header("바인딩")]
         [SerializeField] CanvasGroup slotCanvasGroup;   // 슬롯 전체 (등장/퇴장용)
         [SerializeField] Image imageFront;              // 현재 표시 이미지

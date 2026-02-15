@@ -11,6 +11,7 @@ namespace LoveAlgo.Story
         Char,       // 캐릭터 제어
         BG,         // 배경 전환
         CG,         // CG 이미지 (배경 위 오버레이, 대사창 자동 숨김)
+        SD,         // SD 컷씬 (부분 표시, 캐릭터/대사창 유지)
         Overlay,    // 보조 배경 (캐릭터별 테마 등)
         Sound,      // 오디오
         FX,         // 시각 효과

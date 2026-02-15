@@ -18,6 +18,7 @@ namespace LoveAlgo.Core
         public VirtualBGOverlay VirtualBG => stageRig?.VirtualBG;
         public CharacterLayer Character => stageRig?.Character;
         public MonologueDim MonologueDim => stageRig?.MonologueDim;
+        public SDCutsceneLayer SDCutscene => stageRig?.SDCutscene;
         public CGLayer CG => stageRig?.CG;
 
         protected override void OnSingletonAwake()

@@ -412,6 +412,7 @@ namespace LoveAlgo.Story
                     case LineType.Char:
                     case LineType.BG:
                     case LineType.CG:
+                    case LineType.SD:
                     case LineType.Overlay:
                     case LineType.FX:
                         needsPreTextBeat = true;
@@ -447,6 +448,10 @@ namespace LoveAlgo.Story
 
                 case LineType.CG:
                     await ExecuteCGAsync(line, ct);
+                    break;
+
+                case LineType.SD:
+                    await ExecuteSDAsync(line, ct);
                     break;
 
                 case LineType.Overlay:
@@ -685,6 +690,20 @@ namespace LoveAlgo.Story
             else
             {
                 Debug.Log($"[CG] {line.Value}");
+            }
+        }
+
+        async UniTask ExecuteSDAsync(ScriptLine line, CancellationToken ct)
+        {
+            // SD 컷씬 레이어 제어 (캐릭터/대사창 유지)
+            var sd = StageManager.Instance?.SDCutscene;
+            if (sd != null)
+            {
+                await sd.ExecuteAsync(line.Value, ct);
+            }
+            else
+            {
+                Debug.Log($"[SD] {line.Value}");
             }
         }
 

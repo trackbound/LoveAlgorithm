@@ -45,6 +45,7 @@ namespace LoveAlgo.Story
 
         // 추가 레이어 상태
         public string CurrentCG;          // CG 이름 (null이면 없음)
+        public string CurrentSD;          // SD 컷씬 이름 (null이면 없음)
         public string CurrentOverlay;     // VirtualBG 오버레이 이름
         public bool IsMonologueDimShowing; // 독백 딤 표시 여부
         public bool IsFadeBlack;          // 페이드 오버레이 활성 여부
@@ -296,6 +297,10 @@ namespace LoveAlgo.Story
             // CG 레이어
             var cg = stage?.CG;
             data.CurrentCG = (cg != null && cg.IsShowing) ? cg.CurrentCG : null;
+
+            // SD 컷씬 레이어
+            var sd = stage?.SDCutscene;
+            data.CurrentSD = (sd != null && sd.IsShowing) ? sd.CurrentSD : null;
 
             // VirtualBG 오버레이
             var overlay = stage?.VirtualBG;

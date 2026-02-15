@@ -396,9 +396,10 @@ MonoBehaviour:
   sfxMixerGroup: {fileID: 4278487988869072235, guid: 4bf97e6cff5c72044a000fdceec34a7a, type: 2}
   hoverVolume: 0.5
   clickVolume: 0.7
-  typingVolume: 0.5
   minTypingPitch: 0.9
   maxTypingPitch: 1.1
+  minTypingVolume: 0.35
+  maxTypingVolume: 0.5
   autoBindButtons: 1
 --- !u!1 &241711563
 GameObject:
@@ -4051,6 +4052,7 @@ MonoBehaviour:
   virtualBGOverlay: {fileID: 1591149312}
   characterLayer: {fileID: 1383495343}
   monologueDim: {fileID: 3633658590185820428}
+  sdCutsceneLayer: {fileID: 0}
   cgLayer: {fileID: 1471192517}
   screenFX: {fileID: 1038034253763835031, guid: cd0982dcf451b4349a0fb2d97430ebe4, type: 3}
 --- !u!224 &1471192516 stripped

@@ -136,13 +136,19 @@ namespace LoveAlgo.Story
                 canvasGroup.alpha = 0f;
             }
 
+            // CG 에셋 명시적 해제 (고해상도 이미지이므로 즉시 해제)
+            var oldSprite = cgImage.sprite;
+
             cgImage.enabled = false;
             cgImage.sprite = null;
             currentCG = null;
             isShowing = false;
             gameObject.SetActive(false);
 
-            Debug.Log("[CGLayer] CG 숨김");
+            if (oldSprite != null)
+                Resources.UnloadAsset(oldSprite.texture);
+
+            Debug.Log("[CGLayer] CG 숨김 (에셋 해제됨)");
         }
 
         /// <summary>
@@ -154,14 +160,21 @@ namespace LoveAlgo.Story
             {
                 canvasGroup.alpha = 0f;
             }
+
+            // CG 에셋 명시적 해제
+            Sprite oldSprite = null;
             if (cgImage != null)
             {
+                oldSprite = cgImage.sprite;
                 cgImage.enabled = false;
                 cgImage.sprite = null;
             }
             currentCG = null;
             isShowing = false;
             gameObject.SetActive(false);
+
+            if (oldSprite != null)
+                Resources.UnloadAsset(oldSprite.texture);
         }
 
         /// <summary>

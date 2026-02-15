@@ -167,6 +167,9 @@ namespace LoveAlgo.Story
             // 기존 BGM 페이드 트윈 정리 (경합 방지)
             DOTween.Kill(bgmSource);
 
+            // 이전 BGM 클립 참조 보관 (해제용)
+            var previousClip = bgmSource.clip;
+
             currentBGM = name;
             bgmSource.loop = true;
 
@@ -194,6 +197,10 @@ namespace LoveAlgo.Story
                 bgmSource.clip = clip;
                 bgmSource.Play();
             }
+
+            // 이전 BGM 클립 해제 (새 클립과 다를 때만)
+            if (previousClip != null && previousClip != clip)
+                Resources.UnloadAsset(previousClip);
         }
 
         public async UniTask StopBGMAsync(float fadeDuration = -1f, CancellationToken ct = default)
@@ -215,15 +222,27 @@ namespace LoveAlgo.Story
             }
 
             bgmSource.Stop();
+            var clipToUnload = bgmSource.clip;
+            bgmSource.clip = null;
             bgmSource.volume = originalVolume;
+
+            // 정지된 BGM 클립 해제
+            if (clipToUnload != null)
+                Resources.UnloadAsset(clipToUnload);
         }
 
         public void StopBGMImmediate()
         {
             DOTween.Kill(bgmSource);
+            var clipToUnload = bgmSource.clip;
             bgmSource.Stop();
+            bgmSource.clip = null;
             bgmSource.volume = 1f;
             currentBGM = null;
+
+            // 즉시 정지된 BGM 클립 해제
+            if (clipToUnload != null)
+                Resources.UnloadAsset(clipToUnload);
         }
 
         /// <summary>

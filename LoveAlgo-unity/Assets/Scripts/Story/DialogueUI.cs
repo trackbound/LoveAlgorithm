@@ -207,10 +207,12 @@ namespace LoveAlgo.Story
                             visibleCount++;
                             dialogueText.maxVisibleCharacters = visibleCount;
 
-                            // 줄바꿈·공백은 사운드/딜레이 생략
+                            // 줄바꿈은 사운드/딜레이 생략
                             if (c == '\n' || c == '\r') continue;
 
-                            PlayTypingSound();
+                            // 공백은 소리 없이 딜레이만 (단어 단위 리듬감)
+                            if (c != ' ')
+                                PlayTypingSound();
 
                             // ── 부드러운 딜레이 계산 ──
                             float charDelay = currentSpeed;

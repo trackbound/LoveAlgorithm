@@ -32,11 +32,13 @@ namespace LoveAlgo.UI
         [Header("볼륨 설정")]
         [SerializeField] float hoverVolume = 0.5f;
         [SerializeField] float clickVolume = 0.7f;
-        [SerializeField] float typingVolume = 0.5f;
 
-        [Header("타이핑 피치 설정")]
+        [Header("타이핑 피치/볼륨 랜덤 설정")]
         [SerializeField] float minTypingPitch = 0.9f;
         [SerializeField] float maxTypingPitch = 1.1f;
+        [SerializeField] float minTypingVolume = 0.35f;
+        [SerializeField] float maxTypingVolume = 0.5f;
+
 
         [Header("자동 바인딩")]
         [SerializeField] bool autoBindButtons = true;
@@ -184,12 +186,16 @@ namespace LoveAlgo.UI
         /// <summary>
         /// 타이핑 사운드 재생 (피치 랜덤, 전용 AudioSource 사용)
         /// </summary>
+/// <summary>
+        /// 타이핑 사운드 재생 (피치+볼륨 랜덤, 전용 AudioSource 사용)
+        /// </summary>
         public void PlayTyping()
         {
             if (typingClip == null || typingSource == null) return;
 
             typingSource.pitch = Random.Range(minTypingPitch, maxTypingPitch);
-            typingSource.PlayOneShot(typingClip, typingVolume);
+            float vol = Random.Range(minTypingVolume, maxTypingVolume);
+            typingSource.PlayOneShot(typingClip, vol);
         }
 
         /// <summary>
