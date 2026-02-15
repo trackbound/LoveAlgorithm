@@ -8,10 +8,8 @@ namespace LoveAlgo.UI
     /// UI 매니저 - 메인 UI들의 Show/Hide 관리
     /// 팝업은 PopupManager에서 별도 관리
     /// </summary>
-    public class UIManager : MonoBehaviour
+    public class UIManager : SingletonMonoBehaviour<UIManager>
     {
-        public static UIManager Instance { get; private set; }
-
         [Header("메인 UI (인스펙터 바인딩)")]
         [SerializeField] DialogueUI dialogueUI;
         [SerializeField] ChoiceUI choiceUI;
@@ -25,19 +23,6 @@ namespace LoveAlgo.UI
         public ScheduleUI ScheduleUI => scheduleUI;
         public TitleUI TitleUI => titleUI;
         public UsernameUI UsernameUI => usernameUI;
-
-        void Awake()
-        {
-            if (Instance == null)
-            {
-                Instance = this;
-                // DontDestroyOnLoad(gameObject);  // 데모: 단일 씬
-            }
-            else
-            {
-                Destroy(gameObject);
-            }
-        }
 
         #region Dialogue UI
 
@@ -136,6 +121,10 @@ namespace LoveAlgo.UI
                 case MainUIType.Username:
                     ShowUsername();
                     break;
+                case MainUIType.Ending:
+                    // 엔딩은 DialogueUI를 재사용 (엔딩 스크립트 재생)
+                    ShowDialogue();
+                    break;
             }
         }
 
@@ -147,6 +136,7 @@ namespace LoveAlgo.UI
         Dialogue,
         Schedule,
         Title,
-        Username
+        Username,
+        Ending
     }
 }

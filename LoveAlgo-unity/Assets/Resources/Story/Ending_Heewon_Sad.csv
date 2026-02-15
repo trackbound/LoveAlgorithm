@@ -1,0 +1,26 @@
+LineID,Type,Speaker,Value,Next
+# ═══ 도희원 새드 엔딩 ═══
+,BG,,Black,await
+,Sound,,BGM:Stop:Fade:2.0,await
+,Text,,"......",click
+,FX,,FadeIn:1.0,await
+,BG,,CampusStreet/BG_Campus_Street1_Day:Cross:2.0,await
+,Sound,,BGM:Night,>
+,Text,,"학교 뒷산.\n멀리서 희원이가 보였다.",click
+,Char,,C:Enter:Heewon:Default,await
+,Text,도희원,"......",click
+,Text,{{PlayerName}},희원아. 잘 지내?,click
+,Char,,C:Emote:Sad,await
+,Text,도희원,"...그냥 그래.",click
+,Text,도희원,"이번 학기... 좀 더 이야기하고 싶었는데.\n나는 말주변이 없어서.",click
+,Text,{{PlayerName}},괜찮아. 천천히 하면 돼.,click
+,Char,,C:Emote:Default,await
+,Text,도희원,"...다음엔 내가 먼저 말 걸어볼게.\n그러니까... 기다려줘.",click
+,Text,{{PlayerName}},기다릴게.,click
+,Text,도희원,"...고마워.",click
+,Char,,C:Exit,await
+,Text,,"조용히 걸어가는 뒷모습.\n그녀의 마음에 닿기엔 시간이 부족했다.",click
+,FX,,FadeOut:2.0,await
+,Sound,,BGM:Stop:Fade:2.0,await
+,Text,,"── 도희원 새드 엔딩 ──\n\n아직 열리지 않은 문",click
+,Flow,,End,>

@@ -1,0 +1,19 @@
+LineID,Type,Speaker,Value,Next
+# ═══ Day 7 아침 - 1차 이벤트 후 여운 ═══
+,BG,,MyRoom/BG_MyRoom_Interior_Day,await
+,Sound,,BGM:Daily1,>
+,FX,,EyeOpen:1.0,await
+,Text,,"7일차.\n어제 있었던 일이 아직도 생생하다.",click
+,Text,,"함께 시간을 보낸 사람의 얼굴이 떠올랐다.",click
+,Char,,C:Enter:Roa,await
+,Overlay,,Roa_Theme:FadeIn:0.5,await
+,Text,로아,"{{PlayerName}}, 어제 재밌었어?",click
+,Text,{{PlayerName}},응. 좋은 시간이었어.,click
+,Char,,C:Emote:Happy,await
+,Text,로아,"다행이다! 앞으로도 이런 기회가 더 있을 거야.",click
+,Text,로아,"그때까지 열심히 자기계발도 해두자!",click
+,Char,,C:Exit,await
+,Overlay,,FadeOut:0.3,>
+,FX,,FadeOut:0.5,await
+,FX,,FadeIn:0.5,await
+,Flow,,End,>

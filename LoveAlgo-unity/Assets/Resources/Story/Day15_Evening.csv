@@ -1,0 +1,35 @@
+LineID,Type,Speaker,Value,Next
+# ═══ Day 15 저녁 - 서다은과 도서관 ═══
+,FX,,FadeOut:0.5,await
+,BG,,Library/BG_Library_Day,await
+,Sound,,BGM:Daeun,>
+,FX,,FadeIn:1.0,await
+,Text,,"저녁 시간, 도서관에서 공부를 하고 있었다.",click
+,Text,,"옆자리에 익숙한 얼굴이 앉아 있었다.",click
+,Char,,C:Enter:Daeun,await
+,Text,서다은,"어머, {{PlayerName}} 씨! 여기서 만나네요.",click
+,Char,,C:Emote:Smile,await
+,Text,서다은,"공부 중이에요? 무슨 과목이요?",click
+,Text,{{PlayerName}},교양 레포트 쓰고 있어.,click
+,Text,서다은,"아, 저도요! 혹시 같이 봐도 될까요?",click
+,Choice,,,click
+,Option,,같이 공부한다|study_together,
+,Option,,혼자 집중하고 싶다|study_alone,
+# ─── 선택 1: 같이 ───
+study_together,Char,,C:Emote:Happy,await
+,Text,서다은,"감사해요! 모르는 거 있으면 서로 물어봐요.",click
+,Macro,,Love:Daeun:2,>
+,Text,,"서다은과 함께 도서관에서 공부했다.\n조용하지만 편안한 시간이었다.",click
+,Flow,,Jump:study_end,>
+# ─── 선택 2: 혼자 ───
+study_alone,Text,{{PlayerName}},미안. 오늘은 좀 집중해야 해서...,click
+,Text,서다은,"아, 그렇군요. 방해해서 죄송해요.",click
+,Char,,C:Emote:Default,await
+,Flow,,Jump:study_end,>
+# ─── 합류 ───
+study_end,Text,서다은,"내일도 좋은 하루 보내세요, {{PlayerName}} 씨.",click
+,Char,,C:Exit,await
+,Sound,,BGM:Night,>
+,Text,,"밤이 깊었다. 집에 돌아가자.",click
+,FX,,FadeOut:1.0,await
+,Flow,,End,>

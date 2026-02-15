@@ -26,15 +26,12 @@ Deprecated patterns found:
  - C:\Users\podola\repos\LoveAlgo-unity\Assets\Scripts\Editor\UIEngine\UIManagerWindow.cs: Logging - consider structured logging or remove in production
  - C:\Users\podola\repos\LoveAlgo-unity\Assets\Scripts\MiniGame\CherryBlossomGame.cs: Callback-based tween/event usage (prefer await/UniTask)
  - C:\Users\podola\repos\LoveAlgo-unity\Assets\Scripts\MiniGame\CherryBlossomGame.cs: Logging - consider structured logging or remove in production
- - C:\Users\podola\repos\LoveAlgo-unity\Assets\Scripts\Schedule\ScheduleTester.cs: Logging - consider structured logging or remove in production
  - C:\Users\podola\repos\LoveAlgo-unity\Assets\Scripts\Story\CharacterSlot.cs: Logging - consider structured logging or remove in production
  - C:\Users\podola\repos\LoveAlgo-unity\Assets\Scripts\Story\ChoiceUI.cs: Logging - consider structured logging or remove in production
  - C:\Users\podola\repos\LoveAlgo-unity\Assets\Scripts\Story\GameState.cs: Logging - consider structured logging or remove in production
  - C:\Users\podola\repos\LoveAlgo-unity\Assets\Scripts\Story\SaveManager.cs: Logging - consider structured logging or remove in production
  - C:\Users\podola\repos\LoveAlgo-unity\Assets\Scripts\Story\ScriptParser.cs: Logging - consider structured logging or remove in production
  - C:\Users\podola\repos\LoveAlgo-unity\Assets\Scripts\Story\ScriptRunner.cs: Logging - consider structured logging or remove in production
- - C:\Users\podola\repos\LoveAlgo-unity\Assets\Scripts\Tester\StoryDebugOverlay.cs: Logging - consider structured logging or remove in production
- - C:\Users\podola\repos\LoveAlgo-unity\Assets\Scripts\UI\PopupTester.cs: Logging - consider structured logging or remove in production
  - C:\Users\podola\repos\LoveAlgo-unity\Assets\Scripts\UI\SettingsPopup.cs: Logging - consider structured logging or remove in production
  - C:\Users\podola\repos\LoveAlgo-unity\Assets\Scripts\UI\TitleUI.cs: Logging - consider structured logging or remove in production
 
@@ -44,12 +41,10 @@ TODO / FIXME occurrences:
  - C:\Users\podola\repos\LoveAlgo-unity\Assets\Scripts\Core\GameManager.cs: TODO
  - C:\Users\podola\repos\LoveAlgo-unity\Assets\Scripts\Core\ScreenFX.cs: TODO
  - C:\Users\podola\repos\LoveAlgo-unity\Assets\Scripts\Core\ScreenFX.cs: TODO
- - C:\Users\podola\repos\LoveAlgo-unity\Assets\Scripts\Schedule\ScheduleTester.cs: TODO
  - C:\Users\podola\repos\LoveAlgo-unity\Assets\Scripts\Schedule\ScheduleUI.cs: TODO
  - C:\Users\podola\repos\LoveAlgo-unity\Assets\Scripts\Schedule\ScheduleUI.cs: TODO
  - C:\Users\podola\repos\LoveAlgo-unity\Assets\Scripts\Story\ChoiceUI.cs: TODO
  - C:\Users\podola\repos\LoveAlgo-unity\Assets\Scripts\Story\SaveManager.cs: TODO
- - C:\Users\podola\repos\LoveAlgo-unity\Assets\Scripts\Story\ScriptRunner.cs: TODO
  - C:\Users\podola\repos\LoveAlgo-unity\Assets\Scripts\UI\SettingsPopup.cs: TODO
  - C:\Users\podola\repos\LoveAlgo-unity\Assets\Scripts\UI\SettingsPopup.cs: TODO
 

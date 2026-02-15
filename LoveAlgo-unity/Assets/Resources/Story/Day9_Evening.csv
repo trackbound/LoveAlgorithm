@@ -1,0 +1,24 @@
+LineID,Type,Speaker,Value,Next
+# ═══ Day 9 저녁 - 축제 전날 밤 ═══
+,FX,,FadeOut:0.5,await
+,BG,,CampusStreet/BG_Campus_Street1_Night,await
+,Sound,,BGM:Night,>
+,FX,,FadeIn:1.0,await
+,Text,,"캠퍼스에 축제 준비가 한창이다.\n내일부터 3일간 학교 축제가 시작된다.",click
+,Text,,"장식을 달고 있는 학생들, 무대를 세우는 소리.",click
+,Text,,"설레는 마음으로 주위를 둘러보고 있는데...",click
+,Char,,C:Enter:Bom,await
+,Sound,,BGM:Bom,>
+,Text,이봄,"......",click
+,Text,,"이봄이 축제 포스터를 물끄러미 바라보고 있었다.",click
+,Text,{{PlayerName}},축제 기대돼?,click
+,Char,,C:Emote:Surprised,await
+,Text,이봄,"...별로. 사람 많은 건 싫어.",click
+,Text,이봄,"...근데 뭐, 가끔은 나쁘지 않을지도.",click
+,Char,,C:Emote:Default,await
+,Text,이봄,"...그럼.",click
+,Char,,C:Exit,await
+,Sound,,BGM:Night,>
+,Text,,"이봄은 그렇게 사라졌다.\n내일부터 축제다. 잘 준비해야지.",click
+,FX,,FadeOut:1.0,await
+,Flow,,End,>

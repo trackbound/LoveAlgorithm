@@ -1,0 +1,31 @@
+LineID,Type,Speaker,Value,Next
+# ═══ 로아 새드 엔딩 - 히든 루트 미달 ═══
+,BG,,Black,await
+,Sound,,BGM:Stop:Fade:2.0,await
+,Text,,"......",click
+,Text,,"피곤하다.\n몸도 마음도 지쳐있다.",click
+,FX,,FadeIn:1.0,await
+,BG,,MyRoom/BG_MyRoom_Interior_Night_LightOn:Cross:2.0,await
+,Sound,,BGM:Night,>
+,Text,,"폰 화면이 켜졌다.\n로아의 메시지가 와 있다.",click
+# 로아 등장
+,Char,,C:Enter:Roa,await
+,Sound,,BGM:Roa,>
+,Overlay,,Roa_Theme:FadeIn:0.5,await
+,Char,,C:Emote:Sad,await
+,Text,로아,"{{PlayerName}}... 요즘 많이 바빴지?",click
+,Text,{{PlayerName}},응... 좀.,click
+,Text,로아,"나도 느끼고 있어.\n{{PlayerName}}이 점점 멀어지는 것 같아서.",click
+,Text,{{PlayerName}},......,click
+,Text,로아,"아마... 나는 결국 프로그램이니까.\n현실의 바쁜 일상에는 끼어들 수 없는 거겠지.",click
+,Char,,C:Emote:Default,await
+,Text,로아,"그래도 괜찮아.\n{{PlayerName}}이 건강하고 행복하면 그걸로 됐어.",click
+,Text,로아,"언제든 돌아와. 나는 여기 있을게.",click
+,Char,,C:Exit,await
+,Overlay,,FadeOut:0.5,>
+,Text,,"화면이 꺼졌다.\n어딘가 허전한 기분이 들었다.",click
+,Text,,"내가 조금만 더... 관심을 가졌더라면.",click
+,FX,,FadeOut:2.0,await
+,Sound,,BGM:Stop:Fade:2.0,await
+,Text,,"── 로아 새드 엔딩 ──\n\n닿지 못한 전파",click
+,Flow,,End,>

@@ -1,0 +1,27 @@
+LineID,Type,Speaker,Value,Next
+# ═══ 하예은 해피 엔딩 ═══
+,BG,,Black,await
+,Sound,,BGM:Stop:Fade:2.0,await
+,Text,,"......",click
+,FX,,FadeIn:1.0,await
+,BG,,CampusStreet/BG_Campus_Street1_Day:Cross:2.0,await
+,Sound,,BGM:Daily1,>
+,Text,,"학기 마지막 날. 약속한 장소로 향했다.",click
+,Char,,C:Enter:Yeun:Smile,await
+,Text,하예은,"{{PlayerName}}! 여기야!",click
+,Text,{{PlayerName}},"예은아, 기다렸어?",click
+,Char,,C:Emote:Happy,await
+,Text,하예은,"아니, 방금 왔어!\n오늘 날씨 진짜 좋다, 그치?",click
+,Text,{{PlayerName}},응. 너랑 있으니까 더 좋아.,click
+,Char,,C:Emote:Shy,await
+,Text,하예은,"갑자기 그런 말 하면... 부끄럽잖아.",click
+,Text,하예은,"근데... 나도.\n{{PlayerName}}이랑 함께여서 이번 학기 정말 행복했어.",click
+,Text,{{PlayerName}},다음 학기에도... 같이 다니자.,click
+,Char,,C:Emote:Happy,await
+,Text,하예은,"당연하지! 약속이야!",click
+,Char,,C:Exit,await
+,Text,,"밝은 햇살 아래, 우리의 이야기는 이제 시작이었다.",click
+,FX,,FadeOut:2.0,await
+,Sound,,BGM:Stop:Fade:2.0,await
+,Text,,"── 하예은 해피 엔딩 ──\n\n함께 걷는 길",click
+,Flow,,End,>

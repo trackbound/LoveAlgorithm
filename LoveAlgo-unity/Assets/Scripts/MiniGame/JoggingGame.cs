@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 using TMPro;
 
@@ -120,7 +121,7 @@ namespace LoveAlgo.MiniGame
             float elapsed = gameDuration - remainingTime;
 
             // 스페이스바 입력
-            if (Input.GetKeyDown(KeyCode.Space))
+            if (Keyboard.current != null && Keyboard.current.spaceKey.wasPressedThisFrame)
             {
                 playerGauge = Mathf.Clamp01(playerGauge + gaugeIncrement);
             }
@@ -315,6 +316,22 @@ namespace LoveAlgo.MiniGame
                 failPanel.SetActive(true);
                 if (failText != null) failText.text = failMessage;
             }
+
+            // 스코어 계산: 성공 시 시간 차이 기반 (작을수록 높은 점수)
+            if (!isFail)
+            {
+                float absDiff = Mathf.Abs(timeDiff);
+                if (absDiff <= 0.5f) score = 30;       // 거의 동시 → 최고점
+                else if (absDiff <= 1.5f) score = 20;   // 근접
+                else score = 10;                         // 통과
+            }
+            else
+            {
+                score = 0; // 실패
+            }
+
+            // base에서 OnGameEnd?.Invoke(score) 호출
+            InvokeGameEnd(score);
 
             ShowResult();
         }

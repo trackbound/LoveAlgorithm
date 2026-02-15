@@ -15,9 +15,8 @@ namespace LoveAlgo.UI
     /// <summary>
     /// 팝업 매니저 - 레이어 기반 팝업 관리
     /// </summary>
-    public class PopupManager : MonoBehaviour
+    public class PopupManager : SingletonMonoBehaviour<PopupManager>
     {
-        public static PopupManager Instance { get; private set; }
 
         [Header("레이어")]
         [SerializeField] Transform layerModal;
@@ -42,18 +41,9 @@ namespace LoveAlgo.UI
         // 현재 열린 Modal
         GameObject currentModal;
 
-        void Awake()
+        protected override void OnSingletonAwake()
         {
-            if (Instance == null)
-            {
-                Instance = this;
-                // DontDestroyOnLoad(gameObject);  // 데모: 단일 씬
-                InitPopups();
-            }
-            else
-            {
-                Destroy(gameObject);
-            }
+            InitPopups();
         }
 
         void Update()

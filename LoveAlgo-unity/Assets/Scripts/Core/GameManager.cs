@@ -1,3 +1,4 @@
+using System.Threading;
 using UnityEngine;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
@@ -11,9 +12,8 @@ namespace LoveAlgo.Core
     /// 게임 전체 흐름 관리
     /// Title → Username → Prologue → DayLoop → Ending
     /// </summary>
-    public class GameManager : MonoBehaviour
+    public class GameManager : SingletonMonoBehaviour<GameManager>
     {
-        public static GameManager Instance { get; private set; }
 
         [Header("Settings")]
         [SerializeField] string prologueScript = "Prologue";  // 프롤로그 CSV 이름
@@ -25,29 +25,21 @@ namespace LoveAlgo.Core
         // 현재 상태
         public GamePhase CurrentPhase { get; private set; } = GamePhase.Title;
         public int CurrentDay { get; private set; } = 1;
-        public int RemainingActions { get; private set; } = 3;  // 하루 남은 행동 수
+        public int RemainingActions { get; private set; } = GameConstants.ActionsPerDay;  // 하루 남은 행동 수 (기획서: 2회 - 낮/밤)
         public string PlayerName { get; private set; } = "";
 
         /// <summary>
         /// 다음 날로 진행 (스크립트 매크로용)
         /// </summary>
-        public void AdvanceDay(int actions = 3)
+        public void AdvanceDay(int actions = GameConstants.ActionsPerDay)
         {
             CurrentDay++;
             RemainingActions = actions;
             Debug.Log($"[GameManager] {CurrentDay}일차 시작 (actions={actions})");
         }
 
-        void Awake()
+        protected override void OnSingletonAwake()
         {
-            if (Instance != null && Instance != this)
-            {
-                Destroy(gameObject);
-                return;
-            }
-            Instance = this;
-            // DontDestroyOnLoad(gameObject);  // 데모: 단일 씬
-
             // DOTween 초기화 - 용량 설정으로 IndexOutOfRangeException 방지
             DOTween.Init(recycleAllByDefault: true, useSafeMode: true, logBehaviour: LogBehaviour.ErrorsOnly);
             DOTween.SetTweensCapacity(tweenersCapacity, sequencesCapacity);
@@ -71,9 +63,7 @@ namespace LoveAlgo.Core
             if (resIdx < 0) return;  // 저장된 설정 없으면 Unity 기본값 사용
 
             bool fullscreen = PlayerPrefs.GetInt("Fullscreen", 1) == 1;
-            var resolutions = new (int w, int h)[] {
-                (800, 450), (960, 540), (1280, 720), (1440, 810), (1920, 1080)
-            };
+            var resolutions = GameConstants.Resolutions;
             resIdx = Mathf.Clamp(resIdx, 0, resolutions.Length - 1);
             var res = resolutions[resIdx];
             Screen.SetResolution(res.w, res.h, fullscreen ? FullScreenMode.FullScreenWindow : FullScreenMode.Windowed);
@@ -149,18 +139,275 @@ namespace LoveAlgo.Core
 
         void EnterDayLoop()
         {
-            // 스케줄 UI 표시
-            UIManager.Instance?.ShowOnly(MainUIType.Schedule);
+            var dayInfo = GameTimeline.GetDayInfo(CurrentDay);
 
-            // ScheduleUI에 콜백 연결
+            // ── 메신저 일차별 메시지 발송 ──
+            Phone.MessengerManager.TriggerDayMessages(CurrentDay);
+
+            // ── 고백 이벤트 (Day 30) ──
+            if (dayInfo?.Type == DayType.Confession)
+            {
+                ChangePhase(GamePhase.Ending);
+                return;
+            }
+
+            // ── 이벤트 날 (자유행동 없음) ──
+            if (dayInfo != null && (dayInfo.Type == DayType.PersonalEvent || dayInfo.Type == DayType.GroupEvent))
+            {
+                EnterEventDay(dayInfo);
+                return;
+            }
+
+            // ── 자유행동 날 ──
+            // 아침 이벤트 체크 (DayEventTable — 일차별 컷씬)
+            var morningEvent = DayEventTable.GetEvent(CurrentDay, DayTiming.Morning);
+            if (morningEvent != null)
+            {
+                RunDayEventAsync(morningEvent, showScheduleAfter: true).Forget();
+                return;
+            }
+
+            // 이벤트 없으면 스케줄 UI 직접 표시
+            ShowScheduleUI();
+        }
+
+        /// <summary>
+        /// 이벤트 날 진입 (개인/단체 이벤트)
+        /// CSV 스크립트를 실행하고, 스크립트 내에서 히로인 선택 처리
+        /// </summary>
+        void EnterEventDay(DayInfo dayInfo)
+        {
+            Debug.Log($"[GameManager] 이벤트 날 진입: Day {dayInfo.Day} - {dayInfo.EventTag} ({dayInfo.Type})");
+
+            // 이벤트 스크립트 실행
+            string scriptName = dayInfo.EventTag;
+            if (string.IsNullOrEmpty(scriptName))
+            {
+                Debug.LogWarning($"[GameManager] Day {dayInfo.Day}: 이벤트 스크립트 미지정, 다음 날로 넘김");
+                EndDay();
+                return;
+            }
+
+            UIManager.Instance?.ShowOnly(MainUIType.Dialogue);
+            var dialogueUI = UIManager.Instance?.DialogueUI;
+            dialogueUI?.Clear();
+            dialogueUI?.HideImmediate();
+
+            var runner = ScriptRunner.Instance;
+            if (runner != null)
+            {
+                runner.OnScriptEnd -= OnEventDayEnd;
+                runner.OnScriptEnd += OnEventDayEnd;
+                runner.StartScript(scriptName).Forget();
+            }
+        }
+
+        /// <summary>
+        /// 이벤트 날 스크립트 종료 후 → 하루 종료
+        /// </summary>
+        void OnEventDayEnd()
+        {
+            var runner = ScriptRunner.Instance;
+            if (runner != null)
+                runner.OnScriptEnd -= OnEventDayEnd;
+
+            EndDay();
+        }
+
+        /// <summary>
+        /// 스케줄 UI 표시
+        /// </summary>
+        void ShowScheduleUI()
+        {
+            UIManager.Instance?.ShowOnly(MainUIType.Schedule);
             var scheduleUI = UIManager.Instance?.ScheduleUI;
             scheduleUI?.ShowAsync(OnScheduleSelected).Forget();
         }
 
+        /// <summary>
+        /// 데이 이벤트 CSV 실행
+        /// </summary>
+        async UniTaskVoid RunDayEventAsync(DayEvent evt, bool showScheduleAfter)
+        {
+            Debug.Log($"[GameManager] 데이 이벤트 실행: {evt.ScriptName}");
+            DayEventTable.MarkFired(evt.ScriptName);
+
+            // 대화 UI로 스크립트 재생
+            UIManager.Instance?.ShowOnly(MainUIType.Dialogue);
+            var dialogueUI = UIManager.Instance?.DialogueUI;
+            dialogueUI?.Clear();
+            dialogueUI?.HideImmediate();
+
+            var runner = ScriptRunner.Instance;
+            if (runner != null)
+            {
+                await runner.StartScript(evt.ScriptName);
+            }
+
+            // 이벤트 종료 후 처리
+            if (showScheduleAfter)
+            {
+                ShowScheduleUI();
+            }
+        }
+
         void EnterEnding()
         {
-            // TODO: 엔딩 처리
-            Debug.Log("[GameManager] Ending reached!");
+            string endingHeroine = DetermineEndingHeroine();
+            string scriptName;
+
+            if (string.IsNullOrEmpty(endingHeroine))
+            {
+                scriptName = "Ending_Normal";
+            }
+            else
+            {
+                // 해피/새드 분기: 포인트가 임계치 이상이면 해피
+                string suffix = IsHappyEnding(endingHeroine) ? "Happy" : "Sad";
+                scriptName = $"Ending_{endingHeroine}_{suffix}";
+            }
+
+            Debug.Log($"[GameManager] Ending started: {scriptName}");
+
+            // 대화 UI로 엔딩 스크립트 재생
+            UIManager.Instance?.ShowOnly(MainUIType.Dialogue);
+            var dialogueUI = UIManager.Instance?.DialogueUI;
+            dialogueUI?.Clear();
+            dialogueUI?.HideImmediate();
+
+            var runner = ScriptRunner.Instance;
+            if (runner != null)
+            {
+                runner.OnScriptEnd -= OnEndingEnd;
+                runner.OnScriptEnd += OnEndingEnd;
+                runner.StartScript(scriptName).Forget();
+            }
+        }
+
+        /// <summary>
+        /// 엔딩 히로인 결정 (기획서 기준)
+        /// 포인트 = 이벤트 + 대화 + 선물 + 미니게임 + 스탯보정 + 피로보정(로아)
+        /// 총 포인트 ≥ 히로인별 임계치 → 해피엔딩, 미달 → 새드엔딩
+        /// 
+        /// 조건: 해당 히로인 이벤트 최소 1회 이상 선택 필수
+        /// 로아: 모든 이벤트에서 로아만 선택 + 피로 ≥70
+        /// </summary>
+        string DetermineEndingHeroine()
+        {
+            var gs = GameState.Instance;
+            if (gs == null) return null;
+
+            // 히든 루트: 로아 (피로 ≥70 + 포인트 ≥ 46)
+            int roaPoints = HeroinePointTracker.GetTotalPoint("Roa") + GetRoaFatigueBonus(gs);
+            if (gs.GetStat("Fatigue") >= 70 && roaPoints >= GameConstants.EndingThresholds[0])
+                return "Roa";
+
+            // 나머지 히로인 (Yeun=1, Daeun=2, Bom=3, Heewon=4)
+            string best = null;
+            int bestMargin = -1;
+
+            for (int i = 1; i < GameConstants.HeroineCount; i++)
+            {
+                string id = GameConstants.HeroineIds[i];
+
+                // 기획서: 최소 1회 이상 이벤트 참여 필수
+                if (HeroinePointTracker.GetEventSelectionCount(id) < 1)
+                    continue;
+
+                int total = HeroinePointTracker.GetTotalPoint(id) + CalcStatBonus(gs, i);
+                int threshold = GameConstants.EndingThresholds[i];
+
+                if (total >= threshold)
+                {
+                    int margin = total - threshold;
+                    if (margin > bestMargin)
+                    {
+                        bestMargin = margin;
+                        best = id;
+                    }
+                }
+            }
+
+            return best; // null → 노멀 엔딩
+        }
+
+        /// <summary>
+        /// 해피/새드 엔딩 분기 판정
+        /// best 히로인이 있으면 해피, 임계치 미달이면 새드
+        /// </summary>
+        bool IsHappyEnding(string heroineId)
+        {
+            if (string.IsNullOrEmpty(heroineId)) return false;
+
+            int idx = System.Array.IndexOf(GameConstants.HeroineIds, heroineId);
+            if (idx < 0) return false;
+
+            var gs = GameState.Instance;
+            int total = HeroinePointTracker.GetTotalPoint(heroineId);
+            if (heroineId == "Roa")
+                total += GetRoaFatigueBonus(gs);
+            else
+                total += CalcStatBonus(gs, idx);
+
+            return total >= GameConstants.EndingThresholds[idx];
+        }
+
+        /// <summary>
+        /// 스탯 보정 계산 (로아 제외)
+        /// 선호스탯이 최고스탯이면 +3, 공동1등이면 +1
+        /// </summary>
+        int CalcStatBonus(GameState gs, int heroineIndex)
+        {
+            string preferredStat = GameConstants.HeroinePreferredStat[heroineIndex];
+            int preferredValue = gs.GetStat(preferredStat);
+            if (preferredValue <= 0) return 0;
+
+            // 모든 스탯 중 최고값 찾기 (피로 제외)
+            int maxValue = 0;
+            int maxCount = 0;
+            foreach (var statId in new[] { "Str", "Int", "Soc", "Per" })
+            {
+                int val = gs.GetStat(statId);
+                if (val > maxValue)
+                {
+                    maxValue = val;
+                    maxCount = 1;
+                }
+                else if (val == maxValue && val > 0)
+                {
+                    maxCount++;
+                }
+            }
+
+            if (preferredValue < maxValue) return 0;   // 2등 이하
+            if (maxCount == 1) return 3;                // 단독 1등
+            return 1;                                    // 공동 1등
+        }
+
+        /// <summary>
+        /// 로아 피로 보정 (기획서: 70~79:+3 / 80~89:+6 / 90~100:+10)
+        /// </summary>
+        int GetRoaFatigueBonus(GameState gs)
+        {
+            int fatigue = gs.GetStat("Fatigue");
+            if (fatigue >= 90) return 10;
+            if (fatigue >= 80) return 6;
+            if (fatigue >= 70) return 3;
+            return 0;
+        }
+
+        /// <summary>
+        /// 엔딩 스크립트 종료 후 타이틀 복귀
+        /// </summary>
+        void OnEndingEnd()
+        {
+            var runner = ScriptRunner.Instance;
+            if (runner != null)
+            {
+                runner.OnScriptEnd -= OnEndingEnd;
+            }
+
+            OnContentEnd();
         }
 
         #endregion
@@ -196,10 +443,13 @@ namespace LoveAlgo.Core
 
             // 게임 상태 초기화
             GameState.Instance?.ResetAll();
+            DayEventTable.ResetFired();
+            HeroinePointTracker.Reset();
+            Phone.MessengerManager.Reset();
 
             PlayerName = "";
             CurrentDay = 1;
-            RemainingActions = 3;
+            RemainingActions = GameConstants.ActionsPerDay;
             ChangePhase(GamePhase.Username);
         }
 
@@ -225,23 +475,24 @@ namespace LoveAlgo.Core
         /// </summary>
         async UniTaskVoid TransitionToPrologueAsync()
         {
+            var ct = this.GetCancellationTokenOnDestroy();
             var fx = ScreenFX.Instance;
 
             // 1) 페이드 아웃 (검은 화면)
             if (fx != null)
-                await fx.FadeOutAsync(0.5f);
+                await fx.FadeOutAsync(0.5f, ct);
             else
-                await UniTask.Yield();
+                await UniTask.Yield(ct);
 
             // 2) 검은 화면 상태에서 UI 전환 + 프롤로그 준비
             ChangePhase(GamePhase.Prologue);
 
             // 3) 1프레임 대기 (레이아웃 정리)
-            await UniTask.Yield();
+            await UniTask.Yield(ct);
 
             // 4) 페이드 인
             if (fx != null)
-                await fx.FadeInAsync(0.8f);
+                await fx.FadeInAsync(0.8f, ct);
         }
 
         /// <summary>
@@ -271,16 +522,20 @@ namespace LoveAlgo.Core
 
         async UniTaskVoid ShowEndOfContentAsync()
         {
+            var ct = this.GetCancellationTokenOnDestroy();
+
             // 페이드 아웃
-            await ScreenFX.Instance.FadeOutAsync(2f);
+            if (ScreenFX.Instance != null)
+                await ScreenFX.Instance.FadeOutAsync(2f, ct);
 
             // 저장 확인
-            bool save = await PopupManager.Instance.ConfirmAsync("저장하시겠습니까?");
+            bool save = PopupManager.Instance != null
+                && await PopupManager.Instance.ConfirmAsync("저장하시겠습니까?");
             if (save)
             {
                 AutoSave();
                 PopupManager.Instance?.Toast("저장", "저장되었습니다.");
-                await UniTask.Delay(1000);
+                await UniTask.Delay(1000, cancellationToken: ct);
             }
 
             // 타이틀로 복귀
@@ -297,17 +552,35 @@ namespace LoveAlgo.Core
 
             if (gs != null)
             {
-                gs.AddStat("Str", effect.strengthChange);
-                gs.AddStat("Int", effect.intelligenceChange);
-                gs.AddStat("Soc", effect.socialChange);
-                gs.AddStat("Per", effect.perseveranceChange);
-                gs.AddStat("Fatigue", effect.fatigueChange);
-                gs.AddMoney(effect.moneyChange);
-            }
+                // 투자: 기획서 기준 ±50~100% 랜덤
+                if (type == ScheduleType.Invest)
+                {
+                    int currentMoney = gs.Money;
+                    // -50% ~ +100% 범위의 랜덤 배율
+                    float multiplier = UnityEngine.Random.Range(-0.5f, 1.0f);
+                    int change = Mathf.RoundToInt(currentMoney * multiplier);
+                    gs.AddMoney(change);
 
-            // 스탯 변화 피드백 토스트
-            string feedback = BuildScheduleFeedback(effect);
-            PopupManager.Instance?.Toast(effect.displayName, feedback, 2.5f);
+                    string resultText = change >= 0
+                        ? $"+{change:N0}원 (수익!)"
+                        : $"{change:N0}원 (손실...)";
+                    PopupManager.Instance?.Toast("투자 결과", resultText, 3f);
+                    Debug.Log($"[GameManager] 투자: {currentMoney:N0} × {multiplier:P0} = {change:N0}");
+                }
+                else
+                {
+                    gs.AddStat("Str", effect.strengthChange);
+                    gs.AddStat("Int", effect.intelligenceChange);
+                    gs.AddStat("Soc", effect.socialChange);
+                    gs.AddStat("Per", effect.perseveranceChange);
+                    gs.AddStat("Fatigue", effect.fatigueChange);
+                    gs.AddMoney(effect.moneyChange);
+
+                    // 스탯 변화 피드백 토스트
+                    string feedback = BuildScheduleFeedback(effect);
+                    PopupManager.Instance?.Toast(effect.displayName, feedback, 2.5f);
+                }
+            }
 
             Debug.Log($"[GameManager] 스케줄 완료: {effect.displayName}");
             OnScheduleCompleted();
@@ -360,23 +633,64 @@ namespace LoveAlgo.Core
 
         async UniTaskVoid EndDayAsync()
         {
+            var ct = this.GetCancellationTokenOnDestroy();
+
+            // 저녁 이벤트 체크
+            var eveningEvent = DayEventTable.GetEvent(CurrentDay, DayTiming.Evening);
+            if (eveningEvent != null)
+            {
+                await RunDayEventInline(eveningEvent, ct);
+            }
+
             // 페이드 아웃 (2.5초)
-            await ScreenFX.Instance.FadeOutAsync(2.5f);
+            if (ScreenFX.Instance != null)
+                await ScreenFX.Instance.FadeOutAsync(2.5f, ct);
 
             CurrentDay++;
-            RemainingActions = 3;
+            RemainingActions = GameConstants.ActionsPerDay;
+
+            // 상하차 등 하루 제한 초기화
+            UIManager.Instance?.ScheduleUI?.ResetDailyLimits();
 
             Debug.Log($"[GameManager] {CurrentDay}일차 시작");
+
+            // 최대 일차 초과 시 엔딩 진입
+            if (CurrentDay > GameConstants.MaxDay)
+            {
+                ChangePhase(GamePhase.Ending);
+                return;
+            }
 
             AutoSave();
 
             // 잠시 블랙 유지
-            await UniTask.Delay(500);
+            await UniTask.Delay(500, cancellationToken: ct);
 
             ChangePhase(GamePhase.DayLoop);
 
             // 페이드 인 (2초)
-            await ScreenFX.Instance.FadeInAsync(2.0f);
+            if (ScreenFX.Instance != null)
+                await ScreenFX.Instance.FadeInAsync(2.0f, ct);
+        }
+
+        /// <summary>
+        /// 데이 이벤트를 EndDay 흐름 내에서 실행 (저녁 이벤트용)
+        /// </summary>
+        async UniTask RunDayEventInline(DayEvent evt, CancellationToken ct)
+        {
+            Debug.Log($"[GameManager] 저녁 이벤트 실행: {evt.ScriptName}");
+            DayEventTable.MarkFired(evt.ScriptName);
+
+            UIManager.Instance?.ShowOnly(MainUIType.Dialogue);
+            var dialogueUI = UIManager.Instance?.DialogueUI;
+            dialogueUI?.Clear();
+            dialogueUI?.HideImmediate();
+
+            var runner = ScriptRunner.Instance;
+            if (runner != null)
+            {
+                await runner.StartScript(evt.ScriptName);
+            }
         }
 
         /// <summary>
@@ -546,7 +860,7 @@ namespace LoveAlgo.Core
             // 오디오 정리
             Story.AudioManager.Instance?.StopVoice();
 
-            // DOTween 동즁 트윈 정리 (Safe Mode로 사용 중이므로 KillAll 대신 유휴 트윈만 정리)
+            // DOTween 동시 트윈 정리 (Safe Mode로 사용 중이므로 KillAll 대신 유휴 트윈만 정리)
             DOTween.KillAll();
         }
 

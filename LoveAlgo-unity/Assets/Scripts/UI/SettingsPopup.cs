@@ -56,14 +56,8 @@ namespace LoveAlgo.UI
         [SerializeField] Button applyButton; // 해상도 전용 즉시 적용 + 저장 (ResolutionIndex / Fullscreen)
 
         // 해상도 목록 (오름차순: ← 작아짐 / → 커짐)
-        readonly (int w, int h)[] resolutions = {
-            (800, 450),
-            (960, 540),
-            (1280, 720),
-            (1440, 810),
-            (1920, 1080)
-        };
-        int currentResolutionIndex = 4; // 기본 1920x1080
+        readonly (int w, int h)[] resolutions = GameConstants.Resolutions;
+        int currentResolutionIndex = GameConstants.DefaultResolutionIndex; // 기본 1920x1080
         bool isFullscreen = true;
 
         // 변경사항 추적

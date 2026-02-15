@@ -7,10 +7,8 @@ namespace LoveAlgo.Story
     /// <summary>
     /// 게임 상태 - 호감도, 스탯, 플래그, 돈 관리
     /// </summary>
-    public class GameState : MonoBehaviour
+    public class GameState : SingletonMonoBehaviour<GameState>
     {
-        public static GameState Instance { get; private set; }
-
         [Header("플레이어 정보")]
         [SerializeField] string playerName = "플레이어";
 
@@ -33,18 +31,7 @@ namespace LoveAlgo.Story
         public string PlayerName => playerName;
         public int Money => money;
 
-        void Awake()
-        {
-            if (Instance == null)
-            {
-                Instance = this;
-                // DontDestroyOnLoad(gameObject);  // 데모: 단일 씬
-            }
-            else
-            {
-                Destroy(gameObject);
-            }
-        }
+
 
         #region 스탯
 
@@ -63,28 +50,7 @@ namespace LoveAlgo.Story
 
         public void AddStat(string statName, int value)
         {
-            switch (statName.ToLower())
-            {
-                case "str":
-                case "strength":
-                    strength += value;
-                    break;
-                case "int":
-                case "intelligence":
-                    intelligence += value;
-                    break;
-                case "soc":
-                case "sociability":
-                    sociability += value;
-                    break;
-                case "per":
-                case "perseverance":
-                    perseverance += value;
-                    break;
-                case "fatigue":
-                    fatigue += value;
-                    break;
-            }
+            SetStat(statName, GetStat(statName) + value);
             Debug.Log($"[GameState] Stat {statName} += {value}");
         }
 
@@ -230,6 +196,7 @@ namespace LoveAlgo.Story
             money = 0;
             lovePoints.Clear();
             flags.Clear();
+            Shop.ShopManager.Reset();
         }
 
         #endregion
@@ -241,6 +208,7 @@ namespace LoveAlgo.Story
 
         public void SetStat(string statName, int value)
         {
+            value = Mathf.Clamp(value, 0, GameConstants.MaxStat);
             switch (statName.ToLower())
             {
                 case "str": case "strength": strength = value; break;

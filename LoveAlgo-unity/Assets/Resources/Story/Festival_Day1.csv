@@ -1,0 +1,18 @@
+LineID,Type,Speaker,Value,Next
+# ═══ 축제 Day 1 (Day 10) ═══
+,BG,,Black,await
+,Sound,,BGM:Stop:Fade:1.0,await
+,FX,,FadeIn:1.0,await
+,BG,,CampusStreet/BG_Campus_Street1_Day:Cross:2.0,await
+,Sound,,BGM:Daily1,>
+,Text,,"대학 축제 첫째 날.\n캠퍼스가 평소와는 다른 활기로 가득하다.",click
+,Text,,"노점이 줄지어 있고, 곳곳에서 음악이 흘러나온다.",click
+,Char,,C:Enter:Roa:Happy,await
+,Overlay,,Roa_Theme:FadeIn:0.5,await
+,Text,로아,"{{PlayerName}}! 축제다! 신난다~!",click
+,Text,로아,"오늘은 구경만 하자!\n내일부터 본격적으로!",click
+,Char,,C:Exit,await
+,Overlay,,FadeOut:0.3,>
+,Text,,"축제 분위기에 들뜬 하루를 보냈다.",click
+,FX,,FadeOut:1.0,await
+,Flow,,End,>

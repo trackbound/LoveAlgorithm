@@ -1,0 +1,35 @@
+LineID,Type,Speaker,Value,Next
+# ═══ Day 2 아침 - 캠퍼스 길에서 서다은 조우 ═══
+,BG,,MyRoom/BG_MyRoom_Interior_Day,await
+,Sound,,BGM:Daily1,>
+,FX,,EyeOpen:1.0,await
+,Text,,"2일차 아침.\n아직 캠퍼스 생활에 완전히 익숙해지지는 않았다.",click
+# 로아 알림
+,Char,,C:Enter:Roa,await
+,Overlay,,Roa_Theme:FadeIn:0.5,await
+,Text,로아,"{{PlayerName}}, 오늘도 화이팅!\n오늘은 2교시부터 수업이야.",click
+,Text,{{PlayerName}},알았어. 준비하고 나갈게.,click
+,Char,,C:Exit,await
+,Overlay,,FadeOut:0.3,>
+# 캠퍼스로 이동
+,FX,,FadeOut:1.0,await
+,BG,,CampusStreet/BG_Campus_Street1_Day,await
+,Sound,,BGM:Daily2,>
+,FX,,FadeIn:1.0,await
+,Text,,"캠퍼스를 걷고 있는데, 저 앞에 익숙한 얼굴이 보였다.",click
+# 서다은 등장
+,Char,,C:Enter:Daeun,await
+,Sound,,BGM:Daeun,>
+,Text,서다은,"아, {{PlayerName}} 씨? 안녕하세요.",click
+,Text,{{PlayerName}},"어, 서다은 씨. 안녕.",click
+,Char,,C:Emote:Smile,await
+,Text,서다은,"같은 방향이네요. 같이 걸어요.",click
+,Text,,"그렇게 서다은과 함께 강의실까지 걸었다.\n의외로 대화가 잘 통했다.",click
+,Char,,C:Emote:Default,await
+,Text,서다은,"그럼 저는 이쪽이에요. 오늘도 좋은 하루 보내세요!",click
+,Char,,C:Exit,await
+,Sound,,BGM:Daily2,>
+,Text,,"나쁘지 않은 아침이었다.\n오늘도 할 일을 정해보자.",click
+,FX,,FadeOut:0.5,await
+,FX,,FadeIn:0.5,await
+,Flow,,End,>

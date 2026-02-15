@@ -1,34 +1,29 @@
 namespace LoveAlgo.Schedule
 {
     /// <summary>
-    /// 스케줄 카테고리 (탭 3개)
+    /// 스케줄 카테고리
+    /// 기획서 기준: 알바 서브메뉴 펼쳐짐 (편의점/상하차), 운동, 공부, 투자
     /// </summary>
     public enum ScheduleCategory
     {
-        PartTime,   // 아르바이트
-        Exercise,   // 운동
-        Study       // 공부
+        PartTime,   // 아르바이트 (편의점, 상하차)
+        Activity    // 운동, 공부, 투자
     }
 
     /// <summary>
-    /// 스케줄 종류 (총 9개, 고정)
+    /// 스케줄 종류 (기획서 기준 5개)
+    /// 자유행동: 하루 2회 (낮/밤)
     /// </summary>
     public enum ScheduleType
     {
         // 아르바이트
-        PartTime_Cafe,      // 카페 알바
-        PartTime_Tutor,     // 과외
-        PartTime_Delivery,  // 배달
+        PartTime_Store,     // 편의점: 끈기+1, 돈+20000, 피로+5
+        PartTime_Loading,   // 상하차: 끈기+2, 돈+50000, 피로+15 (하루 1회 제한)
 
-        // 운동
-        Exercise_Gym,       // 헬스장
-        Exercise_Running,   // 러닝
-        Exercise_Swimming,  // 수영
-
-        // 공부
-        Study_Library,      // 도서관
-        Study_Lecture,      // 강의
-        Study_Group         // 스터디그룹
+        // 활동
+        Exercise,           // 운동: 체력+3, 피로+0
+        Study,              // 공부: 지성+3, 피로+5
+        Invest              // 투자: 돈 ±50~100%, 피로+0 (자산≥30000 필요)
     }
 
     /// <summary>
@@ -37,65 +32,67 @@ namespace LoveAlgo.Schedule
     public struct ScheduleEffect
     {
         public string displayName;
-        public int moneyChange;     // + 수입, - 지출
-        public int strengthChange;  // 체력
+        public string description;     // 3줄 설명
+        public int moneyChange;        // + 수입, - 지출
+        public int strengthChange;     // 체력
         public int intelligenceChange; // 지성
-        public int socialChange;    // 사교성
+        public int socialChange;       // 사교성
         public int perseveranceChange; // 끈기
-        public int fatigueChange;   // 피로
+        public int fatigueChange;      // 피로
+        public bool isLimited;         // 하루 1회 제한 여부
 
-        public ScheduleEffect(string name, int money, int str, int intel, int soc, int per, int fatigue)
+        public ScheduleEffect(string name, string desc, int money, int str, int intel, int soc, int per, int fatigue, bool limited = false)
         {
             displayName = name;
+            description = desc;
             moneyChange = money;
             strengthChange = str;
             intelligenceChange = intel;
             socialChange = soc;
             perseveranceChange = per;
             fatigueChange = fatigue;
+            isLimited = limited;
         }
     }
 
     /// <summary>
-    /// 스케줄 데이터 정적 테이블
+    /// 스케줄 데이터 정적 테이블 (기획서 기준)
     /// </summary>
     public static class ScheduleTable
     {
         public static ScheduleEffect Get(ScheduleType type) => type switch
         {
-            // 아르바이트: 돈+, 피로+
-            ScheduleType.PartTime_Cafe     => new("카페 알바",   15000, 0, 0, 1, 0, 10),
-            ScheduleType.PartTime_Tutor    => new("과외",       30000, 0, 1, 0, 0, 15),
-            ScheduleType.PartTime_Delivery => new("배달",       20000, 1, 0, 0, 1, 20),
+            // 아르바이트
+            ScheduleType.PartTime_Store   => new("편의점 알바",
+                "기본 노동, 끈기 소량 상승.\n안정적인 수입원입니다.",
+                20000, 0, 0, 0, 1, 5),
 
-            // 운동: 체력+, 끈기+, 피로+
-            ScheduleType.Exercise_Gym      => new("헬스장",     -5000, 3, 0, 0, 1, 15),
-            ScheduleType.Exercise_Running  => new("러닝",           0, 2, 0, 0, 2, 10),
-            ScheduleType.Exercise_Swimming => new("수영",      -10000, 2, 0, 1, 1, 12),
+            ScheduleType.PartTime_Loading => new("상하차 알바",
+                "고강도 노동, 끈기 크게 상승.\n하루 1회만 가능합니다.",
+                50000, 0, 0, 0, 2, 15, limited: true),
 
-            // 공부: 지성+, 피로+
-            ScheduleType.Study_Library     => new("도서관",         0, 0, 3, 0, 1, 12),
-            ScheduleType.Study_Lecture     => new("강의",      -20000, 0, 4, 0, 0, 10),
-            ScheduleType.Study_Group       => new("스터디그룹",     0, 0, 2, 2, 0, 8),
+            // 활동
+            ScheduleType.Exercise => new("운동",
+                "체력의 주요 성장 루트.\n아이템(프로틴)과 조합 가능.",
+                0, 3, 0, 0, 0, 0),
 
-            _ => new("알 수 없음", 0, 0, 0, 0, 0, 0)
+            ScheduleType.Study => new("공부",
+                "지성을 높일 수 있어요.\n피로도가 높습니다.",
+                0, 0, 3, 0, 0, 5),
+
+            ScheduleType.Invest => new("투자",
+                "돈 ±50~100% (확률 분포).\n자산 30,000원 이상 시 가능.",
+                0, 0, 0, 0, 0, 0),
+
+            _ => new("알 수 없음", "", 0, 0, 0, 0, 0, 0)
         };
 
         public static ScheduleCategory GetCategory(ScheduleType type) => type switch
         {
-            ScheduleType.PartTime_Cafe or 
-            ScheduleType.PartTime_Tutor or 
-            ScheduleType.PartTime_Delivery => ScheduleCategory.PartTime,
+            ScheduleType.PartTime_Store or
+            ScheduleType.PartTime_Loading => ScheduleCategory.PartTime,
 
-            ScheduleType.Exercise_Gym or 
-            ScheduleType.Exercise_Running or 
-            ScheduleType.Exercise_Swimming => ScheduleCategory.Exercise,
-
-            ScheduleType.Study_Library or 
-            ScheduleType.Study_Lecture or 
-            ScheduleType.Study_Group => ScheduleCategory.Study,
-
-            _ => ScheduleCategory.PartTime
+            _ => ScheduleCategory.Activity
         };
     }
 }

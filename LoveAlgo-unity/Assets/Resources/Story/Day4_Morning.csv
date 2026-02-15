@@ -1,0 +1,18 @@
+LineID,Type,Speaker,Value,Next
+# ═══ Day 4 아침 - 대학 생활 루틴 정착 ═══
+,BG,,MyRoom/BG_MyRoom_Interior_Day,await
+,Sound,,BGM:Daily1,>
+,FX,,EyeOpen:1.0,await
+,Text,,"4일차.\n슬슬 대학 생활의 리듬이 잡히기 시작했다.",click
+,Char,,C:Enter:Roa,await
+,Overlay,,Roa_Theme:FadeIn:0.5,await
+,Text,로아,"좋은 아침, {{PlayerName}}!",click
+,Text,로아,"벌써 4일째야. 적응하고 있는 것 같아서 다행이야.",click
+,Char,,C:Emote:Happy,await
+,Text,로아,"시간은 생각보다 빨리 지나가니까, 하루하루 알차게 보내자!",click
+,Text,{{PlayerName}},알았어. 오늘도 열심히 해볼게.,click
+,Char,,C:Exit,await
+,Overlay,,FadeOut:0.3,>
+,FX,,FadeOut:0.5,await
+,FX,,FadeIn:0.5,await
+,Flow,,End,>

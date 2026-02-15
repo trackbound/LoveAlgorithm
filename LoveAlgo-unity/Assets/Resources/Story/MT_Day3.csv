@@ -1,0 +1,17 @@
+LineID,Type,Speaker,Value,Next
+# ═══ MT Day 3 (Day 22) - 마지막 날 ═══
+,BG,,Black,await
+,Sound,,BGM:Stop:Fade:1.0,await
+,FX,,FadeIn:1.0,await
+,BG,,MT/BG_MT_Day:Cross:2.0,await
+,Sound,,BGM:Morning,>
+,Text,,"MT 마지막 날 아침.\n짐을 싸며 아쉬움이 밀려온다.",click
+,Char,,C:Enter:Daeun:Smile,await
+,Text,서다은,"...다음에 또 가자.",click
+,Char,,C:Exit,await
+,Char,,C:Enter:Yeun:Normal,await
+,Text,하예은,"사진 많이 찍어뒀어. 나중에 보내줄게.",click
+,Char,,C:Exit,await
+,Text,,"버스에 올라 캠퍼스로 돌아간다.\nMT의 추억이 마음에 남았다.",click
+,FX,,FadeOut:1.0,await
+,Flow,,End,>

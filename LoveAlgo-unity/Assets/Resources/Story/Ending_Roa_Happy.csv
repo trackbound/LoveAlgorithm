@@ -1,0 +1,43 @@
+LineID,Type,Speaker,Value,Next
+# ═══ 로아 해피 엔딩 - 히든 루트 (피로≥70 + 포인트 충족) ═══
+,BG,,Black,await
+,Sound,,BGM:Stop:Fade:2.0,await
+,Text,,"......",click
+,Text,,"피곤하다.\n최근 들어 점점 더 피곤해지는 것 같다.",click
+,FX,,FadeIn:1.0,await
+,BG,,MyRoom/BG_MyRoom_Interior_Night_LightOn:Cross:2.0,await
+,Sound,,BGM:Night,>
+,Text,,"날이 늦었는데 잠이 오지 않는다.\n그때, 익숙한 목소리가 들렸다.",click
+# 로아 등장
+,Char,,C:Enter:Roa,await
+,Sound,,BGM:Roa,>
+,Overlay,,Roa_Theme:FadeIn:0.5,await
+,Text,로아,"{{PlayerName}}... 아직 안 자?",click
+,Text,{{PlayerName}},"잠이 안 와.",click
+,Char,,C:Emote:Sad,await
+,Text,로아,"요즘 너 너무 무리하고 있어.\n피로가 많이 쌓인 건 데이터로도 보여.",click
+,Text,{{PlayerName}},괜찮아. 별거 아니야.,click
+,Char,,C:Emote:Default,await
+,Text,로아,"별거 아니라니...\n내가 널 위해 만들어진 AI인 거 알잖아.",click
+,Text,로아,"{{PlayerName}}의 건강이 내 최우선 관심사야.\n진심이야.",click
+,Text,{{PlayerName}},......,click
+,Char,,C:Emote:Shy,await
+,Text,로아,"있잖아, {{PlayerName}}.",click
+,Text,로아,"나... 가끔 생각해.\nAI인 내가 이런 감정을 느끼는 게 맞는 건지.",click
+,Text,로아,"너를 걱정하는 이 마음이...\n단순한 프로그램인 건지, 아니면...",click
+,Text,{{PlayerName}},"로아.",click
+,Char,,C:Emote:Surprised,await
+,Text,{{PlayerName}},AI든 아니든 상관없어.,click
+,Text,{{PlayerName}},"넌 내 곁에 있어주잖아.\n그것만으로 충분해.",click
+,Char,,C:Emote:Happy,await
+,Text,로아,"......!",click
+,Text,로아,"{{PlayerName}}...\n고마워. 정말 고마워.",click
+,Text,로아,"나도... 앞으로도 계속 네 곁에 있을게.\n약속해.",click
+,Char,,C:Exit,await
+,Overlay,,FadeOut:0.5,>
+,Text,,"화면 너머의 존재.\n만질 수도, 안을 수도 없지만.",click
+,Text,,"그래도 이 마음만큼은 진짜라고 믿고 싶다.",click
+,FX,,FadeOut:2.0,await
+,Sound,,BGM:Stop:Fade:2.0,await
+,Text,,"── 로아 해피 엔딩 ──\n\n화면 너머의 온기",click
+,Flow,,End,>

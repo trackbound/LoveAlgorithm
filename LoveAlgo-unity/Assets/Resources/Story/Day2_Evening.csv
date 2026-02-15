@@ -1,0 +1,35 @@
+LineID,Type,Speaker,Value,Next
+# ═══ Day 2 저녁 - 하예은과 도서관에서 우연히 ═══
+,FX,,FadeOut:0.5,await
+,BG,,Engineering/BG_Engineering_Corridor_Day,await
+,Sound,,BGM:Daily1,>
+,FX,,FadeIn:1.0,await
+,Text,,"하루 일정을 다 마치고to 나오려는데, 복도에서 누군가와 마주쳤다.",click
+# 하예은 등장
+,Char,,C:Enter:Yeun,await
+,Sound,,BGM:Yeun,>
+,Text,하예은,"어? {{PlayerName}} 군! 아직 학교에 있었어?",click
+,Text,{{PlayerName}},"하예은 씨도. 이 시간까지?",click
+,Char,,C:Emote:Smile,await
+,Text,하예은,"나는 동아리 활동이 있었거든! 오늘 체육관에서 연습했어.",click
+,Text,하예은,"{{PlayerName}} 군은 운동 좋아해? 다음에 같이 할래?",click
+,Choice,,,click
+,Option,,좋아. 관심 있어.|yeun_yes,
+,Option,,운동은 잘 모르겠어...|yeun_no,
+# ─── 선택 1: 관심 ───
+yeun_yes,Char,,C:Emote:Happy,await
+,Text,하예은,"정말!? 그럼 다음에 꼭 같이 하자! 연락할게!",click
+,Macro,,Love:Yeun:3,>
+,Flow,,Jump:yeun_end,>
+# ─── 선택 2: 별로 ───
+yeun_no,Char,,C:Emote:Sad,await
+,Text,하예은,"그래? 아쉽다... 그래도 혹시 마음 바뀌면 말해!",click
+,Flow,,Jump:yeun_end,>
+# ─── 합류 ───
+yeun_end,Char,,C:Emote:Default,await
+,Text,하예은,"그럼 나 먼저 갈게! 내일 봐, {{PlayerName}} 군!",click
+,Char,,C:Exit,await
+,Sound,,BGM:Night,>
+,Text,,"하예은 씨는 참 밝은 사람이다.\n집으로 돌아갈 시간이다.",click
+,FX,,FadeOut:1.0,await
+,Flow,,End,>

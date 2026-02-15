@@ -84,6 +84,12 @@ namespace LoveAlgo.MiniGame
             ShowResult();
         }
 
+        /// <summary>서브클래스에서 OnGameEnd 이벤트를 호출할 수 있는 헬퍼</summary>
+        protected void InvokeGameEnd(int finalScore)
+        {
+            OnGameEnd?.Invoke(finalScore);
+        }
+
         protected virtual void ShowResult()
         {
             gamePanel?.SetActive(false);

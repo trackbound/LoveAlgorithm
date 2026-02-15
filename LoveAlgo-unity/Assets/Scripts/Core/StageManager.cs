@@ -7,9 +7,8 @@ namespace LoveAlgo.Core
     /// 연출 레이어 매니저 - 배경, 캐릭터, 화면 효과 관리
     /// ScriptRunner 등에서 StageManager.Instance.Background 등으로 접근
     /// </summary>
-    public class StageManager : MonoBehaviour
+    public class StageManager : SingletonMonoBehaviour<StageManager>
     {
-        public static StageManager Instance { get; private set; }
 
         [Header("Stage Rig (레이어 바인딩은 StageRig에서)")]
         [SerializeField] StageRig stageRig;
@@ -21,18 +20,9 @@ namespace LoveAlgo.Core
         public MonologueDim MonologueDim => stageRig?.MonologueDim;
         public CGLayer CG => stageRig?.CG;
 
-        void Awake()
+        protected override void OnSingletonAwake()
         {
-            if (Instance == null)
-            {
-                Instance = this;
-                // DontDestroyOnLoad(gameObject);  // 데모: 단일 씬
-                FindStageRig();
-            }
-            else
-            {
-                Destroy(gameObject);
-            }
+            FindStageRig();
         }
 
         void OnValidate()

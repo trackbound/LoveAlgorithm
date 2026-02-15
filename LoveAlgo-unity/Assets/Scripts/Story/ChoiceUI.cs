@@ -70,7 +70,7 @@ namespace LoveAlgo.Story
             {
                 var cg = btn.GetComponent<CanvasGroup>();
                 if (cg != null)
-                    cg.DOFade(1f, choiceAppearDuration).SetEase(choiceAppearEase);
+                    _ = cg.DOFade(1f, choiceAppearDuration).SetEase(choiceAppearEase);
             }
             await UniTask.Delay(TimeSpan.FromSeconds(choiceAppearDuration), cancellationToken: ct);
 

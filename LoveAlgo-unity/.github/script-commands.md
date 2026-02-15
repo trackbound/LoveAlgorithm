@@ -106,7 +106,6 @@ LineID,Type,Speaker,Value,Next
 | `Cut` | 즉시 교체 |
 | `Fade` | 페이드 (기본) |
 | `Cross` | 크로스페이드 |
-| `Slide` | 슬라이드 |
 
 ```csv
 ,BG,,School_Day,>
@@ -213,19 +212,28 @@ LineID,Type,Speaker,Value,Next
 | `Flash` | 화면 번쩍임 | `Flash` |
 | `EyeOpen` | 눈 뜨는 효과 (위아래 검은 바 열림) | `EyeOpen:1.5` |
 | `EyeClose` | 눈 감는 효과 (위아래 검은 바 닫힘) | `EyeClose:1.0` |
-| `CamShake` | 카메라 흔들림 | `CamShake:0.5:30` |
-| `CamZoom` | 카메라 줌 | `CamZoom:1.2:0.5` |
-| `CharShake` | 캐릭터 흔들림 | `CharShake:C` |
-| `CharJump` | 캐릭터 점프 | `CharJump:C` |
-| `CharDim` | 캐릭터 어둡게 | `CharDim:L` |
+| `EyeCloseImmediate` | 즉시 눈 감기 (애니메이션 없이) | `EyeCloseImmediate` |
+| `EyeBlink` | 눈 깜빡임 (닫힘→대기→열림) | `EyeBlink:0.3:0.5:0.2` |
+| `CamShake` | 카메라 흔들림 | `CamShake:0.5:30`, `CamShake:Medium` |
 | `DialogueHide` | 대사창 숨김 | `DialogueHide` |
 | `DialogueShow` | 대사창 표시 | `DialogueShow` |
+
+#### FX 매크로 (복합 연출)
+
+| 매크로 | 설명 | Value 예시 |
+|--------|------|------------|
+| `DayEnd` | 하루 종료 연출 (페이드아웃→무대 정리→자동저장) | `DayEnd`, `DayEnd:1.5` |
+| `DayStart` | 하루 시작 연출 (일차+1, 배경 설정) | `DayStart:MyRoom_Day`, `DayStart:MyRoom_Day:3` |
+| `Setup` | 즉시 장면 세팅 (검은 화면 뒤에서) | `Setup:BG=School_Day\|BGM=Morning` |
 
 ```csv
 ,FX,,FadeOut:1.5,await
 ,FX,,EyeOpen:1.5,await
 ,FX,,CamShake:0.3:20,>
-,FX,,CharJump:C,>
+,FX,,EyeBlink:0.3:0.5,await
+,FX,,DayEnd,await
+,FX,,DayStart:MyRoom_Day,>
+,FX,,Setup:BG=School_Day|BGM=Morning,>
 ```
 
 ---
@@ -238,10 +246,12 @@ LineID,Type,Speaker,Value,Next
 | `End` | 챕터/스토리 종료 | `End` |
 | `Save` | 자동 저장 | `Save` |
 | `If` | 조건 분기 | `If:Love:Roa>=30:Confession` |
+| `MiniGame` | 미니게임 실행 | `MiniGame:CherryBlossom:Roa` |
 
 ```csv
 ,Flow,,Jump:Morning_End,>
 ,Flow,,If:Flag:Met_Roa:Roa_Route,>
+,Flow,,MiniGame:CherryBlossom:Roa,>
 ,Flow,,End,>
 ```
 
@@ -255,6 +265,17 @@ LineID,Type,Speaker,Value,Next
 | `Stat:스탯>=값` | 스탯 | `If:Stat:Int>=20:SmartChoice` |
 | `Flag:이름` | 플래그 true | `If:Flag:Met_Roa:Reunion` |
 | `!Flag:이름` | 플래그 false | `If:!Flag:Confessed:FirstMeet` |
+
+#### 미니게임 문법
+
+`MiniGame:게임이름:히로인ID`
+
+| 게임이름 | 설명 |
+|---------|------|
+| `CherryBlossom` | 벚꽃 꽃잎 잡기 (30초) |
+| `Jogging` | 하예은과 조깅 속도 맞추기 (60초) |
+
+점수 → 포인트 변환: `0→0, 10→+1, 20→+2, 30→+3` (히로인당 최대 5점)
 
 ---
 

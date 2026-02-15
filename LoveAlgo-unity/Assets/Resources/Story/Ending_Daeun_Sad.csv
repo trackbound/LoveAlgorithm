@@ -1,0 +1,27 @@
+LineID,Type,Speaker,Value,Next
+# ═══ 서다은 새드 엔딩 ═══
+,BG,,Black,await
+,Sound,,BGM:Stop:Fade:2.0,await
+,Text,,"......",click
+,FX,,FadeIn:1.0,await
+,BG,,CampusStreet/BG_Campus_Street1_Day:Cross:2.0,await
+,Sound,,BGM:Night,>
+,Text,,"도서관에서 다은이와 마주쳤다.",click
+,Char,,C:Enter:Daeun:Default,await
+,Text,서다은,"...{{PlayerName}}.",click
+,Text,{{PlayerName}},다은아. 시험 공부?",click
+,Text,서다은,"응. 항상 하던 대로.",click
+,Text,,...,click
+,Char,,C:Emote:Sad,await
+,Text,서다은,"있잖아, {{PlayerName}}.",click
+,Text,서다은,"이번 학기... 조금 더 대화하고 싶었어.\n근데 나는 그런 거 잘 못하잖아.",click
+,Text,서다은,"다음엔... 내가 먼저 말 걸어볼게.\n기다려줄 수 있어?",click
+,Text,{{PlayerName}},당연하지.,click
+,Char,,C:Emote:Default,await
+,Text,서다은,"...고마워.",click
+,Char,,C:Exit,await
+,Text,,"조용히 돌아서는 그녀의 뒷모습에서\n작은 아쉬움이 느껴졌다.",click
+,FX,,FadeOut:2.0,await
+,Sound,,BGM:Stop:Fade:2.0,await
+,Text,,"── 서다은 새드 엔딩 ──\n\n말하지 못한 한마디",click
+,Flow,,End,>

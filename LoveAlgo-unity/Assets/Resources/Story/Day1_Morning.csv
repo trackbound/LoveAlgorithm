@@ -1,0 +1,21 @@
+LineID,Type,Speaker,Value,Next
+# ═══ Day 1 아침 - 프롤로그 직후 첫 데이룹 시작 ═══
+# 프롤로그 끝나고 DayLoop 진입 시 자동 실행
+,BG,,MyRoom/BG_MyRoom_Interior_Day,await
+,Sound,,BGM:Daily1,>
+,FX,,EyeOpen:1.0,await
+,Text,,"새로운 하루가 시작됐다.\n어제 만난 사람들이 머릿속에 맴돈다.",click
+,Text,,"오늘은 뭘 해야 할까.\n일단 스케줄을 확인해보자.",click
+# 로아 등장
+,Char,,C:Enter:Roa:Happy,await
+,Overlay,,Roa_Theme:FadeIn:0.5,await
+,Text,로아,"좋은 아침, {{PlayerName}}!",click
+,Text,로아,"오늘 일정을 알려줄게.\n수업은 3교시부터니까 아침에는 시간이 좀 있어!",click
+,Text,{{PlayerName}},"고마워, 로아.",click
+,Text,로아,"뭐 할지 정해 봐!\n운동을 할 수도 있고, 공부를 할 수도 있고, 알바를 할 수도 있어.",click
+,Text,로아,오늘도 알차게 보내자!,click
+,Char,,C:Exit,await
+,Overlay,,FadeOut:0.3,>
+,FX,,FadeOut:0.5,await
+,FX,,FadeIn:0.5,await
+,Flow,,End,>

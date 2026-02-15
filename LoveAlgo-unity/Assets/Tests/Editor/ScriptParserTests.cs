@@ -152,5 +152,86 @@ namespace LoveAlgo.Tests
             Assert.AreEqual(LineType.FX, result[0].Type);
             Assert.AreEqual("FadeOut:1.0", result[0].Value);
         }
+
+        [Test]
+        public void Parse_CGLine_ParsesCorrectly()
+        {
+            var csv = ",CG,,CG/Roa_FirstMeet:Fade:1.0,await";
+            var result = ScriptParser.Parse(csv);
+
+            Assert.AreEqual(1, result.Count);
+            Assert.AreEqual(LineType.CG, result[0].Type);
+            Assert.AreEqual("CG/Roa_FirstMeet:Fade:1.0", result[0].Value);
+            Assert.AreEqual(NextType.Await, result[0].NextType);
+        }
+
+        [Test]
+        public void Parse_CGExit_ParsesCorrectly()
+        {
+            var csv = ",CG,,Exit,>";
+            var result = ScriptParser.Parse(csv);
+
+            Assert.AreEqual(1, result.Count);
+            Assert.AreEqual(LineType.CG, result[0].Type);
+            Assert.AreEqual("Exit", result[0].Value);
+        }
+
+        [Test]
+        public void Parse_OverlayLine_ParsesCorrectly()
+        {
+            var csv = ",Overlay,,Roa_Theme:FadeIn:0.5,await";
+            var result = ScriptParser.Parse(csv);
+
+            Assert.AreEqual(1, result.Count);
+            Assert.AreEqual(LineType.Overlay, result[0].Type);
+            Assert.AreEqual("Roa_Theme:FadeIn:0.5", result[0].Value);
+        }
+
+        [Test]
+        public void Parse_OverlayFadeOut_ParsesCorrectly()
+        {
+            var csv = ",Overlay,,FadeOut,await";
+            var result = ScriptParser.Parse(csv);
+
+            Assert.AreEqual(1, result.Count);
+            Assert.AreEqual(LineType.Overlay, result[0].Type);
+            Assert.AreEqual("FadeOut", result[0].Value);
+        }
+
+        [Test]
+        public void Parse_FX_CamShake_ParsesCorrectly()
+        {
+            var csv = ",FX,,CamShake:0.5,await";
+            var result = ScriptParser.Parse(csv);
+
+            Assert.AreEqual(1, result.Count);
+            Assert.AreEqual(LineType.FX, result[0].Type);
+            Assert.AreEqual("CamShake:0.5", result[0].Value);
+            Assert.AreEqual(NextType.Await, result[0].NextType);
+        }
+
+        [Test]
+        public void Parse_ComplexScene_AllTypesParsed()
+        {
+            var csv = @",BG,,School_Day:Fade:1.5,await
+,Sound,,BGM:Morning,>
+,Char,,C:Enter:Roa:Happy,await
+,CG,,CG/Roa_FirstMeet:Fade:1.0,await
+,Text,로아,안녕!,click
+,Overlay,,Roa_Theme:FadeIn:0.5,await
+,FX,,FadeOut:1.0,await
+,Flow,,End,>";
+            var result = ScriptParser.Parse(csv);
+
+            Assert.AreEqual(8, result.Count);
+            Assert.AreEqual(LineType.BG, result[0].Type);
+            Assert.AreEqual(LineType.Sound, result[1].Type);
+            Assert.AreEqual(LineType.Char, result[2].Type);
+            Assert.AreEqual(LineType.CG, result[3].Type);
+            Assert.AreEqual(LineType.Text, result[4].Type);
+            Assert.AreEqual(LineType.Overlay, result[5].Type);
+            Assert.AreEqual(LineType.FX, result[6].Type);
+            Assert.AreEqual(LineType.Flow, result[7].Type);
+        }
     }
 }

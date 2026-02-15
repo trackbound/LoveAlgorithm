@@ -33,14 +33,14 @@
 
 ### 핵심 구성 요소
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                        LoveAlgo Game                            │
-├─────────────────────────────────────────────────────────────────┤
-│  [Core]         [Story]         [Schedule]      [UI]            │
-│  게임 흐름       스토리 연출      스케줄 시스템   사용자 인터페이스 │
-│  전역 상태       CSV 스크립트     스탯 관리       팝업 시스템       │
-│  화면 효과       대사/선택지      미니게임        메인 UI 전환      │
-└─────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                            LoveAlgo Game                                    │
+├─────────────────────────────────────────────────────────────────────────────┤
+│  [Core]         [Story]         [Schedule]      [UI]         [Shop/Phone]   │
+│  게임 흐름       스토리 연출      스케줄 시스템   사용자 인터페이스  상점/메신저│
+│  타임라인        CSV 스크립트     스탯 관리       팝업 시스템    아이템/선물   │
+│  포인트 추적    대사/선택지      미니게임        메인 UI 전환   채팅 시스템   │
+└─────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -85,7 +85,15 @@
 |--------|------|--------|
 | `GameManager` | 게임 전체 흐름 제어, Phase 전환 | ✅ |
 | `StageManager` | 연출 레이어 접근 (배경/캐릭터) | ✅ |
-| `ScreenFX` | 화면 효과 (Fade, Flash, Shake) | ✅ |
+| `ScreenFX` | 화면 효과 (Fade, Flash, EyeOpen/Close, CamShake) | ✅ |
+| `StageRig` | 스테이지 부모 리그 (카메라/캐릭터/배경 계층) | - |
+| `StoryInputHandler` | 스토리 입력 처리 (클릭/터치) | - |
+| `QuickPlayLoader` | 빠른 테스트 재생용 로더 | - |
+| `GamePhase` | 게임 Phase Enum 정의 | Enum |
+| `GameConstants` | 전역 상수 정의 | Static |
+| `GameTimeline` | 30일 타임라인 (StoryArc, DayType별 일정) | Static |
+| `DayEventTable` | 일차별 아침/저녁 이벤트 매핑 | Static |
+| `HeroinePointTracker` | 히로인별 포인트 추적 (Event/Gift/MiniGame) | Static |
 | `NameValidator` | 플레이어 이름 유효성 검증 | Static |
 
 ```
@@ -99,8 +107,50 @@ GameManager
 ├── StartNewGame()              # 새 게임 시작
 ├── OnNameConfirmed(string)     # 이름 입력 완료
 ├── OnScheduleCompleted()       # 스케줄 완료
+├── EnterDayLoop()              # 일차 시작 (타임라인/이벤트 체크)
+├── EnterEventDay(DayInfo)      # 이벤트 날 진입
+├── DetermineEndingHeroine()    # 엔딩 히로인 결정 (포인트+스탯)
+├── IsHappyEnding(heroineId)    # 해피/배드 분기 판정
 ├── AutoSave() / Save(slot)     # 저장
 └── LoadGame(slot)              # 로드
+```
+
+```
+GameTimeline (30일 일정 관리)
+├── GetDayInfo(day) → DayInfo     # 날짜별 정보 조회
+├── IsFreeDay(day) → bool         # 자유행동 가능 여부
+├── IsEventDay(day) → bool        # 이벤트 날 여부
+├── GetArc(day) → StoryArc        # 스토리 아크 조회
+└── GetEventPoints(day) → int     # 이벤트 포인트 조회
+
+DayInfo
+├── Day, Type (Free/PersonalEvent/GroupEvent/Confession)
+├── Arc (Opening/FreeTime1~6/Event1~3/Festival/MT/Confession)
+├── EventTag (CSV 스크립트 이름)
+└── EventPoints (히로인 선택 시 부여 포인트)
+```
+
+```
+HeroinePointTracker (히로인 포인트 추적)
+├── RecordEventChoice(heroineId, points)  # 이벤트 선택 포인트
+├── RecordGift(heroineId, points)         # 선물 포인트
+├── RecordMiniGame(heroineId, points)     # 미니게임 포인트
+├── GetTotalPoint(heroineId) → int        # 총 포인트 조회
+├── Save() → PointTrackerSaveData         # 저장
+└── Load(data)                            # 복원
+```
+
+```
+DayEventTable (데이룹 이벤트 테이블)
+├── GetEvent(day, timing) → DayEvent      # 이벤트 조회
+├── MarkFired(scriptName)                 # 발동 기록
+├── ResetFired()                          # 리셋
+└── RestoreFiredEvents(list)              # 세이브 복원
+
+DayEvent
+├── ScriptName (CSV 경로)
+├── Condition (조건 문자열)
+└── Priority (우선순위)
 ```
 
 ### 3.2 Story 모듈 (`LoveAlgo.Story`)
@@ -114,10 +164,16 @@ GameManager
 | `DialogueUI` | 대사창 UI (타이핑 효과) | - |
 | `ChoiceUI` | 선택지 UI | - |
 | `BackgroundLayer` | 배경 전환 (Fade/Cross) | - |
+| `CGLayer` | CG 이미지 표시/숨김 | - |
+| `VirtualBGOverlay` | 보조 배경 오버레이 (캐릭터 테마 등) | - |
 | `CharacterLayer` | 캐릭터 3슬롯(L/C/R) 관리 | - |
 | `CharacterSlot` | 개별 캐릭터 슬롯 | - |
+| `MonologueDim` | 나레이션 시 배경 딘 처리 | - |
 | `AudioManager` | BGM/SFX/Voice 재생 | ✅ |
 | `SaveManager` | JSON 세이브/로드 | Static |
+| `CharacterData` | 캐릭터 데이터 (ScriptableObject) | SO |
+| `CharacterDatabase` | 캐릭터 DB (ScriptableObject) | SO |
+| `AudioSettings` | 오디오 설정 (ScriptableObject) | SO |
 
 ```
 ScriptRunner (스토리 실행의 핵심)
@@ -126,6 +182,7 @@ ScriptRunner (스토리 실행의 핵심)
 ├── currentIndex: int               # 현재 실행 위치
 │
 ├── StartScript(scriptName)         # Resources에서 로드 후 실행
+├── StartScriptFrom(name, lineId)  # 특정 위치부터 로드+실행
 ├── Run()                           # 실행 시작
 ├── RunFrom(lineId)                 # 특정 위치부터 실행
 ├── OnClick()                       # 클릭 입력 처리
@@ -134,6 +191,8 @@ ScriptRunner (스토리 실행의 핵심)
 ├── ExecuteTextAsync()              # Text 라인 실행
 ├── ExecuteCharAsync()              # Char 라인 실행
 ├── ExecuteBGAsync()                # BG 라인 실행
+├── ExecuteCGAsync()                # CG 라인 실행
+├── ExecuteOverlayAsync()           # Overlay 라인 실행
 ├── ExecuteSoundAsync()             # Sound 라인 실행
 ├── ExecuteFXAsync()                # FX 라인 실행
 ├── ExecuteFlowAsync()              # Flow 라인 실행
@@ -144,9 +203,9 @@ ScriptRunner (스토리 실행의 핵심)
 
 | 클래스 | 역할 |
 |--------|------|
-| `ScheduleUI` | 스케줄 선택 UI (3탭 × 3버튼) |
+| `ScheduleUI` | 스케줄 선택 UI (5활동 + 상점/선물/폰 버튼) |
 | `ScheduleSlot` | 개별 스케줄 버튼 |
-| `ScheduleType` | 스케줄 종류 Enum (9종) |
+| `ScheduleType` | 스케줄 종류 Enum (5종: 편의점/상하차/운동/공부/투자) |
 | `ScheduleTable` | 스케줄 효과 데이터 테이블 |
 | `StatGauge` | 스탯 게이지 UI |
 
@@ -165,14 +224,84 @@ ScriptRunner (스토리 실행의 핵심)
 | `ToastPopup` | 토스트 메시지 | - |
 | `LogPopup` | 대사 로그 팝업 | - |
 | `SettingsPopup` | 설정 팝업 | - |
+| `ExtraPopup` | 부가 팝업 (ModalPopupBase) | - |
+| `SaveLoadSlot` | 세이브 슬롯 아이템 | - |
+| `LogEntryUI` | 로그 항목 UI | - |
+| `LogHeaderUI` | 로그 헤더 UI | - |
+| `HoverButton` | 호버 버튼 컴포넌트 | - |
+| `ToggleButton` | 토글 버튼 컴포넌트 | - |
+| `PetalParticleUI` | 꽃잎 파티클 UI | - |
+| `UISoundManager` | UI 사운드 관리 | ✅ |
 
 ### 3.5 MiniGame 모듈 (`LoveAlgo.MiniGame`)
 
 | 클래스 | 역할 |
 |--------|------|
-| `MiniGameBase` | 미니게임 베이스 클래스 |
-| `CherryBlossomGame` | 벚꽃 미니게임 |
-| `JoggingGame` | 조깅 미니게임 |
+| `MiniGameBase` | 미니게임 베이스 클래스 (OnGameEnd 이벤트) |
+| `MiniGameLauncher` | 미니게임 런처 (LaunchAsync, 점수→포인트 변환) |
+| `CherryBlossomGame` | 벚꽃 미니게임 (꽃잎 잡기) |
+| `JoggingGame` | 조깅 미니게임 (하예은과 속도 맞추기) |
+
+```
+MiniGameLauncher (Static)
+├── LaunchAsync(gameName, heroineId, ct)   # 미니게임 실행 + 대기
+├── ScoreToPoints(score) → int             # 10→+1, 20→+2, 30→+3
+└── MAX_MINIGAME_POINTS = 5                # 히로인당 최대 누적
+
+CSV에서 호출: Flow,,MiniGame:CherryBlossom:Roa,>
+→ ScriptRunner가 MiniGameLauncher.LaunchAsync() 호출
+→ 점수 → HeroinePointTracker.RecordMiniGame()
+```
+
+### 3.6 Shop 모듈 (`LoveAlgo.Shop`)
+
+| 클래스 | 역할 |
+|--------|------|
+| `ItemData` | 아이템 데이터 (Id, Name, Price, Category, EffectValue) |
+| `ItemDatabase` | 정적 아이템 카탈로그 (10종) |
+| `ShopManager` | 상점 관리 (구매/인벤토리/선물/소비) |
+| `ShopPopup` | 상점 UI (ModalPopupBase, 카트 시스템) |
+| `ShopSaleSlot` | 판매 아이템 슬롯 UI |
+| `ShopCartSlot` | 장바구니 슬롯 UI |
+| `GiftPopup` | 선물 UI (아이템 선택 → 히로인 선택 → 증정) |
+
+```
+ShopManager (Static)
+├── Buy(itemId, qty) → bool    # 구매 (money 차감)
+├── GiveGift(itemId, heroineId) # 선물 (포인트 +, 최대 8점/히로인)
+├── UseConsumable(itemId)       # 소비 아이템 사용 (피로 감소)
+├── GetInventory() → Dict       # 인벤토리 조회
+├── Save() / Load()             # 저장/복원
+└── Reset()                     # 리셋
+
+ItemDatabase 아이템 목록:
+├── 범용 선물: 간식(+1), 핸드크림(+2), 인형(+3)
+├── 전용 선물: 히로인별 특별선물(+4)
+└── 소비: 커피(-10피로), 에너지드링크(-25피로)
+```
+
+### 3.7 Phone 모듈 (`LoveAlgo.Phone`)
+
+| 클래스 | 역할 |
+|--------|------|
+| `MessengerData` | 채팅 데이터 (ChatMessage, ChatRoom, FriendProfile) |
+| `MessengerManager` | 메신저 관리 (친구/채팅/일자별 자동메시지) |
+| `PhonePanel` | 폰 UI (ModalPopupBase, 3탭: 친구/채팅/테마) |
+| `PhoneFriendSlot` | 친구 목록 아이템 UI |
+| `PhoneChatSlot` | 채팅방 목록 아이템 UI |
+| `PhoneChatRoom` | 채팅방 내부 UI (메시지 버블) |
+| `ChatBubble` | 채팅 말풍선 UI |
+
+```
+MessengerManager (Static)
+├── TriggerDayMessages(day)          # 일차별 자동 메시지 발송
+├── TriggerEventMessage(heroineId)   # 이벤트 후 메시지 발송
+├── ReceiveMessage(heroineId, text)  # 메시지 수신
+├── SendMessage(heroineId, text)     # 메시지 발송
+├── GetTotalUnreadCount() → int      # 안읽은 메시지 수
+├── Save() / Load()                  # 저장/복원
+└── Reset()                          # 리셋
+```
 
 ---
 
@@ -210,6 +339,13 @@ ScriptRunner (스토리 실행의 핵심)
          │  Save(slot, phase, day, ...)    │
          │  Load(slot) → SaveData          │
          │  ApplyToGameState(SaveData)     │
+         │  ─────────────────────────────  │
+         │  SaveData 포함:                  │
+         │  ├ Phase, Day, Actions, Stats   │
+         │  ├ PointTrackerSaveData         │
+         │  ├ ShopSaveData (인벤토리)       │
+         │  ├ MessengerSaveData (채팅)      │
+         │  └ FiredEvents (이벤트 발동)     │
          └─────────────────────────────────┘
                            │
                            ▼
@@ -317,7 +453,8 @@ MonoBehaviour
 │   │
 │   └── [Modal Layer] (Lazy 생성)
 │       ├── SaveLoadPopup : ModalPopupBase
-│       └── SettingsPopup : ModalPopupBase
+│       ├── SettingsPopup : ModalPopupBase
+│       └── ExtraPopup : ModalPopupBase
 │
 └── ModalPopupBase (모달 팝업 베이스)
     ├── Show()
@@ -340,6 +477,8 @@ LineType (enum)
 ├── Text      → DialogueUI.ShowTextAsync()
 ├── Char      → CharacterLayer.ExecuteAsync()
 ├── BG        → BackgroundLayer.ExecuteAsync()
+├── CG        → CGLayer.ExecuteAsync()
+├── Overlay   → VirtualBGOverlay.ExecuteAsync()
 ├── Sound     → AudioManager.ExecuteAsync()
 ├── FX        → ScreenFX.ExecuteAsync()
 ├── Flow      → Jump / End / Save / If
@@ -398,8 +537,8 @@ NextType (enum)
 | `Title` | TitleUI | 타이틀 화면 (시작/이어하기/로드/설정/종료) |
 | `Username` | UsernameUI | 플레이어 이름 입력 |
 | `Prologue` | DialogueUI | 프롤로그 스토리 실행 |
-| `DayLoop` | ScheduleUI | 스케줄 선택 (3행동/일) |
-| `Ending` | - | 엔딩 화면 (TODO) |
+| `DayLoop` | ScheduleUI | 스케줄 선택 (2행동/일, 30일) |
+| `Ending` | DialogueUI | 엔딩 스크립트 재생 → 타이틀 복귀 |
 
 ---
 
@@ -447,6 +586,12 @@ NextType (enum)
 │       ──► BackgroundLayer.ExecuteAsync(value)                       │
 │           예: "School_Day:Fade:1.5"                                 │
 │                                                                     │
+│  CG   ──► CGLayer.ExecuteAsync(value)                               │
+│           예: "CG/Roa_FirstMeet:Fade:1.0", "Exit"                   │
+│                                                                     │
+│  Overlay► VirtualBGOverlay.ExecuteAsync(value)                      │
+│           예: "Roa_Theme:FadeIn:0.5", "FadeOut"                     │
+│                                                                     │
 │  Sound──► AudioManager.ExecuteAsync(value)                          │
 │           예: "BGM:Morning", "SFX:Knock"                            │
 │                                                                     │
@@ -456,6 +601,7 @@ NextType (enum)
 │  Flow ──► Jump:LineID → currentIndex = lineIndex[LineID]            │
 │       ──► End → return false (루프 종료)                             │
 │       ──► If:조건:대상 → GameState.EvaluateCondition() → 조건부 점프  │
+│       ──► MiniGame:이름:히로인 → MiniGameLauncher.LaunchAsync()      │
 │                                                                     │
 │  Choice─► Auto 모드 일시정지                                         │
 │       ──► CollectOptions() → Option 라인들 수집                      │
@@ -494,7 +640,12 @@ Assets/
 │   ├── Core/                    # 핵심 시스템
 │   │   ├── GameManager.cs       # 게임 전체 흐름 관리
 │   │   ├── StageManager.cs      # 연출 레이어 매니저
-│   │   ├── ScreenFX.cs          # 화면 효과
+│   │   ├── ScreenFX.cs          # 화면 효과 (Fade/Eye/CamShake)
+│   │   ├── StageRig.cs          # 스테이지 리그
+│   │   ├── StoryInputHandler.cs # 스토리 입력 처리
+│   │   ├── QuickPlayLoader.cs   # 빠른 테스트 재생
+│   │   ├── GamePhase.cs         # Phase Enum
+│   │   ├── GameConstants.cs     # 전역 상수
 │   │   └── NameValidator.cs     # 이름 유효성 검증
 │   │
 │   ├── Story/                   # 스토리 시스템
@@ -506,9 +657,15 @@ Assets/
 │   │   ├── DialogueUI.cs        # 대사창 UI
 │   │   ├── ChoiceUI.cs          # 선택지 UI
 │   │   ├── BackgroundLayer.cs   # 배경 레이어
+│   │   ├── CGLayer.cs           # CG 이미지 레이어
+│   │   ├── VirtualBGOverlay.cs  # 보조 배경 오버레이
 │   │   ├── CharacterLayer.cs    # 캐릭터 레이어
 │   │   ├── CharacterSlot.cs     # 캐릭터 슬롯
-│   │   └── AudioManager.cs      # 오디오 매니저
+│   │   ├── MonologueDim.cs      # 나레이션 딤
+│   │   ├── AudioManager.cs      # 오디오 매니저
+│   │   ├── CharacterData.cs     # 캐릭터 SO
+│   │   ├── CharacterDatabase.cs # 캐릭터 DB SO
+│   │   └── AudioSettings.cs     # 오디오 설정 SO
 │   │
 │   ├── Schedule/                # 스케줄 시스템
 │   │   ├── ScheduleUI.cs        # 스케줄 UI
@@ -528,22 +685,63 @@ Assets/
 │   │   ├── ToastPopup.cs        # 토스트 메시지
 │   │   ├── LogPopup.cs          # 대사 로그
 │   │   ├── SettingsPopup.cs     # 설정
-│   │   └── SaveLoadSlot.cs      # 세이브 슬롯 아이템
+│   │   ├── ExtraPopup.cs        # 부가 팝업
+│   │   ├── SaveLoadSlot.cs      # 세이브 슬롯 아이템
+│   │   ├── LogEntryUI.cs        # 로그 항목 UI
+│   │   ├── LogHeaderUI.cs       # 로그 헤더 UI
+│   │   ├── HoverButton.cs       # 호버 버튼
+│   │   ├── ToggleButton.cs      # 토글 버튼
+│   │   ├── PetalParticleUI.cs   # 꽃잎 파티클
+│   │   └── UISoundManager.cs    # UI 사운드 관리
 │   │
 │   ├── MiniGame/                # 미니게임
-│   │   ├── MiniGameBase.cs      # 베이스 클래스
-│   │   ├── CherryBlossomGame.cs # 벚꽃 게임
-│   │   └── JoggingGame.cs       # 조깅 게임
+│   │   ├── MiniGameBase.cs      # 베이스 클래스 (OnGameEnd 이벤트)
+│   │   ├── MiniGameLauncher.cs  # 런처 (LaunchAsync, 점수→포인트)
+│   │   ├── CherryBlossomGame.cs # 벚꽃 게임 (꽃잎 잡기)
+│   │   └── JoggingGame.cs       # 조깅 게임 (속도 맞추기)
 │   │
-│   └── Tester/                  # 테스트용
-│       ├── DebugJumpHelper.cs   # 데모 점프 (F2)
-│       └── StoryDebugOverlay.cs # 상태 모니터 (F2)
+│   ├── Shop/                    # 상점/선물 시스템
+│   │   ├── ItemData.cs          # 아이템 데이터 클래스
+│   │   ├── ItemDatabase.cs      # 정적 아이템 카탈로그
+│   │   ├── ShopManager.cs       # 상점 매니저 (구매/인벤/선물)
+│   │   ├── ShopPopup.cs         # 상점 팝업 UI
+│   │   ├── ShopSaleSlot.cs      # 판매 슬롯 UI
+│   │   ├── ShopCartSlot.cs      # 장바구니 슬롯 UI
+│   │   └── GiftPopup.cs         # 선물 팝업 UI
+│   │
+│   ├── Phone/                   # 메신저/폰 시스템
+│   │   ├── MessengerData.cs     # 채팅 데이터 클래스
+│   │   ├── MessengerManager.cs  # 메신저 매니저 (친구/채팅)
+│   │   ├── PhonePanel.cs        # 폰 팝업 UI
+│   │   ├── PhoneFriendSlot.cs   # 친구 슬롯 UI
+│   │   ├── PhoneChatSlot.cs     # 채팅방 슬롯 UI
+│   │   ├── PhoneChatRoom.cs     # 채팅방 UI
+│   │   └── ChatBubble.cs        # 채팅 말풍선 UI
+│   │
+│   ├── Data/                    # 데이터 매핑
+│   │   ├── BgPathMapping.cs     # 배경 경로 매핑
+│   │   └── CharacterEmoteMapping.cs # 캐릭터 감정 매핑
+│   │
+│   ├── Editor/                  # 에디터 도구
+│   │   └── UIEngine/            # UI 에디터 확장
+│   │
+│   ├── Tester/                  # 테스트용
+│   │   └── DebugJumpHelper.cs   # 데모 점프 (F2)
+│   │
+│   └── Tests/                   # 유닛 테스트
+│       └── Editor/              # 에디터 모드 테스트
 │
 ├── Resources/
 │   ├── Story/                   # CSV 스크립트
-│   │   ├── Prologue.csv
-│   │   └── Day01/...
+│   │   ├── Prologue.csv         # 프롤로그
+│   │   ├── Day{N}_Morning.csv   # 일차별 아침 이벤트 (1~4,7,13,17,23,27)
+│   │   ├── Day{N}_Evening.csv   # 일차별 저녁 이벤트 (2,3,5,9,15,19,25,29)
+│   │   ├── Event{1~3}.csv       # 개인 이벤트 (Day 6,16,26)
+│   │   ├── Festival_Day{1~3}.csv# 축제 (Day 10~12)
+│   │   ├── MT_Day{1~3}.csv      # MT (Day 20~22)
+│   │   └── Ending_*.csv         # 엔딩 (Normal + 5히로인×Happy/Sad)
 │   ├── Backgrounds/             # 배경 이미지
+│   ├── CG/                      # CG 이미지
 │   ├── Characters/              # 캐릭터 이미지
 │   │   ├── Roa/
 │   │   │   ├── Default.png
@@ -568,7 +766,9 @@ Assets/
 ```
 ┌───────────────────────────────────────────────────────────────────┐
 │                        LoveAlgo.Core                              │
-│  (GameManager, StageManager, ScreenFX, NameValidator)            │
+│  (GameManager, StageManager, ScreenFX, StageRig,                 │
+│   StoryInputHandler, QuickPlayLoader, GamePhase, GameConstants,  │
+│   NameValidator)                                                  │
 │                             │                                     │
 │                    uses ────┼──── uses                            │
 │                             │                                     │
@@ -578,7 +778,9 @@ Assets/
 │  ┌───────────────────┐               ┌───────────────────┐       │
 │  │  LoveAlgo.Story   │               │   LoveAlgo.UI     │       │
 │  │ (ScriptRunner,    │──── uses ────►│ (UIManager,       │       │
-│  │  GameState, etc)  │               │  PopupManager)    │       │
+│  │  GameState,       │               │  PopupManager,    │       │
+│  │  CGLayer,         │               │  UISoundManager)  │       │
+│  │  VirtualBGOverlay)│               │                   │       │
 │  └───────────────────┘               └───────────────────┘       │
 │          │                                     │                  │
 │          │                                     │                  │
@@ -601,8 +803,7 @@ Assets/
 │                                                                  │
 │  Cysharp.UniTask ◄────────────────────────────────────────────  │
 │  │                                                               │
-│  ├─ ScriptRunner (async 스크립트 실행)                           │
-│  ├─ DialogueUI (async 타이핑)                                    │
+│  ├─ ScriptRunner (async 스크립트 실행)                           ││  │  ├─ MiniGameLauncher (async 미니게임 대기)                       ││  ├─ DialogueUI (async 타이핑)                                    │
 │  ├─ ChoiceUI (async 선택 대기)                                   │
 │  ├─ BackgroundLayer (async 전환)                                 │
 │  ├─ CharacterSlot (async 애니메이션)                             │
@@ -673,6 +874,30 @@ AudioManager.Instance.PlaySFX("Click");
 // 화면 효과
 await ScreenFX.Instance.FadeOutAsync(1f);
 await ScreenFX.Instance.FadeInAsync(1f);
+
+// 타임라인 조회
+GameTimeline.GetDayInfo(6);         // Day 6 정보 (Event1, +3점)
+GameTimeline.IsFreeDay(7);          // true
+
+// 포인트 추적
+HeroinePointTracker.RecordEventChoice("Roa", 3);
+HeroinePointTracker.GetTotalPoint("Roa");
+
+// 데이 이벤트 조회
+DayEventTable.GetEvent(5, DayTiming.Evening);  // Day5_Evening 이벤트
+
+// 상점
+ShopManager.Buy("gift_snack", 1);
+ShopManager.GiveGift("gift_snack", "Roa");
+ShopManager.UseConsumable("consume_coffee");
+
+// 메신저
+MessengerManager.TriggerDayMessages(currentDay);
+MessengerManager.GetTotalUnreadCount();
+
+// 미니게임 (CSV에서 호출)
+// Flow,,MiniGame:CherryBlossom:Roa,>
+await MiniGameLauncher.LaunchAsync("CherryBlossom", "Roa", ct);
 ```
 
 ### CSV 스크립트 예시
@@ -703,8 +928,11 @@ Study,Text,로아,열심히 하자!,click
 
 Play,Text,로아,신난다~!,click
 ,Flow,,End,>
+
+# 미니게임 호출
+,Flow,,MiniGame:CherryBlossom:Roa,>
 ```
 
 ---
 
-*마지막 업데이트: 2026-01-23*
+*마지막 업데이트: 2025-07-07*

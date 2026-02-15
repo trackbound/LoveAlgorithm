@@ -11,9 +11,8 @@ namespace LoveAlgo.Story
     /// <summary>
     /// 스토리 오디오 매니저 (BGM, SFX, Voice)
     /// </summary>
-    public class AudioManager : MonoBehaviour
+    public class AudioManager : SingletonMonoBehaviour<AudioManager>
     {
-        public static AudioManager Instance { get; private set; }
 
         [Header("오디오 소스 (인스펙터 바인딩)")]
         [SerializeField] AudioSource bgmSource;
@@ -44,29 +43,35 @@ namespace LoveAlgo.Story
         
         readonly Dictionary<string, float> characterVoiceVolumes = new();
 
+        /// <summary>
+        /// SFX 클립 캐시 (Awake에서 한 번만 로드)
+        /// </summary>
+        AudioClip[] sfxClipCache;
+
         AudioClip DefaultBGM => audioSettings?.defaultBGM;
         float BgmFadeDuration => audioSettings?.bgmFadeDuration ?? 1f;
         bool AutoSwitchBGMOnCharacterEnter => audioSettings?.autoSwitchOnCharacterEnter ?? false;
 
-        void Awake()
+        protected override void OnSingletonAwake()
         {
-            if (Instance == null)
+            ValidateAudioSources();
+            CacheSFXClips();
+            LoadCharacterVoiceVolumes();
+            LoadMixerVolumes();
+
+            if (audioSettings == null)
             {
-                Instance = this;
-                // DontDestroyOnLoad(gameObject);  // 데모: 단일 씬
-                ValidateAudioSources();
-                LoadCharacterVoiceVolumes();
-                LoadMixerVolumes();
-                
-                if (audioSettings == null)
-                {
-                    Debug.LogWarning("[AudioManager] AudioSettings가 할당되지 않았습니다.");
-                }
+                Debug.LogWarning("[AudioManager] AudioSettings가 할당되지 않았습니다.");
             }
-            else
-            {
-                Destroy(gameObject);
-            }
+        }
+
+        /// <summary>
+        /// SFX 클립을 한 번만 로드하여 캐싱
+        /// </summary>
+        void CacheSFXClips()
+        {
+            sfxClipCache = Resources.LoadAll<AudioClip>("Audio/SFX");
+            Debug.Log($"[AudioManager] SFX 클립 {sfxClipCache.Length}개 캐싱 완료");
         }
 
         void ValidateAudioSources()
@@ -436,9 +441,8 @@ namespace LoveAlgo.Story
         /// </summary>
         AudioClip FindSFXByPrefix(string prefix)
         {
-            // Resources.LoadAll로 SFX 폴더 전체 검색
-            var allSFX = Resources.LoadAll<AudioClip>("Audio/SFX");
-            foreach (var sfx in allSFX)
+            if (sfxClipCache == null) CacheSFXClips();
+            foreach (var sfx in sfxClipCache)
             {
                 if (sfx.name.StartsWith(prefix + "_"))
                 {
@@ -453,9 +457,8 @@ namespace LoveAlgo.Story
         /// </summary>
         AudioClip FindSFXByName(string name)
         {
-            var allSFX = Resources.LoadAll<AudioClip>("Audio/SFX");
-            string lowerName = name.ToLower();
-            foreach (var sfx in allSFX)
+            if (sfxClipCache == null) CacheSFXClips();
+            foreach (var sfx in sfxClipCache)
             {
                 // "001_Pop" → "Pop" 추출 후 비교
                 int underscoreIndex = sfx.name.IndexOf('_');

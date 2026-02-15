@@ -1,0 +1,16 @@
+LineID,Type,Speaker,Value,Next
+# ═══ 축제 Day 2 (Day 11) ═══
+,BG,,Black,await
+,Sound,,BGM:Stop:Fade:1.0,await
+,FX,,FadeIn:1.0,await
+,BG,,CampusStreet/BG_Campus_Street1_Day:Cross:2.0,await
+,Sound,,BGM:Daily1,>
+,Text,,"축제 둘째 날.\n어제보다 사람이 더 많다.",click
+,Text,,"캠퍼스를 돌아다니다 히로인들과 마주쳤다.",click
+,Char,,C:Enter:Yeun:Happy,await
+,Text,하예은,"{{PlayerName}}! 같이 돌아다니자!",click
+,Text,{{PlayerName}},좋아.,click
+,Char,,C:Exit,await
+,Text,,"다 같이 축제를 즐겼다.\n평소보다 모두 밝아 보인다.",click
+,FX,,FadeOut:1.0,await
+,Flow,,End,>

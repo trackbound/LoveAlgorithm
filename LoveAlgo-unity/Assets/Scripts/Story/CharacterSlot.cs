@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
@@ -22,6 +23,10 @@ namespace LoveAlgo.Story
     /// </summary>
     public class CharacterSlot : MonoBehaviour
     {
+        /// <summary>
+        /// 스프라이트 캐시 (Resources.Load 중복 호출 방지)
+        /// </summary>
+        static readonly Dictionary<string, Sprite> spriteCache = new();
         [Header("바인딩")]
         [SerializeField] CanvasGroup slotCanvasGroup;   // 슬롯 전체 (등장/퇴장용)
         [SerializeField] Image imageFront;              // 현재 표시 이미지
@@ -231,11 +236,11 @@ namespace LoveAlgo.Story
         {
             // 이미지 컨테이너에 적용 (없으면 이미지에 직접)
             RectTransform target = imageContainer != null ? imageContainer : imageFront.rectTransform;
-            
+
             // 기본값으로 초기화
             target.localScale = Vector3.one;
             target.anchoredPosition = Vector2.zero;
-            
+
             // 이미지들의 피벗 초기화
             if (imageFront != null)
             {
@@ -248,17 +253,35 @@ namespace LoveAlgo.Story
                 imageBack.rectTransform.anchoredPosition = Vector2.zero;
             }
         }
+
+        /// <summary>
+        /// 스프라이트 로드 (캐시 지원, Default 폴백)
+        /// </summary>
         Sprite LoadSprite(string character, string emote)
         {
             string path = $"Characters/{character}/{emote}";
+
+            if (spriteCache.TryGetValue(path, out var cached))
+                return cached;
+
             var sprite = Resources.Load<Sprite>(path);
 
             // Default로 폴백
             if (sprite == null && emote != "Default")
             {
-                path = $"Characters/{character}/Default";
-                sprite = Resources.Load<Sprite>(path);
+                string fallback = $"Characters/{character}/Default";
+                if (spriteCache.TryGetValue(fallback, out cached))
+                    return cached;
+
+                sprite = Resources.Load<Sprite>(fallback);
+                if (sprite != null)
+                    spriteCache[fallback] = sprite;
+
+                return sprite;
             }
+
+            if (sprite != null)
+                spriteCache[path] = sprite;
 
             return sprite;
         }
@@ -334,5 +357,51 @@ namespace LoveAlgo.Story
                 target.anchoredPosition = new Vector2(offsetX, offsetY);
             }
         }
+
+        #region 캐릭터 FX
+
+        /// <summary>
+        /// 캐릭터 흔들기 효과 (FX,,CharShake:슬롯:강도:시간)
+        /// </summary>
+        public async UniTask ShakeAsync(float strength = 20f, float duration = 0.4f, CancellationToken ct = default)
+        {
+            RectTransform target = imageContainer != null ? imageContainer : imageFront?.rectTransform;
+            if (target == null) return;
+
+            var saved = target.anchoredPosition;
+            await target.DOShakeAnchorPos(duration, strength, vibrato: 20, randomness: 90f)
+                .SetEase(Ease.OutQuad)
+                .ToUniTask(cancellationToken: ct);
+            target.anchoredPosition = saved;
+        }
+
+        /// <summary>
+        /// 캐릭터 점프 효과 (FX,,CharJump:슬롯:높이:시간)
+        /// </summary>
+        public async UniTask JumpAsync(float height = 40f, float duration = 0.3f, CancellationToken ct = default)
+        {
+            RectTransform target = imageContainer != null ? imageContainer : imageFront?.rectTransform;
+            if (target == null) return;
+
+            var saved = target.anchoredPosition;
+            var seq = DOTween.Sequence();
+            _ = seq.Append(target.DOAnchorPosY(saved.y + height, duration * 0.4f).SetEase(Ease.OutQuad));
+            _ = seq.Append(target.DOAnchorPosY(saved.y, duration * 0.6f).SetEase(Ease.InQuad));
+            await seq.ToUniTask(cancellationToken: ct);
+            target.anchoredPosition = saved;
+        }
+
+        /// <summary>
+        /// 캐릭터 어둡게 (FX,,CharDim:슬롯:알파:시간)
+        /// </summary>
+        public async UniTask DimAsync(float targetAlpha = 0.4f, float duration = 0.3f, CancellationToken ct = default)
+        {
+            if (slotCanvasGroup == null) return;
+            await slotCanvasGroup.DOFade(targetAlpha, duration)
+                .SetEase(Ease.OutQuad)
+                .ToUniTask(cancellationToken: ct);
+        }
+
+        #endregion
     }
 }

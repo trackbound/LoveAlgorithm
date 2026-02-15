@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Audio;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using System.Collections.Generic;
@@ -9,9 +10,8 @@ namespace LoveAlgo.UI
     /// UI 사운드 매니저 - UI 전용 AudioSource로 분리
     /// 게임 SFX와 충돌 없이 독립적으로 재생
     /// </summary>
-    public class UISoundManager : MonoBehaviour
+    public class UISoundManager : SingletonMonoBehaviour<UISoundManager>
     {
-        public static UISoundManager Instance { get; private set; }
 
         [Header("UI 사운드 클립")]
         [SerializeField] AudioClip hoverClip;
@@ -26,8 +26,10 @@ namespace LoveAlgo.UI
         [SerializeField] string clickSFXName = "Click";
         [SerializeField] string typingSFXName = "Type";
 
+        [Header("오디오 믹서")]
+        [SerializeField] AudioMixerGroup sfxMixerGroup;  // AudioManager와 동일한 SFX 그룹 할당
+
         [Header("볼륨 설정")]
-        [SerializeField] [Range(0f, 1f)] float uiVolume = 1f;
         [SerializeField] float hoverVolume = 0.5f;
         [SerializeField] float clickVolume = 0.7f;
         [SerializeField] float typingVolume = 0.5f;
@@ -40,34 +42,16 @@ namespace LoveAlgo.UI
         [SerializeField] bool autoBindButtons = true;
 
         AudioSource audioSource;
+        /// <summary>
+        /// 타이핑 전용 AudioSource (피치 변경 시 다른 사운드 영향 방지)
+        /// </summary>
+        AudioSource typingSource;
         HashSet<Button> registeredButtons = new HashSet<Button>();
 
-        /// <summary>
-        /// UI 전체 볼륨 (설정에서 조절용)
-        /// </summary>
-        public float UIVolume
+        protected override void OnSingletonAwake()
         {
-            get => uiVolume;
-            set
-            {
-                uiVolume = Mathf.Clamp01(value);
-                if (audioSource != null)
-                    audioSource.volume = uiVolume;
-            }
-        }
-
-        void Awake()
-        {
-            if (Instance == null)
-            {
-                Instance = this;
-                SetupAudioSource();
-                LoadClips();
-            }
-            else
-            {
-                Destroy(gameObject);
-            }
+            SetupAudioSource();
+            LoadClips();
         }
 
         void Start()
@@ -80,13 +64,24 @@ namespace LoveAlgo.UI
 
         void SetupAudioSource()
         {
+            // 메인 UI AudioSource (클릭, 호버 등)
             audioSource = GetComponent<AudioSource>();
             if (audioSource == null)
             {
                 audioSource = gameObject.AddComponent<AudioSource>();
             }
             audioSource.playOnAwake = false;
-            audioSource.volume = uiVolume;
+
+            // 타이핑 전용 AudioSource (피치 변경이 다른 사운드에 영향 주지 않도록 분리)
+            typingSource = gameObject.AddComponent<AudioSource>();
+            typingSource.playOnAwake = false;
+
+            // AudioMixer SFX 그룹에 라우팅 (설정의 SFX 볼륨이 UI 사운드에도 적용됨)
+            if (sfxMixerGroup != null)
+            {
+                audioSource.outputAudioMixerGroup = sfxMixerGroup;
+                typingSource.outputAudioMixerGroup = sfxMixerGroup;
+            }
         }
 
         void LoadClips()
@@ -187,15 +182,14 @@ namespace LoveAlgo.UI
         }
 
         /// <summary>
-        /// 타이핑 사운드 재생 (피치 랜덤)
+        /// 타이핑 사운드 재생 (피치 랜덤, 전용 AudioSource 사용)
         /// </summary>
         public void PlayTyping()
         {
-            if (typingClip == null || audioSource == null) return;
-            
-            audioSource.pitch = Random.Range(minTypingPitch, maxTypingPitch);
-            audioSource.PlayOneShot(typingClip, typingVolume * uiVolume);
-            audioSource.pitch = 1f;  // 다른 사운드를 위해 복원
+            if (typingClip == null || typingSource == null) return;
+
+            typingSource.pitch = Random.Range(minTypingPitch, maxTypingPitch);
+            typingSource.PlayOneShot(typingClip, typingVolume);
         }
 
         /// <summary>
@@ -226,18 +220,42 @@ namespace LoveAlgo.UI
         {
             if (clip != null && audioSource != null)
             {
-                audioSource.PlayOneShot(clip, volume * uiVolume);
+                audioSource.PlayOneShot(clip, volume);
             }
         }
 
         #endregion
 
-        void OnDestroy()
+        #region 앱 포커스/일시정지 처리
+
+        void OnApplicationFocus(bool hasFocus)
         {
-            if (Instance == this)
+            if (!hasFocus)
             {
-                Instance = null;
+                if (audioSource != null) audioSource.Pause();
+                if (typingSource != null) typingSource.Pause();
+            }
+            else
+            {
+                if (audioSource != null) audioSource.UnPause();
+                if (typingSource != null) typingSource.UnPause();
             }
         }
+
+        void OnApplicationPause(bool pauseStatus)
+        {
+            if (pauseStatus)
+            {
+                if (audioSource != null) audioSource.Pause();
+                if (typingSource != null) typingSource.Pause();
+            }
+            else
+            {
+                if (audioSource != null) audioSource.UnPause();
+                if (typingSource != null) typingSource.UnPause();
+            }
+        }
+
+        #endregion
     }
 }

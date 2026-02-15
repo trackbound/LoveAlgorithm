@@ -1,0 +1,26 @@
+LineID,Type,Speaker,Value,Next
+# ═══ 하예은 새드 엔딩 ═══
+,BG,,Black,await
+,Sound,,BGM:Stop:Fade:2.0,await
+,Text,,"......",click
+,FX,,FadeIn:1.0,await
+,BG,,CampusStreet/BG_Campus_Street1_Day:Cross:2.0,await
+,Sound,,BGM:Night,>
+,Text,,"학기가 끝나가는 캠퍼스.\n예은이와 마주쳤다.",click
+,Char,,C:Enter:Yeun:Default,await
+,Text,하예은,"아, {{PlayerName}}.",click
+,Text,{{PlayerName}},예은아. 잘 지내?",click
+,Char,,C:Emote:Sad,await
+,Text,하예은,"응... 그냥 그래.\n요즘 좀 바빴나 봐?",click
+,Text,{{PlayerName}},......,click
+,Text,하예은,"아, 아니야! 탓하는 거 아니야.\n그냥... 좀 아쉬웠어.",click
+,Text,하예은,"다음 학기에는... 좀 더 자주 보자.\n그때는 더 친해질 수 있겠지?",click
+,Text,{{PlayerName}},그래. 다음에는 꼭.,click
+,Char,,C:Emote:Default,await
+,Text,하예은,"응! 약속이다!",click
+,Char,,C:Exit,await
+,Text,,"밝은 미소를 짓는 예은이를 보며\n아쉬움이 남았다.",click
+,FX,,FadeOut:2.0,await
+,Sound,,BGM:Stop:Fade:2.0,await
+,Text,,"── 하예은 새드 엔딩 ──\n\n다음을 기약하며",click
+,Flow,,End,>

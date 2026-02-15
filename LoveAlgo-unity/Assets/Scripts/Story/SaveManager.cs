@@ -49,6 +49,18 @@ namespace LoveAlgo.Story
         public bool IsMonologueDimShowing; // 독백 딤 표시 여부
         public bool IsFadeBlack;          // 페이드 오버레이 활성 여부
         public bool IsEyeClosed;          // 눈 감기 효과 활성 여부
+
+        // 이벤트 발동 기록
+        public List<string> FiredEvents = new();
+
+        // 히로인 포인트 추적 데이터
+        public PointTrackerSaveData PointTracker;
+
+        // 상점/인벤토리 데이터
+        public Shop.ShopSaveData ShopData;
+
+        // 메신저 데이터
+        public Phone.MessengerSaveData MessengerData;
     }
 
     /// <summary>
@@ -128,6 +140,18 @@ namespace LoveAlgo.Story
                 data.Fatigue = GameState.Instance.GetStat("Fatigue");
             }
 
+            // 이벤트 발동 기록 저장
+            data.FiredEvents = new List<string>(Core.DayEventTable.GetFiredEvents());
+
+            // 히로인 포인트 추적 데이터 저장
+            data.PointTracker = Core.HeroinePointTracker.GetSaveData();
+
+            // 상점/인벤토리 데이터 저장
+            data.ShopData = Shop.ShopManager.GetSaveData();
+
+            // 메신저 데이터 저장
+            data.MessengerData = Phone.MessengerManager.GetSaveData();
+
             // 장면 상태 저장 (배경, 캐릭터, BGM)
             CaptureStageState(data);
 
@@ -185,6 +209,27 @@ namespace LoveAlgo.Story
             GameState.Instance.SetStat("Soc", data.Sociability);
             GameState.Instance.SetStat("Per", data.Perseverance);
             GameState.Instance.SetStat("Fatigue", data.Fatigue);
+
+            // 이벤트 발동 기록 복원
+            Core.DayEventTable.RestoreFiredEvents(data.FiredEvents);
+
+            // 히로인 포인트 추적 데이터 복원
+            if (data.PointTracker != null)
+                Core.HeroinePointTracker.RestoreFromSave(data.PointTracker);
+            else
+                Core.HeroinePointTracker.Reset();
+
+            // 상점/인벤토리 데이터 복원
+            if (data.ShopData != null)
+                Shop.ShopManager.RestoreFromSave(data.ShopData);
+            else
+                Shop.ShopManager.Reset();
+
+            // 메신저 데이터 복원
+            if (data.MessengerData != null)
+                Phone.MessengerManager.RestoreFromSave(data.MessengerData);
+            else
+                Phone.MessengerManager.Reset();
         }
 
         /// <summary>

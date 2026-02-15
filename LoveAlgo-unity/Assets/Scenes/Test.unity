@@ -393,7 +393,7 @@ MonoBehaviour:
   hoverSFXName: Hover
   clickSFXName: Click
   typingSFXName: Type
-  uiVolume: 1
+  sfxMixerGroup: {fileID: 4278487988869072235, guid: 4bf97e6cff5c72044a000fdceec34a7a, type: 2}
   hoverVolume: 0.5
   clickVolume: 0.7
   typingVolume: 0.5
@@ -2266,7 +2266,7 @@ MonoBehaviour:
   maxPetals: 55
   spawnInterval: 0.3
   minSize: 32
-  maxSize: 50
+  maxSize: 65
   gravity: 8
   terminalSpeed: 16
   airDrag: 1.8
@@ -2291,7 +2291,7 @@ MonoBehaviour:
   fadeOutRatio: 0.2
   spawnMarginTop: 50
   spawnMarginSide: 100
-  warmUpFill: 0.85
+  warmUpFill: 0.887
 --- !u!1 &828200860
 GameObject:
   m_ObjectHideFlags: 0

@@ -14,7 +14,6 @@ LoveAlgo 캐릭터 이미지 리사이즈 툴
 """
 
 import argparse
-import os
 import shutil
 from pathlib import Path
 from datetime import datetime
@@ -65,15 +64,33 @@ def get_image_info(image_path: Path) -> dict:
         }
 
 
-def calculate_new_size(width: int, height: int, target_height: int) -> tuple:
-    """비율 유지하며 새 크기 계산"""
-    ratio = target_height / height
-    new_width = int(width * ratio)
-    return (new_width, target_height)
+def progressive_resize(img: Image.Image, target_height: int) -> tuple[Image.Image, int]:
+    """단계적 축소: 50%씩 줄여가며 최종 크기에 도달 (화질 보존)
+    
+    원본이 매우 큰 경우(~20000px) 한 번에 축소하면 디테일이 손실됨.
+    50%씩 점진적으로 줄이면 각 단계에서 LANCZOS 필터가 더 정밀하게 작동.
+    """
+    w, h = img.size
+    steps = 0
+
+    # 50%씩 줄이다가 target의 2배 이하가 되면 마지막 한 번에 target으로
+    while h > target_height * 2:
+        w = w // 2
+        h = h // 2
+        img = img.resize((w, h), RESAMPLE_METHOD)
+        steps += 1
+
+    # 최종 리사이즈
+    ratio = target_height / h
+    final_w = round(w * ratio)
+    img = img.resize((final_w, target_height), RESAMPLE_METHOD)
+    steps += 1
+
+    return img, steps
 
 
 def resize_image(image_path: Path, target_height: int, dry_run: bool = False) -> dict:
-    """이미지 리사이즈"""
+    """이미지 리사이즈 (점진적 축소 알고리즘 사용)"""
     info = get_image_info(image_path)
     
     # 이미 목표 크기 이하면 스킵
@@ -84,12 +101,9 @@ def resize_image(image_path: Path, target_height: int, dry_run: bool = False) ->
             **info
         }
     
-    new_size = calculate_new_size(info["width"], info["height"], target_height)
-    
     result = {
         "status": "success" if not dry_run else "dry_run",
         "original_size": (info["width"], info["height"]),
-        "new_size": new_size,
         "original_mb": info["size_mb"],
         **info
     }
@@ -100,8 +114,10 @@ def resize_image(image_path: Path, target_height: int, dry_run: bool = False) ->
             if img.mode in ('RGBA', 'LA') or (img.mode == 'P' and 'transparency' in img.info):
                 img = img.convert('RGBA')
             
-            # 리사이즈
-            resized = img.resize(new_size, RESAMPLE_METHOD)
+            # 점진적 축소 (50%씩 줄여가며 화질 보존)
+            resized, steps = progressive_resize(img.copy(), target_height)
+            result["steps"] = steps
+            result["new_size"] = (resized.width, resized.height)
             
             # 저장 (PNG는 무손실)
             if image_path.suffix.lower() == '.png':
@@ -112,6 +128,11 @@ def resize_image(image_path: Path, target_height: int, dry_run: bool = False) ->
         # 새 파일 크기
         result["new_mb"] = image_path.stat().st_size / (1024 * 1024)
         result["saved_mb"] = result["original_mb"] - result["new_mb"]
+    else:
+        # dry_run일 때도 예상 크기 계산
+        ratio = target_height / info["height"]
+        new_width = round(info["width"] * ratio)
+        result["new_size"] = (new_width, target_height)
     
     return result
 
@@ -191,8 +212,9 @@ def process_characters(
                         print(f"   📋 {image_file.name}: {orig[0]}x{orig[1]} → {new[0]}x{new[1]}")
                     else:
                         saved = result.get("saved_mb", 0)
+                        steps = result.get("steps", 1)
                         total_saved_mb += saved
-                        print(f"   ✅ {image_file.name}: {orig[0]}x{orig[1]} → {new[0]}x{new[1]} ({saved:.1f}MB 절약)")
+                        print(f"   ✅ {image_file.name}: {orig[0]}x{orig[1]} → {new[0]}x{new[1]} ({steps}단계, {saved:.1f}MB 절약)")
                         
             except Exception as e:
                 results["errors"].append({"path": image_file, "error": str(e)})

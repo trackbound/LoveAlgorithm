@@ -1,0 +1,30 @@
+LineID,Type,Speaker,Value,Next
+# ═══ 노말 엔딩 - 특별한 인연 없이 학기 종료 ═══
+,BG,,Black,await
+,Sound,,BGM:Stop:Fade:2.0,await
+,Text,,"......",click
+,Text,,"어느새 한 학기가 끝났다.",click
+,FX,,FadeIn:1.0,await
+,BG,,CampusStreet/BG_Campus_Street1_Day:Cross:2.0,await
+,Sound,,BGM:Daily1,>
+,Text,,"돌이켜보면 평범한 나날이었다.",click
+,Text,,"캠퍼스를 오가고, 수업을 듣고, 밥을 먹고.",click
+,Text,,"때때로 흥미로운 사람들과 마주쳤지만...\n특별히 가까워진 사람은 없었다.",click
+# 로아 등장
+,Char,,C:Enter:Roa,await
+,Overlay,,Roa_Theme:FadeIn:0.5,await
+,Sound,,BGM:Roa,>
+,Text,로아,"{{PlayerName}}, 한 학기 수고했어!",click
+,Text,{{PlayerName}},"고마워, 로아. 네 덕분에 잘 버텼어.",click
+,Char,,C:Emote:Happy,await
+,Text,로아,"다음 학기에는 더 많은 사람들과 친해져 보는 건 어때?",click
+,Text,로아,"분명 좋은 인연이 기다리고 있을 거야!",click
+,Text,{{PlayerName}},그래. 다음엔 좀 더 적극적으로 해볼게.,click
+,Char,,C:Emote:Smile,await
+,Text,로아,"그래, 응원할게! 나는 항상 네 편이니까.",click
+,Char,,C:Exit,await
+,Overlay,,FadeOut:0.3,>
+,Text,,"그렇게 나의 첫 학기가 조용히 막을 내렸다.\n\n다음 학기가 기대된다.",click
+,FX,,FadeOut:2.0,await
+,Text,,"── 노말 엔딩 ──\n\n평범하지만 소중한 나날",click
+,Flow,,End,>

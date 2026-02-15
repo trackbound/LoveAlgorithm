@@ -198,7 +198,7 @@ namespace LoveAlgo.Story
                 var slot = GetSlot(pos);
                 if (slot != null && !slot.IsEmpty)
                 {
-                    _ = slot.EmoteAsync(emote);
+                    slot.EmoteAsync(emote).Forget();
                 }
             }
         }
@@ -225,5 +225,73 @@ namespace LoveAlgo.Story
                     return false;
             }
         }
+
+        #region 캐릭터 FX
+
+        /// <summary>
+        /// 캐릭터 시각 효과 실행
+        /// CSV: FX,,CharShake[:슬롯:강도:시간], FX,,CharJump[:슬롯:높이:시간], FX,,CharDim[:슬롯:알파:시간]
+        /// 슬롯 생략 시 화면의 첫 번째 활성 캐릭터에 적용
+        /// </summary>
+        public async UniTask ExecuteCharFXAsync(string effect, string[] parts, CancellationToken ct = default)
+        {
+            // 슬롯 결정: parts[1]이 있으면 사용, 없으면 첫 활성 슬롯
+            CharacterSlot slot = null;
+            int paramOffset = 1; // 파라미터 시작 인덱스
+
+            if (parts.Length > 1 && TryParseSlot(parts[1], out SlotPosition pos))
+            {
+                slot = GetSlot(pos);
+                paramOffset = 2;
+            }
+            else
+            {
+                slot = FindFirstActiveSlot();
+            }
+
+            if (slot == null || slot.IsEmpty)
+            {
+                Debug.LogWarning($"[CharacterLayer] {effect}: 대상 캐릭터 없음");
+                return;
+            }
+
+            switch (effect)
+            {
+                case "CharShake":
+                {
+                    float strength = parts.Length > paramOffset && float.TryParse(parts[paramOffset], out float s) ? s : 15f;
+                    float duration = parts.Length > paramOffset + 1 && float.TryParse(parts[paramOffset + 1], out float d) ? d : 0.3f;
+                    await slot.ShakeAsync(strength, duration, ct);
+                    break;
+                }
+                case "CharJump":
+                {
+                    float height = parts.Length > paramOffset && float.TryParse(parts[paramOffset], out float h) ? h : 30f;
+                    float duration = parts.Length > paramOffset + 1 && float.TryParse(parts[paramOffset + 1], out float d) ? d : 0.3f;
+                    await slot.JumpAsync(height, duration, ct);
+                    break;
+                }
+                case "CharDim":
+                {
+                    float alpha = parts.Length > paramOffset && float.TryParse(parts[paramOffset], out float a) ? a : 0.4f;
+                    float duration = parts.Length > paramOffset + 1 && float.TryParse(parts[paramOffset + 1], out float d) ? d : 0.3f;
+                    await slot.DimAsync(alpha, duration, ct);
+                    break;
+                }
+            }
+        }
+
+        /// <summary>
+        /// 첫 번째 활성 캐릭터 슬롯 찾기 (C → L → R 우선순위)
+        /// </summary>
+        CharacterSlot FindFirstActiveSlot()
+        {
+            if (slotC != null && !slotC.IsEmpty) return slotC;
+            if (slotL != null && !slotL.IsEmpty) return slotL;
+            if (slotR != null && !slotR.IsEmpty) return slotR;
+            return null;
+        }
+
+        #endregion
     }
 }

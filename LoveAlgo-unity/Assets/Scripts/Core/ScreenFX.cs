@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using LoveAlgo.Story;
 using UnityEngine;
 using UnityEngine.UI;
 using DG.Tweening;
@@ -11,9 +12,8 @@ namespace LoveAlgo.Core
     /// 화면 효과 (FadeIn/Out, Flash 등)
     /// 별도 캔버스(Canvas_ScreenFX)에 배치, 전역 싱글톤
     /// </summary>
-    public class ScreenFX : MonoBehaviour
+    public class ScreenFX : SingletonMonoBehaviour<ScreenFX>
     {
-        public static ScreenFX Instance { get; private set; }
 
         [Header("바인딩")]
         [SerializeField] Image fadeOverlay;         // 검은색 오버레이
@@ -52,19 +52,8 @@ namespace LoveAlgo.Core
         /// <summary>눈 감기 효과가 활성 상태인지 (세이브용)</summary>
         public bool IsEyeClosed => eyeTop != null && eyeTop.gameObject.activeSelf;
 
-        void Awake()
+        protected override void OnSingletonAwake()
         {
-            if (Instance == null)
-            {
-                Instance = this;
-                // DontDestroyOnLoad(gameObject);  // 데모: 단일 씬
-            }
-            else
-            {
-                Destroy(gameObject);
-                return;
-            }
-
             // 초기 상태: 투명
             if (fadeOverlay != null)
             {
@@ -85,8 +74,9 @@ namespace LoveAlgo.Core
             EnsureBindings();
         }
 
-        void OnDestroy()
+        protected override void OnDestroy()
         {
+            base.OnDestroy();
             KillEyeSequence();
         }
 
@@ -158,8 +148,10 @@ namespace LoveAlgo.Core
                     break;
 
                 case "CamZoom":
-                    // TODO: 카메라 줌
-                    Debug.Log($"[ScreenFX] CamZoom: {value}");
+                    // CSV: CamZoom[:zoomLevel[:duration]] (zoomLevel 1.0=기본, 1.5=확대)
+                    float zoomLevel = parts.Length > 1 && float.TryParse(parts[1], out float zl) ? zl : 1f;
+                    float zoomDuration = parts.Length > 2 && float.TryParse(parts[2], out float zd) ? zd : 0.5f;
+                    await CamZoomAsync(zoomLevel, zoomDuration, ct);
                     break;
 
                 case "EyeOpen":
@@ -190,8 +182,16 @@ namespace LoveAlgo.Core
                 case "CharShake":
                 case "CharJump":
                 case "CharDim":
-                    // 캐릭터 효과는 CharacterLayer에서 처리하도록 전달 필요
-                    Debug.Log($"[ScreenFX] 캐릭터 효과: {value}");
+                    // 캐릭터 효과는 CharacterLayer를 통해 처리
+                    var charLayer = StageManager.Instance?.Character;
+                    if (charLayer != null)
+                    {
+                        await charLayer.ExecuteCharFXAsync(effect, parts, ct);
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"[ScreenFX] CharacterLayer를 찾을 수 없음: {value}");
+                    }
                     break;
 
                 default:
@@ -393,6 +393,29 @@ namespace LoveAlgo.Core
                 if (rt != null)
                     rt.anchoredPosition = originalPos;
             }
+        }
+
+        #endregion
+
+        #region Camera Zoom
+
+        /// <summary>
+        /// 카메라 줌 — Stage RectTransform의 스케일 조절
+        /// CSV: FX,,CamZoom:1.3:0.5,await  (1.3배 확대, 0.5초)
+        /// CSV: FX,,CamZoom:1.0:0.3,await  (원래 크기로 복귀)
+        /// </summary>
+        public async UniTask CamZoomAsync(float targetScale, float duration, CancellationToken ct = default)
+        {
+            if (stageTransform == null)
+            {
+                Debug.LogWarning("[ScreenFX] CamZoom: stageTransform이 바인딩되지 않음");
+                return;
+            }
+
+            await stageTransform
+                .DOScale(Vector3.one * targetScale, duration)
+                .SetEase(Ease.InOutSine)
+                .ToUniTask(cancellationToken: ct);
         }
 
         #endregion

@@ -11,9 +11,8 @@ namespace LoveAlgo.Story
     /// <summary>
     /// 스토리 스크립트 실행기
     /// </summary>
-    public class ScriptRunner : MonoBehaviour
+    public class ScriptRunner : SingletonMonoBehaviour<ScriptRunner>
     {
-        public static ScriptRunner Instance { get; private set; }
 
         [Header("스크립트")]
         [SerializeField] TextAsset scriptAsset;
@@ -63,15 +62,8 @@ namespace LoveAlgo.Story
         /// </summary>
         public string CurrentScriptName => currentScriptName;
 
-        void Awake()
+        protected override void OnSingletonAwake()
         {
-            if (Instance != null && Instance != this)
-            {
-                Destroy(gameObject);
-                return;
-            }
-            Instance = this;
-
             // 저장된 Auto 속도 복원
             float savedAutoSpeed = PlayerPrefs.GetFloat("AutoSpeed", 0.4f);
             SetAutoDelay(savedAutoSpeed);
@@ -93,8 +85,9 @@ namespace LoveAlgo.Story
             }
         }
 
-        void OnDestroy()
+        protected override void OnDestroy()
         {
+            base.OnDestroy();
             Stop();
         }
 
@@ -112,11 +105,13 @@ namespace LoveAlgo.Story
         /// <summary>
         /// 스크립트 로드 (문자열)
         /// </summary>
-        public void LoadScript(string csv)
+        public void LoadScript(string csv, string scriptName = null)
         {
             lines = ScriptParser.Parse(csv);
             lineIndex = ScriptParser.BuildLineIndex(lines);
             currentIndex = 0;
+            if (!string.IsNullOrEmpty(scriptName))
+                currentScriptName = scriptName;
         }
 
         /// <summary>
@@ -208,6 +203,12 @@ namespace LoveAlgo.Story
         /// </summary>
         public void RunFrom(string lineId)
         {
+            if (lineIndex == null)
+            {
+                Debug.LogError("[ScriptRunner] 로드된 스크립트가 없습니다. RunFrom 호출 불가.");
+                return;
+            }
+
             if (lineIndex.TryGetValue(lineId, out int index))
             {
                 Stop();
@@ -533,7 +534,7 @@ namespace LoveAlgo.Story
             clickReceived = false;
         }
 
-        #region Type별 실행 (TODO: 실제 구현)
+        #region Type별 실행
 
         async UniTask ExecuteTextAsync(ScriptLine line, CancellationToken ct)
         {
@@ -859,7 +860,7 @@ namespace LoveAlgo.Story
         {
             // 파싱: DayStart[:bg[:actions]] 또는 DayStart[:actions]
             string bgPath = null;
-            int actions = 3;
+            int actions = GameConstants.ActionsPerDay;
 
             if (parts.Length > 1)
             {
@@ -1039,6 +1040,17 @@ namespace LoveAlgo.Story
                     // 예: If:Love:Roa>=30:Confession, If:Flag:Met_Roa:Reunion
                     if (ExecuteFlowIf(line.Value))
                         return true; // 점프 성공 시 계속 진행
+                    break;
+
+                case "MiniGame":
+                    // 형식: MiniGame:게임이름:히로인ID
+                    // 예: MiniGame:CherryBlossom:Roa
+                    if (parts.Length >= 3)
+                    {
+                        string gameName = parts[1];
+                        string heroineId = parts[2];
+                        await LoveAlgo.MiniGame.MiniGameLauncher.LaunchAsync(gameName, heroineId);
+                    }
                     break;
             }
 

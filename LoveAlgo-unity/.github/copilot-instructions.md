@@ -66,6 +66,8 @@ LineID,Type,Speaker,Value,Next
 | `Text` | 대사/나레이션 | `안녕!` |
 | `Char` | 캐릭터 제어 | `C:Enter:Roa:Happy` |
 | `BG` | 배경 전환 | `School_Day:Fade:1.5` |
+| `CG` | CG 이미지 | `CG/Roa_FirstMeet:Fade:1.0`, `Exit` |
+| `Overlay` | 보조 배경 | `Roa_Theme:FadeIn:0.5`, `FadeOut` |
 | `Sound` | 오디오 | `BGM:Morning`, `SFX:Knock` |
 | `FX` | 시각 효과 | `FadeOut:1.0`, `CamShake:0.5` |
 | `Flow` | 흐름 제어 | `Jump:LineID`, `End` |

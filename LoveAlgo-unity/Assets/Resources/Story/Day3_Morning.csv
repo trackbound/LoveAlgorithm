@@ -1,0 +1,41 @@
+LineID,Type,Speaker,Value,Next
+# ═══ Day 3 아침 - 이봄 첫 대화 ═══
+,BG,,MyRoom/BG_MyRoom_Interior_Day,await
+,Sound,,BGM:Daily1,>
+,FX,,EyeOpen:1.0,await
+,Text,,"3일차.\n대학 생활에 조금씩 익숙해지고 있다.",click
+,Char,,C:Enter:Roa,await
+,Overlay,,Roa_Theme:FadeIn:0.5,await
+,Text,로아,"{{PlayerName}}, 좋은 아침!\n오늘도 열심히 해보자!",click
+,Char,,C:Emote:Happy,await
+,Text,로아,"오늘은 날씨도 좋으니까 기분 좋게 시작해볼까?",click
+,Text,{{PlayerName}},그래. 출발하자.,click
+,Char,,C:Exit,await
+,Overlay,,FadeOut:0.3,>
+# 캠퍼스
+,FX,,FadeOut:1.0,await
+,BG,,CampusStreet/BG_Campus_Street2_Day,await
+,Sound,,BGM:Daily2,>
+,FX,,FadeIn:1.0,await
+,Text,,"캠퍼스를 걷다 보니 벤치에 누군가 앉아 있었다.\n스케치북을 들고 무언가를 그리고 있다.",click
+# 이봄 등장
+,Char,,C:Enter:Bom,await
+,Sound,,BGM:Bom,>
+,Text,이봄,"......",click
+,Text,,"말을 걸까 말까 고민하는 사이, 상대가 먼저 고개를 들었다.",click
+,Char,,C:Emote:Surprised,await
+,Text,이봄,"...뭐 봐?",click
+,Text,{{PlayerName}},"아, 아니... 그림이 예뻐서.",click
+,Char,,C:Emote:Default,await
+,Text,이봄,"...고마워.",click
+,Text,이봄,"...나 이봄이야. 미대.",click
+,Text,{{PlayerName}},"나는 {{PlayerName}}. 공대야.",click
+,Char,,C:Emote:Smile,await
+,Text,이봄,"공대... 재밌겠다.",click
+,Text,이봄,"...또 봐.",click
+,Char,,C:Exit,await
+,Sound,,BGM:Daily2,>
+,Text,,"독특한 사람이었다.\n왠지 또 만나게 될 것 같은 느낌이 든다.",click
+,FX,,FadeOut:0.5,await
+,FX,,FadeIn:0.5,await
+,Flow,,End,>

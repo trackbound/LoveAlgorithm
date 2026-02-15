@@ -1,0 +1,25 @@
+LineID,Type,Speaker,Value,Next
+# ═══ 이봄 새드 엔딩 ═══
+,BG,,Black,await
+,Sound,,BGM:Stop:Fade:2.0,await
+,Text,,"......",click
+,FX,,FadeIn:1.0,await
+,BG,,CampusStreet/BG_Campus_Street1_Day:Cross:2.0,await
+,Sound,,BGM:Night,>
+,Text,,"캠퍼스 벤치에서 봄이를 만났다.",click
+,Char,,C:Enter:Bom:Default,await
+,Text,이봄,"아, {{PlayerName}}! 오랜만이다~",click
+,Text,{{PlayerName}},그러게. 요즘 바빴어.,click
+,Char,,C:Emote:Sad,await
+,Text,이봄,"바빴구나... 그렇구나.",click
+,Text,이봄,"나는 좀 심심했거든.\n같이 놀 사람이 없으니까 말이야...",click
+,Text,이봄,"다음 학기에는 같이 밥도 먹고,\n놀러도 가고... 그러자!",click
+,Text,{{PlayerName}},그래, 다음엔 시간 많이 내볼게.,click
+,Char,,C:Emote:Default,await
+,Text,이봄,"진짜? 약속이야!\n안 지키면 큰일 나!",click
+,Char,,C:Exit,await
+,Text,,"밝게 웃는 봄이.\n하지만 어딘가 쓸쓸해 보였다.",click
+,FX,,FadeOut:2.0,await
+,Sound,,BGM:Stop:Fade:2.0,await
+,Text,,"── 이봄 새드 엔딩 ──\n\n놓친 웃음소리",click
+,Flow,,End,>

@@ -14,9 +14,8 @@ namespace LoveAlgo.Core
     /// A → Auto 모드 토글
     /// Shift 꾹 → 빠른 재생 (스킵+자동진행, 쿨다운 적용)
     /// </summary>
-    public class StoryInputHandler : MonoBehaviour
+    public class StoryInputHandler : SingletonMonoBehaviour<StoryInputHandler>
     {
-        public static StoryInputHandler Instance { get; private set; }
 
         [Header("Shift 스킵 설정")]
         [SerializeField] float skipInterval = 0.08f;  // Shift 스킵 간격 (초)
@@ -25,14 +24,6 @@ namespace LoveAlgo.Core
         // Raycast 결과 캐시
         readonly List<RaycastResult> raycastResults = new();
         PointerEventData pointerEventData;
-
-        void Awake()
-        {
-            if (Instance == null)
-                Instance = this;
-            else
-                Destroy(gameObject);
-        }
 
         void Update()
         {

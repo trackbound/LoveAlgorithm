@@ -1,0 +1,20 @@
+LineID,Type,Speaker,Value,Next
+# ═══ Day 17 아침 - 2차 이벤트 후 감상 ═══
+,BG,,MyRoom/BG_MyRoom_Interior_Day,await
+,Sound,,BGM:Daily2,>
+,FX,,EyeOpen:1.0,await
+,Text,,"17일차.\n어제의 데이트가 계속 머릿속에서 맴돈다.",click
+,Text,,"점점... 마음이 기울어지고 있는 걸까.",click
+,Char,,C:Enter:Roa,await
+,Overlay,,Roa_Theme:FadeIn:0.5,await
+,Text,로아,"{{PlayerName}}, 무슨 생각 해?",click
+,Char,,C:Emote:Happy,await
+,Text,로아,"오늘따라 표정이 좋은데?",click
+,Text,{{PlayerName}},아... 아무것도 아니야.,click
+,Text,로아,"흐흐, 그래? 아무튼 오늘도 힘내자!",click
+,Text,로아,"참, 다음 주에 MT가 있대! 기대된다~",click
+,Char,,C:Exit,await
+,Overlay,,FadeOut:0.3,>
+,FX,,FadeOut:0.5,await
+,FX,,FadeIn:0.5,await
+,Flow,,End,>

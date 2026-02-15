@@ -1,0 +1,20 @@
+LineID,Type,Speaker,Value,Next
+# ═══ Day 13 아침 - 축제 후 일상 복귀 ═══
+,BG,,MyRoom/BG_MyRoom_Interior_Day,await
+,Sound,,BGM:Daily1,>
+,FX,,EyeOpen:1.0,await
+,Text,,"13일차.\n축제가 끝나고 다시 평범한 일상으로 돌아왔다.",click
+,Text,,"즐거웠지만, 끝나고 나니 묘하게 허전하다.",click
+,Char,,C:Enter:Roa,await
+,Overlay,,Roa_Theme:FadeIn:0.5,await
+,Text,로아,"{{PlayerName}}, 축제 어땠어?",click
+,Text,{{PlayerName}},재밌었어. 좋은 추억이 됐어.,click
+,Char,,C:Emote:Happy,await
+,Text,로아,"나도! 근데 벌써 반이나 지났네...",click
+,Text,로아,"앞으로 남은 시간도 알차게 보내자!",click
+,Text,로아,"공부도 하고, 운동도 하고, 알바도 잊지 말고!",click
+,Char,,C:Exit,await
+,Overlay,,FadeOut:0.3,>
+,FX,,FadeOut:0.5,await
+,FX,,FadeIn:0.5,await
+,Flow,,End,>
