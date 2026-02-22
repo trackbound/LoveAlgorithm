@@ -88,18 +88,34 @@ namespace LoveAlgo.Story
         /// 오버레이 명령 실행
         /// Value 형식: 
         ///   이름:FadeIn[:시간[:투명도]]  - 표시
-        ///   FadeOut[:시간]              - 숨김
+        ///   이름:FadeOut[:시간]          - 숨김 (특정 오버레이 지정)
+        ///   FadeOut[:시간]              - 숨김 (현재 오버레이)
         /// </summary>
         public async UniTask ExecuteAsync(string value, CancellationToken ct = default)
         {
             var parts = value.Split(':');
             string first = parts[0];
 
-            // FadeOut 명령
+            // 단독 FadeOut 명령: FadeOut[:시간]
             if (first.Equals("FadeOut", System.StringComparison.OrdinalIgnoreCase))
             {
                 float duration = defaultDuration;
                 if (parts.Length >= 2 && float.TryParse(parts[1], out float d))
+                {
+                    duration = d;
+                }
+                await HideAsync(duration, ct);
+                return;
+            }
+
+            // 2번째 파트에서 FadeIn/FadeOut 판별: 이름:FadeOut[:시간] or 이름:FadeIn[:시간[:투명도]]
+            string action = parts.Length >= 2 ? parts[1] : "FadeIn";
+
+            if (action.Equals("FadeOut", System.StringComparison.OrdinalIgnoreCase))
+            {
+                // 이름:FadeOut[:시간] — 오버레이 숨김
+                float duration = defaultDuration;
+                if (parts.Length >= 3 && float.TryParse(parts[2], out float d))
                 {
                     duration = d;
                 }

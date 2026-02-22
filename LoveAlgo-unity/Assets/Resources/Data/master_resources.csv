@@ -1,0 +1,138 @@
+id,type,key_en,name_kr,alias
+# ════════════════════════════════════════════════
+# 배경 (BG) — id: BG + 번호
+# alias 열: 스토리 CSV에서 쓸 수 있는 영어 단축 이름
+# ════════════════════════════════════════════════
+BG00,BG,BG_Black,검정,
+BG01,BG,BG_MyRoom_Interior_Day,자취방_전경_낮,MyRoom
+BG02,BG,BG_MyRoom_Interior_Night,자취방_전경_밤,MyRoom_Night
+BG03,BG,BG_MyRoom_Interior_Night_LightOn,자취방_전경_밤_불켜기,
+BG04,BG,BG_MyRoom_Bed_Day,자취방_침대위_아침,Bed
+BG05,BG,BG_MyRoom_Bed_Night,자취방_침대위_밤,Bed_Night
+BG06,BG,BG_MyRoom_Desk_Day,자취방_책상,Desk
+BG07,BG,BG_Engineering_Front_Day,공대_앞_낮,Engineering
+BG08,BG,BG_Engineering_Front_Night,공대_앞_밤,
+BG09,BG,BG_Engineering_Classroom_Day,강의실_낮,MajorClass
+BG10,BG,BG_Engineering_Classroom_Day_Cherry,강의실_낮_벚꽃,
+BG11,BG,BG_Engineering_Corridor_Day,공대_강의실복도,
+BG12,BG,BG_Engineering_Stall_Day,공대_학생복지실,
+BG13,BG,BG_StudentCenter_Front_Day,학생회관_앞_낮,StudentCenter
+BG14,BG,BG_StudentCenter_Front_Night,학생회관_앞_밤,StudentCenter_Night
+BG15,BG,BG_StudentCenter_Board_Day,게시판,
+BG16,BG,BG_StudentCenter_Office_Day,학생회관_행정실,
+BG17,BG,BG_ClubRoom_Interior_Day,동아리방_낮_나무,ClubRoom
+BG18,BG,BG_ClubRoom_Interior_Day_Cherry,동아리방_낮_벚꽃,
+BG19,BG,BG_Campus_Street1_Day,캠퍼스거리_1_맑음,
+BG20,BG,BG_Campus_Street2_Day,캠퍼스거리_2_맑음,
+# ════════════════════════════════════════════════
+# CG — id: CG + 번호
+# ════════════════════════════════════════════════
+CG01,CG,CG_Yeun_01,CG_예은_01,
+# ════════════════════════════════════════════════
+# 캐릭터 (Char) — id: CH + 번호
+# ════════════════════════════════════════════════
+CH01,Char,Roa,로아,
+CH02,Char,Yeun,예은,
+CH03,Char,Daeun,다은,
+CH04,Char,Heewon,희원,
+CH05,Char,Bom,봄,
+# ════════════════════════════════════════════════
+# 표정 (Emote) — id: EM + 번호
+# ════════════════════════════════════════════════
+EM01,Emote,Default,기본,
+EM02,Emote,EyeSmile,눈웃음,
+EM03,Emote,BrightSmile,밝게웃음,
+EM04,Emote,Happy,활짝,
+EM05,Emote,Glare,찌릿,
+EM06,Emote,Surprise,깜짝,
+EM07,Emote,Tearful,울먹,
+# ════════════════════════════════════════════════
+# BGM — id: BGM + 번호
+# ════════════════════════════════════════════════
+BGM01,BGM,Daily1,일상1,
+BGM02,BGM,Daily2,일상2,
+BGM03,BGM,Night,밤,
+BGM04,BGM,Title,타이틀,
+BGM05,BGM,Roa,로아,
+BGM06,BGM,Yeun,하예은,
+BGM07,BGM,Daeun,서다은,
+BGM08,BGM,Heewon,도희원,
+BGM09,BGM,Bom,이봄,
+# ════════════════════════════════════════════════
+# SFX — id: SFX + 번호 (기존 파일명의 번호 유지)
+# ════════════════════════════════════════════════
+SFX001,SFX,001_Pop,팝,
+SFX003,SFX,003_Bounce,통통,
+SFX004,SFX,004_Surprise,놀람,
+SFX005,SFX,005_PageTurn,페이지넘김,
+SFX006,SFX,006_CoinDrop,동전떨어짐,
+SFX009,SFX,009_Notification,알림,
+SFX011,SFX,011_Typing,타이핑,
+SFX014,SFX,014_Entrance,등장,
+SFX015,SFX,015_Ding,딩,
+SFX016,SFX,016_Laugh,웃음,
+SFX020,SFX,020_Rewind,되감기,
+SFX026,SFX,026_Ding2,딩2,
+SFX032,SFX,032_Magic,마법,
+SFX034,SFX,034_Thunder,천둥,
+SFX036,SFX,036_Sparkle,반짝,
+SFX038,SFX,038_Poof,뿅,
+SFX041,SFX,041_Wind,바람,
+SFX047,SFX,047_Shock,충격,
+SFX049,SFX,049_Coin,동전,
+SFX051,SFX,051_Drum,드럼,
+SFX056,SFX,056_Question,의문,
+SFX057,SFX,057_Scary,무섬,
+SFX060,SFX,060_Message,메시지,
+SFX061,SFX,061_Harp,하프,
+SFX062,SFX,062_Bubble,버블,
+SFX063,SFX,063_Wrong,오답,
+SFX064,SFX,064_WrongLong,오답길게,
+SFX068,SFX,068_Sad,슬픔,
+SFX069,SFX,069_Sad2,슬픔2,
+SFX072,SFX,072_BabyLaugh,아기웃음,
+SFX074,SFX,074_Chuckle,킥킥,
+SFX077,SFX,077_Clock,시계,
+SFX078,SFX,078_Camera,카메라,
+SFX079,SFX,079_Thunder2,천둥2,
+SFX080,SFX,080_Realize,깨달음,
+SFX082,SFX,082_Thud,쿵,
+SFX083,SFX,083_Glitch,글리치,
+SFX085,SFX,085_Click,클릭,
+SFX086,SFX,086_Pop2,팝2,
+SFX087,SFX,087_Spin,회전,
+SFX091,SFX,091_CartoonLaugh,만화웃음,
+SFX094,SFX,094_Gasp,헉,
+SFX101,SFX,101_Bounce1,통통1,
+SFX102,SFX,102_Bounce2,통통2,
+SFX103,SFX,103_Bounce3,통통3,
+SFX110,SFX,110_Cricket,귀뚜라미,
+SFX111,SFX,111_Discovery,발견,
+SFX112,SFX,112_Brake,브레이크,
+SFX118,SFX,118_Honk,경적,
+SFX119,SFX,119_Blessing,축복,
+SFX_CK,SFX,Click,클릭기본,
+SFX_HV,SFX,Hover,호버,
+SFX_T0,SFX,Type,타자기본,
+SFX_T1,SFX,Type_1,타자1,
+SFX_T2,SFX,Type_2,타자2,
+SFX_T3,SFX,Type_3,타자3,
+SFX_T4,SFX,Type_4,타자4,
+SFX_T5,SFX,Type_5,타자5,
+# ════════════════════════════════════════════════
+# 오버레이 (Overlay) — Inspector 바인딩, 참조용
+# ════════════════════════════════════════════════
+OV01,Overlay,Roa_Theme,로아테마,
+# ════════════════════════════════════════════════
+# 로딩 화면 (Loading) — 캐릭터별 2장씩, UI/Loading/
+# ════════════════════════════════════════════════
+LD01,Loading,Load_Bom_01,로딩_봄_01,
+LD02,Loading,Load_Bom_02,로딩_봄_02,
+LD03,Loading,Load_Daeun_01,로딩_다은_01,
+LD04,Loading,Load_Daeun_02,로딩_다은_02,
+LD05,Loading,Load_Heewon_01,로딩_희원_01,
+LD06,Loading,Load_Heewon_02,로딩_희원_02,
+LD07,Loading,Load_Roa_01,로딩_로아_01,
+LD08,Loading,Load_Roa_02,로딩_로아_02,
+LD09,Loading,Load_Yeun_01,로딩_예은_01,
+LD10,Loading,Load_Yeun_02,로딩_예은_02,

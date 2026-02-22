@@ -17,6 +17,17 @@ namespace LoveAlgo.UI
     /// </summary>
     public class PopupManager : SingletonMonoBehaviour<PopupManager>
     {
+        public struct ThumbnailPopupState
+        {
+            public bool LayerModalActive;
+            public bool LayerTopActive;
+            public bool DimmerActive;
+            public bool ConfirmActive;
+            public bool ScheduleConfirmActive;
+            public bool AlertActive;
+            public bool ToastActive;
+            public bool LogActive;
+        }
 
         [Header("레이어")]
         [SerializeField] Transform layerModal;
@@ -367,7 +378,9 @@ namespace LoveAlgo.UI
 
         public void ShowSave()
         {
-            ShowModal<SaveLoadPopup>()?.ShowSave(slot => 
+            // 팝업이 뜨기 전에 게임 화면 캡처 (팝업이 찍히는 것 방지)
+            Story.SaveManager.CapturePendingScreenshot();
+            ShowModal<SaveLoadPopup>()?.ShowSave(slot =>
             {
                 GameManager.Instance?.Save(slot);
                 Toast("저장 완료", $"슬롯 {slot}에 저장했습니다.");
@@ -385,7 +398,12 @@ namespace LoveAlgo.UI
 
         public void ShowLog(IReadOnlyList<DialogueLogEntry> log)
         {
-            logPopup?.Show(log);
+            if (logPopup == null)
+            {
+                Debug.LogError("[PopupManager] logPopup이 바인딩되지 않음 - Inspector에서 할당 필요");
+                return;
+            }
+            logPopup.Show(log);
         }
 
         #endregion
@@ -434,6 +452,51 @@ namespace LoveAlgo.UI
         #endregion
 
         #region 유틸
+
+        /// <summary>
+        /// 썸네일 캡처 시 팝업 UI를 제외하기 위해 현재 상태를 저장하고 숨김
+        /// </summary>
+        public ThumbnailPopupState HideForThumbnailCapture()
+        {
+            var state = new ThumbnailPopupState
+            {
+                LayerModalActive = layerModal != null && layerModal.gameObject.activeSelf,
+                LayerTopActive = layerTop != null && layerTop.gameObject.activeSelf,
+                DimmerActive = dimmer != null && dimmer.activeSelf,
+                ConfirmActive = confirmPopup != null && confirmPopup.gameObject.activeSelf,
+                ScheduleConfirmActive = scheduleConfirmPopup != null && scheduleConfirmPopup.gameObject.activeSelf,
+                AlertActive = alertPopup != null && alertPopup.gameObject.activeSelf,
+                ToastActive = toastPopup != null && toastPopup.gameObject.activeSelf,
+                LogActive = logPopup != null && logPopup.gameObject.activeSelf
+            };
+
+            if (confirmPopup != null) confirmPopup.gameObject.SetActive(false);
+            if (scheduleConfirmPopup != null) scheduleConfirmPopup.gameObject.SetActive(false);
+            if (alertPopup != null) alertPopup.gameObject.SetActive(false);
+            if (toastPopup != null) toastPopup.gameObject.SetActive(false);
+            if (logPopup != null) logPopup.gameObject.SetActive(false);
+            if (layerTop != null) layerTop.gameObject.SetActive(false);
+            if (layerModal != null) layerModal.gameObject.SetActive(false);
+            if (dimmer != null) dimmer.SetActive(false);
+
+            return state;
+        }
+
+        /// <summary>
+        /// 썸네일 캡처 후 팝업 UI 상태 복원
+        /// </summary>
+        public void RestoreAfterThumbnailCapture(ThumbnailPopupState state)
+        {
+            if (layerModal != null) layerModal.gameObject.SetActive(state.LayerModalActive);
+            if (layerTop != null) layerTop.gameObject.SetActive(state.LayerTopActive);
+            if (dimmer != null) dimmer.SetActive(state.DimmerActive);
+
+            if (confirmPopup != null) confirmPopup.gameObject.SetActive(state.ConfirmActive);
+            if (scheduleConfirmPopup != null) scheduleConfirmPopup.gameObject.SetActive(state.ScheduleConfirmActive);
+            if (alertPopup != null) alertPopup.gameObject.SetActive(state.AlertActive);
+            if (toastPopup != null) toastPopup.gameObject.SetActive(state.ToastActive);
+            if (logPopup != null) logPopup.gameObject.SetActive(state.LogActive);
+        }
 
         /// <summary>
         /// 모든 팝업 닫기

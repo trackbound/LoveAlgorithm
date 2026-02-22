@@ -16,6 +16,7 @@ namespace LoveAlgo.UI
         [SerializeField] ScheduleUI scheduleUI;
         [SerializeField] TitleUI titleUI;
         [SerializeField] UsernameUI usernameUI;
+        [SerializeField] PlaceUI placeUI;
 
         // 외부 접근용 프로퍼티
         public DialogueUI DialogueUI => dialogueUI;
@@ -23,17 +24,18 @@ namespace LoveAlgo.UI
         public ScheduleUI ScheduleUI => scheduleUI;
         public TitleUI TitleUI => titleUI;
         public UsernameUI UsernameUI => usernameUI;
+        public PlaceUI PlaceUI => placeUI;
 
         #region Dialogue UI
 
         public void ShowDialogue()
         {
-            dialogueUI?.gameObject.SetActive(true);
+            dialogueUI?.ShowImmediate();
         }
 
         public void HideDialogue()
         {
-            dialogueUI?.gameObject.SetActive(false);
+            dialogueUI?.HideImmediate();
         }
 
         public bool IsDialogueVisible => dialogueUI != null && dialogueUI.gameObject.activeSelf;
@@ -99,6 +101,7 @@ namespace LoveAlgo.UI
             HideSchedule();
             HideTitle();
             HideUsername();
+            placeUI?.HideImmediate();
         }
 
         /// <summary>

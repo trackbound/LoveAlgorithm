@@ -28,7 +28,7 @@ namespace LoveAlgo.UI
         [Header("설정")]
         [SerializeField] float shakeDuration = 0.3f;
         [SerializeField] float shakeStrength = 15f;
-        [SerializeField] string defaultName = "도윤";
+        [SerializeField] string defaultName = "성민";
 
         void Start()
         {

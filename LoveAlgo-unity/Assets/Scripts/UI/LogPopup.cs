@@ -53,7 +53,8 @@ namespace LoveAlgo.UI
         void Awake()
         {
             closeButton?.onClick.AddListener(Close);
-            gameObject.SetActive(false);
+            // gameObject.SetActive(false)은 PopupManager.InitPopups()에서 처리
+            // 여기서 호출하면: 씬에서 비활성화 시작 → 첫 Show() → SetActive(true) → Awake 실행 → 다시 꺼짐 버그 발생
 
             if (portraits != null)
             {
@@ -73,21 +74,21 @@ namespace LoveAlgo.UI
             if (emptyMessage != null)
                 emptyMessage.SetActive(!hasEntries);
 
-            if (hasEntries)
-                BuildIncremental(log);
-
+            // 먼저 활성화해야 Instantiate 시 레이아웃 계산이 정상 작동
             gameObject.SetActive(true);
 
-            // 다음 프레임에 스크롤 (레이아웃 계산 대기)
-            ScrollToBottomAsync().Forget();
+            if (hasEntries)
+                BuildIncrementalAsync(log).Forget();
+            else
+                ScrollToBottomAsync().Forget();
         }
 
         public void Close() => Hide();
 
         public void Hide() => gameObject.SetActive(false);
 
-        /// <summary>증분 빌드 — 새 항목만 추가</summary>
-        void BuildIncremental(IReadOnlyList<DialogueLogEntry> log)
+        /// <summary>증분 빌드 — 새 항목만 추가 (비동기: 프레임 분산)</summary>
+        async UniTaskVoid BuildIncrementalAsync(IReadOnlyList<DialogueLogEntry> log)
         {
             // 로그가 줄었으면 전체 리빌드 (undo/reset 대응)
             if (log.Count < builtCount)
@@ -96,6 +97,8 @@ namespace LoveAlgo.UI
             }
 
             int startIdx = builtCount;
+            int batchSize = 10;  // N개씩 생성 후 1프레임 양보
+            int created = 0;
 
             for (int i = startIdx; i < log.Count; i++)
             {
@@ -133,12 +136,25 @@ namespace LoveAlgo.UI
                     lastSpeaker = entry.Speaker;
                     lastCharId = entry.CharacterId;
                     spawnedEntries.Add(lastGroup);
+                    created++;
                 }
 
                 lastGroup.AddLine(entry.Text);
+
+                // 프레임 분산: N개 생성마다 1프레임 양보
+                if (created >= batchSize)
+                {
+                    created = 0;
+                    await UniTask.Yield();
+                    // 팝업이 닫혔으면 중단
+                    if (!gameObject.activeSelf) return;
+                }
             }
 
             builtCount = log.Count;
+
+            // 스크롤 (레이아웃 계산 대기)
+            await ScrollToBottomAsync2();
         }
 
         Sprite GetPortrait(string characterId)
@@ -166,6 +182,17 @@ namespace LoveAlgo.UI
         async UniTaskVoid ScrollToBottomAsync()
         {
             if (scrollRect == null) return;
+            await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
+            await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
+            if (scrollRect != null)
+                scrollRect.verticalNormalizedPosition = 0f;
+        }
+
+        async UniTask ScrollToBottomAsync2()
+        {
+            if (scrollRect == null) return;
+            // 2프레임 대기로 레이아웃 완전 반영 보장
+            await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
             await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
             if (scrollRect != null)
                 scrollRect.verticalNormalizedPosition = 0f;

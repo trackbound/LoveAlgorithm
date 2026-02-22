@@ -73,7 +73,8 @@ namespace LoveAlgo.Editor.UIEngine
             { LineType.FX, new Color(0.25f, 0.2f, 0.26f) },
             { LineType.Flow, new Color(0.2f, 0.24f, 0.28f) },
             { LineType.Choice, new Color(0.28f, 0.26f, 0.18f) },
-            { LineType.Option, new Color(0.26f, 0.26f, 0.2f) }
+            { LineType.Option, new Color(0.26f, 0.26f, 0.2f) },
+            { LineType.Place, new Color(0.2f, 0.22f, 0.28f) }
         };
 
         // 타입별 색상 (좌측 바 / 아이콘용 - 진한 색)
@@ -86,7 +87,8 @@ namespace LoveAlgo.Editor.UIEngine
             { LineType.FX, new Color(0.9f, 0.5f, 1f) },
             { LineType.Flow, new Color(0.4f, 0.8f, 1f) },
             { LineType.Choice, new Color(1f, 0.9f, 0.3f) },
-            { LineType.Option, new Color(0.9f, 0.85f, 0.5f) }
+            { LineType.Option, new Color(0.9f, 0.85f, 0.5f) },
+            { LineType.Place, new Color(0.4f, 0.7f, 1f) }
         };
 
         // 타입별 아이콘
@@ -99,7 +101,8 @@ namespace LoveAlgo.Editor.UIEngine
             { LineType.FX, "✨" },
             { LineType.Flow, "➡" },
             { LineType.Choice, "❓" },
-            { LineType.Option, "•" }
+            { LineType.Option, "•" },
+            { LineType.Place, "📍" }
         };
 
         // 미리보기
@@ -677,7 +680,7 @@ namespace LoveAlgo.Editor.UIEngine
             EditorGUILayout.Space(5);
             EditorGUILayout.BeginHorizontal();
             
-            string[] effects = { "FadeOut", "FadeIn", "Flash", "CamShake", "DayEnd", "DayStart", "Setup", "EyeOpen", "EyeClose", "EyeBlink" };
+            string[] effects = { "FadeOut", "FadeIn", "Flash", "CamShake", "StageShake", "DialogueShake", "DayEnd", "DayStart", "Setup", "EyeOpen", "EyeClose", "EyeBlink" };
             int fxIdx = EditorGUILayout.Popup(0, effects, GUILayout.Width(80));
             
             float duration = EditorGUILayout.FloatField(1f, GUILayout.Width(50));

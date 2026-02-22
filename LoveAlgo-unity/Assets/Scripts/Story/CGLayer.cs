@@ -54,8 +54,9 @@ namespace LoveAlgo.Story
             var parts = value.Split(':');
             string command = parts[0];
 
-            // Exit 명령
-            if (command.Equals("Exit", System.StringComparison.OrdinalIgnoreCase))
+            // Exit / Close 명령
+            if (command.Equals("Exit", System.StringComparison.OrdinalIgnoreCase)
+                || command.Equals("Close", System.StringComparison.OrdinalIgnoreCase))
             {
                 float duration = defaultDuration;
                 if (parts.Length >= 2 && float.TryParse(parts[1], out float d))
@@ -182,14 +183,18 @@ namespace LoveAlgo.Story
         /// </summary>
         Sprite LoadSprite(string cgName)
         {
-            // Resources/CG/폴더/파일 형식으로 로드
-            // 예: CG/Roa_FirstMeet → Resources/CG/Roa_FirstMeet
-            var sprite = Resources.Load<Sprite>($"CG/{cgName}");
-            
+            // CG/ 접두사가 붙어 있으면 제거 (CSV 호환)
+            if (cgName.StartsWith("CG/", System.StringComparison.OrdinalIgnoreCase))
+                cgName = cgName.Substring(3);
+
+            // CgPathMapping으로 경로 조회
+            var path = Data.CgPathMapping.GetPath(cgName);
+            var sprite = Resources.Load<Sprite>(path);
+
             if (sprite == null)
             {
                 // 폴백: 직접 경로
-                sprite = Resources.Load<Sprite>(cgName);
+                sprite = Resources.Load<Sprite>($"CG/{cgName}");
             }
 
             return sprite;

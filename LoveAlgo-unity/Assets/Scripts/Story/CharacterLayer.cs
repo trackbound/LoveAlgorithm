@@ -64,12 +64,22 @@ namespace LoveAlgo.Story
             switch (action)
             {
                 case "Enter":
-                    // 형식: 슬롯:Enter:캐릭터[:표정]
+                    // 형식: 슬롯:Enter:캐릭터[:표정]  — 페이드 (기본)
                     if (parts.Length >= 3)
                     {
                         string character = parts[2];
                         string emote = parts.Length >= 4 ? parts[3] : "Default";
                         await slot.EnterAsync(character, emote, ct);
+                    }
+                    break;
+
+                case "EnterUp":
+                    // 형식: 슬롯:EnterUp:캐릭터[:표정]  — 아래에서 위로 슬라이드 + 페이드
+                    if (parts.Length >= 3)
+                    {
+                        string character = parts[2];
+                        string emote = parts.Length >= 4 ? parts[3] : "Default";
+                        await slot.EnterSlideUpAsync(character, emote, ct);
                     }
                     break;
 
@@ -83,8 +93,13 @@ namespace LoveAlgo.Story
                     break;
 
                 case "Exit":
-                    // 형식: 슬롯:Exit
+                    // 형식: 슬롯:Exit  — 페이드 (기본)
                     await slot.ExitAsync(ct);
+                    break;
+
+                case "ExitDown":
+                    // 형식: 슬롯:ExitDown  — 아래로 슬라이드 + 페이드
+                    await slot.ExitSlideDownAsync(ct);
                     break;
 
                 default:

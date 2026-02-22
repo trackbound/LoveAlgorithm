@@ -111,6 +111,7 @@ namespace LoveAlgo.Core
         void EnterTitle()
         {
             UIManager.Instance?.ShowOnly(MainUIType.Title);
+            UIManager.Instance?.TitleUI?.PlayTitleBGM();
         }
 
         void EnterUsername()
@@ -471,26 +472,48 @@ namespace LoveAlgo.Core
         }
 
         /// <summary>
-        /// Username → Prologue 전환 (페이드로 빈 화면 가림)
+        /// Username → Prologue 전환 (로딩 화면 + 페이드)
         /// </summary>
         async UniTaskVoid TransitionToPrologueAsync()
         {
             var ct = this.GetCancellationTokenOnDestroy();
             var fx = ScreenFX.Instance;
+            var loading = LoadingScreen.Instance;
 
-            // 1) 페이드 아웃 (검은 화면)
+            // 1) 여유 있게 페이드 아웃
             if (fx != null)
-                await fx.FadeOutAsync(0.5f, ct);
+                await fx.FadeOutAsync(0.8f, ct);
             else
                 await UniTask.Yield(ct);
 
-            // 2) 검은 화면 상태에서 UI 전환 + 프롤로그 준비
+            // 2) 암전 상태에서 잠시 머무름 (호흡)
+            await UniTask.Delay(System.TimeSpan.FromSeconds(0.4f), cancellationToken: ct);
+
+            // 3) 로딩 화면 표시 (암전 위에)
+            if (loading != null)
+                await loading.ShowAsync(ct);
+
+            // 4) 페이드 해제 (로딩 화면이 부드럽게 드러남)
+            if (fx != null)
+                await fx.FadeInAsync(0.6f, ct);
+
+            // 5) UI 전환 + 프롤로그 준비 (로딩 화면 뒤에서)
             ChangePhase(GamePhase.Prologue);
 
-            // 3) 1프레임 대기 (레이아웃 정리)
-            await UniTask.Yield(ct);
+            // 6) 로딩 화면 충분히 보여줌 + 프롤로그 초기화 대기
+            await UniTask.Delay(System.TimeSpan.FromSeconds(1.5f), cancellationToken: ct);
 
-            // 4) 페이드 인
+            // 7) 부드럽게 페이드 아웃 (로딩 화면 위에 암전)
+            if (fx != null)
+                await fx.FadeOutAsync(0.6f, ct);
+
+            // 8) 프롤로그 첫 BG 세팅 완료 대기 (빈 화면 방지)
+            await UniTask.DelayFrame(3, cancellationToken: ct);
+
+            // 9) 로딩 화면 제거
+            loading?.HideImmediate();
+
+            // 9) 인게임 페이드 인
             if (fx != null)
                 await fx.FadeInAsync(0.8f, ct);
         }
@@ -528,15 +551,9 @@ namespace LoveAlgo.Core
             if (ScreenFX.Instance != null)
                 await ScreenFX.Instance.FadeOutAsync(2f, ct);
 
-            // 저장 확인
-            bool save = PopupManager.Instance != null
-                && await PopupManager.Instance.ConfirmAsync("저장하시겠습니까?");
-            if (save)
-            {
-                AutoSave();
-                PopupManager.Instance?.Toast("저장", "저장되었습니다.");
-                await UniTask.Delay(1000, cancellationToken: ct);
-            }
+            // 자동저장 후 5초 블랙 화면 유지
+            AutoSave();
+            await UniTask.Delay(5000, cancellationToken: ct);
 
             // 타이틀로 복귀
             GoToTitle();
@@ -642,35 +659,55 @@ namespace LoveAlgo.Core
                 await RunDayEventInline(eveningEvent, ct);
             }
 
-            // 페이드 아웃 (2.5초)
-            if (ScreenFX.Instance != null)
-                await ScreenFX.Instance.FadeOutAsync(2.5f, ct);
+            var fx = ScreenFX.Instance;
+            var loading = LoadingScreen.Instance;
 
+            // ── 1. 페이드 아웃 ──
+            if (fx != null)
+                await fx.FadeOutAsync(0.8f, ct);
+
+            // ── 2. 로딩 화면 준비 (암전 뒤에서) ──
+            if (loading != null)
+                await loading.ShowAsync(ct);
+
+            // ── 3. 페이드 해제 → 로딩 화면 드러남 ──
+            if (fx != null)
+                await fx.FadeInAsync(0.5f, ct);
+
+            // ── 4. 날짜 처리 + 자동저장 ──
             CurrentDay++;
             RemainingActions = GameConstants.ActionsPerDay;
-
-            // 상하차 등 하루 제한 초기화
             UIManager.Instance?.ScheduleUI?.ResetDailyLimits();
-
             Debug.Log($"[GameManager] {CurrentDay}일차 시작");
 
             // 최대 일차 초과 시 엔딩 진입
             if (CurrentDay > GameConstants.MaxDay)
             {
+                if (fx != null) await fx.FadeOutAsync(0.5f, ct);
+                loading?.HideImmediate();
                 ChangePhase(GamePhase.Ending);
                 return;
             }
 
             AutoSave();
 
-            // 잠시 블랙 유지
-            await UniTask.Delay(500, cancellationToken: ct);
+            // ── 5. 로딩 화면 유지 ──
+            await UniTask.Delay(1200, cancellationToken: ct);
 
+            // ── 6. 페이드로 로딩 가림 ──
+            if (fx != null)
+                await fx.FadeOutAsync(0.5f, ct);
+
+            // ── 7. 로딩 제거 + 다음 Phase 준비 (암전 뒤) ──
+            loading?.HideImmediate();
             ChangePhase(GamePhase.DayLoop);
 
-            // 페이드 인 (2초)
-            if (ScreenFX.Instance != null)
-                await ScreenFX.Instance.FadeInAsync(2.0f, ct);
+            // ── 8. 1프레임 대기 (UI 레이아웃 정리) ──
+            await UniTask.Yield(ct);
+
+            // ── 9. 페이드 인 (새 하루 시작) ──
+            if (fx != null)
+                await fx.FadeInAsync(0.8f, ct);
         }
 
         /// <summary>
@@ -797,14 +834,14 @@ namespace LoveAlgo.Core
         /// </summary>
         public void AutoSave()
         {
-            Save(SaveManager.AutoSaveSlot);
+            Save(SaveManager.AutoSaveSlot, usePendingThumbnail: false);
             Debug.Log("[GameManager] 자동저장 완료");
         }
 
         /// <summary>
         /// 수동저장 (슬롯 1~29)
         /// </summary>
-        public void Save(int slot)
+        public void Save(int slot, bool usePendingThumbnail = true)
         {
             // 스크립트 위치 정보 (실행 중일 때만 저장)
             var runner = ScriptRunner.Instance;
@@ -827,11 +864,28 @@ namespace LoveAlgo.Core
                 scriptName,
                 lineId,
                 lineIndex,
-                $"Day {CurrentDay}"
+                GetSaveChapterName(scriptName)
             );
 
-            // 스크린샷 캡처
-            SaveManager.CaptureScreenshot(slot);
+            // 스크린샷 저장
+            // - 수동 저장 팝업: ShowSave에서 미리 캡처한 pending 썸네일 우선 사용
+            // - 자동저장/기타: pending 미사용 또는 부재 시 즉시 캡처
+            if (!usePendingThumbnail || !SaveManager.TryCommitPendingScreenshot(slot))
+            {
+                SaveManager.CaptureScreenshot(slot);
+            }
+        }
+
+        /// <summary>
+        /// 세이브 슬롯 표시용 챕터명
+        /// 임시 룰: Prologue phase는 항상 "프롤로그"로 고정
+        /// </summary>
+        string GetSaveChapterName(string scriptName)
+        {
+            if (CurrentPhase == GamePhase.Prologue)
+                return "프롤로그";
+
+            return $"Day {CurrentDay}";
         }
 
         #endregion
@@ -858,7 +912,11 @@ namespace LoveAlgo.Core
                 ScreenFX.Instance.EyeOpenImmediate();
             }
 
+            // 로딩 화면 정리
+            LoadingScreen.Instance?.HideImmediate();
+
             // 오디오 정리
+            Story.AudioManager.Instance?.StopBGMImmediate();
             Story.AudioManager.Instance?.StopVoice();
 
             // DOTween 동시 트윈 정리 (Safe Mode로 사용 중이므로 KillAll 대신 유휴 트윈만 정리)

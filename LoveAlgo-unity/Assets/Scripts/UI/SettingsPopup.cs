@@ -100,11 +100,26 @@ namespace LoveAlgo.UI
         void SetupSliders()
         {
             // 마스터 볼륨
-            masterSlider?.onValueChanged.AddListener(v => { AudioManager.Instance?.SetMasterVolume(v); MarkDirty(); });
+            masterSlider?.onValueChanged.AddListener(v =>
+            {
+                AudioManager.Instance?.SetMasterVolume(v);
+                UISoundManager.Instance?.PlayVolumePreview();
+                MarkDirty();
+            });
 
             // 메인 볼륨 (변경 추적)
-            bgmSlider?.onValueChanged.AddListener(v => { AudioManager.Instance?.SetBGMVolume(v); MarkDirty(); });
-            sfxSlider?.onValueChanged.AddListener(v => { AudioManager.Instance?.SetSFXVolume(v); MarkDirty(); });
+            bgmSlider?.onValueChanged.AddListener(v =>
+            {
+                AudioManager.Instance?.SetBGMVolume(v);
+                UISoundManager.Instance?.PlayVolumePreview();
+                MarkDirty();
+            });
+            sfxSlider?.onValueChanged.AddListener(v =>
+            {
+                AudioManager.Instance?.SetSFXVolume(v);
+                UISoundManager.Instance?.PlayVolumePreview();
+                MarkDirty();
+            });
 
             // 캐릭터별 음성
             voiceYeunSlider?.onValueChanged.AddListener(v => { SetCharacterVoice("Yeun", v); MarkDirty(); });
@@ -402,8 +417,7 @@ namespace LoveAlgo.UI
             }
 
             // 슬라이더 변경사항이 있으면 확인 팝업
-            bool save = await PopupManager.Instance.ConfirmAsync("변경된 정보가 있습니다.\n저장 하시겠습니까?",
-                confirmText: "예", cancelText: "아니요");
+            bool save = await PopupManager.Instance.ConfirmAsync("변경된 정보가 있습니다.\n저장 하시겠습니까?");
 
             if (save)
             {

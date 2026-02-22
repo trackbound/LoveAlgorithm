@@ -19,7 +19,8 @@ namespace LoveAlgo.UI
         [SerializeField] GameObject dataContainer;
         [SerializeField] Button button;
 
-        int slotIndex;
+        int slotIndex;       // 클릭 콜백용 로컬 인덱스
+        int displayNumber;   // 표시용 글로벌 슬롯 번호
         bool hasData;
         bool isAutoSaveSlot;
         Action<int> onClick;
@@ -32,11 +33,21 @@ namespace LoveAlgo.UI
         /// <summary>
         /// 슬롯 초기화
         /// </summary>
-        public void Setup(int index, Action<int> onClickCallback, bool autoSave = false)
+        public void Setup(int localIndex, Action<int> onClickCallback, bool autoSave = false)
         {
-            slotIndex = index;
+            slotIndex = localIndex;
             onClick = onClickCallback;
             isAutoSaveSlot = autoSave;
+        }
+
+        /// <summary>
+        /// 슬롯 번호 텍스트 설정 (글로벌 슬롯 인덱스로 갱신)
+        /// </summary>
+        public void SetDisplayNumber(int globalSlotIndex)
+        {
+            displayNumber = globalSlotIndex;
+            if (slotNumberText != null)
+                slotNumberText.text = isAutoSaveSlot ? "Auto" : $"슬롯 {globalSlotIndex}";
         }
 
         /// <summary>
@@ -45,9 +56,9 @@ namespace LoveAlgo.UI
         public void SetEmpty()
         {
             hasData = false;
-            
+
             if (slotNumberText != null)
-                slotNumberText.text = isAutoSaveSlot ? "Auto" : $"슬롯 {slotIndex + 1}";
+                slotNumberText.text = isAutoSaveSlot ? "Auto" : $"슬롯 {displayNumber}";
             
             if (emptyLabel != null)
                 emptyLabel.SetActive(true);
@@ -64,8 +75,8 @@ namespace LoveAlgo.UI
             hasData = true;
             
             if (slotNumberText != null)
-                slotNumberText.text = isAutoSaveSlot ? "Auto" : $"슬롯 {slotIndex + 1}";
-            
+                slotNumberText.text = isAutoSaveSlot ? "Auto" : $"슬롯 {displayNumber}";
+
             if (chapterText != null)
                 chapterText.text = chapter ?? "알 수 없음";
             

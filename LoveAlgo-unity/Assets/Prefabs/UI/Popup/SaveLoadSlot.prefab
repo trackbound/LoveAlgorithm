@@ -361,8 +361,6 @@ GameObject:
   - component: {fileID: 3273785622550719275}
   - component: {fileID: 8555031338639543714}
   - component: {fileID: 691233192418775027}
-  - component: {fileID: 2878147712050305061}
-  - component: {fileID: 6824813762365937122}
   m_Layer: 0
   m_Name: SaveLoadSlot
   m_TagString: Untagged
@@ -418,13 +416,13 @@ MonoBehaviour:
     m_SelectOnDown: {fileID: 0}
     m_SelectOnLeft: {fileID: 0}
     m_SelectOnRight: {fileID: 0}
-  m_Transition: 0
+  m_Transition: 1
   m_Colors:
     m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
     m_HighlightedColor: {r: 1, g: 1, b: 1, a: 1}
     m_PressedColor: {r: 0.78, g: 0.78, b: 0.78, a: 1}
     m_SelectedColor: {r: 1, g: 1, b: 1, a: 1}
-    m_DisabledColor: {r: 0.78, g: 0.78, b: 0.78, a: 0.5}
+    m_DisabledColor: {r: 1, g: 1, b: 1, a: 1}
     m_ColorMultiplier: 1
     m_FadeDuration: 0.1
   m_SpriteState:
@@ -458,70 +456,10 @@ MonoBehaviour:
   slotNumberText: {fileID: 0}
   chapterText: {fileID: 6059924459791275437}
   dateText: {fileID: 1371981493597504787}
-  screenshotImage: {fileID: 0}
+  screenshotImage: {fileID: 4992465160485493018}
   emptyLabel: {fileID: 6225978054435597868}
   dataContainer: {fileID: 9100543756576863448}
   button: {fileID: 8555031338639543714}
---- !u!114 &2878147712050305061
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7673009745470024640}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2bcfa84d821221c4e941d580e5597a98, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.UI.HoverButton
-  hoverMode: 1
-  targetImage: {fileID: 0}
-  normalSprite: {fileID: 0}
-  hoverSprite: {fileID: 0}
-  pressedSprite: {fileID: 0}
-  normalChild: {fileID: 0}
-  hoverChild: {fileID: 0}
-  pressedChild: {fileID: 0}
-  useColorTint: 1
-  colorTarget: {fileID: 0}
-  normalColor: {r: 1, g: 1, b: 1, a: 1}
-  hoverColor: {r: 0.96, g: 0.96, b: 0.96, a: 1}
-  pressedColor: {r: 0.85, g: 0.85, b: 0.85, a: 1}
-  colorFadeDuration: 0.1
-  useScaleEffect: 0
-  hoverScale: 1.05
-  pressedScale: 0.95
-  scaleDuration: 0.1
---- !u!114 &6824813762365937122
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7673009745470024640}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2bcfa84d821221c4e941d580e5597a98, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.UI.HoverButton
-  hoverMode: 1
-  targetImage: {fileID: 0}
-  normalSprite: {fileID: 0}
-  hoverSprite: {fileID: 0}
-  pressedSprite: {fileID: 0}
-  normalChild: {fileID: 0}
-  hoverChild: {fileID: 0}
-  pressedChild: {fileID: 0}
-  useColorTint: 1
-  colorTarget: {fileID: 0}
-  normalColor: {r: 1, g: 1, b: 1, a: 1}
-  hoverColor: {r: 0.96, g: 0.96, b: 0.96, a: 1}
-  pressedColor: {r: 0.85, g: 0.85, b: 0.85, a: 1}
-  colorFadeDuration: 0.1
-  useScaleEffect: 0
-  hoverScale: 1.05
-  pressedScale: 0.95
-  scaleDuration: 0.1
 --- !u!1 &8335574564802636223
 GameObject:
   m_ObjectHideFlags: 0
@@ -725,7 +663,7 @@ MonoBehaviour:
       m_Calls: []
   m_Sprite: {fileID: 21300000, guid: 4d17e18cb7367ba4eafd49febe9ab796, type: 3}
   m_Type: 0
-  m_PreserveAspect: 0
+  m_PreserveAspect: 1
   m_FillCenter: 1
   m_FillMethod: 4
   m_FillAmount: 1

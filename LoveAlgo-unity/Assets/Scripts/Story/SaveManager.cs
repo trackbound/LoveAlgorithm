@@ -4,6 +4,7 @@ using System.IO;
 using UnityEngine;
 using Newtonsoft.Json;
 using LoveAlgo.Core;
+using LoveAlgo.UI;
 
 namespace LoveAlgo.Story
 {
@@ -80,8 +81,22 @@ namespace LoveAlgo.Story
     /// </summary>
     public static class SaveManager
     {
+        struct ThumbnailUISnapshot
+        {
+            public bool DialogueActive;
+            public bool ChoiceActive;
+            public bool ScheduleActive;
+            public bool TitleActive;
+            public bool UsernameActive;
+            public bool PlaceActive;
+            public PopupManager.ThumbnailPopupState PopupState;
+            public bool HasPopupState;
+        }
+
         const string SaveFolder = "Saves";
         const string SaveExtension = ".json";
+        const int ThumbnailWidth = 400;
+        const int ThumbnailHeight = 128;
         
         /// <summary>
         /// 자동저장 슬롯 (Continue용)
@@ -176,7 +191,7 @@ namespace LoveAlgo.Story
             string path = GetSavePath(slot);
             if (!File.Exists(path))
             {
-                Debug.LogWarning($"[SaveManager] 슬롯 {slot} 세이브 없음");
+                // Debug.LogWarning($"[SaveManager] 슬롯 {slot} 세이브 없음");
                 return null;
             }
 
@@ -345,18 +360,70 @@ namespace LoveAlgo.Story
         }
 
         /// <summary>
-        /// 스크린샷 캐퍼 및 저장
+        /// 팝업 열기 전 게임 화면을 임시 파일로 미리 캡처
+        /// UI 팝업이 화면에 뜨기 전에 호출해야 게임 장면이 찍힘
+        /// </summary>
+        public static void CapturePendingScreenshot()
+        {
+            try
+            {
+                string folder = Path.Combine(Application.persistentDataPath, SaveFolder);
+                if (!Directory.Exists(folder))
+                    Directory.CreateDirectory(folder);
+
+                var tex = CaptureStageOnlyTexture();
+                var thumb = CropAndScaleTexture(tex, ThumbnailWidth, ThumbnailHeight);
+                File.WriteAllBytes(
+                    Path.Combine(folder, "save_pending_thumb.png"),
+                    thumb.EncodeToPNG()
+                );
+                UnityEngine.Object.Destroy(tex);
+                UnityEngine.Object.Destroy(thumb);
+                Debug.Log("[SaveManager] 팬딩 스크린샷 캡처 완료");
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning($"[SaveManager] 팬딩 스크린샷 실패: {e.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 임시 파일을 실제 슬롯 썸네일로 확정
+        /// 성공 시 true, 없으면 false
+        /// </summary>
+        public static bool TryCommitPendingScreenshot(int slot)
+        {
+            try
+            {
+                string folder = Path.Combine(Application.persistentDataPath, SaveFolder);
+                string pending = Path.Combine(folder, "save_pending_thumb.png");
+                if (File.Exists(pending))
+                {
+                    File.Copy(pending, GetScreenshotPath(slot), overwrite: true);
+                    File.Delete(pending);
+                    return true;
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning($"[SaveManager] 썸네일 확정 실패: {e.Message}");
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// 스크린샷 직접 캡처 및 저장 (자동저장 등 팝업 없는 경우)
         /// </summary>
         public static void CaptureScreenshot(int slot)
         {
             try
             {
-                var tex = ScreenCapture.CaptureScreenshotAsTexture();
-                // 썬네일 크기로 축소 (256x144)
-                var thumb = ScaleTexture(tex, 256, 144);
+                var tex = CaptureStageOnlyTexture();
+                // 슬롯 비율(400x128)에 맞춰 중앙 크롭 후 축소
+                var thumb = CropAndScaleTexture(tex, ThumbnailWidth, ThumbnailHeight);
                 byte[] png = thumb.EncodeToPNG();
                 File.WriteAllBytes(GetScreenshotPath(slot), png);
-                
+
                 UnityEngine.Object.Destroy(tex);
                 UnityEngine.Object.Destroy(thumb);
                 Debug.Log($"[SaveManager] 슬롯 {slot} 스크린샷 저장");
@@ -364,6 +431,94 @@ namespace LoveAlgo.Story
             catch (Exception e)
             {
                 Debug.LogWarning($"[SaveManager] 스크린샷 저장 실패: {e.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 썸네일 캡처 시 포함/제외 제어:
+        /// 포함: 스테이지(배경/캐릭터/CG/SD)
+        /// 제외: 메인 UI, 팝업 UI
+        /// </summary>
+        static Texture2D CaptureStageOnlyTexture()
+        {
+            var snapshot = HideUIForThumbnailCapture();
+            try
+            {
+                Canvas.ForceUpdateCanvases();
+                return ScreenCapture.CaptureScreenshotAsTexture();
+            }
+            finally
+            {
+                RestoreUIAfterThumbnailCapture(snapshot);
+            }
+        }
+
+        static ThumbnailUISnapshot HideUIForThumbnailCapture()
+        {
+            var ui = UIManager.Instance;
+            var snapshot = new ThumbnailUISnapshot();
+
+            if (ui != null)
+            {
+                if (ui.DialogueUI != null)
+                {
+                    snapshot.DialogueActive = ui.DialogueUI.gameObject.activeSelf;
+                    ui.DialogueUI.gameObject.SetActive(false);
+                }
+                if (ui.ChoiceUI != null)
+                {
+                    snapshot.ChoiceActive = ui.ChoiceUI.gameObject.activeSelf;
+                    ui.ChoiceUI.gameObject.SetActive(false);
+                }
+                if (ui.ScheduleUI != null)
+                {
+                    snapshot.ScheduleActive = ui.ScheduleUI.gameObject.activeSelf;
+                    ui.ScheduleUI.gameObject.SetActive(false);
+                }
+                if (ui.TitleUI != null)
+                {
+                    snapshot.TitleActive = ui.TitleUI.gameObject.activeSelf;
+                    ui.TitleUI.gameObject.SetActive(false);
+                }
+                if (ui.UsernameUI != null)
+                {
+                    snapshot.UsernameActive = ui.UsernameUI.gameObject.activeSelf;
+                    ui.UsernameUI.gameObject.SetActive(false);
+                }
+                if (ui.PlaceUI != null)
+                {
+                    snapshot.PlaceActive = ui.PlaceUI.gameObject.activeSelf;
+                    ui.PlaceUI.gameObject.SetActive(false);
+                }
+            }
+
+            var popup = PopupManager.Instance;
+            if (popup != null)
+            {
+                snapshot.PopupState = popup.HideForThumbnailCapture();
+                snapshot.HasPopupState = true;
+            }
+
+            return snapshot;
+        }
+
+        static void RestoreUIAfterThumbnailCapture(ThumbnailUISnapshot snapshot)
+        {
+            var ui = UIManager.Instance;
+            if (ui != null)
+            {
+                if (ui.DialogueUI != null) ui.DialogueUI.gameObject.SetActive(snapshot.DialogueActive);
+                if (ui.ChoiceUI != null) ui.ChoiceUI.gameObject.SetActive(snapshot.ChoiceActive);
+                if (ui.ScheduleUI != null) ui.ScheduleUI.gameObject.SetActive(snapshot.ScheduleActive);
+                if (ui.TitleUI != null) ui.TitleUI.gameObject.SetActive(snapshot.TitleActive);
+                if (ui.UsernameUI != null) ui.UsernameUI.gameObject.SetActive(snapshot.UsernameActive);
+                if (ui.PlaceUI != null) ui.PlaceUI.gameObject.SetActive(snapshot.PlaceActive);
+            }
+
+            var popup = PopupManager.Instance;
+            if (popup != null && snapshot.HasPopupState)
+            {
+                popup.RestoreAfterThumbnailCapture(snapshot.PopupState);
             }
         }
 
@@ -392,15 +547,108 @@ namespace LoveAlgo.Story
         /// <summary>
         /// 텍스쳐 축소
         /// </summary>
+        static Texture2D CropAndScaleTexture(Texture2D source, int targetWidth, int targetHeight)
+        {
+            // 1) 캡처 원본의 레터박스/필러박스(검정 여백) 제거
+            var contentRect = DetectContentRect(source);
+
+            float sourceAspect = (float)contentRect.width / contentRect.height;
+            float targetAspect = (float)targetWidth / targetHeight;
+
+            int cropWidth = contentRect.width;
+            int cropHeight = contentRect.height;
+            int cropX = contentRect.x;
+            int cropY = contentRect.y;
+
+            if (sourceAspect > targetAspect)
+            {
+                // 소스가 더 넓음 → 좌우 중앙 크롭
+                cropWidth = Mathf.RoundToInt(contentRect.height * targetAspect);
+                cropX = contentRect.x + (contentRect.width - cropWidth) / 2;
+            }
+            else if (sourceAspect < targetAspect)
+            {
+                // 소스가 더 높음 → 상하 중앙 크롭
+                cropHeight = Mathf.RoundToInt(contentRect.width / targetAspect);
+                cropY = contentRect.y + (contentRect.height - cropHeight) / 2;
+            }
+
+            // UV Blit은 플랫폼/텍스처 상태에 따라 분할(타일링) 아티팩트가 발생할 수 있어
+            // 먼저 CPU에서 중앙 크롭한 뒤, 단순 리사이즈한다.
+            var cropped = new Texture2D(cropWidth, cropHeight, TextureFormat.RGB24, false);
+            cropped.SetPixels(source.GetPixels(cropX, cropY, cropWidth, cropHeight));
+            cropped.Apply();
+
+            var scaled = ScaleTexture(cropped, targetWidth, targetHeight);
+            UnityEngine.Object.Destroy(cropped);
+            return scaled;
+        }
+
+        /// <summary>
+        /// 캡처 원본에서 레터박스/필러박스(검정 여백) 영역 탐지
+        /// </summary>
+        static RectInt DetectContentRect(Texture2D source)
+        {
+            int w = source.width;
+            int h = source.height;
+            if (w <= 0 || h <= 0)
+                return new RectInt(0, 0, w, h);
+
+            var pixels = source.GetPixels32();
+            const int threshold = 10; // near-black 판정 임계값
+            const int step = 3;       // 샘플 간격 (성능용)
+
+            bool ColumnHasContent(int x)
+            {
+                for (int y = 0; y < h; y += step)
+                {
+                    var c = pixels[(y * w) + x];
+                    if (c.a > threshold && (c.r > threshold || c.g > threshold || c.b > threshold))
+                        return true;
+                }
+                return false;
+            }
+
+            bool RowHasContent(int y)
+            {
+                int baseIdx = y * w;
+                for (int x = 0; x < w; x += step)
+                {
+                    var c = pixels[baseIdx + x];
+                    if (c.a > threshold && (c.r > threshold || c.g > threshold || c.b > threshold))
+                        return true;
+                }
+                return false;
+            }
+
+            int left = 0;
+            while (left < w - 1 && !ColumnHasContent(left)) left++;
+
+            int right = w - 1;
+            while (right > left && !ColumnHasContent(right)) right--;
+
+            int bottom = 0;
+            while (bottom < h - 1 && !RowHasContent(bottom)) bottom++;
+
+            int top = h - 1;
+            while (top > bottom && !RowHasContent(top)) top--;
+
+            int contentWidth = Mathf.Max(1, right - left + 1);
+            int contentHeight = Mathf.Max(1, top - bottom + 1);
+            return new RectInt(left, bottom, contentWidth, contentHeight);
+        }
+
         static Texture2D ScaleTexture(Texture2D source, int targetWidth, int targetHeight)
         {
-            var rt = RenderTexture.GetTemporary(targetWidth, targetHeight);
+            var rt = RenderTexture.GetTemporary(targetWidth, targetHeight, 0, RenderTextureFormat.ARGB32);
             Graphics.Blit(source, rt);
             var prev = RenderTexture.active;
             RenderTexture.active = rt;
+
             var result = new Texture2D(targetWidth, targetHeight, TextureFormat.RGB24, false);
             result.ReadPixels(new Rect(0, 0, targetWidth, targetHeight), 0, 0);
             result.Apply();
+
             RenderTexture.active = prev;
             RenderTexture.ReleaseTemporary(rt);
             return result;

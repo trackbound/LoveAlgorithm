@@ -30,9 +30,11 @@ namespace LoveAlgo.Core
         [SerializeField] Camera stageCamera;        // Screen Space - Camera 모드용
         [Tooltip("Overlay Canvas 사용 시 Stage RectTransform 바인딩 (폴백)")]
         [SerializeField] RectTransform stageTransform; // 폴백용
+        [Tooltip("화면이 어두울 때(EyeClose/FadeOut) 대신 흔들 대화창 RectTransform")]
+        [SerializeField] RectTransform dialogueUITransform;
 
         [Header("설정")]
-        [SerializeField] float defaultFadeDuration = 1f;
+        [SerializeField] float defaultFadeDuration = 0.5f;
         [SerializeField] float defaultFlashDuration = 0.1f;
 
         [Header("Shake 설정")]
@@ -40,11 +42,49 @@ namespace LoveAlgo.Core
         [SerializeField] float shakeFrequency = 25f;
         [Tooltip("Perlin Noise 시드 오프셋 (다양한 흔들림 패턴)")]
         [SerializeField] float noiseSeed = 0f;
+        [Tooltip("초반 가속 구간 비율 (0~1)")]
+        [Range(0f, 1f)]
+        [SerializeField] float shakeAttackRatio = 0.12f;
+        [Tooltip("감쇠 곡선 지수 (클수록 끝에서 빠르게 잦아듦)")]
+        [SerializeField] float shakeDecayPower = 2.2f;
+        [Tooltip("카메라 흔들림 위치 변환 스케일 (UI 픽셀 -> 월드)")]
+        [SerializeField] float cameraPositionScale = 0.01f;
 
         [Header("Shake 프리셋")]
         [SerializeField] float shakePresetWeak = 10f;
         [SerializeField] float shakePresetMedium = 25f;
         [SerializeField] float shakePresetStrong = 50f;
+
+        [Header("Stage Shake 튜닝")]
+        [SerializeField] float stageShakeXMultiplier = 1.0f;
+        [SerializeField] float stageShakeYMultiplier = 0.35f;
+        [SerializeField] float stageShakeRotationMultiplier = 0.06f;
+        [SerializeField] float stageShakeFrequencyMultiplier = 1.0f;
+        [Tooltip("스테이지 임팩트 흔들림의 기본 진동수(Hz)")]
+        [SerializeField] float stageImpactFrequencyHz = 5.0f;
+        [Tooltip("스테이지 임팩트 흔들림의 감쇠 계수")]
+        [SerializeField] float stageImpactDamping = 5.2f;
+
+        [Header("Dialogue Shake 튜닝")]
+        [SerializeField] float dialogueShakeXMultiplier = 1.0f;
+        [SerializeField] float dialogueShakeYMultiplier = 0.12f;
+        [SerializeField] float dialogueShakeRotationMultiplier = 0.02f;
+        [SerializeField] float dialogueShakeFrequencyMultiplier = 1.0f;
+        [Tooltip("대사창 임팩트 흔들림의 기본 진동수(Hz). 높을수록 진동 느낌이 강해짐")]
+        [SerializeField] float dialogueImpactFrequencyHz = 6.0f;
+        [Tooltip("대사창 임팩트 흔들림의 감쇠 계수. 높을수록 빨리 잦아듦")]
+        [SerializeField] float dialogueImpactDamping = 6.5f;
+
+        [Header("Impact 공통 튜닝")]
+        [Tooltip("충격 직후 초기 변위를 유지하는 시간(s) — Hitlag / 프리즈 프레임 효과")]
+        [SerializeField] float shakeHitlagSeconds = 0.025f;
+        [Tooltip("이 강도 이상일 때 임팩트 플래시 추가 (DialogueShake / 어두운 CamShake)")]
+        [SerializeField] float impactFlashStrengthThreshold = 20f;
+        [Tooltip("임팩트 플래시 최대 알파")]
+        [Range(0f, 1f)]
+        [SerializeField] float impactFlashAlpha = 0.30f;
+        [Tooltip("임팩트 플래시 지속 시간(s)")]
+        [SerializeField] float impactFlashDuration = 0.06f;
 
         /// <summary>페이드 오버레이가 검은 상태인지 (세이브용)</summary>
         public bool IsFadeBlack => fadeOverlay != null && fadeOverlay.color.a >= 0.95f;
@@ -125,26 +165,18 @@ namespace LoveAlgo.Core
                     break;
 
                 case "CamShake":
-                    // CSV: CamShake:0.5:30 또는 CamShake:0.5:Weak/Medium/Strong
-                    float shakeDuration = parts.Length > 1 && float.TryParse(parts[1], out float sd) ? sd : 0.3f;
-                    float shakeStrength;
-                    if (parts.Length > 2)
-                    {
-                        switch (parts[2].ToLower())
-                        {
-                            case "weak": shakeStrength = shakePresetWeak; break;
-                            case "medium": shakeStrength = shakePresetMedium; break;
-                            case "strong": shakeStrength = shakePresetStrong; break;
-                            default:
-                                shakeStrength = float.TryParse(parts[2], out float ss) ? ss : shakePresetMedium;
-                                break;
-                        }
-                    }
-                    else
-                    {
-                        shakeStrength = shakePresetMedium;
-                    }
-                    await CamShakeAsync(shakeDuration, shakeStrength, ct);
+                    ParseShakeArgs(parts, out float camShakeDuration, out float camShakeStrength);
+                    await CamShakeAsync(camShakeDuration, camShakeStrength, ct);
+                    break;
+
+                case "StageShake":
+                    ParseShakeArgs(parts, out float stageShakeDuration, out float stageShakeStrength);
+                    await StageShakeAsync(stageShakeDuration, stageShakeStrength, ct);
+                    break;
+
+                case "DialogueShake":
+                    ParseShakeArgs(parts, out float dialogueShakeDuration, out float dialogueShakeStrength);
+                    await DialogueShakeAsync(dialogueShakeDuration, dialogueShakeStrength, ct);
                     break;
 
                 case "CamZoom":
@@ -156,13 +188,13 @@ namespace LoveAlgo.Core
 
                 case "EyeOpen":
                     // 눈 뜨는 효과: EyeOpen[:duration]
-                    float eyeOpenDuration = parts.Length > 1 && float.TryParse(parts[1], out float eod) ? eod : 1f;
+                    float eyeOpenDuration = parts.Length > 1 && float.TryParse(parts[1], out float eod) ? eod : 0.8f;
                     await EyeOpenAsync(eyeOpenDuration, ct);
                     break;
 
                 case "EyeClose":
                     // 눈 감는 효과: EyeClose[:duration]
-                    float eyeCloseDuration = parts.Length > 1 && float.TryParse(parts[1], out float ecd) ? ecd : 1f;
+                    float eyeCloseDuration = parts.Length > 1 && float.TryParse(parts[1], out float ecd) ? ecd : 0.8f;
                     await EyeCloseAsync(eyeCloseDuration, ct);
                     break;
 
@@ -298,91 +330,245 @@ namespace LoveAlgo.Core
 
         #region Shake
 
-        /// <summary>
-        /// 카메라/Stage 흔들림 (duration, strength 직접 지정)
-        /// CSV에서: FX,,CamShake:0.5:30 (0.5초, 강도 30)
-        /// </summary>
+        struct ShakeProfile
+        {
+            public float XMultiplier;
+            public float YMultiplier;
+            public float RotationMultiplier;
+            public float FrequencyMultiplier;
+        }
 
         /// <summary>
-        /// 카메라/Stage 흔들림 (커스텀 값)
-        /// 우선순위: FEEL 피드백 > Stage RectTransform (Screen Space Camera) > World Camera
+        /// 흔들림 인자 파싱
+        /// CSV: Effect:duration:strength 또는 Effect:duration:Weak/Medium/Strong
+        /// </summary>
+        void ParseShakeArgs(string[] parts, out float duration, out float strength)
+        {
+            duration = parts.Length > 1 && float.TryParse(parts[1], out float parsedDuration) ? parsedDuration : 0.3f;
+
+            if (parts.Length > 2)
+            {
+                string token = parts[2].Trim();
+                if (token.Equals("weak", StringComparison.OrdinalIgnoreCase))
+                {
+                    strength = shakePresetWeak;
+                    return;
+                }
+                if (token.Equals("medium", StringComparison.OrdinalIgnoreCase))
+                {
+                    strength = shakePresetMedium;
+                    return;
+                }
+                if (token.Equals("strong", StringComparison.OrdinalIgnoreCase))
+                {
+                    strength = shakePresetStrong;
+                    return;
+                }
+                strength = float.TryParse(token, out float parsedStrength) ? parsedStrength : shakePresetMedium;
+                return;
+            }
+
+            strength = shakePresetMedium;
+        }
+
+        /// <summary>
+        /// 하위 호환 흔들림
+        /// 기존 CamShake는 화면이 어두울 때 Dialogue 흔들림으로 자동 폴백
         /// </summary>
         public async UniTask CamShakeAsync(float duration, float strength, CancellationToken ct = default)
         {
-            // 2. Screen Space - Camera 모드일 때는 RectTransform을 흔들어야 효과가 보임
-            //    (카메라를 흔들면 Canvas가 따라가서 시각적 효과 없음)
+            if ((IsEyeClosed || IsFadeBlack) && dialogueUITransform != null)
+            {
+                await DialogueShakeAsync(duration, strength, ct);
+                return;
+            }
+
+            await StageShakeAsync(duration, strength, ct);
+        }
+
+        /// <summary>
+        /// 스테이지 흔들림 (배경/캐릭터 레이어)
+        /// </summary>
+        public async UniTask StageShakeAsync(float duration, float strength, CancellationToken ct = default)
+        {
+            EnsureBindings();
+            var profile = new ShakeProfile
+            {
+                XMultiplier = stageShakeXMultiplier,
+                YMultiplier = stageShakeYMultiplier,
+                RotationMultiplier = stageShakeRotationMultiplier,
+                FrequencyMultiplier = stageShakeFrequencyMultiplier
+            };
+
             if (stageCanvas != null && stageCanvas.renderMode == RenderMode.ScreenSpaceCamera && stageTransform != null)
             {
-                await ShakeRectTransformAsync(stageTransform, duration, strength, ct);
+                await ShakeRectTransformImpactAsync(stageTransform, duration, strength, profile, stageImpactFrequencyHz, stageImpactDamping, ct);
                 return;
             }
 
-            // 3. World Space나 Overlay 모드에서 카메라 바인딩 시 카메라 흔들기
             if (stageCamera != null)
             {
-                await ShakeCameraAsync(stageCamera, duration, strength, ct);
+                await ShakeCameraImpactAsync(stageCamera, duration, strength, profile, stageImpactFrequencyHz, stageImpactDamping, ct);
                 return;
             }
 
-            // 4. 폴백: Stage RectTransform 흔들기
             if (stageTransform != null)
             {
-                await ShakeRectTransformAsync(stageTransform, duration, strength, ct);
+                await ShakeRectTransformImpactAsync(stageTransform, duration, strength, profile, stageImpactFrequencyHz, stageImpactDamping, ct);
                 return;
             }
 
-            Debug.LogWarning("[ScreenFX] Camera Shake: 바인딩된 대상이 없습니다. stageCanvas 또는 stageCamera/stageTransform을 설정하세요.");
+            var mainCam = Camera.main;
+            if (mainCam != null)
+            {
+                Debug.Log("[ScreenFX] StageShake: 바인딩 없음 → Main Camera 폴백 사용");
+                await ShakeCameraImpactAsync(mainCam, duration, strength, profile, stageImpactFrequencyHz, stageImpactDamping, ct);
+                return;
+            }
+
+            Debug.LogWarning("[ScreenFX] StageShake: 대상이 없습니다. stageCanvas/stageCamera/stageTransform을 설정하세요.");
         }
 
         /// <summary>
-        /// 카메라 흔들기 (DOTween)
+        /// 대사창 흔들림 (UI)
         /// </summary>
-        async UniTask ShakeCameraAsync(Camera cam, float duration, float strength, CancellationToken ct)
+        public async UniTask DialogueShakeAsync(float duration, float strength, CancellationToken ct = default)
         {
+            if (dialogueUITransform == null)
+            {
+                Debug.LogWarning("[ScreenFX] DialogueShake: dialogueUITransform이 바인딩되지 않음");
+                return;
+            }
+
+            var profile = new ShakeProfile
+            {
+                XMultiplier = dialogueShakeXMultiplier,
+                YMultiplier = dialogueShakeYMultiplier,
+                RotationMultiplier = dialogueShakeRotationMultiplier,
+                FrequencyMultiplier = dialogueShakeFrequencyMultiplier
+            };
+
+            // 강한 충격 시 플래시 동시 재생 (shake와 병행, 완료 대기 안 함)
+            if (strength >= impactFlashStrengthThreshold)
+                ImpactFlashAsync(ct).Forget();
+
+            await ShakeRectTransformImpactAsync(
+                dialogueUITransform, duration, strength, profile,
+                dialogueImpactFrequencyHz, dialogueImpactDamping, ct);
+        }
+
+        /// <summary>
+        /// 임팩트 플래시 — flashOverlay 또는 fadeOverlay로 순간 백색 섬광
+        /// </summary>
+        async UniTaskVoid ImpactFlashAsync(CancellationToken ct)
+        {
+            Image overlay = flashOverlay != null ? flashOverlay : fadeOverlay;
+            if (overlay == null) return;
+
+            Color saved = overlay.color;
+            // 흰색으로 덮고 빠르게 페이드아웃
+            overlay.color = Color.white;
+            overlay.raycastTarget = false;
+            SetOverlayAlpha(overlay, impactFlashAlpha);
+            try
+            {
+                await overlay.DOFade(0f, impactFlashDuration)
+                    .SetEase(Ease.OutQuad)
+                    .ToUniTask(cancellationToken: ct);
+            }
+            finally
+            {
+                if (overlay != null)
+                    overlay.color = saved;
+            }
+        }
+
+        /// <summary>
+        /// 카메라 흔들기 - 엔벨로프 + Perlin 기반
+        /// </summary>
+        async UniTask ShakeCameraAsync(Camera cam, float duration, float strength, ShakeProfile profile, CancellationToken ct)
+        {
+            if (cam == null) return;
+
             Vector3 originalPos = cam.transform.localPosition;
-            
-            // strength를 카메라 단위로 변환 (UI 픽셀 → 월드 단위)
-            float worldStrength = strength * 0.01f;
-            
-            await cam.transform
-                .DOShakePosition(duration, worldStrength, 20, 90, false, true)
-                .ToUniTask(cancellationToken: ct);
-            
-            cam.transform.localPosition = originalPos;
-        }
-
-        /// <summary>
-        /// RectTransform 흔들기 - FEEL 스타일 Perlin Noise 기반
-        /// 부드럽고 자연스러운 흔들림 + 감쇠(Falloff) 적용
-        /// </summary>
-        async UniTask ShakeRectTransformAsync(RectTransform rt, float duration, float strength, CancellationToken ct)
-        {
-            Vector2 originalPos = rt.anchoredPosition;
+            Quaternion originalRot = cam.transform.localRotation;
             float elapsed = 0f;
-            
-            // 각 축에 다른 시드를 사용해서 자연스러운 2D 흔들림
-            float seedX = noiseSeed;
-            float seedY = noiseSeed + 100f;
-            
+
+            float seedBase = noiseSeed + Time.unscaledTime * 11.7f;
+            float seedX = seedBase + 13.1f;
+            float seedY = seedBase + 57.3f;
+
             try
             {
                 while (elapsed < duration)
                 {
                     ct.ThrowIfCancellationRequested();
-                    
-                    float t = elapsed / duration;
-                    // 감쇠 커브: 시작은 강하고 끝으로 갈수록 약해짐
-                    float falloff = 1f - t;
-                    falloff = falloff * falloff; // 이차 감쇠 (더 자연스러움)
-                    
-                    // Perlin Noise로 부드러운 랜덤 오프셋 생성 (-1 ~ 1 범위)
-                    float noiseX = (Mathf.PerlinNoise(shakeFrequency * elapsed, seedX) * 2f - 1f);
-                    float noiseY = (Mathf.PerlinNoise(shakeFrequency * elapsed, seedY) * 2f - 1f);
-                    
-                    // 강도와 감쇠 적용
-                    Vector2 offset = new Vector2(noiseX, noiseY) * strength * falloff;
+
+                    float amp = EvaluateShakeEnvelope(elapsed, duration);
+                    float sampleT = elapsed * shakeFrequency * profile.FrequencyMultiplier;
+                    float noiseX = SampleShakeNoise(sampleT, seedX);
+                    float noiseY = SampleShakeNoise(sampleT, seedY);
+
+                    float worldStrength = strength * cameraPositionScale * amp;
+                    Vector3 offset = new Vector3(
+                        noiseX * worldStrength * profile.XMultiplier,
+                        noiseY * worldStrength * profile.YMultiplier,
+                        0f);
+
+                    float zRot = noiseX * strength * profile.RotationMultiplier * amp;
+
+                    cam.transform.localPosition = originalPos + offset;
+                    cam.transform.localRotation = Quaternion.Euler(0f, 0f, zRot) * originalRot;
+
+                    elapsed += Time.deltaTime;
+                    await UniTask.Yield(ct);
+                }
+            }
+            finally
+            {
+                if (cam != null)
+                {
+                    cam.transform.localPosition = originalPos;
+                    cam.transform.localRotation = originalRot;
+                }
+            }
+        }
+
+        /// <summary>
+        /// RectTransform 흔들기 - 엔벨로프 + Perlin 기반
+        /// </summary>
+        async UniTask ShakeRectTransformAsync(RectTransform rt, float duration, float strength, ShakeProfile profile, CancellationToken ct)
+        {
+            if (rt == null) return;
+
+            Vector2 originalPos = rt.anchoredPosition;
+            Quaternion originalRot = rt.localRotation;
+            float elapsed = 0f;
+
+            float seedBase = noiseSeed + Time.unscaledTime * 13.3f;
+            float seedX = seedBase + 31.7f;
+            float seedY = seedBase + 89.9f;
+
+            try
+            {
+                while (elapsed < duration)
+                {
+                    ct.ThrowIfCancellationRequested();
+
+                    float amp = EvaluateShakeEnvelope(elapsed, duration);
+                    float sampleT = elapsed * shakeFrequency * profile.FrequencyMultiplier;
+                    float noiseX = SampleShakeNoise(sampleT, seedX);
+                    float noiseY = SampleShakeNoise(sampleT, seedY);
+
+                    Vector2 offset = new Vector2(
+                        noiseX * strength * profile.XMultiplier,
+                        noiseY * strength * profile.YMultiplier) * amp;
+
+                    float zRot = noiseX * strength * profile.RotationMultiplier * amp;
+
                     rt.anchoredPosition = originalPos + offset;
-                    
+                    rt.localRotation = Quaternion.Euler(0f, 0f, zRot) * originalRot;
+
                     elapsed += Time.deltaTime;
                     await UniTask.Yield(ct);
                 }
@@ -391,8 +577,176 @@ namespace LoveAlgo.Core
             {
                 // 취소되더라도 반드시 원래 위치로 복원
                 if (rt != null)
+                {
                     rt.anchoredPosition = originalPos;
+                    rt.localRotation = originalRot;
+                }
             }
+        }
+
+        /// <summary>
+        /// RectTransform 임팩트 흔들기 - VN 스타일(쾅 맞고 감쇠)
+        /// 대사창에 주로 사용.
+        /// </summary>
+        async UniTask ShakeRectTransformImpactAsync(
+            RectTransform rt, float duration, float strength, ShakeProfile profile,
+            float frequencyHz, float damping, CancellationToken ct)
+        {
+            if (rt == null) return;
+
+            Vector2 originalPos = rt.anchoredPosition;
+            Quaternion originalRot = rt.localRotation;
+            float elapsed = 0f;
+
+            float safeDuration = Mathf.Max(0.05f, duration);
+            float omega = 2f * Mathf.PI * Mathf.Max(1f, frequencyHz);
+            float safeDamping = Mathf.Max(0.1f, damping);
+
+            // 2D 방향 벡터 — 좌/우만 아니라 완전한 랜덤 방향
+            float angle = UnityEngine.Random.Range(0f, 2f * Mathf.PI);
+            float dirX = Mathf.Cos(angle);
+            float dirY = Mathf.Sin(angle);
+
+            // Hitlag: 전체 duration의 최대 10% 또는 절대 상한값
+            float effectiveHitlag = Mathf.Min(shakeHitlagSeconds, safeDuration * 0.10f);
+
+            try
+            {
+                while (elapsed < safeDuration)
+                {
+                    ct.ThrowIfCancellationRequested();
+
+                    float x, y, zRot;
+
+                    if (elapsed < effectiveHitlag)
+                    {
+                        // Phase 1 — Hitlag: 충격 방향으로 변위 고정 (프리즈 프레임)
+                        x = dirX * strength * profile.XMultiplier;
+                        y = dirY * strength * profile.YMultiplier;
+                        zRot = dirX * strength * profile.RotationMultiplier * 0.4f;
+                    }
+                    else
+                    {
+                        // Phase 2 — 감쇠 진동: hitlag 이후 경과 시간 기준
+                        // 시간 기반 감쇠 → duration에 관계없이 일정한 체감 강도
+                        float t2 = elapsed - effectiveHitlag;
+                        float decay = Mathf.Exp(-safeDamping * t2);
+                        float wave = Mathf.Sin(t2 * omega * profile.FrequencyMultiplier);
+
+                        x = dirX * wave * strength * profile.XMultiplier * decay;
+                        y = dirY * wave * strength * profile.YMultiplier * decay;
+                        zRot = wave * strength * profile.RotationMultiplier * decay;
+                    }
+
+                    rt.anchoredPosition = originalPos + new Vector2(x, y);
+                    rt.localRotation = Quaternion.Euler(0f, 0f, zRot) * originalRot;
+
+                    elapsed += Time.deltaTime;
+                    await UniTask.Yield(ct);
+                }
+            }
+            finally
+            {
+                if (rt != null)
+                {
+                    rt.anchoredPosition = originalPos;
+                    rt.localRotation = originalRot;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Camera 임팩트 흔들기 - VN 스타일(쾅 맞고 감쇠)
+        /// </summary>
+        async UniTask ShakeCameraImpactAsync(
+            Camera cam, float duration, float strength, ShakeProfile profile,
+            float frequencyHz, float damping, CancellationToken ct)
+        {
+            if (cam == null) return;
+
+            Vector3 originalPos = cam.transform.localPosition;
+            Quaternion originalRot = cam.transform.localRotation;
+            float elapsed = 0f;
+
+            float safeDuration = Mathf.Max(0.05f, duration);
+            float omega = 2f * Mathf.PI * Mathf.Max(1f, frequencyHz);
+            float safeDamping = Mathf.Max(0.1f, damping);
+            float worldStrength = strength * cameraPositionScale;
+
+            float angle = UnityEngine.Random.Range(0f, 2f * Mathf.PI);
+            float dirX = Mathf.Cos(angle);
+            float dirY = Mathf.Sin(angle);
+
+            float effectiveHitlag = Mathf.Min(shakeHitlagSeconds, safeDuration * 0.10f);
+
+            try
+            {
+                while (elapsed < safeDuration)
+                {
+                    ct.ThrowIfCancellationRequested();
+
+                    Vector3 offset;
+                    float zRot;
+
+                    if (elapsed < effectiveHitlag)
+                    {
+                        offset = new Vector3(
+                            dirX * worldStrength * profile.XMultiplier,
+                            dirY * worldStrength * profile.YMultiplier,
+                            0f);
+                        zRot = dirX * strength * profile.RotationMultiplier * 0.4f;
+                    }
+                    else
+                    {
+                        float t2 = elapsed - effectiveHitlag;
+                        float decay = Mathf.Exp(-safeDamping * t2);
+                        float wave = Mathf.Sin(t2 * omega * profile.FrequencyMultiplier);
+
+                        offset = new Vector3(
+                            dirX * wave * worldStrength * profile.XMultiplier * decay,
+                            dirY * wave * worldStrength * profile.YMultiplier * decay,
+                            0f);
+                        zRot = wave * strength * profile.RotationMultiplier * decay;
+                    }
+
+                    cam.transform.localPosition = originalPos + offset;
+                    cam.transform.localRotation = Quaternion.Euler(0f, 0f, zRot) * originalRot;
+
+                    elapsed += Time.deltaTime;
+                    await UniTask.Yield(ct);
+                }
+            }
+            finally
+            {
+                if (cam != null)
+                {
+                    cam.transform.localPosition = originalPos;
+                    cam.transform.localRotation = originalRot;
+                }
+            }
+        }
+
+        float EvaluateShakeEnvelope(float elapsed, float duration)
+        {
+            if (duration <= 0f) return 0f;
+
+            float attackTime = Mathf.Max(duration * shakeAttackRatio, 0.0001f);
+            if (elapsed < attackTime)
+            {
+                return Mathf.Clamp01(elapsed / attackTime);
+            }
+
+            float decayTime = Mathf.Max(duration - attackTime, 0.0001f);
+            float decayT = Mathf.Clamp01((elapsed - attackTime) / decayTime);
+            return Mathf.Pow(1f - decayT, shakeDecayPower);
+        }
+
+        float SampleShakeNoise(float t, float seed)
+        {
+            // 2옥타브 블렌딩으로 단조로운 패턴 완화
+            float n1 = Mathf.PerlinNoise(t, seed) * 2f - 1f;
+            float n2 = Mathf.PerlinNoise(t * 2.17f, seed + 37.2f) * 2f - 1f;
+            return (n1 + (n2 * 0.5f)) / 1.5f;
         }
 
         #endregion

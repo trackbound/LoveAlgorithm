@@ -9,7 +9,8 @@
       "mcp__filesystem__search_files",
       "Bash(powershell:*)",
       "mcp__unityMCP__list_resources",
-      "mcp__unityMCP__validate_script"
+      "mcp__unityMCP__validate_script",
+      "Bash(python3:*)"
     ]
   }
 }

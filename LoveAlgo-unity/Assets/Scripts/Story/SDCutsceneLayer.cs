@@ -8,7 +8,7 @@ namespace LoveAlgo.Story
 {
     /// <summary>
     /// SD 컷씬 레이어 - 배경/캐릭터 위에 부분 영역으로 표시되는 SD 이미지
-    /// CG와 달리 캐릭터 퇴장/대사창 숨김 없이 함께 표시 가능
+    /// 대사창은 유지되며, 캐릭터 자동 숨김/복원은 ScriptRunner에서 제어
     /// 
     /// Stage 계층: Background → VirtualBG → Character → SDCutscene → MonologueDim → CG → EyeEffect
     /// 
@@ -76,8 +76,9 @@ namespace LoveAlgo.Story
             var parts = value.Split(':');
             string command = parts[0];
 
-            // Exit 명령
-            if (command.Equals("Exit", System.StringComparison.OrdinalIgnoreCase))
+            // Exit / Close 명령
+            if (command.Equals("Exit", System.StringComparison.OrdinalIgnoreCase)
+                || command.Equals("Close", System.StringComparison.OrdinalIgnoreCase))
             {
                 float duration = defaultDuration;
                 if (parts.Length >= 2 && float.TryParse(parts[1], out float d))
@@ -175,10 +176,10 @@ namespace LoveAlgo.Story
             {
                 var seq = DOTween.Sequence();
                 if (frontCanvasGroup != null)
-                    seq.Join(frontCanvasGroup.DOFade(1f, duration));
+                    _ = seq.Join(frontCanvasGroup.DOFade(1f, duration));
                 if (backCanvasGroup != null)
-                    seq.Join(backCanvasGroup.DOFade(0f, duration));
-                seq.SetEase(Ease.Linear);
+                    _ = seq.Join(backCanvasGroup.DOFade(0f, duration));
+                _ = seq.SetEase(Ease.Linear);
 
                 await seq.ToUniTask(cancellationToken: ct);
             }
@@ -278,12 +279,17 @@ namespace LoveAlgo.Story
         /// </summary>
         Sprite LoadSprite(string sdName)
         {
-            // Resources/SD/이름 에서 로드
-            var sprite = Resources.Load<Sprite>($"SD/{sdName}");
+            // SD/ 접두사가 붙어 있으면 제거 (CSV 호환)
+            if (sdName.StartsWith("SD/", System.StringComparison.OrdinalIgnoreCase))
+                sdName = sdName.Substring(3);
+
+            // SdPathMapping으로 경로 조회
+            var path = Data.SdPathMapping.GetPath(sdName);
+            var sprite = Resources.Load<Sprite>(path);
             if (sprite != null) return sprite;
 
             // 폴백: 직접 경로
-            sprite = Resources.Load<Sprite>(sdName);
+            sprite = Resources.Load<Sprite>($"SD/{sdName}");
             return sprite;
         }
     }

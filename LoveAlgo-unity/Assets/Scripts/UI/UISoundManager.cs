@@ -21,11 +21,6 @@ namespace LoveAlgo.UI
         [SerializeField] AudioClip choiceSelectClip;
         [SerializeField] AudioClip choiceAppearClip;
 
-        [Header("사운드 이름 (Resources/Audio/SFX/)")]
-        [SerializeField] string hoverSFXName = "Hover";
-        [SerializeField] string clickSFXName = "Click";
-        [SerializeField] string typingSFXName = "Type";
-
         [Header("오디오 믹서")]
         [SerializeField] AudioMixerGroup sfxMixerGroup;  // AudioManager와 동일한 SFX 그룹 할당
 
@@ -39,6 +34,12 @@ namespace LoveAlgo.UI
         [SerializeField] float minTypingVolume = 0.35f;
         [SerializeField] float maxTypingVolume = 0.5f;
 
+        [Header("타이핑 재생 간격")]
+        [SerializeField] float typingMinInterval = 0.03f; // 텍스트 속도와 무관하게 최소 간격 보장
+
+        [Header("볼륨 프리뷰")]
+        [SerializeField] float volumePreviewInterval = 0.08f;
+
 
         [Header("자동 바인딩")]
         [SerializeField] bool autoBindButtons = true;
@@ -49,11 +50,13 @@ namespace LoveAlgo.UI
         /// </summary>
         AudioSource typingSource;
         HashSet<Button> registeredButtons = new HashSet<Button>();
+        float lastTypingPlayTime = -999f;
+        float lastVolumePreviewTime = -999f;
 
         protected override void OnSingletonAwake()
         {
             SetupAudioSource();
-            LoadClips();
+            WarmUpClips();
         }
 
         void Start()
@@ -73,10 +76,13 @@ namespace LoveAlgo.UI
                 audioSource = gameObject.AddComponent<AudioSource>();
             }
             audioSource.playOnAwake = false;
+            // UI SFX는 매우 짧은 소리이므로 priority를 높게 설정 (0=최고)
+            audioSource.priority = 0;
 
             // 타이핑 전용 AudioSource (피치 변경이 다른 사운드에 영향 주지 않도록 분리)
             typingSource = gameObject.AddComponent<AudioSource>();
             typingSource.playOnAwake = false;
+            typingSource.priority = 0;
 
             // AudioMixer SFX 그룹에 라우팅 (설정의 SFX 볼륨이 UI 사운드에도 적용됨)
             if (sfxMixerGroup != null)
@@ -86,14 +92,11 @@ namespace LoveAlgo.UI
             }
         }
 
-        void LoadClips()
+        // Pre-warm: 첫 PlayOneShot overhead 제거를 위해 무음으로 미리 재생
+        void WarmUpClips()
         {
-            if (hoverClip == null && !string.IsNullOrEmpty(hoverSFXName))
-                hoverClip = Resources.Load<AudioClip>($"Audio/SFX/{hoverSFXName}");
-            if (clickClip == null && !string.IsNullOrEmpty(clickSFXName))
-                clickClip = Resources.Load<AudioClip>($"Audio/SFX/{clickSFXName}");
-            if (typingClip == null && !string.IsNullOrEmpty(typingSFXName))
-                typingClip = Resources.Load<AudioClip>($"Audio/SFX/{typingSFXName}");
+            if (hoverClip != null) audioSource.PlayOneShot(hoverClip, 0f);
+            if (clickClip != null) audioSource.PlayOneShot(clickClip, 0f);
         }
 
         #region 버튼 자동 바인딩
@@ -184,18 +187,32 @@ namespace LoveAlgo.UI
         }
 
         /// <summary>
-        /// 타이핑 사운드 재생 (피치 랜덤, 전용 AudioSource 사용)
-        /// </summary>
-/// <summary>
         /// 타이핑 사운드 재생 (피치+볼륨 랜덤, 전용 AudioSource 사용)
+        /// Play()로 글자마다 재시작 → 키보드 타자 질감 (PlayOneShot 누적 방지)
         /// </summary>
         public void PlayTyping()
         {
             if (typingClip == null || typingSource == null) return;
+            if (Time.unscaledTime - lastTypingPlayTime < typingMinInterval) return;
+            lastTypingPlayTime = Time.unscaledTime;
 
+            typingSource.clip = typingClip;
             typingSource.pitch = Random.Range(minTypingPitch, maxTypingPitch);
-            float vol = Random.Range(minTypingVolume, maxTypingVolume);
-            typingSource.PlayOneShot(typingClip, vol);
+            typingSource.volume = Random.Range(minTypingVolume, maxTypingVolume);
+            typingSource.Play();
+        }
+
+        /// <summary>
+        /// 볼륨 슬라이더 조작 중 샘플 사운드 재생 (과도한 연속 재생 방지)
+        /// </summary>
+        public void PlayVolumePreview()
+        {
+            if (Time.unscaledTime - lastVolumePreviewTime < volumePreviewInterval) return;
+            lastVolumePreviewTime = Time.unscaledTime;
+
+            var clip = clickClip != null ? clickClip : dialogueNextClip;
+            if (clip == null) return;
+            PlayClip(clip, clickVolume);
         }
 
         /// <summary>
@@ -236,15 +253,12 @@ namespace LoveAlgo.UI
 
         void OnApplicationFocus(bool hasFocus)
         {
+            // UI SFX(클릭/호버)는 매우 짧아서 포커스 복귀 시 재개할 필요 없음
+            // Pause → UnPause 사이의 타이밍 갭이 오히려 latency처럼 느껴질 수 있어 Stop 사용
             if (!hasFocus)
             {
-                if (audioSource != null) audioSource.Pause();
-                if (typingSource != null) typingSource.Pause();
-            }
-            else
-            {
-                if (audioSource != null) audioSource.UnPause();
-                if (typingSource != null) typingSource.UnPause();
+                if (audioSource != null) audioSource.Stop();
+                if (typingSource != null) typingSource.Stop();
             }
         }
 
@@ -252,13 +266,8 @@ namespace LoveAlgo.UI
         {
             if (pauseStatus)
             {
-                if (audioSource != null) audioSource.Pause();
-                if (typingSource != null) typingSource.Pause();
-            }
-            else
-            {
-                if (audioSource != null) audioSource.UnPause();
-                if (typingSource != null) typingSource.UnPause();
+                if (audioSource != null) audioSource.Stop();
+                if (typingSource != null) typingSource.Stop();
             }
         }
 

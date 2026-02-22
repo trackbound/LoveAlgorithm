@@ -70,7 +70,7 @@ namespace LoveAlgo.UI
             PlayTitleBGM();
         }
 
-        void PlayTitleBGM()
+        public void PlayTitleBGM()
         {
             if (!string.IsNullOrEmpty(titleBGM))
             {
@@ -213,7 +213,7 @@ namespace LoveAlgo.UI
             if (HasAnySaveData())
             {
                 bool confirmed = await PopupManager.Instance.ConfirmAsync(
-                    "새 게임을 시작하면\n저장되지 않은 진행이 사라집니다.\n계속하시겠습니까?");
+                    "기존 진행이 사라집니다.\n처음부터 시작하시겠어요?");
                 if (!confirmed) return;
             }
 

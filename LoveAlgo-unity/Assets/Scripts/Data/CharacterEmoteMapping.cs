@@ -1,7 +1,7 @@
 ﻿// ═══════════════════════════════════════════════════════════════════
 // 이 파일은 ResourceMappingGenerator에 의해 자동 생성됩니다.
 // 수동으로 수정하지 마세요! (LoveAlgo > Tools > Generate Character Mapping)
-// 생성 시각: 2026-01-26 09:59:06
+// 생성 시각: 2026-02-11 01:30:00
 // ═══════════════════════════════════════════════════════════════════
 
 using System;
@@ -23,69 +23,88 @@ namespace LoveAlgo.Data
             {
                 "Bom", new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                 {
-                    { "Default", "Characters/Bom/Default" },
-                    { "Bright", "Characters/Bom/Bright" },
-                    { "EyeSmile", "Characters/Bom/EyeSmile" },
-                    { "Glare", "Characters/Bom/Glare" },
-                    { "Happy", "Characters/Bom/Happy" },
-                    { "Surprise", "Characters/Bom/Surprise" },
-                    { "Tearful", "Characters/Bom/Tearful" },
+                    { "Default", "Characters/Bom/01_Default" },
+                    { "EyeSmile", "Characters/Bom/02_EyeSmile" },
+                    { "BrightSmile", "Characters/Bom/03_BrightSmile" },
+                    { "Happy", "Characters/Bom/04_Happy" },
+                    { "Glare", "Characters/Bom/05_Glare" },
+                    { "Surprise", "Characters/Bom/06_Surprise" },
+                    { "Tearful", "Characters/Bom/07_Tearful" },
                 }
             },
             {
                 "Daeun", new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                 {
-                    { "Default", "Characters/Daeun/Default" },
-                    { "Bright", "Characters/Daeun/Bright" },
-                    { "EyeSmile", "Characters/Daeun/EyeSmile" },
-                    { "Glare", "Characters/Daeun/Glare" },
-                    { "Happy", "Characters/Daeun/Happy" },
-                    { "Surprise", "Characters/Daeun/Surprise" },
-                    { "Tearful", "Characters/Daeun/Tearful" },
+                    { "Default", "Characters/Daeun/01_Default" },
+                    { "EyeSmile", "Characters/Daeun/02_EyeSmile" },
+                    { "BrightSmile", "Characters/Daeun/03_BrightSmile" },
+                    { "Happy", "Characters/Daeun/04_Happy" },
+                    { "Glare", "Characters/Daeun/05_Glare" },
+                    { "Surprise", "Characters/Daeun/06_Surprise" },
+                    { "Tearful", "Characters/Daeun/07_Tearful" },
                 }
             },
             {
                 "Heewon", new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                 {
-                    { "Default", "Characters/Heewon/Default" },
-                    { "Bright", "Characters/Heewon/Bright" },
-                    { "EyeSmile", "Characters/Heewon/EyeSmile" },
-                    { "Glare", "Characters/Heewon/Glare" },
-                    { "Happy", "Characters/Heewon/Happy" },
-                    { "Surprise", "Characters/Heewon/Surprise" },
-                    { "Tearful", "Characters/Heewon/Tearful" },
+                    { "Default", "Characters/Heewon/01_Default" },
+                    { "EyeSmile", "Characters/Heewon/02_EyeSmile" },
+                    { "BrightSmile", "Characters/Heewon/03_BrightSmile" },
+                    { "Happy", "Characters/Heewon/04_Happy" },
+                    { "Glare", "Characters/Heewon/05_Glare" },
+                    { "Surprise", "Characters/Heewon/06_Surprise" },
+                    { "Tearful", "Characters/Heewon/07_Tearful" },
                 }
             },
             {
                 "Roa", new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                 {
-                    { "Default", "Characters/Roa/Default" },
-                    { "Bright", "Characters/Roa/Bright" },
-                    { "Glare", "Characters/Roa/Glare" },
-                    { "Happy", "Characters/Roa/Happy" },
-                    { "Surprise", "Characters/Roa/Surprise" },
-                    { "Tearful", "Characters/Roa/Tearful" },
+                    { "Default", "Characters/Roa/01_Default" },
+                    { "EyeSmile", "Characters/Roa/02_EyeSmile" },
+                    { "BrightSmile", "Characters/Roa/03_BrightSmile" },
+                    { "Happy", "Characters/Roa/04_Happy" },
+                    { "Glare", "Characters/Roa/05_Glare" },
+                    { "Surprise", "Characters/Roa/06_Surprise" },
+                    { "Tearful", "Characters/Roa/07_Tearful" },
                 }
             },
             {
                 "Yeun", new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                 {
-                    { "Default", "Characters/Yeun/Default" },
-                    { "Bright", "Characters/Yeun/Bright" },
-                    { "EyeSmile", "Characters/Yeun/EyeSmile" },
-                    { "Glare", "Characters/Yeun/Glare" },
-                    { "Happy", "Characters/Yeun/Happy" },
-                    { "Surprise", "Characters/Yeun/Surprise" },
-                    { "Tearful", "Characters/Yeun/Tearful" },
+                    { "Default", "Characters/Yeun/01_Default" },
+                    { "EyeSmile", "Characters/Yeun/02_EyeSmile" },
+                    { "BrightSmile", "Characters/Yeun/03_BrightSmile" },
+                    { "Happy", "Characters/Yeun/04_Happy" },
+                    { "Glare", "Characters/Yeun/05_Glare" },
+                    { "Surprise", "Characters/Yeun/06_Surprise" },
+                    { "Tearful", "Characters/Yeun/07_Tearful" },
                 }
             },
         };
 
         /// <summary>
-        /// 캐릭터의 표정 경로 조회
+        /// 한글 표정 별칭 → 코드 이름 (시나리오 작가용)
+        /// </summary>
+        public static readonly Dictionary<string, string> EmoteAliases = new(StringComparer.OrdinalIgnoreCase)
+        {
+            { "기본", "Default" },
+            { "눈웃음", "EyeSmile" },
+            { "밝게웃음", "BrightSmile" },
+            { "활짝", "Happy" },
+            { "찌릿", "Glare" },
+            { "깜짝", "Surprise" },
+            { "울먹", "Tearful" },
+        };
+
+        /// <summary>
+        /// 캐릭터의 표정 경로 조회 (한글 별칭 지원)
         /// </summary>
         public static string GetPath(string character, string emote)
         {
+            // 한글 별칭 변환
+            if (EmoteAliases.TryGetValue(emote, out string resolvedEmote))
+                emote = resolvedEmote;
+
             if (Characters.TryGetValue(character, out var emotes))
             {
                 if (emotes.TryGetValue(emote, out string path))
@@ -108,6 +127,9 @@ namespace LoveAlgo.Data
         /// </summary>
         public static bool HasEmote(string character, string emote)
         {
+            if (EmoteAliases.TryGetValue(emote, out string resolved))
+                emote = resolved;
+
             return Characters.TryGetValue(character, out var emotes) &&
                    emotes.ContainsKey(emote);
         }

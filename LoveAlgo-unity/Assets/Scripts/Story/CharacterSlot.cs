@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using LoveAlgo.Data;
 using UnityEngine;
 using UnityEngine.UI;
 using DG.Tweening;
@@ -46,11 +47,11 @@ namespace LoveAlgo.Story
         [SerializeField] RectTransform imageContainer;  // 이미지들의 부모 (스케일/오프셋 적용용)
 
         [Header("설정")]
-        [SerializeField] float fadeDuration = 1.0f;
-        [SerializeField] float exitDuration = 0.4f;
-        [SerializeField] float emoteFadeDuration = 0.2f;
-        [SerializeField] float enterOffset = 100f;       // 등장 시 슬라이드 거리
-        [SerializeField] float exitSlideDistance = 40f;  // 퇴장 시 슬라이드 거리
+        [SerializeField] float fadeDuration = 0.35f;
+        [SerializeField] float exitDuration = 0.25f;
+        [SerializeField] float emoteFadeDuration = 0.15f;
+        [SerializeField] float enterOffset = 60f;        // 등장 시 슬라이드 거리
+        [SerializeField] float exitSlideDistance = 30f;  // 퇴장 시 슬라이드 거리
 
         [Header("캐릭터 DB")]
         [SerializeField] CharacterDatabase characterDatabase;
@@ -80,7 +81,8 @@ namespace LoveAlgo.Story
         }
 
         /// <summary>
-        /// 캐릭터 등장 (같은 캐릭터+같은 표정이면 스킵, 표정만 다르면 EmoteAsync)
+        /// 캐릭터 등장 — 순수 페이드 (기본)
+        /// 같은 캐릭터+같은 표정이면 스킵, 표정만 다르면 EmoteAsync
         /// </summary>
         public async UniTask EnterAsync(string characterName, string emote = "Default", CancellationToken ct = default)
         {
@@ -89,57 +91,82 @@ namespace LoveAlgo.Story
             // 이미 같은 캐릭터가 표시 중인 경우
             if (currentCharacter == characterName && !IsEmpty)
             {
-                // 표정이 다르면 EmoteAsync로 전환
                 if (currentEmote != resolvedEmote)
-                {
                     await EmoteAsync(resolvedEmote, ct);
-                }
                 return;
             }
 
+            if (!PrepareEnter(characterName, resolvedEmote)) return;
+
+            // 원래 위치에서 페이드인만
+            if (rectTransform != null)
+                rectTransform.anchoredPosition = originalPosition;
+            SetSlotAlpha(0f);
+
+            if (slotCanvasGroup != null)
+                await slotCanvasGroup.DOFade(1f, fadeDuration).SetEase(Ease.OutCubic).ToUniTask(cancellationToken: ct);
+            else
+                SetSlotAlpha(1f);
+
+            AudioManager.Instance?.OnCharacterEnter(characterName);
+        }
+
+        /// <summary>
+        /// 캐릭터 등장 — 아래에서 위로 슬라이드 + 페이드
+        /// CSV: ,Char,,슬롯:EnterUp:캐릭터[:표정],await
+        /// </summary>
+        public async UniTask EnterSlideUpAsync(string characterName, string emote = "Default", CancellationToken ct = default)
+        {
+            string resolvedEmote = string.IsNullOrEmpty(emote) ? "Default" : emote;
+
+            if (currentCharacter == characterName && !IsEmpty)
+            {
+                if (currentEmote != resolvedEmote)
+                    await EmoteAsync(resolvedEmote, ct);
+                return;
+            }
+
+            if (!PrepareEnter(characterName, resolvedEmote)) return;
+
+            // 아래에서 위로 슬라이드
+            if (rectTransform != null)
+                rectTransform.anchoredPosition = originalPosition + new Vector2(0, -enterOffset);
+            SetSlotAlpha(0f);
+
+            var sequence = DOTween.Sequence();
+            if (rectTransform != null)
+                _ = sequence.Join(rectTransform.DOAnchorPos(originalPosition, fadeDuration).SetEase(Ease.OutQuart));
+            if (slotCanvasGroup != null)
+                _ = sequence.Join(slotCanvasGroup.DOFade(1f, fadeDuration).SetEase(Ease.OutCubic));
+
+            await sequence.ToUniTask(cancellationToken: ct);
+
+            AudioManager.Instance?.OnCharacterEnter(characterName);
+        }
+
+        /// <summary>
+        /// 등장 공통 준비 (스프라이트 로드 + 이미지 세팅 + 트랜스폼 적용)
+        /// </summary>
+        bool PrepareEnter(string characterName, string resolvedEmote)
+        {
             currentCharacter = characterName;
             currentEmote = resolvedEmote;
 
-            // 스프라이트 로드
             var sprite = LoadSprite(currentCharacter, currentEmote);
             if (sprite == null)
             {
                 Debug.LogWarning($"[CharacterSlot] 스프라이트 없음: {currentCharacter}/{currentEmote}");
-                return;
+                return false;
             }
 
-            // Front 이미지 설정
             imageFront.sprite = sprite;
             imageFront.enabled = true;
             SetImageAlpha(frontCanvasGroup, 1f);
             SetImageAlpha(backCanvasGroup, 0f);
             imageBack.enabled = false;
 
-            // 캐릭터별 트랜스폼 적용 (스케일 + 오프셋을 imageContainer에 적용)
             ApplyCharacterTransform(characterName, currentEmote, applyOffset: true);
-
-            // 등장 애니메이션: 슬라이드 + 페이드 (슬롯 위치는 고정, imageContainer가 오프셋 담당)
-            if (rectTransform != null)
-            {
-                // 슬롯은 항상 originalPosition에서 시작해서 originalPosition으로 이동
-                rectTransform.anchoredPosition = originalPosition + new Vector2(0, -enterOffset);
-            }
-            SetSlotAlpha(0f);
-
-            var sequence = DOTween.Sequence();
-            if (rectTransform != null)
-            {
-                _ = sequence.Join(rectTransform.DOAnchorPos(originalPosition, fadeDuration).SetEase(Ease.OutQuart));
-            }
-            if (slotCanvasGroup != null)
-            {
-                _ = sequence.Join(slotCanvasGroup.DOFade(1f, fadeDuration).SetEase(Ease.OutCubic));
-            }
-
-            await sequence.ToUniTask(cancellationToken: ct);
-            
-            // AudioManager에 캐릭터 등장 알림 (BGM 자동 전환)
-            AudioManager.Instance?.OnCharacterEnter(characterName);
+            return true;
         }
 
         /// <summary>
@@ -190,7 +217,7 @@ namespace LoveAlgo.Story
         }
 
         /// <summary>
-        /// 캐릭터 퇴장
+        /// 캐릭터 퇴장 — 순수 페이드 (기본)
         /// </summary>
         public async UniTask ExitAsync(CancellationToken ct = default)
         {
@@ -198,21 +225,11 @@ namespace LoveAlgo.Story
 
             string exitingCharacter = currentCharacter;
 
-            // 퇴장 애니메이션: 슬라이드 다운 + 페이드 아웃
-            var sequence = DOTween.Sequence();
-            if (rectTransform != null)
-            {
-                _ = sequence.Join(rectTransform.DOAnchorPos(
-                    originalPosition + new Vector2(0, -exitSlideDistance), exitDuration)
-                    .SetEase(Ease.InCubic));
-            }
             if (slotCanvasGroup != null)
-            {
-                _ = sequence.Join(slotCanvasGroup.DOFade(0f, exitDuration).SetEase(Ease.InQuad));
-            }
-            await sequence.ToUniTask(cancellationToken: ct);
+                await slotCanvasGroup.DOFade(0f, exitDuration).SetEase(Ease.InQuad).ToUniTask(cancellationToken: ct);
+            else
+                SetSlotAlpha(0f);
 
-            // 위치 복원 (다음 입장용)
             if (rectTransform != null)
                 rectTransform.anchoredPosition = originalPosition;
 
@@ -220,8 +237,38 @@ namespace LoveAlgo.Story
             ResetCharacterTransform();
             currentCharacter = null;
             currentEmote = null;
-            
-            // AudioManager에 캐릭터 퇴장 알림 (BGM 자동 전환)
+
+            AudioManager.Instance?.OnCharacterExit(exitingCharacter);
+        }
+
+        /// <summary>
+        /// 캐릭터 퇴장 — 아래로 슬라이드 + 페이드
+        /// CSV: ,Char,,슬롯:ExitDown,await
+        /// </summary>
+        public async UniTask ExitSlideDownAsync(CancellationToken ct = default)
+        {
+            if (IsEmpty) return;
+
+            string exitingCharacter = currentCharacter;
+
+            var sequence = DOTween.Sequence();
+            if (rectTransform != null)
+                _ = sequence.Join(rectTransform.DOAnchorPos(
+                    originalPosition + new Vector2(0, -exitSlideDistance), exitDuration)
+                    .SetEase(Ease.InCubic));
+            if (slotCanvasGroup != null)
+                _ = sequence.Join(slotCanvasGroup.DOFade(0f, exitDuration).SetEase(Ease.InQuad));
+
+            await sequence.ToUniTask(cancellationToken: ct);
+
+            if (rectTransform != null)
+                rectTransform.anchoredPosition = originalPosition;
+
+            EnableImages(false);
+            ResetCharacterTransform();
+            currentCharacter = null;
+            currentEmote = null;
+
             AudioManager.Instance?.OnCharacterExit(exitingCharacter);
         }
 
@@ -266,10 +313,12 @@ namespace LoveAlgo.Story
 
         /// <summary>
         /// 스프라이트 로드 (캐시 지원, Default 폴백)
+        /// CharacterEmoteMapping을 통해 표정 이름 → 실제 경로(01_Default 등) 해석
         /// </summary>
         Sprite LoadSprite(string character, string emote)
         {
-            string path = $"Characters/{character}/{emote}";
+            // CharacterEmoteMapping으로 경로 해석 (한글 별칭, 숫자 접두사 생략 모두 지원)
+            string path = CharacterEmoteMapping.GetPath(character, emote);
 
             if (spriteCache.TryGetValue(path, out var cached))
                 return cached;
@@ -279,7 +328,7 @@ namespace LoveAlgo.Story
             // Default로 폴백
             if (sprite == null && emote != "Default")
             {
-                string fallback = $"Characters/{character}/Default";
+                string fallback = CharacterEmoteMapping.GetPath(character, "Default");
                 if (spriteCache.TryGetValue(fallback, out cached))
                     return cached;
 

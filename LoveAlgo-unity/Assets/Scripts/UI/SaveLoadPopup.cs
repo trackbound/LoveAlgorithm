@@ -114,8 +114,6 @@ namespace LoveAlgo.UI
             
             if (isSaveMode)
             {
-                // 자동저장 슬롯에는 저장 불가
-                if (globalIndex == SaveManager.AutoSaveSlot) return;
                 OnSaveSlotClicked(globalIndex).Forget();
             }
             else
@@ -126,28 +124,11 @@ namespace LoveAlgo.UI
 
         /// <summary>
         /// 로컬 인덱스 → 글로벌 슬롯 인덱스 변환
-        /// 로드 모드 1페이지: [0] = 자동저장, [1~] = 유저 슬롯
+        /// 팝업에서는 유저 슬롯(1~N)만 노출
         /// </summary>
         int GetGlobalSlotIndex(int localIndex)
         {
-            // 로드 모드 1페이지: 첫 슬롯이 자동저장
-            if (!isSaveMode && currentPage == 1)
-            {
-                if (localIndex == 0)
-                    return SaveManager.AutoSaveSlot;
-                // 나머지는 유저 슬롯 (localIndex 1 → slot 1, ...)
-                return SaveManager.UserSlotStart + localIndex - 1;
-            }
-
-            // 그 외: 기존 로직
             int startIndex = (currentPage - 1) * slotsPerPage;
-            // 로드 모드 2페이지 이후: 1페이지에서 autoSave 1칸 + 유저 (slotsPerPage-1)칸 소모
-            if (!isSaveMode && currentPage > 1)
-            {
-                int userOffset = (slotsPerPage - 1) + (currentPage - 2) * slotsPerPage + localIndex;
-                return SaveManager.UserSlotStart + userOffset;
-            }
-
             return SaveManager.UserSlotStart + startIndex + localIndex;
         }
 
@@ -167,6 +148,12 @@ namespace LoveAlgo.UI
                 bool confirm = await PopupManager.Instance.ConfirmAsync("해당 슬롯에 저장하시겠습니까?");
                 if (!confirm) return;
             }
+
+            // UI 숨기고 캡처 후 복원 (팝업이 썸네일에 찍히지 않도록)
+            var popupState = PopupManager.Instance.HideForThumbnailCapture();
+            await UniTask.Yield();  // 1프레임 대기 (렌더링 반영)
+            SaveManager.CapturePendingScreenshot();
+            PopupManager.Instance.RestoreAfterThumbnailCapture(popupState);
 
             // 저장 실행 + 슬롯 갱신 (팝업은 유지)
             onSlotSelected?.Invoke(slotIndex);
@@ -208,26 +195,21 @@ namespace LoveAlgo.UI
 
                 slot.gameObject.SetActive(true);
 
-                // 자동저장 슬롯 특별 처리
-                bool isAutoSlot = (globalIndex == SaveManager.AutoSaveSlot);
-
-                slot.Setup(i, OnSlotClicked, isAutoSlot);
+                slot.Setup(i, OnSlotClicked, autoSave: false);
+                slot.SetDisplayNumber(globalIndex);
 
                 // 세이브 데이터 확인
                 var data = SaveManager.Load(globalIndex);
                 if (data != null)
                 {
                     var screenshot = SaveManager.LoadScreenshot(globalIndex);
-                    string label = isAutoSlot ? "자동 저장" : data.ChapterName;
+                    string label = data.ChapterName;
                     slot.SetData(label, data.SaveTime, screenshot);
                 }
                 else
                 {
                     slot.SetEmpty();
                 }
-
-                // 세이브 모드에서 자동저장 슬롯 비활성화 (안 보이게)
-                // → 이미 GetGlobalSlotIndex에서 세이브 모드는 자동저장 포함 안 함
             }
 
             UpdatePageUI();

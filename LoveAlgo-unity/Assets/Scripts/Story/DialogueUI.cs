@@ -48,8 +48,6 @@ namespace LoveAlgo.Story
         [Header("선택적 바인딩")]
         [SerializeField] GameObject nameBox;        // 없으면 nameText만 사용
         [SerializeField] CanvasGroup canvasGroup;   // 없으면 SetActive로 제어
-        [SerializeField] AudioSource typingAudioSource;
-        [SerializeField] AudioClip typingSFX;       // 없으면 타이핑 사운드 없음
         [SerializeField] CharacterDatabase characterDatabase;  // 캐릭터 색상용
 
         [Header("독백 Dots 애니메이션")]
@@ -82,6 +80,7 @@ namespace LoveAlgo.Story
         string fullText;
         bool isHidden;
         bool needsFadeIn;  // 다음 Show 시 페이드인 필요 여부
+        float lastTypingSoundTime = -999f;
 
         /// <summary>
         /// 마지막 표시된 텍스트 길이 (Auto 딜레이 계산용)
@@ -236,7 +235,15 @@ namespace LoveAlgo.Story
 
                     case SegmentType.Wait:
                         if (!skipRequested && float.TryParse(seg.Content, out float waitTime))
-                            await UniTask.Delay(TimeSpan.FromSeconds(waitTime), cancellationToken: ct);
+                        {
+                            // skipRequested 되면 즉시 탈출하도록 프레임 단위 대기
+                            float elapsed = 0f;
+                            while (elapsed < waitTime && !skipRequested)
+                            {
+                                await UniTask.Yield(ct);
+                                elapsed += Time.deltaTime;
+                            }
+                        }
                         break;
 
                     case SegmentType.SFX:
@@ -270,21 +277,33 @@ namespace LoveAlgo.Story
         /// </summary>
         float GetPunctuationWeight(char c, string text, int index)
         {
-            // 현재 글자가 문장부호면 최대 가중치
-            if (IsMajorPunctuation(c)) return 1.0f;
+            // 현재 글자가 문장부호
+            if (IsMajorPunctuation(c))
+            {
+                // 연속 문장부호(예: "..." "!!" "?!")일 때 마지막 것만 딜레이
+                if (index + 1 < text.Length && IsMajorPunctuation(text[index + 1]))
+                    return 0.1f;  // 중간 점은 빠르게 통과
+                return 1.0f;     // 마지막 점에서만 풀 딜레이
+            }
             if (c == ',') return 0.4f;  // 쉼표는 약한 감속
 
             // 다음 N글자 안에 문장부호가 있으면 점진 감속
+            // 단, 바로 다음이 연속 문장부호 시작이면 감속 불필요
             int lookahead = punctuationLookahead;
             for (int ahead = 1; ahead <= lookahead && index + ahead < text.Length; ahead++)
             {
                 char nextC = text[index + ahead];
                 if (IsMajorPunctuation(nextC))
                 {
+                    // 연속 문장부호의 첫 번째이고, 뒤에 더 있으면 감속 약하게
+                    if (index + ahead + 1 < text.Length && IsMajorPunctuation(text[index + ahead + 1]))
+                    {
+                        float t = 1f - ((float)ahead / (lookahead + 1));
+                        return t * 0.15f;  // 연속 문장부호 진입은 약하게만
+                    }
                     // ahead=1이면 weight 높고, ahead=lookahead이면 낮음
-                    // 선형 보간: 가까울수록 더 느려짐
-                    float t = 1f - ((float)ahead / (lookahead + 1));
-                    return t * 0.5f;  // 최대 0.5 (문장부호 자체보다는 약하게)
+                    float tw = 1f - ((float)ahead / (lookahead + 1));
+                    return tw * 0.5f;
                 }
             }
 
@@ -858,37 +877,13 @@ namespace LoveAlgo.Story
 
         #endregion
 
-        #region Typing Sound
-
-        [Header("타이핑 피치 설정")]
-        [SerializeField] float minPitch = 0.9f;
-        [SerializeField] float maxPitch = 1.1f;
-        [SerializeField] bool useUISoundManager = true;  // UISoundManager 사용 여부
-
         void PlayTypingSound()
         {
-            // UISoundManager 사용 시 위임
-            if (useUISoundManager && LoveAlgo.UI.UISoundManager.Instance != null)
-            {
-                LoveAlgo.UI.UISoundManager.Instance.PlayTyping();
-                return;
-            }
-
-            // 기존 방식 (fallback)
-            if (typingSFX == null) return;
-
-            if (typingAudioSource != null)
-            {
-                typingAudioSource.pitch = UnityEngine.Random.Range(minPitch, maxPitch);
-                typingAudioSource.PlayOneShot(typingSFX);
-            }
-            else
-            {
-                AudioSource.PlayClipAtPoint(typingSFX, Camera.main.transform.position, 0.5f);
-            }
+            float now = Time.unscaledTime;
+            if (now - lastTypingSoundTime < 0.08f) return;
+            lastTypingSoundTime = now;
+            LoveAlgo.UI.UISoundManager.Instance?.PlayTyping();
         }
-
-        #endregion
 
         #region 버튼 핸들러
 
