@@ -180,7 +180,7 @@ namespace LoveAlgo.Story
         /// <summary>
         /// 말하는 중 강조 (대화 시작 시 호출)
         /// </summary>
-        public async void StartSpeaking()
+        public async UniTaskVoid StartSpeaking()
         {
             if (!enableSpeakingHighlight) return;
             if (characterTransform == null) return;
@@ -190,11 +190,15 @@ namespace LoveAlgo.Story
             // 숨쉬기 일시정지
             breathingSequence?.Pause();
 
-            // 강조 효과: 약간 확대 + 밝게
-            Vector3 highlightScaleVec = originalScale * highlightScale;
-            await characterTransform.DOScale(highlightScaleVec, highlightDuration)
-                .SetEase(Ease.OutQuad)
-                .AsyncWaitForCompletion();
+            try
+            {
+                // 강조 효과: 약간 확대 + 밝게
+                Vector3 highlightScaleVec = originalScale * highlightScale;
+                await characterTransform.DOScale(highlightScaleVec, highlightDuration)
+                    .SetEase(Ease.OutQuad)
+                    .AsyncWaitForCompletion();
+            }
+            catch (System.Exception) { /* 트윈 중단 시 무시 */ }
 
             // 밝기 조정 (Image 컴포넌트 필요)
             var image = GetComponent<UnityEngine.UI.Image>();
@@ -209,17 +213,21 @@ namespace LoveAlgo.Story
         /// <summary>
         /// 말하기 종료 (대화 끝날 때 호출)
         /// </summary>
-        public async void StopSpeaking()
+        public async UniTaskVoid StopSpeaking()
         {
             if (!isSpeaking) return;
             isSpeaking = false;
 
             if (characterTransform == null) return;
 
-            // 원래 스케일 복원
-            await characterTransform.DOScale(originalScale, highlightDuration)
-                .SetEase(Ease.OutQuad)
-                .AsyncWaitForCompletion();
+            try
+            {
+                // 원래 스케일 복원
+                await characterTransform.DOScale(originalScale, highlightDuration)
+                    .SetEase(Ease.OutQuad)
+                    .AsyncWaitForCompletion();
+            }
+            catch (System.Exception) { /* 트윈 중단 시 무시 */ }
 
             // 밝기 복원
             var image = GetComponent<UnityEngine.UI.Image>();
@@ -235,40 +243,44 @@ namespace LoveAlgo.Story
         /// <summary>
         /// 반응 애니메이션 (놀람, 기쁨 등 특정 감정 표현)
         /// </summary>
-        public async void PlayReaction(ReactionType type)
+        public async UniTaskVoid PlayReaction(ReactionType type)
         {
             if (characterTransform == null) return;
 
-            switch (type)
+            try
             {
-                case ReactionType.Surprise:
-                    // 뒤로 살짝 밀리는 효과
-                    await characterTransform.DOPunchPosition(new Vector3(-10f, 5f, 0), 0.4f, 10, 1f)
-                        .SetEase(Ease.OutQuad)
-                        .AsyncWaitForCompletion();
-                    break;
+                switch (type)
+                {
+                    case ReactionType.Surprise:
+                        // 뒤로 살짝 밀리는 효과
+                        await characterTransform.DOPunchPosition(new Vector3(-10f, 5f, 0), 0.4f, 10, 1f)
+                            .SetEase(Ease.OutQuad)
+                            .AsyncWaitForCompletion();
+                        break;
 
-                case ReactionType.Joy:
-                    // 위로 뛰는 효과
-                    await characterTransform.DOPunchPosition(new Vector3(0, 15f, 0), 0.5f, 10, 1f)
-                        .SetEase(Ease.OutQuad)
-                        .AsyncWaitForCompletion();
-                    break;
+                    case ReactionType.Joy:
+                        // 위로 뛰는 효과
+                        await characterTransform.DOPunchPosition(new Vector3(0, 15f, 0), 0.5f, 10, 1f)
+                            .SetEase(Ease.OutQuad)
+                            .AsyncWaitForCompletion();
+                        break;
 
-                case ReactionType.Sad:
-                    // 아래로 처지는 효과
-                    await characterTransform.DOPunchPosition(new Vector3(0, -10f, 0), 0.6f, 5, 1f)
-                        .SetEase(Ease.InQuad)
-                        .AsyncWaitForCompletion();
-                    break;
+                    case ReactionType.Sad:
+                        // 아래로 처지는 효과
+                        await characterTransform.DOPunchPosition(new Vector3(0, -10f, 0), 0.6f, 5, 1f)
+                            .SetEase(Ease.InQuad)
+                            .AsyncWaitForCompletion();
+                        break;
 
-                case ReactionType.Shake:
-                    // 고개를 젓는 효과
-                    await characterTransform.DOShakePosition(0.3f, new Vector3(8f, 0, 0), 15, 90f, false, true)
-                        .SetEase(Ease.OutQuad)
-                        .AsyncWaitForCompletion();
-                    break;
+                    case ReactionType.Shake:
+                        // 고개를 젓는 효과
+                        await characterTransform.DOShakePosition(0.3f, new Vector3(8f, 0, 0), 15, 90f, false, true)
+                            .SetEase(Ease.OutQuad)
+                            .AsyncWaitForCompletion();
+                        break;
+                }
             }
+            catch (System.Exception) { /* 트윈 중단 시 무시 */ }
         }
     }
 

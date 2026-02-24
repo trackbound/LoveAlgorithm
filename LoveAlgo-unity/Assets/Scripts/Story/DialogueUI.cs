@@ -82,11 +82,12 @@ namespace LoveAlgo.Story
         bool needsFadeIn;  // 다음 Show 시 페이드인 필요 여부
 
         /// <summary>
-        /// 타이핑 사운드 독립 루프용 (텍스트 속도와 완전 분리)
+        /// 타이핑 사운드 쿨다운 (글자 출력 연동 + 최소 간격 제한)
+        /// 글자가 나올 때마다 소리를 내되, 너무 빠르면 쿨다운으로 스킵
+        /// → 문장부호 감속 시 소리도 자연스럽게 느려지고, Wait 구간에서는 소리 없음
         /// </summary>
-        CancellationTokenSource typingSoundCts;
-        bool isCharBeingTyped;  // 현재 글자가 출력 중인지 (대기 구간 제외)
-        [SerializeField] float typingSoundInterval = 0.08f;  // 고정 사운드 간격
+        float lastTypingSoundTime;  // 마지막 사운드 재생 시각 (Time.unscaledTime)
+        [SerializeField] float typingSoundMinInterval = 0.06f;  // 최소 사운드 간격 (이보다 빠르면 스킵)
 
         /// <summary>
         /// 마지막 표시된 텍스트 길이 (Auto 딜레이 계산용)
@@ -189,96 +190,100 @@ namespace LoveAlgo.Story
             float currentSpeed = typingSpeed;
             int visibleCount = 0;
 
-            // 타이핑 사운드 독립 루프 시작 (텍스트 속도와 무관하게 고정 간격)
-            isCharBeingTyped = false;
-            StartTypingSoundLoop();
+            // 타이핑 사운드 초기화 (글자 출력 시점에 쿨다운 기반으로 재생)
+            lastTypingSoundTime = 0f;
 
-            foreach (var seg in segments)
+            try
             {
-                ct.ThrowIfCancellationRequested();
-
-                if (skipRequested)
+                foreach (var seg in segments)
                 {
-                    CompleteText();
-                    break;
+                    ct.ThrowIfCancellationRequested();
+
+                    if (skipRequested)
+                    {
+                        CompleteText();
+                        break;
+                    }
+
+                    switch (seg.Type)
+                    {
+                        case SegmentType.Text:
+                            // 글자별 타이핑 — 부드러운 리듬
+                            string content = seg.Content;
+                            for (int i = 0; i < content.Length; i++)
+                            {
+                                if (skipRequested) { CompleteText(); return; }
+
+                                char c = content[i];
+                                visibleCount++;
+                                dialogueText.maxVisibleCharacters = visibleCount;
+
+                                // 줄바꿈은 딜레이 생략
+                                if (c == '\n' || c == '\r') continue;
+
+                                // 타이핑 사운드: 글자 출력에 연동, 쿨다운으로 연타 방지
+                                TryPlayTypingSound();
+
+                                // ── 부드러운 딜레이 계산 ──
+                                float charDelay = currentSpeed;
+
+                                // 문장부호 감속: 문장부호 자체 + N글자 전부터 점진 감속
+                                float punctWeight = GetPunctuationWeight(c, content, i);
+                                if (punctWeight > 0f)
+                                {
+                                    // EaseOutQuad 커브로 부드럽게 감속
+                                    float easedWeight = punctWeight * punctWeight;  // InQuad: 점진적으로 느려짐
+                                    charDelay += punctuationDelay * easedWeight;
+                                }
+
+                                // 자연스러운 리듬 변동 (미세한 랜덤 지터)
+                                float jitter = 1f + UnityEngine.Random.Range(-jitterAmount, jitterAmount);
+                                charDelay *= jitter;
+
+                                await UniTask.Delay(TimeSpan.FromSeconds(charDelay), cancellationToken: ct);
+                            }
+                            break;
+
+                        case SegmentType.Wait:
+                            if (!skipRequested && float.TryParse(seg.Content, out float waitTime))
+                            {
+                                // skipRequested 되면 즉시 탈출하도록 프레임 단위 대기
+                                float elapsed = 0f;
+                                while (elapsed < waitTime && !skipRequested)
+                                {
+                                    await UniTask.Yield(ct);
+                                    elapsed += Time.deltaTime;
+                                }
+                            }
+                            break;
+
+                        case SegmentType.SFX:
+                            AudioManager.Instance?.PlaySFX(seg.Content);
+                            break;
+
+                        case SegmentType.Emote:
+                            OnEmoteTag?.Invoke(seg.Content);
+                            break;
+
+                        case SegmentType.SpeedStart:
+                            if (float.TryParse(seg.Content, out float speedMult))
+                                currentSpeed = typingSpeed * speedMult;
+                            break;
+
+                        case SegmentType.SpeedEnd:
+                            currentSpeed = typingSpeed;
+                            break;
+                    }
                 }
 
-                switch (seg.Type)
-                {
-                    case SegmentType.Text:
-                        // 글자별 타이핑 — 부드러운 리듬
-                        isCharBeingTyped = true;
-                        string content = seg.Content;
-                        for (int i = 0; i < content.Length; i++)
-                        {
-                            if (skipRequested) { CompleteText(); goto done; }
-
-                            char c = content[i];
-                            visibleCount++;
-                            dialogueText.maxVisibleCharacters = visibleCount;
-
-                            // 줄바꿈은 딜레이 생략
-                            if (c == '\n' || c == '\r') continue;
-
-                            // ── 부드러운 딜레이 계산 ──
-                            float charDelay = currentSpeed;
-
-                            // 문장부호 감속: 문장부호 자체 + N글자 전부터 점진 감속
-                            float punctWeight = GetPunctuationWeight(c, content, i);
-                            if (punctWeight > 0f)
-                            {
-                                // EaseOutQuad 커브로 부드럽게 감속
-                                float easedWeight = punctWeight * punctWeight;  // InQuad: 점진적으로 느려짐
-                                charDelay += punctuationDelay * easedWeight;
-                            }
-
-                            // 자연스러운 리듬 변동 (미세한 랜덤 지터)
-                            float jitter = 1f + UnityEngine.Random.Range(-jitterAmount, jitterAmount);
-                            charDelay *= jitter;
-
-                            await UniTask.Delay(TimeSpan.FromSeconds(charDelay), cancellationToken: ct);
-                        }
-                        break;
-
-                    case SegmentType.Wait:
-                        isCharBeingTyped = false;  // 대기 구간에서는 사운드 중지
-                        if (!skipRequested && float.TryParse(seg.Content, out float waitTime))
-                        {
-                            // skipRequested 되면 즉시 탈출하도록 프레임 단위 대기
-                            float elapsed = 0f;
-                            while (elapsed < waitTime && !skipRequested)
-                            {
-                                await UniTask.Yield(ct);
-                                elapsed += Time.deltaTime;
-                            }
-                        }
-                        break;
-
-                    case SegmentType.SFX:
-                        AudioManager.Instance?.PlaySFX(seg.Content);
-                        break;
-
-                    case SegmentType.Emote:
-                        OnEmoteTag?.Invoke(seg.Content);
-                        break;
-
-                    case SegmentType.SpeedStart:
-                        if (float.TryParse(seg.Content, out float speedMult))
-                            currentSpeed = typingSpeed * speedMult;
-                        break;
-
-                    case SegmentType.SpeedEnd:
-                        currentSpeed = typingSpeed;
-                        break;
-                }
+                dialogueText.maxVisibleCharacters = fullText.Length;  // 안전: 혹시 누락 방지
+                ShowNextIndicator();
             }
-
-            done:
-            isTyping = false;
-            isCharBeingTyped = false;
-            StopTypingSoundLoop();
-            dialogueText.maxVisibleCharacters = fullText.Length;  // 안전: 혹시 누락 방지
-            ShowNextIndicator();
+            finally
+            {
+                // 로드/취소로 OperationCanceledException이 발생해도 반드시 isTyping 해제
+                isTyping = false;
+            }
         }
 
         /// <summary>
@@ -575,8 +580,6 @@ namespace LoveAlgo.Story
             if (isTyping)
             {
                 skipRequested = true;
-                isCharBeingTyped = false;
-                StopTypingSoundLoop();
                 dialogueText.text = fullText;
                 dialogueText.maxVisibleCharacters = fullText?.Length ?? 0;
                 isTyping = false;
@@ -890,40 +893,16 @@ namespace LoveAlgo.Story
         #endregion
 
         /// <summary>
-        /// 타이핑 사운드 독립 루프 시작 (텍스트 속도와 무관하게 일정 간격 유지)
+        /// 타이핑 사운드 재생 (쿨다운 기반)
+        /// 글자 출력에 연동되어 자연스러운 리듬을 유지하면서,
+        /// 최소 간격(typingSoundMinInterval)으로 너무 빠른 연타를 방지
         /// </summary>
-        void StartTypingSoundLoop()
+        void TryPlayTypingSound()
         {
-            StopTypingSoundLoop();
-            typingSoundCts = new CancellationTokenSource();
-            RunTypingSoundLoop(typingSoundCts.Token).Forget();
-        }
-
-        async UniTaskVoid RunTypingSoundLoop(CancellationToken ct)
-        {
-            try
-            {
-                while (!ct.IsCancellationRequested && isTyping)
-                {
-                    // 글자가 실제 출력되는 구간에서만 사운드 재생 (대기/일시정지 구간 제외)
-                    if (isCharBeingTyped && !skipRequested)
-                        LoveAlgo.UI.UISoundManager.Instance?.PlayTyping();
-
-                    await UniTask.Delay(
-                        TimeSpan.FromSeconds(typingSoundInterval),
-                        ignoreTimeScale: true,
-                        cancellationToken: ct
-                    );
-                }
-            }
-            catch (OperationCanceledException) { }
-        }
-
-        void StopTypingSoundLoop()
-        {
-            typingSoundCts?.Cancel();
-            typingSoundCts?.Dispose();
-            typingSoundCts = null;
+            float now = Time.unscaledTime;
+            if (now - lastTypingSoundTime < typingSoundMinInterval) return;
+            lastTypingSoundTime = now;
+            LoveAlgo.UI.UISoundManager.Instance?.PlayTyping();
         }
 
         #region 버튼 핸들러

@@ -79,14 +79,21 @@ namespace LoveAlgo.Story
         [Tooltip("이 캐릭터 루트 진입에 필요한 최소 호감도")]
         public int routeRequiredLove = 0;
 
+        /// <summary>표정 스프라이트 캐시 (Resources.Load 호출 최소화)</summary>
+        readonly Dictionary<string, Sprite> emoteCache = new();
+
         /// <summary>
-        /// 표정 스프라이트 로드 (Resources에서 동적 로드)
+        /// 표정 스프라이트 로드 (캐시 → Resources 순서로 조회)
         /// </summary>
         public Sprite LoadEmoteSprite(string emoteName)
         {
             if (string.IsNullOrEmpty(emoteName))
                 emoteName = EmoteNames.Default;
-            
+
+            // 캐시 히트
+            if (emoteCache.TryGetValue(emoteName, out var cached))
+                return cached ?? defaultSprite;
+
             string path = $"Characters/{characterId}/{emoteName}";
             var sprite = Resources.Load<Sprite>(path);
             
@@ -96,9 +103,13 @@ namespace LoveAlgo.Story
                 path = $"Characters/{characterId}/{EmoteNames.Default}";
                 sprite = Resources.Load<Sprite>(path);
             }
-            
+
+            emoteCache[emoteName] = sprite;
             return sprite ?? defaultSprite;
         }
+
+        /// <summary>캐시 비우기 (스테이지 전환 시 호출)</summary>
+        public void ClearEmoteCache() => emoteCache.Clear();
 
         /// <summary>
         /// 캐릭터 트랜스폼 값 가져오기

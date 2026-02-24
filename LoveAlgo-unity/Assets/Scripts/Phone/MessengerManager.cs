@@ -40,6 +40,10 @@ namespace LoveAlgo.Phone
             friends.Clear();
             chatRooms.Clear();
 
+            // 정적 이벤트 클리어 — 파괴된 구독자 방지
+            OnNewMessage = null;
+            OnUnreadCountChanged = null;
+
             // 기본 친구 등록
             RegisterFriend("Roa", "로아", "화면 너머에서 응원 중! ✨");
             RegisterFriend("Yeun", "하예은", "오늘도 운동 완료 💪");
@@ -67,9 +71,9 @@ namespace LoveAlgo.Phone
         }
 
         /// <summary>전체 친구 목록</summary>
-        public static IReadOnlyList<FriendProfile> GetAllFriends()
+        public static IReadOnlyCollection<FriendProfile> GetAllFriends()
         {
-            return friends.Values.ToList();
+            return friends.Values;
         }
 
         /// <summary>상태 메시지 변경</summary>
@@ -128,12 +132,11 @@ namespace LoveAlgo.Phone
         /// <summary>
         /// 메시지가 있는 대화방 목록 (최근 메시지 순 정렬)
         /// </summary>
-        public static IReadOnlyList<ChatRoom> GetActiveChatRooms()
+        public static IEnumerable<ChatRoom> GetActiveChatRooms()
         {
             return chatRooms.Values
                 .Where(r => r.Messages.Count > 0)
-                .OrderByDescending(r => r.Messages[^1].Day)
-                .ToList();
+                .OrderByDescending(r => r.Messages[^1].Day);
         }
 
         /// <summary>읽음 처리</summary>

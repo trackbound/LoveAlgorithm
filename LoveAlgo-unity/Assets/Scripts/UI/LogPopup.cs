@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -47,6 +48,7 @@ namespace LoveAlgo.UI
         string lastSpeaker;          // 마지막 그룹의 화자
         string lastCharId;           // 마지막 그룹의 캐릭터ID
         LogEntryUI lastGroup;        // 마지막 그룹 (연속 대사 추가용)
+        CancellationTokenSource buildCts;  // 중복 빌드 방지용
 
         public bool IsVisible => gameObject.activeSelf;
 
@@ -78,7 +80,13 @@ namespace LoveAlgo.UI
             gameObject.SetActive(true);
 
             if (hasEntries)
-                BuildIncrementalAsync(log).Forget();
+            {
+                // 이전 빌드 취소
+                buildCts?.Cancel();
+                buildCts?.Dispose();
+                buildCts = new CancellationTokenSource();
+                BuildIncrementalAsync(log, buildCts.Token).Forget();
+            }
             else
                 ScrollToBottomAsync().Forget();
         }
@@ -88,7 +96,7 @@ namespace LoveAlgo.UI
         public void Hide() => gameObject.SetActive(false);
 
         /// <summary>증분 빌드 — 새 항목만 추가 (비동기: 프레임 분산)</summary>
-        async UniTaskVoid BuildIncrementalAsync(IReadOnlyList<DialogueLogEntry> log)
+        async UniTaskVoid BuildIncrementalAsync(IReadOnlyList<DialogueLogEntry> log, CancellationToken ct)
         {
             // 로그가 줄었으면 전체 리빌드 (undo/reset 대응)
             if (log.Count < builtCount)
@@ -145,7 +153,7 @@ namespace LoveAlgo.UI
                 if (created >= batchSize)
                 {
                     created = 0;
-                    await UniTask.Yield();
+                    await UniTask.Yield(ct);
                     // 팝업이 닫혔으면 중단
                     if (!gameObject.activeSelf) return;
                 }

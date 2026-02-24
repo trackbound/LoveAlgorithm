@@ -66,7 +66,7 @@ namespace LoveAlgo.UI
         /// <summary>
         /// 화면 좌표에서 리플 효과
         /// </summary>
-        public async void PlayRipple(Vector2 screenPosition, CancellationToken ct = default)
+        public async UniTaskVoid PlayRipple(Vector2 screenPosition, CancellationToken ct = default)
         {
             if (ripplePrefab == null || rippleCanvas == null) return;
 
@@ -190,9 +190,13 @@ namespace LoveAlgo.UI
         /// <summary>
         /// 중요한 대화 (선택 결과, 엔딩 분기 등)
         /// </summary>
-        public async void PlayImportantDialogueFeedback(Color flashColor)
+        public async UniTaskVoid PlayImportantDialogueFeedback(Color flashColor)
         {
-            await PlayScreenFlash(flashColor, 0.3f);
+            try
+            {
+                await PlayScreenFlash(flashColor, 0.3f);
+            }
+            catch (System.OperationCanceledException) { }
             PlayHaptic(HapticType.Success);
         }
     }

@@ -800,6 +800,7 @@ namespace LoveAlgo.Core
                 // 대화창을 숨김 상태로 시작 (첨 대사 시점에 자동 표시)
                 var dialogueUI = UIManager.Instance?.DialogueUI;
                 dialogueUI?.Clear();
+                dialogueUI?.ClearLog();  // 이전 세션 로그 제거 (중복 방지)
                 dialogueUI?.HideImmediate();
 
                 // 장면 상태 복원 (배경, 캐릭터, BGM)
@@ -919,8 +920,9 @@ namespace LoveAlgo.Core
             Story.AudioManager.Instance?.StopBGMImmediate();
             Story.AudioManager.Instance?.StopVoice();
 
-            // DOTween 동시 트윈 정리 (Safe Mode로 사용 중이므로 KillAll 대신 유휴 트윈만 정리)
-            DOTween.KillAll();
+            // DOTween 트윈 정리 — KillAll()은 팝업 애니메이션 등 전역 트윈을 파괴할 수 있으므로
+            // 완료되지 않은 트윈만 안전하게 정리
+            DOTween.KillAll(complete: false);
 
             // 캐릭터 스프라이트 캐시 정리
             CharacterSlot.ClearSpriteCache();

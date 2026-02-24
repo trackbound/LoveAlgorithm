@@ -132,9 +132,18 @@ namespace LoveAlgo.Shop
                 return 0;
             }
 
-            if (!RemoveItem(itemId))
+            if (GetItemCount(itemId) <= 0)
             {
                 Debug.LogWarning($"[ShopManager] 인벤토리에 없음: {itemId}");
+                return 0;
+            }
+
+            // 최대 선물 포인트 제한 — 아이템 소비 전에 확인
+            int currentGiven = giftPointsGiven.GetValueOrDefault(heroineId);
+            int remaining = MaxGiftPoints - currentGiven;
+            if (remaining <= 0)
+            {
+                Debug.Log($"[ShopManager] {heroineId} 선물 포인트 최대치 도달 ({MaxGiftPoints})");
                 return 0;
             }
 
@@ -146,13 +155,10 @@ namespace LoveAlgo.Shop
                 Debug.Log($"[ShopManager] 전용 선물 불일치: {item.TargetHeroine}→{heroineId}, 효과 절반 ({points})");
             }
 
-            // 최대 선물 포인트 제한
-            int currentGiven = giftPointsGiven.GetValueOrDefault(heroineId);
-            int remaining = MaxGiftPoints - currentGiven;
-            if (remaining <= 0)
+            // 아이템 소비 (포인트 제한 통과 후)
+            if (!RemoveItem(itemId))
             {
-                Debug.Log($"[ShopManager] {heroineId} 선물 포인트 최대치 도달 ({MaxGiftPoints})");
-                // 아이템은 이미 소비됨 — 포인트만 못 주는 것
+                Debug.LogWarning($"[ShopManager] 아이템 제거 실패: {itemId}");
                 return 0;
             }
 

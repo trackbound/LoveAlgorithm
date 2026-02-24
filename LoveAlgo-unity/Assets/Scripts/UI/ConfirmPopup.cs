@@ -39,8 +39,8 @@ namespace LoveAlgo.UI
         public UniTask<bool> ShowAsync(string message, string sub = null,
             string confirmText = null, string cancelText = null)
         {
-            // 이전 작업 취소
-            tcs?.TrySetResult(false);
+            // 이전 작업 취소 (결과 콜백 발생하지 않음)
+            tcs?.TrySetCanceled();
             tcs = new UniTaskCompletionSource<bool>();
 
             ShowInternal(message, sub, confirmText, cancelText);
@@ -52,8 +52,8 @@ namespace LoveAlgo.UI
         /// </summary>
         public void Show(string message, Action onConfirm, Action onCancel = null)
         {
-            // 이전 작업 취소
-            tcs?.TrySetResult(false);
+            // 이전 작업 취소 (이전 콜백이 실행되지 않도록)
+            tcs?.TrySetCanceled();
             tcs = new UniTaskCompletionSource<bool>();
 
             ShowInternal(message, null, null, null);

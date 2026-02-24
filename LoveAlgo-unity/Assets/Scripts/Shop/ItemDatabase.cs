@@ -14,6 +14,7 @@ namespace LoveAlgo.Shop
     public static class ItemDatabase
     {
         static readonly Dictionary<string, ItemData> items = new();
+        static List<ItemData> cachedAll;  // 캐시된 전체 목록
 
         static ItemDatabase()
         {
@@ -61,13 +62,14 @@ namespace LoveAlgo.Shop
         /// <summary>전체 아이템 목록</summary>
         public static IReadOnlyList<ItemData> GetAll()
         {
-            return items.Values.ToList();
+            cachedAll ??= new List<ItemData>(items.Values);
+            return cachedAll;
         }
 
         /// <summary>카테고리별 아이템 목록</summary>
-        public static IReadOnlyList<ItemData> GetByCategory(ItemCategory category)
+        public static IEnumerable<ItemData> GetByCategory(ItemCategory category)
         {
-            return items.Values.Where(i => i.Category == category).ToList();
+            return items.Values.Where(i => i.Category == category);
         }
 
         /// <summary>구매 가능 여부 (소지금 확인)</summary>

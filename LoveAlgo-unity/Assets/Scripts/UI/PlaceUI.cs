@@ -173,8 +173,6 @@ namespace LoveAlgo.UI
             canvasGroup.alpha = 0f;
             IsShowing = false;
             gameObject.SetActive(false);
-
-            await UniTask.CompletedTask;
         }
 
         /// <summary>

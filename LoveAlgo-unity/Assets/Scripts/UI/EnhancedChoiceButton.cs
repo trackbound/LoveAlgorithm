@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using TMPro;
 using DG.Tweening;
+using Cysharp.Threading.Tasks;
 
 namespace LoveAlgo.UI
 {
@@ -194,31 +195,35 @@ namespace LoveAlgo.UI
         /// <summary>
         /// 선택 확정 애니메이션 (선택된 후 호출)
         /// </summary>
-        public async void PlaySelectionAnimation()
+        public async UniTaskVoid PlaySelectionAnimation()
         {
             currentAnimation?.Kill();
 
-            // 플래시 효과
-            if (backgroundImage != null)
+            try
             {
-                Color flashColor = selectionFlashColor;
-                await backgroundImage.DOColor(flashColor, selectionFlashDuration * 0.5f)
+                // 플래시 효과
+                if (backgroundImage != null)
+                {
+                    Color flashColor = selectionFlashColor;
+                    await backgroundImage.DOColor(flashColor, selectionFlashDuration * 0.5f)
+                        .SetEase(Ease.OutQuad)
+                        .AsyncWaitForCompletion();
+
+                    await backgroundImage.DOColor(originalBgColor, selectionFlashDuration * 0.5f)
+                        .SetEase(Ease.InQuad)
+                        .AsyncWaitForCompletion();
+                }
+
+                // 펄스 효과 (크게 → 작게)
+                await transform.DOScale(originalScale * 1.1f, selectionFlashDuration * 0.3f)
                     .SetEase(Ease.OutQuad)
                     .AsyncWaitForCompletion();
 
-                await backgroundImage.DOColor(originalBgColor, selectionFlashDuration * 0.5f)
+                await transform.DOScale(originalScale * 0.9f, selectionFlashDuration * 0.4f)
                     .SetEase(Ease.InQuad)
                     .AsyncWaitForCompletion();
             }
-
-            // 펄스 효과 (크게 → 작게)
-            await transform.DOScale(originalScale * 1.1f, selectionFlashDuration * 0.3f)
-                .SetEase(Ease.OutQuad)
-                .AsyncWaitForCompletion();
-
-            await transform.DOScale(originalScale * 0.9f, selectionFlashDuration * 0.4f)
-                .SetEase(Ease.InQuad)
-                .AsyncWaitForCompletion();
+            catch (System.Exception) { /* 트윈 중단 시 무시 */ }
         }
 
         void OnDisable()
