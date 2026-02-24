@@ -395,6 +395,8 @@ MonoBehaviour:
   maxTypingPitch: 1.1
   minTypingVolume: 0.7
   maxTypingVolume: 1
+  typingMinInterval: 0.03
+  volumePreviewInterval: 0.08
   autoBindButtons: 1
 --- !u!1 &241711563
 GameObject:
@@ -5892,6 +5894,10 @@ PrefabInstance:
       propertyPath: m_SizeDelta.y
       value: 559
       objectReference: {fileID: 0}
+    - target: {fileID: 5231680846507593661, guid: 62281f9960f79cd49bf77b5dff711c5e, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 50
+      objectReference: {fileID: 0}
     - target: {fileID: 6549928492008404068, guid: 62281f9960f79cd49bf77b5dff711c5e, type: 3}
       propertyPath: m_AnchorMax.x
       value: 0.5
@@ -5915,6 +5921,10 @@ PrefabInstance:
     - target: {fileID: 6549928492008404068, guid: 62281f9960f79cd49bf77b5dff711c5e, type: 3}
       propertyPath: m_SizeDelta.y
       value: 559
+      objectReference: {fileID: 0}
+    - target: {fileID: 6549928492008404068, guid: 62281f9960f79cd49bf77b5dff711c5e, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 50
       objectReference: {fileID: 0}
     - target: {fileID: 6556341929962274532, guid: 62281f9960f79cd49bf77b5dff711c5e, type: 3}
       propertyPath: m_Name

@@ -149,11 +149,8 @@ namespace LoveAlgo.UI
                 if (!confirm) return;
             }
 
-            // UI 숨기고 캡처 후 복원 (팝업이 썸네일에 찍히지 않도록)
-            var popupState = PopupManager.Instance.HideForThumbnailCapture();
-            await UniTask.Yield();  // 1프레임 대기 (렌더링 반영)
-            SaveManager.CapturePendingScreenshot();
-            PopupManager.Instance.RestoreAfterThumbnailCapture(popupState);
+            // ShowSave()에서 팝업 열기 전 미리 캡처한 pending 썸네일을 사용
+            // (여기서 재캡처하면 팝업/딤이 썸네일에 포함될 수 있음)
 
             // 저장 실행 + 슬롯 갱신 (팝업은 유지)
             onSlotSelected?.Invoke(slotIndex);

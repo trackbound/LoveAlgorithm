@@ -30,12 +30,12 @@ namespace LoveAlgo.UI
 
         public void ShowDialogue()
         {
-            dialogueUI?.ShowImmediate();
+            dialogueUI?.gameObject.SetActive(true);
         }
 
         public void HideDialogue()
         {
-            dialogueUI?.HideImmediate();
+            dialogueUI?.gameObject.SetActive(false);
         }
 
         public bool IsDialogueVisible => dialogueUI != null && dialogueUI.gameObject.activeSelf;

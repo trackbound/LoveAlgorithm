@@ -80,7 +80,13 @@ namespace LoveAlgo.Story
         string fullText;
         bool isHidden;
         bool needsFadeIn;  // 다음 Show 시 페이드인 필요 여부
-        float lastTypingSoundTime = -999f;
+
+        /// <summary>
+        /// 타이핑 사운드 독립 루프용 (텍스트 속도와 완전 분리)
+        /// </summary>
+        CancellationTokenSource typingSoundCts;
+        bool isCharBeingTyped;  // 현재 글자가 출력 중인지 (대기 구간 제외)
+        [SerializeField] float typingSoundInterval = 0.08f;  // 고정 사운드 간격
 
         /// <summary>
         /// 마지막 표시된 텍스트 길이 (Auto 딜레이 계산용)
@@ -183,6 +189,10 @@ namespace LoveAlgo.Story
             float currentSpeed = typingSpeed;
             int visibleCount = 0;
 
+            // 타이핑 사운드 독립 루프 시작 (텍스트 속도와 무관하게 고정 간격)
+            isCharBeingTyped = false;
+            StartTypingSoundLoop();
+
             foreach (var seg in segments)
             {
                 ct.ThrowIfCancellationRequested();
@@ -197,6 +207,7 @@ namespace LoveAlgo.Story
                 {
                     case SegmentType.Text:
                         // 글자별 타이핑 — 부드러운 리듬
+                        isCharBeingTyped = true;
                         string content = seg.Content;
                         for (int i = 0; i < content.Length; i++)
                         {
@@ -206,12 +217,8 @@ namespace LoveAlgo.Story
                             visibleCount++;
                             dialogueText.maxVisibleCharacters = visibleCount;
 
-                            // 줄바꿈은 사운드/딜레이 생략
+                            // 줄바꿈은 딜레이 생략
                             if (c == '\n' || c == '\r') continue;
-
-                            // 공백은 소리 없이 딜레이만 (단어 단위 리듬감)
-                            if (c != ' ')
-                                PlayTypingSound();
 
                             // ── 부드러운 딜레이 계산 ──
                             float charDelay = currentSpeed;
@@ -234,6 +241,7 @@ namespace LoveAlgo.Story
                         break;
 
                     case SegmentType.Wait:
+                        isCharBeingTyped = false;  // 대기 구간에서는 사운드 중지
                         if (!skipRequested && float.TryParse(seg.Content, out float waitTime))
                         {
                             // skipRequested 되면 즉시 탈출하도록 프레임 단위 대기
@@ -267,6 +275,8 @@ namespace LoveAlgo.Story
 
             done:
             isTyping = false;
+            isCharBeingTyped = false;
+            StopTypingSoundLoop();
             dialogueText.maxVisibleCharacters = fullText.Length;  // 안전: 혹시 누락 방지
             ShowNextIndicator();
         }
@@ -565,6 +575,8 @@ namespace LoveAlgo.Story
             if (isTyping)
             {
                 skipRequested = true;
+                isCharBeingTyped = false;
+                StopTypingSoundLoop();
                 dialogueText.text = fullText;
                 dialogueText.maxVisibleCharacters = fullText?.Length ?? 0;
                 isTyping = false;
@@ -877,12 +889,41 @@ namespace LoveAlgo.Story
 
         #endregion
 
-        void PlayTypingSound()
+        /// <summary>
+        /// 타이핑 사운드 독립 루프 시작 (텍스트 속도와 무관하게 일정 간격 유지)
+        /// </summary>
+        void StartTypingSoundLoop()
         {
-            float now = Time.unscaledTime;
-            if (now - lastTypingSoundTime < 0.08f) return;
-            lastTypingSoundTime = now;
-            LoveAlgo.UI.UISoundManager.Instance?.PlayTyping();
+            StopTypingSoundLoop();
+            typingSoundCts = new CancellationTokenSource();
+            RunTypingSoundLoop(typingSoundCts.Token).Forget();
+        }
+
+        async UniTaskVoid RunTypingSoundLoop(CancellationToken ct)
+        {
+            try
+            {
+                while (!ct.IsCancellationRequested && isTyping)
+                {
+                    // 글자가 실제 출력되는 구간에서만 사운드 재생 (대기/일시정지 구간 제외)
+                    if (isCharBeingTyped && !skipRequested)
+                        LoveAlgo.UI.UISoundManager.Instance?.PlayTyping();
+
+                    await UniTask.Delay(
+                        TimeSpan.FromSeconds(typingSoundInterval),
+                        ignoreTimeScale: true,
+                        cancellationToken: ct
+                    );
+                }
+            }
+            catch (OperationCanceledException) { }
+        }
+
+        void StopTypingSoundLoop()
+        {
+            typingSoundCts?.Cancel();
+            typingSoundCts?.Dispose();
+            typingSoundCts = null;
         }
 
         #region 버튼 핸들러

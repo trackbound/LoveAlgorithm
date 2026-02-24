@@ -179,10 +179,22 @@ namespace LoveAlgo.Story
             {
                 // 크로스페이드: 현재 곡 페이드아웃 후 새 곡 페이드인
                 targetVolume = bgmSource.volume;
-                await bgmSource.DOFade(0f, fadeDuration).ToUniTask(cancellationToken: ct);
+                try
+                {
+                    await bgmSource.DOFade(0f, fadeDuration).ToUniTask(cancellationToken: ct);
+                }
+                catch (OperationCanceledException) { }
+
                 bgmSource.clip = clip;
                 bgmSource.Play();
-                await bgmSource.DOFade(targetVolume, fadeDuration).ToUniTask(cancellationToken: ct);
+                try
+                {
+                    await bgmSource.DOFade(targetVolume, fadeDuration).ToUniTask(cancellationToken: ct);
+                }
+                catch (OperationCanceledException) { }
+
+                // 트윈이 중단되어도 목표 볼륨 보장
+                if (bgmSource != null) bgmSource.volume = targetVolume;
             }
             else if (fadeDuration > 0)
             {
@@ -190,7 +202,14 @@ namespace LoveAlgo.Story
                 bgmSource.volume = 0f;
                 bgmSource.clip = clip;
                 bgmSource.Play();
-                await bgmSource.DOFade(targetVolume, fadeDuration).ToUniTask(cancellationToken: ct);
+                try
+                {
+                    await bgmSource.DOFade(targetVolume, fadeDuration).ToUniTask(cancellationToken: ct);
+                }
+                catch (OperationCanceledException) { }
+
+                // 트윈이 중단되어도 목표 볼륨 보장
+                if (bgmSource != null) bgmSource.volume = targetVolume;
             }
             else
             {

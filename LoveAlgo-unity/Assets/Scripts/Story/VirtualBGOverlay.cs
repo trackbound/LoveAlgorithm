@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
@@ -200,16 +201,49 @@ namespace LoveAlgo.Story
         }
 
         /// <summary>
+        /// 오버레이 별칭 매핑 (번호 → 이름, 이름 → 번호 양방향)
+        /// Inspector에는 어느 이름으로 등록해도 양쪽 모두 매칭됨
+        /// </summary>
+        static readonly Dictionary<string, string> OverlayAliases = new(System.StringComparer.OrdinalIgnoreCase)
+        {
+            { "Roa_Mob_1", "Roa_Mob_Default" },
+            { "Roa_Mob_2", "Roa_Mob_Negative" },
+            { "Roa_Mob_3", "Roa_Mob_Positive" },
+            { "Roa_PC_1",  "Roa_PC_Default" },
+            { "Roa_PC_2",  "Roa_PC_Negative" },
+            { "Roa_PC_3",  "Roa_PC_Positive" },
+            // 역방향
+            { "Roa_Mob_Default",  "Roa_Mob_1" },
+            { "Roa_Mob_Negative", "Roa_Mob_2" },
+            { "Roa_Mob_Positive", "Roa_Mob_3" },
+            { "Roa_PC_Default",   "Roa_PC_1" },
+            { "Roa_PC_Negative",  "Roa_PC_2" },
+            { "Roa_PC_Positive",  "Roa_PC_3" },
+        };
+
+        /// <summary>
         /// 이름으로 스프라이트 찾기 (Inspector 바인딩에서)
+        /// 번호(Roa_Mob_1)와 이름(Roa_Mob_Default) 모두 지원
         /// </summary>
         Sprite FindSprite(string name)
         {
             if (overlayEntries == null) return null;
 
+            // 1차: 정확히 일치
             foreach (var entry in overlayEntries)
             {
                 if (string.Equals(entry.name, name, System.StringComparison.OrdinalIgnoreCase))
                     return entry.sprite;
+            }
+
+            // 2차: 별칭으로 재시도
+            if (OverlayAliases.TryGetValue(name, out string alias))
+            {
+                foreach (var entry in overlayEntries)
+                {
+                    if (string.Equals(entry.name, alias, System.StringComparison.OrdinalIgnoreCase))
+                        return entry.sprite;
+                }
             }
 
             Debug.LogWarning($"[VirtualBGOverlay] 등록되지 않은 오버레이: {name} (Inspector에서 overlayEntries에 추가하세요)");

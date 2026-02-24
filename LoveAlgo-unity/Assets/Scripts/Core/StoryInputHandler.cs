@@ -86,7 +86,8 @@ namespace LoveAlgo.Core
 
                     if (dialogueUI != null && dialogueUI.IsTyping)
                         dialogueUI.RequestSkip();
-                    runner?.OnClick();
+                    else
+                        runner?.OnClick();
                 }
             }
         }

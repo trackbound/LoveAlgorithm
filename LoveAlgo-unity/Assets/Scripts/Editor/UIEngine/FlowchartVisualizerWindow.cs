@@ -8,6 +8,7 @@ using UnityEditor;
 // 런타임 타입 참조
 using LineType = LoveAlgo.Story.LineType;
 using NextType = LoveAlgo.Story.NextType;
+using CsvUtility = LoveAlgo.Story.CsvUtility;
 
 namespace LoveAlgo.Editor.UIEngine
 {
@@ -638,7 +639,7 @@ namespace LoveAlgo.Editor.UIEngine
 
             if (currentScript == null) return;
 
-            var rows = currentScript.text.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
+            var rows = CsvUtility.SplitRecords(currentScript.text);
             
             string currentAnchor = "_START_";
             string lastChoiceId = null;
@@ -653,13 +654,14 @@ namespace LoveAlgo.Editor.UIEngine
                 LineIndex = 0
             });
 
-            for (int i = 0; i < rows.Length; i++)
+            for (int i = 0; i < rows.Count; i++)
             {
-                var row = rows[i].Trim();
+                var row = rows[i].Text.Trim();
+                int lineNumber = rows[i].StartLine;
                 if (string.IsNullOrEmpty(row) || row.StartsWith("#") || row.StartsWith("LineID,"))
                     continue;
 
-                var columns = SplitCsv(row);
+                var columns = CsvUtility.SplitCsv(row);
                 if (columns.Length < 5) continue;
 
                 string lineId = columns[0].Trim();
@@ -701,7 +703,7 @@ namespace LoveAlgo.Editor.UIEngine
                         DisplayName = lineId,
                         SubText = subText,
                         FullText = string.IsNullOrEmpty(value) ? lineId : $"[{typeStr}] {speaker}: {value}",
-                        LineIndex = i
+                        LineIndex = lineNumber
                     });
                 }
 
@@ -711,11 +713,11 @@ namespace LoveAlgo.Editor.UIEngine
                     switch (type)
                     {
                         case LineType.Flow:
-                            ProcessFlowLine(value, currentAnchor, i);
+                            ProcessFlowLine(value, currentAnchor, lineNumber);
                             break;
 
                         case LineType.Choice:
-                            lastChoiceId = string.IsNullOrEmpty(lineId) ? $"_CHOICE_{i}" : lineId;
+                            lastChoiceId = string.IsNullOrEmpty(lineId) ? $"_CHOICE_{lineNumber}" : lineId;
                             optionIndex = 0;
                             
                             if (!nodes.Exists(n => n.Id == lastChoiceId))
@@ -725,7 +727,7 @@ namespace LoveAlgo.Editor.UIEngine
                                     Id = lastChoiceId,
                                     Type = FlowNodeType.Choice,
                                     DisplayName = "Choice",
-                                    LineIndex = i
+                                    LineIndex = lineNumber
                                 });
 
                                 if (!string.IsNullOrEmpty(currentAnchor) && currentAnchor != lastChoiceId)
@@ -742,7 +744,7 @@ namespace LoveAlgo.Editor.UIEngine
                         case LineType.Option:
                             if (!string.IsNullOrEmpty(lastChoiceId))
                             {
-                                ProcessOptionLine(value, lastChoiceId, optionIndex++, i);
+                                ProcessOptionLine(value, lastChoiceId, optionIndex++, lineNumber);
                             }
                             break;
                     }
@@ -850,27 +852,6 @@ namespace LoveAlgo.Editor.UIEngine
                 FromId = optionId,
                 ToId = target
             });
-        }
-
-        string[] SplitCsv(string line)
-        {
-            var result = new List<string>();
-            bool inQuotes = false;
-            var current = new System.Text.StringBuilder();
-
-            for (int i = 0; i < line.Length; i++)
-            {
-                char c = line[i];
-                if (c == '"') inQuotes = !inQuotes;
-                else if (c == ',' && !inQuotes)
-                {
-                    result.Add(current.ToString());
-                    current.Clear();
-                }
-                else current.Append(c);
-            }
-            result.Add(current.ToString());
-            return result.ToArray();
         }
 
         #endregion

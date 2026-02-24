@@ -31,10 +31,6 @@ namespace LoveAlgo.Story
         // 연출→대사 호흡 (시각 연출 후 대사 시작 전 짧은 뜸)
         bool needsPreTextBeat;
 
-        // SD 컷씬 진입 전 캐릭터 상태 스냅샷 (SD:Exit에서 복원)
-        readonly List<SDCharacterSnapshot> sdCharacterSnapshots = new();
-        bool sdCharactersHiddenForCutscene;
-
         // Auto 모드
         bool autoMode;
 
@@ -65,13 +61,6 @@ namespace LoveAlgo.Story
         /// 현재 실행 중인 스크립트명 (세이브용)
         /// </summary>
         public string CurrentScriptName => currentScriptName;
-
-        struct SDCharacterSnapshot
-        {
-            public SlotPosition Slot;
-            public string Character;
-            public string Emote;
-        }
 
         protected override void OnSingletonAwake()
         {
@@ -111,7 +100,6 @@ namespace LoveAlgo.Story
             lineIndex = ScriptParser.BuildLineIndex(lines);
             currentIndex = 0;
             currentScriptName = asset.name;  // 스크립트명 저장 (세이브용)
-            ClearSDSnapshotState();
         }
 
         /// <summary>
@@ -124,7 +112,6 @@ namespace LoveAlgo.Story
             currentIndex = 0;
             if (!string.IsNullOrEmpty(scriptName))
                 currentScriptName = scriptName;
-            ClearSDSnapshotState();
         }
 
         /// <summary>
@@ -245,7 +232,6 @@ namespace LoveAlgo.Story
             cts?.Cancel();
             cts?.Dispose();
             cts = null;
-            ClearSDSnapshotState();
 
             // 독백 상태 즉시 초기화 (로드/점프 시 잔여 상태 방지)
             UIManager.Instance?.DialogueUI?.ResetMonologueState();
@@ -447,15 +433,6 @@ namespace LoveAlgo.Story
         /// </summary>
         async UniTask<bool> ExecuteLineAsync(ScriptLine line, CancellationToken ct)
         {
-            // 로딩 화면이 표시 중이면 숨겨질 때까지 대기
-            var loading = Core.LoadingScreen.Instance;
-            if (loading != null && loading.IsShowing)
-            {
-                Debug.Log("[ScriptRunner] 로딩 화면 대기 중...");
-                await UniTask.WaitUntil(() => !loading.IsShowing, cancellationToken: ct);
-                Debug.Log("[ScriptRunner] 로딩 화면 해제됨, 실행 재개");
-            }
-
             switch (line.Type)
             {
                 case LineType.Text:
@@ -503,11 +480,6 @@ namespace LoveAlgo.Story
 
                 case LineType.Place:
                     await ExecutePlaceAsync(line, ct);
-                    break;
-
-                case LineType.Wait:
-                    if (float.TryParse(line.Value, out float waitSec) && waitSec > 0f)
-                        await UniTask.Delay(TimeSpan.FromSeconds(waitSec), cancellationToken: ct);
                     break;
             }
 
@@ -584,19 +556,16 @@ namespace LoveAlgo.Story
                 await UniTask.Delay(TimeSpan.FromSeconds(0.15f), cancellationToken: ct);
             }
 
-            // 독백 딤 처리 (SD컷/CG 표시 중에는 억제)
+            // 독백 딤 처리
             bool isMonologue = string.IsNullOrEmpty(line.Speaker);
-            var stage = StageManager.Instance;
-            var monologueDim = stage?.MonologueDim;
-            bool dimSuppressed = (stage?.SDCutscene?.IsShowing ?? false)
-                              || (stage?.CG?.IsShowing ?? false);
+            var monologueDim = StageManager.Instance?.MonologueDim;
             if (monologueDim != null)
             {
-                if (isMonologue && !monologueDim.IsShowing && !dimSuppressed)
+                if (isMonologue && !monologueDim.IsShowing)
                 {
                     await monologueDim.ShowAsync(ct: ct);
                 }
-                else if ((!isMonologue || dimSuppressed) && monologueDim.IsShowing)
+                else if (!isMonologue && monologueDim.IsShowing)
                 {
                     await monologueDim.HideAsync(ct: ct);
                 }
@@ -616,88 +585,16 @@ namespace LoveAlgo.Story
 
         async UniTask ExecuteCharAsync(ScriptLine line, CancellationToken ct)
         {
+            // 캐릭터 제어
             var character = StageManager.Instance?.Character;
-            if (character == null)
+            if (character != null)
+            {
+                await character.ExecuteAsync(line.Value, ct);
+            }
+            else
             {
                 Debug.Log($"[Char] {line.Value}");
-                return;
             }
-
-            var overlay = StageManager.Instance?.VirtualBG;
-            var parts = line.Value.Split(':');
-
-            // ─── 로아 오버레이 연동 ───
-            // Enter 형식: C:Enter:Roa:표정:오버레이명  (parts[4]가 오버레이)
-            // Exit  형식: C:Exit (로아가 C슬롯에 있으면 오버레이도 자동 퇴장)
-            string overlayName = null;
-            string charValue = line.Value;
-
-            if (parts.Length >= 3 && parts[1] == "Enter"
-                && parts[2].Equals("Roa", StringComparison.OrdinalIgnoreCase)
-                && parts.Length >= 5)
-            {
-                // C:Enter:Roa:표정:오버레이명 → 오버레이 분리
-                overlayName = parts[4];
-                charValue = $"{parts[0]}:{parts[1]}:{parts[2]}:{parts[3]}";
-            }
-
-            bool isRoaExit = parts.Length >= 2 && parts[1] == "Exit"
-                && overlay != null && overlay.IsShowing
-                && character.GetSlot(SlotPosition.C)?.CurrentCharacter?.Equals("Roa", StringComparison.OrdinalIgnoreCase) == true;
-
-            const float overlayFade = 0.15f;
-
-            if (overlayName != null)
-            {
-                // 글리치 SFX (fire-and-forget)
-                AudioManager.Instance?.ExecuteAsync("SFX:083_Glitch", ct).Forget();
-
-                // 로아 Enter + 오버레이 동시 등장
-                if (line.NextType == NextType.Immediate)
-                {
-                    UniTask.WhenAll(
-                        overlay.ShowAsync(overlayName, overlayFade, 0.7f, ct),
-                        character.ExecuteAsync(charValue, ct)
-                    ).Forget();
-                }
-                else
-                {
-                    await UniTask.WhenAll(
-                        overlay.ShowAsync(overlayName, overlayFade, 0.7f, ct),
-                        character.ExecuteAsync(charValue, ct)
-                    );
-                }
-                return;
-            }
-
-            if (isRoaExit)
-            {
-                // 로아 Exit + 오버레이 동시 퇴장
-                if (line.NextType == NextType.Immediate)
-                {
-                    UniTask.WhenAll(
-                        character.ExecuteAsync(line.Value, ct),
-                        overlay.HideAsync(overlayFade, ct)
-                    ).Forget();
-                }
-                else
-                {
-                    await UniTask.WhenAll(
-                        character.ExecuteAsync(line.Value, ct),
-                        overlay.HideAsync(overlayFade, ct)
-                    );
-                }
-                return;
-            }
-
-            // ─── 기본 실행 ───
-            if (line.NextType == NextType.Immediate)
-            {
-                character.ExecuteAsync(line.Value, ct).Forget();
-                return;
-            }
-
-            await character.ExecuteAsync(line.Value, ct);
         }
 
         async UniTask ExecuteBGAsync(ScriptLine line, CancellationToken ct)
@@ -705,8 +602,6 @@ namespace LoveAlgo.Story
             // 전환 타입 파싱
             var parts = line.Value.Split(':');
             string bgName = parts[0];
-            string transition = parts.Length >= 2 ? parts[1] : "";
-            bool isCut = transition.Equals("Cut", System.StringComparison.OrdinalIgnoreCase);
             bool isCrossFade = parts.Length >= 2 && parts[1].Equals("Cross", System.StringComparison.OrdinalIgnoreCase);
 
             // 동일 배경이면 전환 효과 스킵 (DEMO 점프 등 환경 세팅용)
@@ -728,18 +623,6 @@ namespace LoveAlgo.Story
             }
             else
             {
-                // CG/SD가 덮고 있을 때 Cut은 뒤 배경만 즉시 교체 (검은 페이드 깜빡임 방지)
-                bool isOverlayScene = (StageManager.Instance?.CG?.IsShowing ?? false)
-                                   || (StageManager.Instance?.SDCutscene?.IsShowing ?? false);
-                if (isCut && isOverlayScene)
-                {
-                    if (background != null)
-                    {
-                        await background.ChangeBackgroundAsync(bgName, BGTransition.Cut, 0f, ct);
-                    }
-                    return;
-                }
-
                 // Fade/Cut: FadeOut 시작 → 검은 화면에서 캐릭터 즉시 제거 + 배경 교체 → FadeIn
                 // 캐릭터를 FadeOut 전에 ExitAsync 하면 퇴장이 보여서 부자연스러움
                 // → FadeOut 완료 후 즉시 ClearAll 처리
@@ -749,7 +632,7 @@ namespace LoveAlgo.Story
                 var dialogueUI = UIManager.Instance?.DialogueUI;
 
                 // 전환 파라미터 파싱 (BackgroundLayer.ExecuteAsync와 동일 로직)
-                float duration = 0.5f;  // BackgroundLayer defaultDuration
+                float duration = 2.0f;  // BackgroundLayer defaultDuration
                 if (parts.Length >= 3 && float.TryParse(parts[2], out float d))
                     duration = d;
                 float halfDuration = duration * 0.5f;
@@ -817,85 +700,16 @@ namespace LoveAlgo.Story
 
         async UniTask ExecuteSDAsync(ScriptLine line, CancellationToken ct)
         {
+            // SD 컷씬 레이어 제어 (캐릭터/대사창 유지)
             var sd = StageManager.Instance?.SDCutscene;
-            var character = StageManager.Instance?.Character;
-            var parts = line.Value.Split(':');
-            bool isExit = parts.Length > 0 && parts[0].Equals("Exit", StringComparison.OrdinalIgnoreCase);
-
             if (sd != null)
             {
-                // SD 시작 시점에만 1회: 캐릭터 스냅샷 + 자동 숨김
-                if (!isExit && !sdCharactersHiddenForCutscene)
-                {
-                    CaptureSDCharacterSnapshot(character);
-                    if (character != null)
-                        await character.ExitAllAsync(ct);
-                    sdCharactersHiddenForCutscene = true;
-                }
-
                 await sd.ExecuteAsync(line.Value, ct);
-
-                // SD 종료(Exit) 시: 시작 전 상태로 자동 복원
-                if (isExit && sdCharactersHiddenForCutscene)
-                {
-                    await RestoreSDCharacterSnapshotAsync(character, ct);
-                    sdCharactersHiddenForCutscene = false;
-                }
             }
             else
             {
                 Debug.Log($"[SD] {line.Value}");
             }
-        }
-
-        void ClearSDSnapshotState()
-        {
-            sdCharacterSnapshots.Clear();
-            sdCharactersHiddenForCutscene = false;
-        }
-
-        void CaptureSDCharacterSnapshot(CharacterLayer characterLayer)
-        {
-            sdCharacterSnapshots.Clear();
-
-            if (characterLayer == null) return;
-
-            CaptureSDCharacterSnapshot(characterLayer, SlotPosition.L);
-            CaptureSDCharacterSnapshot(characterLayer, SlotPosition.C);
-            CaptureSDCharacterSnapshot(characterLayer, SlotPosition.R);
-        }
-
-        void CaptureSDCharacterSnapshot(CharacterLayer characterLayer, SlotPosition slotPosition)
-        {
-            var slot = characterLayer.GetSlot(slotPosition);
-            if (slot == null || slot.IsEmpty) return;
-
-            sdCharacterSnapshots.Add(new SDCharacterSnapshot
-            {
-                Slot = slotPosition,
-                Character = slot.CurrentCharacter,
-                Emote = slot.CurrentEmote
-            });
-        }
-
-        async UniTask RestoreSDCharacterSnapshotAsync(CharacterLayer characterLayer, CancellationToken ct)
-        {
-            if (characterLayer == null || sdCharacterSnapshots.Count == 0)
-            {
-                sdCharacterSnapshots.Clear();
-                return;
-            }
-
-            foreach (var snapshot in sdCharacterSnapshots)
-            {
-                var slot = characterLayer.GetSlot(snapshot.Slot);
-                if (slot == null) continue;
-
-                string emote = string.IsNullOrEmpty(snapshot.Emote) ? "Default" : snapshot.Emote;
-                await slot.EnterAsync(snapshot.Character, emote, ct);
-            }
-
-            sdCharacterSnapshots.Clear();
         }
 
         async UniTask ExecuteOverlayAsync(ScriptLine line, CancellationToken ct)
@@ -914,40 +728,29 @@ namespace LoveAlgo.Story
 
         async UniTask ExecuteSoundAsync(ScriptLine line, CancellationToken ct)
         {
-            if (AudioManager.Instance == null)
+            // 오디오 재생
+            if (AudioManager.Instance != null)
+            {
+                await AudioManager.Instance.ExecuteAsync(line.Value, ct);
+            }
+            else
             {
                 Debug.Log($"[Sound] {line.Value}");
-                return;
             }
-
-            // > (Immediate): BGM 페이드 등 긴 오디오 트랜지션을 백그라운드에서 시작하고 즉시 진행
-            if (line.NextType == NextType.Immediate)
-            {
-                AudioManager.Instance.ExecuteAsync(line.Value, ct).Forget();
-                return;
-            }
-
-            await AudioManager.Instance.ExecuteAsync(line.Value, ct);
         }
 
         async UniTask ExecutePlaceAsync(ScriptLine line, CancellationToken ct)
         {
             // 좌상단 장소/이벤트 배너 표시
             var placeUI = UIManager.Instance?.PlaceUI;
-            if (placeUI == null)
+            if (placeUI != null)
+            {
+                await placeUI.ExecuteAsync(line.Value, ct);
+            }
+            else
             {
                 Debug.Log($"[Place] {line.Value}");
-                return;
             }
-
-            // > (Immediate): 배너 애니메이션을 백그라운드에서 실행하고 즉시 다음 라인으로
-            if (line.NextType == NextType.Immediate)
-            {
-                placeUI.ExecuteAsync(line.Value, ct).Forget();
-                return;
-            }
-
-            await placeUI.ExecuteAsync(line.Value, ct);
         }
 
         async UniTask ExecuteFXAsync(ScriptLine line, CancellationToken ct)
@@ -974,24 +777,11 @@ namespace LoveAlgo.Story
                 case "Setup":
                     await ExecuteMacroSetupAsync(line.Value, ct);
                     return;
-                case "RoaEnter":
-                    await ExecuteMacroRoaEnterAsync(parts, ct);
+                case "Wait":
+                    // 단순 대기: FX,,Wait[:초],next
+                    float waitSec = parts.Length > 1 && float.TryParse(parts[1], out float ws) ? ws : 1.0f;
+                    await UniTask.Delay(System.TimeSpan.FromSeconds(waitSec), cancellationToken: ct);
                     return;
-                case "RoaExit":
-                    await ExecuteMacroRoaExitAsync(parts, ct);
-                    return;
-                case "RoaOverlay":
-                    await ExecuteMacroRoaOverlayAsync(parts, ct);
-                    return;
-            }
-
-            // Wait (FX,,Wait:1.0 형태 — 기존 Wait 타입 대체)
-            if (command == "Wait")
-            {
-                float waitSec = parts.Length > 1 && float.TryParse(parts[1], out float ws) ? ws : 1f;
-                if (waitSec > 0f)
-                    await UniTask.Delay(TimeSpan.FromSeconds(waitSec), cancellationToken: ct);
-                return;
             }
 
             // 대사창 제어 명령
@@ -1018,22 +808,7 @@ namespace LoveAlgo.Story
             var fx = Core.ScreenFX.Instance;
             if (fx != null)
             {
-                // > (Immediate): FadeOut/DayEnd/DayStart/Setup은 반드시 완료 대기 필요
-                // 그 외 CamShake, EyeBlink 등은 백그라운드 실행 가능
-                bool mustAwait = command == "FadeOut" || command == "FadeIn"
-                    || command == "DayEnd" || command == "DayStart" || command == "Setup"
-                    || command == "SceneEnd" || command == "SceneStart"
-                    || command == "EyeOpen" || command == "EyeClose" || command == "EyeCloseImmediate"
-                    || command == "RoaEnter" || command == "RoaExit" || command == "RoaOverlay";
-
-                if (line.NextType == NextType.Immediate && !mustAwait)
-                {
-                    fx.ExecuteAsync(line.Value, ct).Forget();
-                }
-                else
-                {
-                    await fx.ExecuteAsync(line.Value, ct);
-                }
+                await fx.ExecuteAsync(line.Value, ct);
             }
             else
             {
@@ -1059,27 +834,26 @@ namespace LoveAlgo.Story
         ///   3. BG Black + EyeCloseImmediate — 배경 교체 + 눈 감긴 상태 세팅
         ///      (BG도 검정, Eye 바도 검정이라 구분 안 됨)
         ///   4. ScreenFX FadeIn — 페이드 오버레이 해제 (BG Black + Eye Bar 보이지만 전부 검정)
-        ///   5. 로딩 화면 표시 (랜덤 캐릭터 일러스트)
-        ///   6. 자동저장
-        ///   7. 로딩 화면 숨기기
+        ///   5. 자동저장
         /// 
         /// 다음 아침: DayStart:배경 → 대사 → EyeOpen 으로 눈 뜨기 연출
         /// </summary>
         async UniTask ExecuteMacroDayEndAsync(string[] parts, CancellationToken ct)
         {
-            float fadeDuration = parts.Length > 1 && float.TryParse(parts[1], out float fd) ? fd : 0.5f;
-            Debug.Log($"[ScriptRunner] 매크로: DayEnd (fade={fadeDuration}s)");
+            float fadeDuration = parts.Length > 1 && float.TryParse(parts[1], out float fd) ? fd : 0.8f;
+            float totalDuration = 5.0f;  // DayEnd 시작 ~ 다음 대사까지 총 시간
+            float startTime = Time.time;
+            Debug.Log($"[ScriptRunner] 매크로: DayEnd (fade={fadeDuration}s, total={totalDuration}s)");
 
             var dialogueUI = UIManager.Instance?.DialogueUI;
             var fx = Core.ScreenFX.Instance;
             var stage = StageManager.Instance;
-            var loading = Core.LoadingScreen.Instance;
 
-            // ── 1. 화면 암전 ──
+            // 1. 화면 암전 (FadeOut)
             if (fx != null)
                 await fx.FadeOutAsync(fadeDuration, ct);
 
-            // ── 2. 암전 뒤에서 스테이지 일괄 정리 ──
+            // 2. 암전 뒤에서 스테이지 일괄 정리 (플레이어에게 안 보임)
             dialogueUI?.HideImmediate();
             stage?.Character?.ClearAll();
             stage?.VirtualBG?.HideImmediate();
@@ -1088,113 +862,27 @@ namespace LoveAlgo.Story
             if (AudioManager.Instance != null)
                 await AudioManager.Instance.ExecuteAsync("BGM:Stop", ct);
 
-            // ── 3. BG_Black + EyeClose 세팅 (다음 아침 EyeOpen용) ──
+            // 3. 배경 → 블랙 + 눈 감긴 상태 세팅 (다음 아침 EyeOpen용)
             await ExecuteBGAsync(
-                new ScriptLine("", LineType.BG, "", "BG_Black", NextType.Immediate), ct);
+                new ScriptLine("", LineType.BG, "", "Black", NextType.Immediate), ct);
             fx?.EyeCloseImmediate();
 
-            // ── 4. 로딩 화면 준비 (아직 암전 뒤에서) ──
-            if (loading != null)
-                await loading.ShowAsync(ct);
-
-            // ── 5. 페이드 해제 → 로딩 화면이 부드럽게 드러남 ──
-            if (fx != null)
-                await fx.FadeInAsync(0.5f, ct);
-
-            // ── 6. 자동저장 ──
-            Core.GameManager.Instance?.AutoSave();
-
-            // ── 7. 로딩 화면 유지 (충분히 보여줌) ──
-            await UniTask.Delay(TimeSpan.FromSeconds(1.2f), cancellationToken: ct);
-
-            // ── 8. 페이드로 로딩 화면 가림 → 검정 화면(BG_Black + EyeClose)으로 복귀 ──
-            if (fx != null)
-                await fx.FadeOutAsync(0.5f, ct);
-
-            // ── 9. 로딩 화면 제거 (암전 뒤) ──
-            loading?.HideImmediate();
-
-            // ── 10. 페이드 해제 → BG_Black + EyeClose 상태로 (DayStart가 EyeOpen 처리) ──
+            // 4. 페이드 오버레이 해제 (BG Black + Eye Bar 모두 검정, 시각적 차이 없음)
             if (fx != null)
                 await fx.FadeInAsync(0.3f, ct);
 
+            // 5. 자동저장
+            Core.GameManager.Instance?.AutoSave();
+
+            // 6. 남은 시간 대기 (총 5초 맞추기)
+            float elapsed = Time.time - startTime;
+            float remaining = totalDuration - elapsed;
+            if (remaining > 0f)
+            {
+                Debug.Log($"[ScriptRunner] DayEnd: 연출 {elapsed:F1}s 소요, {remaining:F1}s 대기");
+                await UniTask.Delay(TimeSpan.FromSeconds(remaining), cancellationToken: ct);
+            }
             Debug.Log("[ScriptRunner] DayEnd 완료");
-        }
-
-        /// <summary>
-        /// 매크로: 장면 전환 종료 (경량 — 프롤로그/범용)
-        /// CSV: FX,,SceneEnd[:페이드시간],await
-        ///
-        /// 시퀀스:
-        ///   1. 화면 페이드아웃
-        ///   2. 암전 뒤에서 정리: 캐릭터, 오버레이, 대사창, PlaceUI
-        ///   3. BG는 유지 (다음 BG 명령에서 변경)
-        ///
-        /// DayEnd와 달리 로딩 화면, 자동저장, AdvanceDay 없음.
-        /// </summary>
-        async UniTask ExecuteMacroSceneEndAsync(string[] parts, CancellationToken ct)
-        {
-            float fadeDuration = parts.Length > 1 && float.TryParse(parts[1], out float fd) ? fd : 0.5f;
-            Debug.Log($"[ScriptRunner] 매크로: SceneEnd (fade={fadeDuration}s)");
-
-            var fx = Core.ScreenFX.Instance;
-
-            // ── 1. 화면 암전 ──
-            if (fx != null)
-                await fx.FadeOutAsync(fadeDuration, ct);
-
-            // ── 2. 암전 뒤에서 정리 ──
-            UIManager.Instance?.DialogueUI?.HideImmediate();
-            StageManager.Instance?.Character?.ClearAll();
-            StageManager.Instance?.VirtualBG?.HideImmediate();
-            UIManager.Instance?.PlaceUI?.HideImmediate();
-
-            Debug.Log("[ScriptRunner] SceneEnd 완료");
-        }
-
-        /// <summary>
-        /// 매크로: 장면 전환 시작 (경량 — 프롤로그/범용)
-        /// CSV: FX,,SceneStart[:BG[:EyeClose]],await
-        ///
-        /// 예시:
-        ///   SceneStart                         — FadeIn만
-        ///   SceneStart:BG_MyRoom_Bed_Day       — BG 세팅 + FadeIn
-        ///   SceneStart:BG_MyRoom_Bed_Day:EyeClose — BG 세팅 + EyeClose + FadeIn
-        ///   SceneStart::EyeClose               — BG 변경 없이 EyeClose + FadeIn
-        /// </summary>
-        async UniTask ExecuteMacroSceneStartAsync(string[] parts, CancellationToken ct)
-        {
-            string bgParam = parts.Length > 1 ? parts[1] : null;
-            string eyeParam = parts.Length > 2 ? parts[2] : null;
-
-            var fx = Core.ScreenFX.Instance;
-
-            // ── 0. 안전 클리어 (세이브/로드 점프 대비) ──
-            UIManager.Instance?.DialogueUI?.HideImmediate();
-            StageManager.Instance?.Character?.ClearAll();
-            StageManager.Instance?.VirtualBG?.HideImmediate();
-            UIManager.Instance?.PlaceUI?.HideImmediate();
-
-            // ── 1. 암전 뒤에서 BG 세팅 (지정 시) ──
-            if (!string.IsNullOrEmpty(bgParam))
-            {
-                await ExecuteBGAsync(
-                    new ScriptLine("", LineType.BG, "", $"{bgParam}:Cut", NextType.Immediate), ct);
-            }
-
-            // ── 2. EyeClose 세팅 (지정 시) ──
-            if (!string.IsNullOrEmpty(eyeParam) &&
-                eyeParam.Equals("EyeClose", System.StringComparison.OrdinalIgnoreCase))
-            {
-                fx?.EyeCloseImmediate();
-            }
-
-            // ── 3. FadeIn ──
-            Debug.Log($"[ScriptRunner] 매크로: SceneStart (bg={bgParam ?? "없음"}, eye={eyeParam ?? "없음"})");
-            if (fx != null)
-                await fx.FadeInAsync(0.5f, ct);
-
-            Debug.Log("[ScriptRunner] SceneStart 완료");
         }
 
         /// <summary>
@@ -1264,6 +952,117 @@ namespace LoveAlgo.Story
                 // 배경 미지정 → Eye 상태 해제 (직접 장면 전환용)
                 fx?.EyeOpenImmediate();
                 Debug.Log("[ScriptRunner] DayStart: Eye 해제 (배경 미지정)");
+            }
+        }
+
+        /// <summary>
+        /// 매크로: 씬 종료 (가벼운 장면 전환)
+        /// CSV: FX,,SceneEnd[:페이드시간],await
+        /// 
+        /// DayEnd와 차이:
+        ///   - DayEnd: 무거운 하루 마무리 (5초 대기, 자동저장, BGM 정지, GameState 변경)
+        ///   - SceneEnd: 가벼운 장면 전환 (빠른 암전 + 시각 요소만 정리, BGM 유지)
+        /// 
+        /// 시퀀스:
+        ///   1. FadeOut — 빠른 암전 (기본 0.5초)
+        ///   2. 암전 뒤 시각 요소 정리 (캐릭터/오버레이/대사창/장소 배너)
+        ///   3. 암전 유지 (fade overlay alpha=1 상태로 끝)
+        ///      → 이후 SceneStart가 새 배경 세팅 후 FadeIn으로 열어줌
+        /// 
+        /// BGM은 건드리지 않음 — 시나리오에서 필요 시 직접 제어
+        /// </summary>
+        async UniTask ExecuteMacroSceneEndAsync(string[] parts, CancellationToken ct)
+        {
+            float fadeDuration = parts.Length > 1 && float.TryParse(parts[1], out float fd) ? fd : 0.5f;
+            Debug.Log($"[ScriptRunner] 매크로: SceneEnd (fade={fadeDuration}s)");
+
+            var dialogueUI = UIManager.Instance?.DialogueUI;
+            var fx = Core.ScreenFX.Instance;
+            var stage = StageManager.Instance;
+
+            // 1. 빠른 암전
+            if (fx != null)
+                await fx.FadeOutAsync(fadeDuration, ct);
+
+            // 2. 암전 뒤에서 시각 요소만 정리 (BGM은 유지)
+            dialogueUI?.HideImmediate();
+            stage?.Character?.ClearAll();
+            stage?.VirtualBG?.HideImmediate();
+            UIManager.Instance?.PlaceUI?.HideImmediate();
+
+            // 3. 암전 유지 — fade overlay alpha=1 상태로 끝
+            //    SceneStart 또는 LoadingScene이 이어받아 처리
+            Debug.Log("[ScriptRunner] SceneEnd 완료 (암전 유지)");
+        }
+
+        /// <summary>
+        /// 매크로: 씬 시작 (가벼운 장면 시작)
+        /// CSV: FX,,SceneStart[:배경[:EyeClose]],await
+        /// 
+        /// SceneEnd의 암전 상태에서 새 장면을 시작.
+        /// fade overlay가 alpha=1(검은 화면) 상태를 전제로 동작.
+        /// 
+        /// 변형:
+        ///   FX,,SceneStart:배경:EyeClose
+        ///     — 암전 뒤에서 BG 세팅 + EyeClose 세팅 → FadeIn (Eye 바로 여전히 검정)
+        ///     — 이후 Text 출력 시 검은배경+대사창, EyeOpen으로 배경 노출
+        ///   
+        ///   FX,,SceneStart:배경
+        ///     — 암전 뒤에서 BG 세팅 → FadeIn으로 배경이 바로 보임
+        ///   
+        ///   FX,,SceneStart
+        ///     — 배경 미지정 → 단순 FadeIn (이전 상태 그대로)
+        /// </summary>
+        async UniTask ExecuteMacroSceneStartAsync(string[] parts, CancellationToken ct)
+        {
+            string bgPath = null;
+            bool eyeClose = false;
+
+            if (parts.Length > 1 && !string.IsNullOrWhiteSpace(parts[1]))
+            {
+                bgPath = parts[1];
+            }
+
+            if (parts.Length > 2 && parts[2].Equals("EyeClose", System.StringComparison.OrdinalIgnoreCase))
+            {
+                eyeClose = true;
+            }
+
+            Debug.Log($"[ScriptRunner] 매크로: SceneStart (bg={bgPath ?? "(없음)"}, eyeClose={eyeClose})");
+
+            var fx = Core.ScreenFX.Instance;
+
+            if (bgPath != null)
+            {
+                // 암전(fade overlay) 뒤에서 배경 세팅 (플레이어에게 안 보임)
+                await ExecuteBGAsync(
+                    new ScriptLine("", LineType.BG, "", $"{bgPath}:Cut", NextType.Immediate), ct);
+
+                if (eyeClose)
+                {
+                    // Eye 바 세팅 → FadeIn → Eye 바가 배경을 가림 (여전히 검은 화면)
+                    // 이후 EyeOpen으로 배경 노출
+                    fx?.EyeCloseImmediate();
+                    if (fx != null)
+                        await fx.FadeInAsync(0.3f, ct);
+                    Debug.Log($"[ScriptRunner] SceneStart: BG '{bgPath}' (EyeClose 유지, 대사 가능)");
+                }
+                else
+                {
+                    // FadeIn으로 배경이 바로 보임
+                    fx?.EyeOpenImmediate();
+                    if (fx != null)
+                        await fx.FadeInAsync(0.6f, ct);
+                    Debug.Log($"[ScriptRunner] SceneStart: BG '{bgPath}' (페이드인)");
+                }
+            }
+            else
+            {
+                // 배경 미지정 → Eye 해제 + FadeIn
+                fx?.EyeOpenImmediate();
+                if (fx != null)
+                    await fx.FadeInAsync(0.6f, ct);
+                Debug.Log("[ScriptRunner] SceneStart: FadeIn (배경 미지정)");
             }
         }
 
@@ -1362,63 +1161,6 @@ namespace LoveAlgo.Story
             }
         }
 
-        // ─── 로아 매크로 (오버레이 + 캐릭터 동시 제어) ────────────
-
-        /// <summary>
-        /// RoaEnter:오버레이명[:표정] — 오버레이 + 캐릭터 동시 등장
-        /// </summary>
-        async UniTask ExecuteMacroRoaEnterAsync(string[] parts, CancellationToken ct)
-        {
-            string overlayName = parts.Length >= 2 ? parts[1] : "Roa_Mob_1";
-            string emote = parts.Length >= 3 ? parts[2] : "Default";
-            const float fadeDuration = 0.15f;
-
-            // 글리치 SFX (fire-and-forget)
-            AudioManager.Instance?.ExecuteAsync("SFX:083_Glitch", ct).Forget();
-
-            var overlay = Core.StageManager.Instance?.VirtualBG;
-            var character = Core.StageManager.Instance?.Character;
-
-            await UniTask.WhenAll(
-                overlay?.ShowAsync(overlayName, fadeDuration, 0.7f, ct) ?? UniTask.CompletedTask,
-                character?.ExecuteAsync($"C:Enter:Roa:{emote}", ct) ?? UniTask.CompletedTask
-            );
-        }
-
-        /// <summary>
-        /// RoaExit — 캐릭터 + 오버레이 동시 퇴장
-        /// </summary>
-        async UniTask ExecuteMacroRoaExitAsync(string[] parts, CancellationToken ct)
-        {
-            const float fadeDuration = 0.15f;
-
-            var overlay = Core.StageManager.Instance?.VirtualBG;
-            var character = Core.StageManager.Instance?.Character;
-
-            await UniTask.WhenAll(
-                character?.ExecuteAsync("C:Exit", ct) ?? UniTask.CompletedTask,
-                overlay?.HideAsync(fadeDuration, ct) ?? UniTask.CompletedTask
-            );
-        }
-
-        /// <summary>
-        /// RoaOverlay:오버레이명 — 등장 상태에서 오버레이 이미지만 교체
-        /// </summary>
-        async UniTask ExecuteMacroRoaOverlayAsync(string[] parts, CancellationToken ct)
-        {
-            string overlayName = parts.Length >= 2 ? parts[1] : "Roa_Mob_1";
-            const float fadeDuration = 0.15f;
-
-            // RoaEnter와 동일한 글리치 SFX 재생
-            AudioManager.Instance?.ExecuteAsync("SFX:083_Glitch", ct).Forget();
-
-            var overlay = Core.StageManager.Instance?.VirtualBG;
-            if (overlay == null) return;
-
-            await overlay.HideAsync(fadeDuration, ct);
-            await overlay.ShowAsync(overlayName, fadeDuration, 0.7f, ct);
-        }
-
         #endregion
 
         async UniTask<bool> ExecuteFlowAsync(ScriptLine line, CancellationToken ct)
@@ -1454,17 +1196,6 @@ namespace LoveAlgo.Story
                     Core.GameManager.Instance?.AutoSave();
                     break;
 
-                case "LoadingScene":
-                    // 로딩 화면 표시 → 대기 → 숨김
-                    var loading = Core.LoadingScreen.Instance;
-                    if (loading != null)
-                    {
-                        await loading.ShowAsync(ct);
-                        await UniTask.Delay(TimeSpan.FromSeconds(1.2f), cancellationToken: ct);
-                        loading.HideImmediate();
-                    }
-                    break;
-
                 case "If":
                     // 형식: If:조건:점프대상
                     // 예: If:Love:Roa>=30:Confession, If:Flag:Met_Roa:Reunion
@@ -1481,6 +1212,13 @@ namespace LoveAlgo.Story
                         string heroineId = parts[2];
                         await LoveAlgo.MiniGame.MiniGameLauncher.LaunchAsync(gameName, heroineId);
                     }
+                    break;
+
+                case "LoadingScene":
+                    // 자동저장 + 로딩화면 표시
+                    // CSV: Flow,,LoadingScene[:표시시간],await
+                    // SceneEnd와 SceneStart 사이에 사용
+                    await ExecuteFlowLoadingSceneAsync(parts, ct);
                     break;
             }
 
@@ -1525,6 +1263,34 @@ namespace LoveAlgo.Story
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Flow:LoadingScene — 자동저장 + 로딩화면 표시
+        /// CSV: Flow,,LoadingScene[:표시시간],await
+        /// SceneEnd와 SceneStart 사이에 위치하여 장면 전환 연출
+        /// </summary>
+        async UniTask ExecuteFlowLoadingSceneAsync(string[] parts, CancellationToken ct)
+        {
+            float displayTime = parts.Length > 1 && float.TryParse(parts[1], out float dt) ? dt : 2.0f;
+            Debug.Log($"[Flow] LoadingScene (표시={displayTime}s)");
+
+            // 1. 자동저장
+            Core.GameManager.Instance?.AutoSave();
+
+            // 2. 로딩 화면 표시 (최소 표시 시간 보장 후 자동 숨김)
+            var loading = Core.LoadingScreen.Instance;
+            if (loading != null)
+            {
+                await loading.ShowForAsync(displayTime, ct);
+            }
+            else
+            {
+                // LoadingScreen 없으면 단순 대기
+                await UniTask.Delay(System.TimeSpan.FromSeconds(displayTime), cancellationToken: ct);
+            }
+
+            Debug.Log("[Flow] LoadingScene 완료");
         }
 
         async UniTask ExecuteChoiceAsync(ScriptLine line, CancellationToken ct)

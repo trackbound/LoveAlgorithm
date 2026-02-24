@@ -9,7 +9,7 @@ namespace LoveAlgo.UI
 {
     /// <summary>
     /// 좌상단 장소/이벤트 배너 UI (2줄 구성)
-    ///
+    /// 
     /// CSV 사용법:
     ///   ,Place,,이벤트명|장소명,await              → 2줄 배너, 기본 2초
     ///   ,Place,,[ 단체 이벤트: 축제 ]|주점 부스,await → 2줄 배너, 기본 2초
@@ -18,8 +18,8 @@ namespace LoveAlgo.UI
     ///   ,Place,,Hide,>                             → 즉시 숨김
     ///
     /// Value 포맷: "이벤트명|장소명[:초]" 또는 "장소명[:초]"
-    ///
-    /// 애니메이션: 페이드인 → 유지 → 페이드아웃
+    /// 
+    /// 애니메이션: 좌측 슬라이드인 + 페이드 → 유지 → 좌측 슬라이드아웃 + 페이드
     /// </summary>
     public class PlaceUI : MonoBehaviour
     {
@@ -31,8 +31,9 @@ namespace LoveAlgo.UI
         [SerializeField] GameObject eventLine;     // 이벤트 줄 오브젝트 (1줄 모드 시 비활성화)
 
         [Header("애니메이션 설정")]
-        [SerializeField] float enterDuration = 0.55f;   // 페이드인 시간
-        [SerializeField] float exitDuration = 0.5f;     // 페이드아웃 시간
+        [SerializeField] float slideDistance = 200f;    // 슬라이드 이동 거리(px)
+        [SerializeField] float enterDuration = 0.4f;    // 등장 시간
+        [SerializeField] float exitDuration = 0.35f;    // 퇴장 시간
         [SerializeField] float defaultHoldDuration = 2f; // 기본 유지 시간
 
         Sequence currentSequence;
@@ -95,7 +96,7 @@ namespace LoveAlgo.UI
         }
 
         /// <summary>
-        /// 배너 표시: 페이드인 → 유지 → 페이드아웃
+        /// 배너 표시: 슬라이드인 → 유지 → 슬라이드아웃
         /// </summary>
         async UniTask ShowAsync(string eventName, string placeName, float holdDuration, CancellationToken ct)
         {
@@ -112,25 +113,36 @@ namespace LoveAlgo.UI
             gameObject.SetActive(true);
             IsShowing = true;
 
+            // 시작 위치: 왼쪽으로 밀려난 상태
+            float targetX = bannerRect.anchoredPosition.x;
+            float startX = targetX - slideDistance;
+
+            bannerRect.anchoredPosition = new Vector2(startX, bannerRect.anchoredPosition.y);
             canvasGroup.alpha = 0f;
 
-            // 시퀀스: 페이드인 → 홀드 → 페이드아웃
+            // 시퀀스: 슬라이드인 → 홀드 → 슬라이드아웃
             awaitSource = new UniTaskCompletionSource<bool>();
 
             currentSequence = DOTween.Sequence();
 
-            // 1. 등장 (페이드인)
+            // 1. 등장 (슬라이드인 + 페이드인)
             _ = currentSequence.Append(
-                canvasGroup.DOFade(1f, enterDuration)
-                    .SetEase(Ease.InOutSine));
+                bannerRect.DOAnchorPosX(targetX, enterDuration)
+                    .SetEase(Ease.OutCubic));
+            _ = currentSequence.Join(
+                canvasGroup.DOFade(1f, enterDuration * 0.7f)
+                    .SetEase(Ease.OutCubic));
 
             // 2. 유지
             _ = currentSequence.AppendInterval(holdDuration);
 
-            // 3. 퇴장 (페이드아웃)
+            // 3. 퇴장 (슬라이드아웃 + 페이드아웃)
             _ = currentSequence.Append(
+                bannerRect.DOAnchorPosX(startX, exitDuration)
+                    .SetEase(Ease.InCubic));
+            _ = currentSequence.Join(
                 canvasGroup.DOFade(0f, exitDuration)
-                    .SetEase(Ease.InOutSine));
+                    .SetEase(Ease.InCubic));
 
             _ = currentSequence.OnComplete(() =>
             {

@@ -30,11 +30,12 @@ namespace LoveAlgo.Story
             var lines = new List<ScriptLine>();
             if (string.IsNullOrEmpty(csv)) return lines;
 
-            var rows = csv.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
+            var rows = CsvUtility.SplitRecords(csv);
 
-            for (int i = 0; i < rows.Length; i++)
+            for (int i = 0; i < rows.Count; i++)
             {
-                var row = rows[i].Trim();
+                var row = rows[i].Text.Trim();
+                int lineNumber = rows[i].StartLine;
 
                 // 빈 줄 스킵
                 if (string.IsNullOrEmpty(row)) continue;
@@ -46,7 +47,7 @@ namespace LoveAlgo.Story
                 if (row.StartsWith("LineID,")) continue;
 
                 // CSV 파싱
-                var line = ParseLine(row, i + 1);
+                var line = ParseLine(row, lineNumber);
                 if (line != null)
                 {
                     lines.Add(line);
@@ -62,7 +63,7 @@ namespace LoveAlgo.Story
         /// </summary>
         static ScriptLine ParseLine(string row, int lineNumber)
         {
-            var columns = SplitCsv(row);
+            var columns = CsvUtility.SplitCsv(row);
 
             // Option 타입은 Next 컬럼이 필요 없으므로 4개 허용
             int minColumns = 4;
@@ -101,39 +102,14 @@ namespace LoveAlgo.Story
             // Next 파싱
             ParseNext(nextStr, out NextType nextType, out float delay);
 
-            return new ScriptLine(lineId, type, speaker, value, nextType, delay);
-        }
-
-        /// <summary>
-        /// CSV 문자열을 컬럼으로 분리 (따옴표 처리 포함)
-        /// </summary>
-        static string[] SplitCsv(string line)
-        {
-            var result = new List<string>();
-            bool inQuotes = false;
-            var current = new System.Text.StringBuilder();
-
-            for (int i = 0; i < line.Length; i++)
+            // 빈 Next → 타입별 UX 기본값 자동 적용
+            // 시나리오 작가가 Next를 생략해도 자연스러운 흐름이 되도록
+            if (string.IsNullOrEmpty(nextStr))
             {
-                char c = line[i];
-
-                if (c == '"')
-                {
-                    inQuotes = !inQuotes;
-                }
-                else if (c == ',' && !inQuotes)
-                {
-                    result.Add(current.ToString());
-                    current.Clear();
-                }
-                else
-                {
-                    current.Append(c);
-                }
+                nextType = GetDefaultNextType(type);
             }
 
-            result.Add(current.ToString());
-            return result.ToArray();
+            return new ScriptLine(lineId, type, speaker, value, nextType, delay);
         }
 
         /// <summary>
@@ -183,6 +159,38 @@ namespace LoveAlgo.Story
 
             // 기본값
             nextType = NextType.Immediate;
+        }
+
+        /// <summary>
+        /// 타입별 Next 생략 시 기본값
+        /// 시나리오 작가가 Next를 비워도 자연스러운 흐름을 위해
+        /// </summary>
+        static NextType GetDefaultNextType(LineType type)
+        {
+            switch (type)
+            {
+                // 대사: 플레이어 클릭 대기
+                case LineType.Text:
+                    return NextType.Click;
+
+                // 시각 연출: 완료 대기 (등장/전환/효과가 끝나야 자연스러움)
+                case LineType.Char:
+                case LineType.BG:
+                case LineType.CG:
+                case LineType.SD:
+                case LineType.FX:
+                case LineType.Choice:
+                    return NextType.Await;
+
+                // 배경 처리: 즉시 진행 (BGM은 배경 재생, Flow는 제어 흐름, Overlay는 로아와 동시)
+                case LineType.Overlay:
+                case LineType.Sound:
+                case LineType.Flow:
+                case LineType.Place:
+                case LineType.Option:
+                default:
+                    return NextType.Immediate;
+            }
         }
 
         /// <summary>

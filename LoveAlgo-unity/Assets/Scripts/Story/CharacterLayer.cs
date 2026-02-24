@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using LoveAlgo.Core;
 using UnityEngine;
 
 namespace LoveAlgo.Story
@@ -33,7 +34,8 @@ namespace LoveAlgo.Story
 
         /// <summary>
         /// Char 명령 실행
-        /// Value 형식: 슬롯:액션:대상[:옵션]
+        /// Value 형식: 슬롯:액션:대상[:옵션[:오버레이]]
+        /// 오버레이는 로아 등장/표정 변경 시 5번째(Enter) 또는 4번째(Emote) 파라미터로 지정
         /// </summary>
         public async UniTask ExecuteAsync(string value, CancellationToken ct = default)
         {
@@ -64,42 +66,117 @@ namespace LoveAlgo.Story
             switch (action)
             {
                 case "Enter":
-                    // 형식: 슬롯:Enter:캐릭터[:표정]  — 페이드 (기본)
+                    // 형식: 슬롯:Enter:캐릭터[:표정[:오버레이]]  — 페이드 (기본)
                     if (parts.Length >= 3)
                     {
                         string character = parts[2];
                         string emote = parts.Length >= 4 ? parts[3] : "Default";
-                        await slot.EnterAsync(character, emote, ct);
+                        string overlay = parts.Length >= 5 ? parts[4] : null;
+
+                        // 로아: 글리치 SFX 즉시 + 캐릭터&오버레이 동시 페이드
+                        if (IsRoaCharacter(character))
+                            PlayGlitchSFX();
+
+                        if (!string.IsNullOrEmpty(overlay))
+                        {
+                            await UniTask.WhenAll(
+                                slot.EnterAsync(character, emote, ct),
+                                ShowOverlayAsync(overlay, ct)
+                            );
+                        }
+                        else
+                        {
+                            await slot.EnterAsync(character, emote, ct);
+                        }
                     }
                     break;
 
                 case "EnterUp":
-                    // 형식: 슬롯:EnterUp:캐릭터[:표정]  — 아래에서 위로 슬라이드 + 페이드
+                    // 형식: 슬롯:EnterUp:캐릭터[:표정[:오버레이]]  — 아래에서 위로 슬라이드 + 페이드
                     if (parts.Length >= 3)
                     {
                         string character = parts[2];
                         string emote = parts.Length >= 4 ? parts[3] : "Default";
-                        await slot.EnterSlideUpAsync(character, emote, ct);
+                        string overlay = parts.Length >= 5 ? parts[4] : null;
+
+                        if (IsRoaCharacter(character))
+                            PlayGlitchSFX();
+
+                        if (!string.IsNullOrEmpty(overlay))
+                        {
+                            await UniTask.WhenAll(
+                                slot.EnterSlideUpAsync(character, emote, ct),
+                                ShowOverlayAsync(overlay, ct)
+                            );
+                        }
+                        else
+                        {
+                            await slot.EnterSlideUpAsync(character, emote, ct);
+                        }
                     }
                     break;
 
                 case "Emote":
-                    // 형식: 슬롯:Emote:표정
+                    // 형식: 슬롯:Emote:표정[:오버레이]
                     if (parts.Length >= 3)
                     {
                         string emote = parts[2];
-                        await slot.EmoteAsync(emote, ct);
+                        string overlay = parts.Length >= 4 ? parts[3] : null;
+
+                        // 표정 + 오버레이 동시 전환
+                        if (!string.IsNullOrEmpty(overlay))
+                        {
+                            await UniTask.WhenAll(
+                                slot.EmoteAsync(emote, ct),
+                                ShowOverlayAsync(overlay, ct)
+                            );
+                        }
+                        else
+                        {
+                            await slot.EmoteAsync(emote, ct);
+                        }
                     }
                     break;
 
                 case "Exit":
                     // 형식: 슬롯:Exit  — 페이드 (기본)
-                    await slot.ExitAsync(ct);
+                    {
+                        string exitingCharacter = slot.CurrentCharacter;
+
+                        // 로아: 글리치 SFX 즉시 + 캐릭터&오버레이 동시 페이드아웃
+                        if (IsRoaCharacter(exitingCharacter))
+                        {
+                            PlayGlitchSFX();
+                            await UniTask.WhenAll(
+                                slot.ExitAsync(ct),
+                                HideOverlayAsync(ct)
+                            );
+                        }
+                        else
+                        {
+                            await slot.ExitAsync(ct);
+                        }
+                    }
                     break;
 
                 case "ExitDown":
                     // 형식: 슬롯:ExitDown  — 아래로 슬라이드 + 페이드
-                    await slot.ExitSlideDownAsync(ct);
+                    {
+                        string exitingCharacter = slot.CurrentCharacter;
+
+                        if (IsRoaCharacter(exitingCharacter))
+                        {
+                            PlayGlitchSFX();
+                            await UniTask.WhenAll(
+                                slot.ExitSlideDownAsync(ct),
+                                HideOverlayAsync(ct)
+                            );
+                        }
+                        else
+                        {
+                            await slot.ExitSlideDownAsync(ct);
+                        }
+                    }
                     break;
 
                 default:
@@ -240,6 +317,54 @@ namespace LoveAlgo.Story
                     return false;
             }
         }
+
+        #region 오버레이 (로아)
+
+        /// <summary>
+        /// 로아 캐릭터인지 확인
+        /// </summary>
+        static bool IsRoaCharacter(string characterName)
+        {
+            return !string.IsNullOrEmpty(characterName) &&
+                   characterName.Equals("Roa", StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// 오버레이 표시 (VirtualBGOverlay 연동)
+        /// </summary>
+        async UniTask ShowOverlayAsync(string overlayName, CancellationToken ct)
+        {
+            var overlay = StageManager.Instance?.VirtualBG;
+            if (overlay != null)
+            {
+                await overlay.ShowAsync(overlayName, ct: ct);
+                Debug.Log($"[CharacterLayer] 오버레이 표시: {overlayName}");
+            }
+        }
+
+        /// <summary>
+        /// 오버레이 숨김 (VirtualBGOverlay 연동)
+        /// </summary>
+        async UniTask HideOverlayAsync(CancellationToken ct)
+        {
+            var overlay = StageManager.Instance?.VirtualBG;
+            if (overlay != null && overlay.IsShowing)
+            {
+                await overlay.HideAsync(ct: ct);
+                Debug.Log("[CharacterLayer] 오버레이 자동 숨김 (로아 퇴장)");
+            }
+        }
+
+        /// <summary>
+        /// 글리치 효과음 재생 (로아 등장/퇴장 시 자동)
+        /// Resources/Audio/SFX/083_Glitch.wav
+        /// </summary>
+        static void PlayGlitchSFX()
+        {
+            AudioManager.Instance?.PlaySFX("Glitch");
+        }
+
+        #endregion
 
         #region 캐릭터 FX
 

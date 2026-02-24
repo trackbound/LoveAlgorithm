@@ -211,8 +211,14 @@ namespace LoveAlgo.UI
             lastVolumePreviewTime = Time.unscaledTime;
 
             var clip = clickClip != null ? clickClip : dialogueNextClip;
-            if (clip == null) return;
-            PlayClip(clip, clickVolume);
+            if (clip == null)
+            {
+                Debug.LogWarning("[UISoundManager] 볼륨 프리뷰용 클립 없음 (clickClip / dialogueNextClip 모두 미할당)");
+                return;
+            }
+
+            // 프리뷰는 볼륨 1.0으로 재생하여 믹서 볼륨 변화를 명확히 체감하도록
+            PlayClip(clip, 1.0f);
         }
 
         /// <summary>

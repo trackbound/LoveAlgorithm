@@ -11,15 +11,14 @@ namespace LoveAlgo.Story
         Char,       // 캐릭터 제어
         BG,         // 배경 전환
         CG,         // CG 이미지 (배경 위 오버레이, 대사창 자동 숨김)
-        SD,         // SD 컷씬 (부분 표시, 대사창 유지 / 캐릭터는 ScriptRunner가 자동 숨김·복원)
+        SD,         // SD 컷씬 (부분 표시, 캐릭터/대사창 유지)
         Overlay,    // 보조 배경 (캐릭터별 테마 등)
         Sound,      // 오디오
         FX,         // 시각 효과
         Flow,       // 흐름 제어
         Choice,     // 선택지 시작
         Option,     // 선택지 항목
-        Place,      // 장소/이벤트 표시 (좌상단 배너)
-        Wait        // N초 대기 (아무것도 하지 않음)
+        Place       // 장소/이벤트 표시 (좌상단 배너)
     }
 
     /// <summary>

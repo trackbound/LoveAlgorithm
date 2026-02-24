@@ -7,7 +7,7 @@ using UnityEngine.UI;
 namespace LoveAlgo.UI
 {
     /// <summary>
-    /// 확인 팝업 (예/아니오)
+    /// 확인 팝업 (확인/취소)
     /// </summary>
     public class ConfirmPopup : MonoBehaviour
     {

@@ -340,35 +340,66 @@ namespace LoveAlgo.Core
 
         /// <summary>
         /// 흔들림 인자 파싱
-        /// CSV: Effect:duration:strength 또는 Effect:duration:Weak/Medium/Strong
+        /// CSV 형식:
+        ///   Effect                       → duration=0.3, strength=Medium
+        ///   Effect:Weak/Medium/Strong     → duration=0.3, strength=프리셋
+        ///   Effect:duration               → duration=값,  strength=Medium
+        ///   Effect:duration:Weak/Medium/Strong → duration=값, strength=프리셋
+        ///   Effect:duration:숫자값         → duration=값,  strength=숫자값
         /// </summary>
         void ParseShakeArgs(string[] parts, out float duration, out float strength)
         {
-            duration = parts.Length > 1 && float.TryParse(parts[1], out float parsedDuration) ? parsedDuration : 0.3f;
+            duration = 0.3f;
+            strength = shakePresetMedium;
 
-            if (parts.Length > 2)
+            if (parts.Length <= 1) return;
+
+            string token1 = parts[1].Trim();
+
+            // parts[1]이 프리셋 이름인 경우: Effect:Strong (2-part)
+            if (TryParseShakePreset(token1, out strength))
             {
-                string token = parts[2].Trim();
-                if (token.Equals("weak", StringComparison.OrdinalIgnoreCase))
-                {
-                    strength = shakePresetWeak;
-                    return;
-                }
-                if (token.Equals("medium", StringComparison.OrdinalIgnoreCase))
-                {
-                    strength = shakePresetMedium;
-                    return;
-                }
-                if (token.Equals("strong", StringComparison.OrdinalIgnoreCase))
-                {
-                    strength = shakePresetStrong;
-                    return;
-                }
-                strength = float.TryParse(token, out float parsedStrength) ? parsedStrength : shakePresetMedium;
+                // duration은 기본값 유지
                 return;
             }
 
+            // parts[1]이 숫자인 경우: duration
+            if (float.TryParse(token1, out float parsedDuration))
+                duration = parsedDuration;
+
+            // parts[2]가 있으면 strength (프리셋 또는 숫자)
+            if (parts.Length > 2)
+            {
+                string token2 = parts[2].Trim();
+                if (TryParseShakePreset(token2, out strength))
+                    return;
+                if (float.TryParse(token2, out float parsedStrength))
+                    strength = parsedStrength;
+            }
+        }
+
+        /// <summary>
+        /// 프리셋 이름 → 강도 값 변환
+        /// </summary>
+        bool TryParseShakePreset(string token, out float strength)
+        {
+            if (token.Equals("weak", StringComparison.OrdinalIgnoreCase))
+            {
+                strength = shakePresetWeak;
+                return true;
+            }
+            if (token.Equals("medium", StringComparison.OrdinalIgnoreCase))
+            {
+                strength = shakePresetMedium;
+                return true;
+            }
+            if (token.Equals("strong", StringComparison.OrdinalIgnoreCase))
+            {
+                strength = shakePresetStrong;
+                return true;
+            }
             strength = shakePresetMedium;
+            return false;
         }
 
         /// <summary>

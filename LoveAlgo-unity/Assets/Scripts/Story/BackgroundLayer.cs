@@ -182,14 +182,17 @@ namespace LoveAlgo.Story
         /// </summary>
         Sprite LoadSprite(string bgName)
         {
-            // BgPathMapping에서 경로 조회 (레거시 변환 + 폴백 포함)
-            string path = BgPathMapping.GetPath(bgName);
-            var sprite = Resources.Load<Sprite>(path);
-            
-            if (sprite != null) return sprite;
-            
-            // 추가 폴백: 원본 이름으로 직접 시도
-            return Resources.Load<Sprite>($"Backgrounds/{bgName}");
+            var candidates = BgPathResolver.ResolvePaths(bgName);
+            for (int i = 0; i < candidates.Count; i++)
+            {
+                var sprite = Resources.Load<Sprite>(candidates[i]);
+                if (sprite != null)
+                {
+                    return sprite;
+                }
+            }
+
+            return null;
         }
 
         /// <summary>
