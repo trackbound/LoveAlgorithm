@@ -702,13 +702,29 @@ namespace LoveAlgo.Story
         {
             // SD 컷씬 레이어 제어 (캐릭터/대사창 유지)
             var sd = StageManager.Instance?.SDCutscene;
-            if (sd != null)
-            {
-                await sd.ExecuteAsync(line.Value, ct);
-            }
-            else
+            if (sd == null)
             {
                 Debug.Log($"[SD] {line.Value}");
+                return;
+            }
+
+            var charLayer = StageManager.Instance?.Character;
+            string command = line.Value.Split(':')[0];
+            bool isExit = command.Equals("Exit", StringComparison.OrdinalIgnoreCase)
+                       || command.Equals("Close", StringComparison.OrdinalIgnoreCase);
+
+            // SD 등장 전: 캐릭터 레이어 숨김 (이미 숨김이 아닐 때만)
+            if (!isExit && !sd.IsShowing && charLayer != null && !charLayer.IsLayerHidden)
+            {
+                await charLayer.SetVisibleAsync(false, ct);
+            }
+
+            await sd.ExecuteAsync(line.Value, ct);
+
+            // SD 퇴장 후: 캐릭터 레이어 복원
+            if (isExit && charLayer != null && charLayer.IsLayerHidden)
+            {
+                await charLayer.SetVisibleAsync(true, ct);
             }
         }
 

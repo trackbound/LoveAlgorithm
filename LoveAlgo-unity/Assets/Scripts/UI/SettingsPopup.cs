@@ -18,6 +18,8 @@ namespace LoveAlgo.UI
         [SerializeField] Button windowedButton;
         [SerializeField] Sprite modeOnSprite;   // btn_config_mode_on
         [SerializeField] Sprite modeOffSprite;  // btn_config_mode
+        [SerializeField] Color modeTextSelectedColor = new Color(1f, 0.6f, 0.75f, 1f);   // 분홍
+        [SerializeField] Color modeTextDeselectedColor = new Color(0.6f, 0.6f, 0.6f, 1f); // 회색
         [SerializeField] Button resolutionPrevButton;
         [SerializeField] Button resolutionNextButton;
         [SerializeField] Sprite arrowLeftSprite;      // btn_config_arrow_left
@@ -236,6 +238,12 @@ namespace LoveAlgo.UI
                 if (fsImg != null) fsImg.sprite = isFullscreen ? modeOnSprite : modeOffSprite;
                 if (wdImg != null) wdImg.sprite = isFullscreen ? modeOffSprite : modeOnSprite;
             }
+
+            // 텍스트 색상: 선택 = 분홍, 미선택 = 회색
+            var fsTxt = fullscreenButton?.GetComponentInChildren<TMP_Text>();
+            var wdTxt = windowedButton?.GetComponentInChildren<TMP_Text>();
+            if (fsTxt != null) fsTxt.color = isFullscreen ? modeTextSelectedColor : modeTextDeselectedColor;
+            if (wdTxt != null) wdTxt.color = isFullscreen ? modeTextDeselectedColor : modeTextSelectedColor;
         }
 
         void PrevResolution()

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using DG.Tweening;
 using LoveAlgo.Core;
 using UnityEngine;
 
@@ -9,6 +10,7 @@ namespace LoveAlgo.Story
 {
     /// <summary>
     /// 캐릭터 레이어 - 3개 슬롯(L/C/R) 관리
+    /// SD 컷씬 표시 시 레이어 전체를 페이드아웃하고, SD 종료 시 복원
     /// </summary>
     public class CharacterLayer : MonoBehaviour
     {
@@ -20,7 +22,15 @@ namespace LoveAlgo.Story
         [Header("데이터베이스")]
         [SerializeField] CharacterDatabase characterDatabase;
 
+        [Header("레이어 가시성")]
+        [SerializeField] CanvasGroup layerCanvasGroup;  // 레이어 전체 페이드용
+        [SerializeField] float layerFadeDuration = 0.3f;
+
         Dictionary<SlotPosition, CharacterSlot> slots;
+        bool isLayerHidden;  // SD 등에 의해 레이어가 숨겨진 상태
+
+        /// <summary>레이어가 SD 등에 의해 숨겨진 상태인지</summary>
+        public bool IsLayerHidden => isLayerHidden;
 
         void Awake()
         {
@@ -30,6 +40,44 @@ namespace LoveAlgo.Story
                 { SlotPosition.C, slotC },
                 { SlotPosition.R, slotR }
             };
+
+            // CanvasGroup 자동 바인딩
+            if (layerCanvasGroup == null)
+                layerCanvasGroup = GetComponent<CanvasGroup>();
+            if (layerCanvasGroup == null)
+                layerCanvasGroup = gameObject.AddComponent<CanvasGroup>();
+        }
+
+        /// <summary>
+        /// 레이어 전체 페이드 표시/숨김 (SD 컷씬 등에서 사용)
+        /// </summary>
+        public async UniTask SetVisibleAsync(bool visible, CancellationToken ct = default)
+        {
+            if (layerCanvasGroup == null) return;
+
+            isLayerHidden = !visible;
+            float target = visible ? 1f : 0f;
+
+            if (layerFadeDuration > 0f)
+            {
+                await layerCanvasGroup.DOFade(target, layerFadeDuration)
+                    .SetEase(visible ? Ease.OutCubic : Ease.InCubic)
+                    .ToUniTask(cancellationToken: ct);
+            }
+            else
+            {
+                layerCanvasGroup.alpha = target;
+            }
+        }
+
+        /// <summary>
+        /// 레이어 가시성 즉시 설정 (로드/초기화 시)
+        /// </summary>
+        public void SetVisibleImmediate(bool visible)
+        {
+            isLayerHidden = !visible;
+            if (layerCanvasGroup != null)
+                layerCanvasGroup.alpha = visible ? 1f : 0f;
         }
 
         /// <summary>

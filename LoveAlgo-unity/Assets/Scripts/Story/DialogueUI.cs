@@ -413,7 +413,10 @@ namespace LoveAlgo.Story
         string SubstituteVariables(string text)
         {
             if (GameState.Instance == null) return text;
-            return text.Replace("{{PlayerName}}", GameState.Instance.PlayerName);
+            var name = GameState.Instance.PlayerName;
+            return text
+                .Replace("{{PlayerName}}", name)
+                .Replace("{{Player}}", name);
         }
 
         #endregion
@@ -594,13 +597,12 @@ namespace LoveAlgo.Story
 
         /// <summary>
         /// 스킵 요청 (외부에서 클릭 시 호출)
+        /// 즉시 텍스트를 완성하고 인디케이터를 표시
+        /// (플래그만 세우면 다음 await까지 지연되므로 CompleteText 직접 호출)
         /// </summary>
         public void RequestSkip()
         {
-            if (isTyping)
-            {
-                skipRequested = true;
-            }
+            CompleteText();
         }
 
         /// <summary>

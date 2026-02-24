@@ -482,6 +482,8 @@ MonoBehaviour:
   windowedButton: {fileID: 8271351912653479281}
   modeOnSprite: {fileID: 21300000, guid: b124e03b1d76b5c47ac032151ba723cb, type: 3}
   modeOffSprite: {fileID: 21300000, guid: 239808a3393250d468e76e35fa51213f, type: 3}
+  modeTextSelectedColor: {r: 0.99607843, g: 0.5411765, b: 0.7411765, a: 1}
+  modeTextDeselectedColor: {r: 0.6862745, g: 0.6901961, b: 0.6862745, a: 1}
   resolutionPrevButton: {fileID: 7020648613768668390}
   resolutionNextButton: {fileID: 4724859847590133867}
   arrowLeftSprite: {fileID: 21300000, guid: fdff06d598d65c84d90b1b91b49fcf88, type: 3}

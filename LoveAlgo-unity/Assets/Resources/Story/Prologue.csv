@@ -2,7 +2,7 @@ LineID,Type,Speaker,Value,Next
 # 0일차
 ,BG,,BG_Black,await
 ,Text,,어... <wait=1/>됐다.,
-,Sound,,BGM:Roa:Fade:4.0,await
+,Sound,,BGM:Roa:Fade:4.0,
 
 ,Text,로아,"기다렸어, {{Player}}!",
 ,CG,,CG_Roa_01:Fade:4.0,await

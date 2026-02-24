@@ -899,6 +899,7 @@ namespace LoveAlgo.Core
         void CleanupStage()
         {
             // 레이어 정리
+            StageManager.Instance?.Character?.SetVisibleImmediate(true);  // SD 숨김 상태 복원
             StageManager.Instance?.Character?.ClearAll();
             StageManager.Instance?.Background?.Clear();
             StageManager.Instance?.VirtualBG?.HideImmediate();
@@ -986,6 +987,8 @@ namespace LoveAlgo.Core
                 var sd = StageManager.Instance?.SDCutscene;
                 if (sd != null)
                 {
+                    // SD 표시 중이면 캐릭터 레이어 즉시 숨김
+                    StageManager.Instance?.Character?.SetVisibleImmediate(false);
                     await sd.ShowAsync(data.CurrentSD, 0f);  // 즉시 표시
                 }
             }
