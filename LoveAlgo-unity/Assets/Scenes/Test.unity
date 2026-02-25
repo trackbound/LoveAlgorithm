@@ -135,7 +135,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &70024265
 RectTransform:
   m_ObjectHideFlags: 0
@@ -368,12 +368,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.UI.UISoundManager
   hoverClip: {fileID: 8300000, guid: 64147295de450f649aa81603ea696130, type: 3}
-  clickClip: {fileID: 8300000, guid: 0edccc4789ed3d74ebc31e6d097d510f, type: 3}
+  clickClip: {fileID: 8300000, guid: 026e35268b52e6b45af59686d8ff17ff, type: 3}
   typingClip: {fileID: 8300000, guid: dbb984f8c451c914f9e295501044a97b, type: 3}
   dialogueNextClip: {fileID: 0}
   choiceSelectClip: {fileID: 0}
   choiceAppearClip: {fileID: 0}
-  volumePreviewClip: {fileID: 8300000, guid: 026e35268b52e6b45af59686d8ff17ff, type: 3}
+  volumePreviewClip: {fileID: 8300000, guid: 07df8c6b0bd9be246825a912fafe8e85, type: 3}
   sfxMixerGroup: {fileID: 4278487988869072235, guid: 4bf97e6cff5c72044a000fdceec34a7a, type: 2}
   hoverVolume: 0.5
   clickVolume: 0.8
@@ -382,7 +382,7 @@ MonoBehaviour:
   minTypingVolume: 0.7
   maxTypingVolume: 1
   typingMinInterval: 0.03
-  volumePreviewDebounce: 0.3
+  volumePreviewDebounce: 0.1
   autoBindButtons: 1
 --- !u!1 &241711563
 GameObject:
@@ -1679,10 +1679,10 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 692464075}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 140, y: -66}
-  m_SizeDelta: {x: 250, y: 22}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 22}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &620766787
 MonoBehaviour:
@@ -2603,10 +2603,10 @@ RectTransform:
   - {fileID: 957984857}
   m_Father: {fileID: 692464075}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 140, y: -116}
-  m_SizeDelta: {x: 250, y: 42}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 42}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &991311243
 MonoBehaviour:
@@ -3771,10 +3771,10 @@ RectTransform:
   - {fileID: 1169341088}
   m_Father: {fileID: 692464075}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 140, y: -145}
-  m_SizeDelta: {x: 250, y: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1325561311
 MonoBehaviour:
@@ -4625,10 +4625,10 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 692464075}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 140, y: -31}
-  m_SizeDelta: {x: 250, y: 32}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 32}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1974863422
 MonoBehaviour:
@@ -5073,10 +5073,10 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 692464075}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 140, y: -86}
-  m_SizeDelta: {x: 250, y: 2}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 2}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2117758895
 MonoBehaviour:
@@ -5169,10 +5169,10 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 692464075}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 140, y: -154}
-  m_SizeDelta: {x: 250, y: 2}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 2}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2144979468
 MonoBehaviour:

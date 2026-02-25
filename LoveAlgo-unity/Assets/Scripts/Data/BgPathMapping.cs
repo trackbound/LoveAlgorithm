@@ -1,7 +1,7 @@
 ﻿// ═══════════════════════════════════════════════════════════════════
 // 이 파일은 ResourceMappingGenerator에 의해 자동 생성됩니다.
 // 수동으로 수정하지 마세요! (LoveAlgo > Tools > Generate Background Mapping)
-// 생성 시각: 2026-02-11 01:30:00
+// 생성 시각: 2026-02-25 12:00:00
 // ═══════════════════════════════════════════════════════════════════
 
 using System;
@@ -28,26 +28,27 @@ namespace LoveAlgo.Data
             { "BG_ClubRoom_Interior_Day_Cherry", "Backgrounds/ClubRoom/BG_ClubRoom_Interior_Day_Cherry" },
 
             // Engineering
-            { "BG_Engineering_Classroom_Day", "Backgrounds/Engineering/BG_Engineering_Classroom_Day" },
-            { "BG_Engineering_Classroom_Day_Cherry", "Backgrounds/Engineering/BG_Engineering_Classroom_Day_Cherry" },
-            { "BG_Engineering_Corridor_Day", "Backgrounds/Engineering/BG_Engineering_Corridor_Day" },
+            { "BG_Engineering_Classroom", "Backgrounds/Engineering/BG_Engineering_Classroom" },
+            { "BG_Engineering_Classroom_Cherry", "Backgrounds/Engineering/BG_Engineering_Classroom_Cherry" },
+            { "BG_Engineering_Corridor", "Backgrounds/Engineering/BG_Engineering_Corridor" },
             { "BG_Engineering_Front_Day", "Backgrounds/Engineering/BG_Engineering_Front_Day" },
             { "BG_Engineering_Front_Night", "Backgrounds/Engineering/BG_Engineering_Front_Night" },
-            { "BG_Engineering_Stall_Day", "Backgrounds/Engineering/BG_Engineering_Stall_Day" },
+            { "BG_Engineering_StudentLounge", "Backgrounds/Engineering/BG_Engineering_StudentLounge" },
 
             // MyRoom
             { "BG_MyRoom_Bed_Day", "Backgrounds/MyRoom/BG_MyRoom_Bed_Day" },
             { "BG_MyRoom_Bed_Night", "Backgrounds/MyRoom/BG_MyRoom_Bed_Night" },
-            { "BG_MyRoom_Desk_Day", "Backgrounds/MyRoom/BG_MyRoom_Desk_Day" },
+            { "BG_MyRoom_Desk", "Backgrounds/MyRoom/BG_MyRoom_Desk" },
             { "BG_MyRoom_Interior_Day", "Backgrounds/MyRoom/BG_MyRoom_Interior_Day" },
             { "BG_MyRoom_Interior_Night", "Backgrounds/MyRoom/BG_MyRoom_Interior_Night" },
             { "BG_MyRoom_Interior_Night_LightOn", "Backgrounds/MyRoom/BG_MyRoom_Interior_Night_LightOn" },
 
             // StudentCenter
-            { "BG_StudentCenter_Board_Day", "Backgrounds/StudentCenter/BG_StudentCenter_Board_Day" },
+            { "BG_StudentCenter_Board", "Backgrounds/StudentCenter/BG_StudentCenter_Board" },
             { "BG_StudentCenter_Front_Day", "Backgrounds/StudentCenter/BG_StudentCenter_Front_Day" },
             { "BG_StudentCenter_Front_Night", "Backgrounds/StudentCenter/BG_StudentCenter_Front_Night" },
-            { "BG_StudentCenter_Office_Day", "Backgrounds/StudentCenter/BG_StudentCenter_Office_Day" },
+            { "BG_StudentCenter_Hallway", "Backgrounds/StudentCenter/BG_StudentCenter_Hallway" },
+            { "BG_StudentCenter_Office", "Backgrounds/StudentCenter/BG_StudentCenter_Office" },
         };
 
         /// <summary>
@@ -61,33 +62,38 @@ namespace LoveAlgo.Data
             { "MyRoom_Night", "BG_MyRoom_Interior_Night" },
             { "Bed", "BG_MyRoom_Bed_Day" },
             { "Bed_Night", "BG_MyRoom_Bed_Night" },
-            { "Desk", "BG_MyRoom_Desk_Day" },
+            { "Desk", "BG_MyRoom_Desk" },
             { "StudentCenter", "BG_StudentCenter_Front_Day" },
             { "StudentCenter_Night", "BG_StudentCenter_Front_Night" },
             { "ClubRoom", "BG_ClubRoom_Interior_Day" },
             { "Engineering", "BG_Engineering_Front_Day" },
-            { "MajorClass", "BG_Engineering_Classroom_Day" },
+            { "MajorClass", "BG_Engineering_Classroom" },
+
+            // ── _Day 접미사 하위 호환 (파일명에서 _Day 제거된 항목) ──
+            { "BG_MyRoom_Desk_Day", "BG_MyRoom_Desk" },
+            { "BG_Engineering_Classroom_Day", "BG_Engineering_Classroom" },
+            { "BG_Engineering_Classroom_Day_Cherry", "BG_Engineering_Classroom_Cherry" },
+            { "BG_Engineering_Corridor_Day", "BG_Engineering_Corridor" },
+            { "BG_Engineering_Stall_Day", "BG_Engineering_StudentLounge" },
+            { "BG_StudentCenter_Board_Day", "BG_StudentCenter_Board" },
+            { "BG_StudentCenter_Office_Day", "BG_StudentCenter_Office" },
 
             // ── 짧은 이름 별칭 (시나리오 CSV용) ──
-            { "BG_MyRoom_Desk", "BG_MyRoom_Desk_Day" },
             { "BG_MyRoom_Day", "BG_MyRoom_Interior_Day" },
             { "BG_MyRoom_Night_LightOn", "BG_MyRoom_Interior_Night_LightOn" },
-            { "BG_Engineering_Classroom", "BG_Engineering_Classroom_Day" },
-            { "BG_Engineering_StudentLounge", "BG_Engineering_Stall_Day" },
-            { "BG_StudentCenter_Office", "BG_StudentCenter_Office_Day" },
-            { "BG_StudentCenter_Board", "BG_StudentCenter_Board_Day" },
 
             // ── 한글 별칭 (시나리오 작가용) ──
-            { "강의실_낮", "BG_Engineering_Classroom_Day" },
-            { "강의실_낮_벚꽃", "BG_Engineering_Classroom_Day_Cherry" },
-            { "게시판", "BG_StudentCenter_Board_Day" },
-            { "공대_강의실복도", "BG_Engineering_Corridor_Day" },
+            { "강의실_낮", "BG_Engineering_Classroom" },
+            { "강의실_낮_벚꽃", "BG_Engineering_Classroom_Cherry" },
+            { "게시판", "BG_StudentCenter_Board" },
+            { "공대_강의실복도", "BG_Engineering_Corridor" },
             { "공대_앞_낮", "BG_Engineering_Front_Day" },
             { "공대_앞_밤", "BG_Engineering_Front_Night" },
-            { "공대_학생복지실", "BG_Engineering_Stall_Day" },
+            { "공대_학생라운지", "BG_Engineering_StudentLounge" },
+            { "공대_학생복지실", "BG_Engineering_StudentLounge" },
             { "동아리방_낮_나무", "BG_ClubRoom_Interior_Day" },
             { "동아리방_낮_벚꽃", "BG_ClubRoom_Interior_Day_Cherry" },
-            { "자취방_책상", "BG_MyRoom_Desk_Day" },
+            { "자취방_책상", "BG_MyRoom_Desk" },
             { "자취방_전경_낮", "BG_MyRoom_Interior_Day" },
             { "자취방_전경_밤", "BG_MyRoom_Interior_Night" },
             { "자취방_전경_밤_불켜기", "BG_MyRoom_Interior_Night_LightOn" },
@@ -97,7 +103,8 @@ namespace LoveAlgo.Data
             { "캠퍼스거리_2_맑음", "BG_Campus_Street2_Day" },
             { "학생회관_앞_낮", "BG_StudentCenter_Front_Day" },
             { "학생회관_앞_밤", "BG_StudentCenter_Front_Night" },
-            { "학생회관_행정실", "BG_StudentCenter_Office_Day" },
+            { "학생회관_복도", "BG_StudentCenter_Hallway" },
+            { "학생회관_행정실", "BG_StudentCenter_Office" },
         };
 
         /// <summary>

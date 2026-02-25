@@ -40,7 +40,7 @@ namespace LoveAlgo.UI
         [SerializeField] float typingMinInterval = 0.035f; // 기본 속도(0.039)에서 매 글자 소리, 빠른 속도에서는 자연 솎아짐
 
         [Header("볼륨 프리뷰")]
-        [SerializeField] float volumePreviewDebounce = 0.3f;  // 슬라이더 조작 정지 후 재생까지 대기 시간
+        [SerializeField] float volumePreviewDebounce = 0.08f;  // 슬라이더 조작 정지 후 재생까지 대기 시간
 
 
         [Header("자동 바인딩")]

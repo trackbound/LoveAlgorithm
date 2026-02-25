@@ -209,7 +209,7 @@ namespace LoveAlgo.UI
                 if (data != null)
                 {
                     var screenshot = SaveManager.LoadScreenshot(globalIndex);
-                    string label = data.ChapterName;
+                    string label = isAutoSave ? "자동 저장" : data.ChapterName;
                     slot.SetData(label, data.SaveTime, screenshot);
                 }
                 else
