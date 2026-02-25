@@ -182,7 +182,7 @@ namespace LoveAlgo.UI
         /// </summary>
         public void PlayChoiceSelectionFeedback(Vector2 screenPosition)
         {
-            PlayRipple(screenPosition, default);
+            PlayRipple(screenPosition, default).Forget();
             PlayHaptic(HapticType.Selection);
             UISoundManager.Instance?.PlayChoiceSelect();
         }

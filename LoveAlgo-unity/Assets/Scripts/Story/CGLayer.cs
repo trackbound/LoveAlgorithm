@@ -55,13 +55,20 @@ namespace LoveAlgo.Story
             string command = parts[0];
 
             // Exit / Close 명령
+            // 형식: Close[:duration] 또는 Close:Fade:duration
             if (command.Equals("Exit", System.StringComparison.OrdinalIgnoreCase)
                 || command.Equals("Close", System.StringComparison.OrdinalIgnoreCase))
             {
                 float duration = defaultDuration;
-                if (parts.Length >= 2 && float.TryParse(parts[1], out float d))
+                // Close:Fade:4 → parts[1]="Fade", parts[2]="4"
+                // Close:2       → parts[1]="2"
+                if (parts.Length >= 3 && float.TryParse(parts[2], out float d3))
                 {
-                    duration = d;
+                    duration = d3;
+                }
+                else if (parts.Length >= 2 && float.TryParse(parts[1], out float d1))
+                {
+                    duration = d1;
                 }
                 await HideAsync(duration, ct);
                 return;
@@ -102,12 +109,12 @@ namespace LoveAlgo.Story
             cgImage.enabled = true;
             cgImage.preserveAspect = true;
 
-            // 페이드인
+            // 페이드인 — Linear로 점진적 등장
             if (canvasGroup != null && duration > 0)
             {
                 canvasGroup.alpha = 0f;
                 await canvasGroup.DOFade(1f, duration)
-                    .SetEase(Ease.OutQuad)
+                    .SetEase(Ease.Linear)
                     .ToUniTask(cancellationToken: ct);
             }
             else if (canvasGroup != null)
@@ -125,11 +132,11 @@ namespace LoveAlgo.Story
         {
             if (!isShowing) return;
 
-            // 페이드아웃
+            // 페이드아웃 — Linear로 점진적 퇴장
             if (canvasGroup != null && duration > 0)
             {
                 await canvasGroup.DOFade(0f, duration)
-                    .SetEase(Ease.InQuad)
+                    .SetEase(Ease.Linear)
                     .ToUniTask(cancellationToken: ct);
             }
             else if (canvasGroup != null)

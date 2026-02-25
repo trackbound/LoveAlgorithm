@@ -45,9 +45,11 @@ namespace LoveAlgo.UI
 
         void Awake()
         {
-            // 초기 상태: 숨김
+            // 초기 상태: alpha만 0으로 설정
+            // 주의: SetActive(false)를 여기서 호출하면 안 됨!
+            // 씬에서 비활성 상태(m_IsActive=0)로 시작하면 첫 SetActive(true) 시
+            // Awake가 호출되어 다시 꺼버리는 문제 발생
             if (canvasGroup != null) canvasGroup.alpha = 0f;
-            gameObject.SetActive(false);
         }
 
         /// <summary>
@@ -109,19 +111,21 @@ namespace LoveAlgo.UI
 
             // 장소명 설정
             placeText.text = placeName;
+
+            // alpha=0 먼저 세팅 → SetActive 시 1프레임 깜빡임 방지
+            if (canvasGroup != null) canvasGroup.alpha = 0f;
             gameObject.SetActive(true);
             IsShowing = true;
-
-            canvasGroup.alpha = 0f;
 
             // 시퀀스: 페이드인 → 홀드 → 페이드아웃
             awaitSource = new UniTaskCompletionSource<bool>();
 
             currentSequence = DOTween.Sequence();
 
-            // 1. 등장 (페이드인)
+            // 1. 등장 (페이드인 — From(0f)로 시작값 보장)
             _ = currentSequence.Append(
                 canvasGroup.DOFade(1f, enterDuration)
+                    .From(0f)
                     .SetEase(Ease.OutCubic));
 
             // 2. 유지
@@ -152,15 +156,16 @@ namespace LoveAlgo.UI
         /// <summary>
         /// 즉시 숨김
         /// </summary>
-        async UniTask HideAsync(CancellationToken ct)
+        UniTask HideAsync(CancellationToken ct)
         {
             KillCurrentSequence();
 
-            if (!gameObject.activeSelf) return;
+            if (!gameObject.activeSelf) return UniTask.CompletedTask;
 
             canvasGroup.alpha = 0f;
             IsShowing = false;
             gameObject.SetActive(false);
+            return UniTask.CompletedTask;
         }
 
         /// <summary>

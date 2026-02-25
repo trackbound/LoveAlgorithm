@@ -20,6 +20,8 @@ namespace LoveAlgo.UI
         [SerializeField] AudioClip dialogueNextClip;
         [SerializeField] AudioClip choiceSelectClip;
         [SerializeField] AudioClip choiceAppearClip;
+        [Tooltip("볼륨 슬라이더 프리뷰 전용 사운드 (미할당 시 clickClip 사용)")]
+        [SerializeField] AudioClip volumePreviewClip;
 
         [Header("오디오 믹서")]
         [SerializeField] AudioMixerGroup sfxMixerGroup;  // AudioManager와 동일한 SFX 그룹 할당
@@ -35,10 +37,10 @@ namespace LoveAlgo.UI
         [SerializeField] float maxTypingVolume = 0.5f;
 
         [Header("타이핑 재생 간격")]
-        [SerializeField] float typingMinInterval = 0.03f; // 텍스트 속도와 무관하게 최소 간격 보장
+        [SerializeField] float typingMinInterval = 0.035f; // 기본 속도(0.039)에서 매 글자 소리, 빠른 속도에서는 자연 솎아짐
 
         [Header("볼륨 프리뷰")]
-        [SerializeField] float volumePreviewInterval = 0.08f;
+        [SerializeField] float volumePreviewDebounce = 0.3f;  // 슬라이더 조작 정지 후 재생까지 대기 시간
 
 
         [Header("자동 바인딩")]
@@ -51,7 +53,7 @@ namespace LoveAlgo.UI
         AudioSource typingSource;
         HashSet<Button> registeredButtons = new HashSet<Button>();
         float lastTypingPlayTime = -999f;
-        float lastVolumePreviewTime = -999f;
+        float volumePreviewScheduledTime = -1f;  // 디바운스 예약 시각 (-1 = 예약 없음)
 
         protected override void OnSingletonAwake()
         {
@@ -203,22 +205,27 @@ namespace LoveAlgo.UI
         }
 
         /// <summary>
-        /// 볼륨 슬라이더 조작 중 샘플 사운드 재생 (과도한 연속 재생 방지)
+        /// 볼륨 슬라이더 조작 중 샘플 사운드 예약 (디바운스)
+        /// 슬라이더가 멈춘 후 volumePreviewDebounce 시간이 지나면 1회만 재생
         /// </summary>
         public void PlayVolumePreview()
         {
-            if (Time.unscaledTime - lastVolumePreviewTime < volumePreviewInterval) return;
-            lastVolumePreviewTime = Time.unscaledTime;
+            volumePreviewScheduledTime = Time.unscaledTime + volumePreviewDebounce;
+        }
 
-            var clip = clickClip != null ? clickClip : dialogueNextClip;
-            if (clip == null)
+        void Update()
+        {
+            // 볼륨 프리뷰 디바운스 처리
+            if (volumePreviewScheduledTime > 0f && Time.unscaledTime >= volumePreviewScheduledTime)
             {
-                Debug.LogWarning("[UISoundManager] 볼륨 프리뷰용 클립 없음 (clickClip / dialogueNextClip 모두 미할당)");
-                return;
-            }
+                volumePreviewScheduledTime = -1f;
 
-            // 프리뷰는 볼륨 1.0으로 재생하여 믹서 볼륨 변화를 명확히 체감하도록
-            PlayClip(clip, 1.0f);
+                var clip = volumePreviewClip != null ? volumePreviewClip
+                         : clickClip != null ? clickClip
+                         : dialogueNextClip;
+                if (clip != null)
+                    PlayClip(clip, 0.8f);
+            }
         }
 
         /// <summary>

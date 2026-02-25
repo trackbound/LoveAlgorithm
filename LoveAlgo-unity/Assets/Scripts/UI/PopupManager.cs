@@ -376,10 +376,10 @@ namespace LoveAlgo.UI
             ShowModal<SettingsPopup>();
         }
 
-        public void ShowSave()
+        public async void ShowSave()
         {
-            // 팝업이 뜨기 전에 게임 화면 캡처 (팝업이 찍히는 것 방지)
-            Story.SaveManager.CapturePendingScreenshot();
+            // 팝업이 뜨기 전에 게임 화면 캡처 (1프레임 대기하여 팝업이 찍히는 것 방지)
+            await Story.SaveManager.CapturePendingScreenshotAsync();
             ShowModal<SaveLoadPopup>()?.ShowSave(slot =>
             {
                 GameManager.Instance?.Save(slot);

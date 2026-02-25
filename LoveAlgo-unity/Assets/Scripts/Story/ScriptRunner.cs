@@ -342,9 +342,18 @@ namespace LoveAlgo.Story
 
         /// <summary>
         /// 클릭 입력 (외부에서 호출)
+        /// 타이핑 중 → 즉시 완성, 완성 후 대기 중 → 다음 대사로 진행
         /// </summary>
         public void OnClick()
         {
+            // 타이핑 중이면 먼저 텍스트 완성
+            var dialogueUI = UIManager.Instance?.DialogueUI;
+            if (dialogueUI != null && dialogueUI.IsTyping)
+            {
+                dialogueUI.RequestSkip();
+                return;  // 이번 클릭은 완성에만 사용 → 다음 클릭에서 진행
+            }
+
             if (waitingForClick)
             {
                 clickReceived = true;
@@ -506,7 +515,13 @@ namespace LoveAlgo.Story
                     break;
 
                 case NextType.Await:
-                    // ExecuteXXX에서 이미 await 처리됨
+                    // Place는 fire-and-forget이므로 Await 시 완료 대기
+                    if (line.Type == LineType.Place)
+                    {
+                        var placeUI = UIManager.Instance?.PlaceUI;
+                        if (placeUI != null && placeUI.IsShowing)
+                            await UniTask.WaitUntil(() => !placeUI.IsShowing, cancellationToken: ct);
+                    }
                     break;
 
                 case NextType.Delay:
@@ -602,7 +617,9 @@ namespace LoveAlgo.Story
             // 전환 타입 파싱
             var parts = line.Value.Split(':');
             string bgName = parts[0];
+            bool isCut = parts.Length >= 2 && parts[1].Equals("Cut", System.StringComparison.OrdinalIgnoreCase);
             bool isCrossFade = parts.Length >= 2 && parts[1].Equals("Cross", System.StringComparison.OrdinalIgnoreCase);
+            bool isFade = !isCut && !isCrossFade;
 
             // 동일 배경이면 전환 효과 스킵 (DEMO 점프 등 환경 세팅용)
             var background = StageManager.Instance?.Background;
@@ -613,9 +630,24 @@ namespace LoveAlgo.Story
                 return;
             }
 
-            if (isCrossFade)
+            // CG가 화면을 덮고 있는 동안에는 페이드 없이 배경만 즉시 교체
+            var cgLayer = StageManager.Instance?.CG;
+            bool cgCoversScreen = cgLayer != null && cgLayer.IsShowing;
+
+            if (cgCoversScreen)
             {
-                // Cross: 캐릭터 유지한 채 크로스페이드
+                // CG 뒤에서 배경만 조용히 교체 (페이드/캐릭터 정리 불필요)
+                if (background != null)
+                {
+                    await background.ChangeBackgroundAsync(bgName, BGTransition.Cut, 0f, ct);
+                }
+                Debug.Log($"[ScriptRunner] BG '{bgName}' → CG 뒤에서 즉시 교체");
+            }
+            else if (isCut || isCrossFade)
+            {
+                // Cut / Cross: BackgroundLayer에 위임 (BG 이미지만 전환, 캐릭터 유지)
+                // Cut  → 즉시 교체 (화면 깜빡임 없음)
+                // Cross → 크로스페이드 (캐릭터 유지한 채 BG만 블렌딩)
                 if (background != null)
                 {
                     await background.ExecuteAsync(line.Value, ct);
@@ -623,9 +655,9 @@ namespace LoveAlgo.Story
             }
             else
             {
-                // Fade/Cut: FadeOut 시작 → 검은 화면에서 캐릭터 즉시 제거 + 배경 교체 → FadeIn
-                // 캐릭터를 FadeOut 전에 ExitAsync 하면 퇴장이 보여서 부자연스러움
-                // → FadeOut 완료 후 즉시 ClearAll 처리
+                // Fade(기본): ScreenFX FadeOut → 검은 화면에서 캐릭터 제거 + 배경 교체 → FadeIn
+                // 장면 전환 느낌의 무거운 연출. 캐릭터를 FadeOut 전에 ExitAsync 하면
+                // 퇴장이 보여서 부자연스러움 → FadeOut 완료 후 즉시 ClearAll 처리
 
                 var character = StageManager.Instance?.Character;
                 var screenFX = Core.ScreenFX.Instance;
@@ -664,7 +696,8 @@ namespace LoveAlgo.Story
         async UniTask ExecuteCGAsync(ScriptLine line, CancellationToken ct)
         {
             var parts = line.Value.Split(':');
-            bool isExit = parts[0].Equals("Exit", System.StringComparison.OrdinalIgnoreCase);
+            bool isExit = parts[0].Equals("Exit", System.StringComparison.OrdinalIgnoreCase)
+                       || parts[0].Equals("Close", System.StringComparison.OrdinalIgnoreCase);
             
             if (!isExit)
             {
@@ -755,18 +788,21 @@ namespace LoveAlgo.Story
             }
         }
 
-        async UniTask ExecutePlaceAsync(ScriptLine line, CancellationToken ct)
+        UniTask ExecutePlaceAsync(ScriptLine line, CancellationToken ct)
         {
-            // 좌상단 장소/이벤트 배너 표시
+            // 좌상단 장소/이벤트 배너 표시 (독립 애니메이션 — fire-and-forget)
+            // Place 배너는 스크립트 진행과 무관하게 표시·사라지는 UI
+            // NextType.Await 시에만 HandleNextAsync에서 완료 대기
             var placeUI = UIManager.Instance?.PlaceUI;
             if (placeUI != null)
             {
-                await placeUI.ExecuteAsync(line.Value, ct);
+                placeUI.ExecuteAsync(line.Value, ct).Forget();
             }
             else
             {
                 Debug.Log($"[Place] {line.Value}");
             }
+            return UniTask.CompletedTask;
         }
 
         async UniTask ExecuteFXAsync(ScriptLine line, CancellationToken ct)
@@ -1044,42 +1080,44 @@ namespace LoveAlgo.Story
                 eyeClose = true;
             }
 
-            Debug.Log($"[ScriptRunner] 매크로: SceneStart (bg={bgPath ?? "(없음)"}, eyeClose={eyeClose})");
+            var bgDisplay = bgPath ?? "(없음)";
+            Debug.Log($"[ScriptRunner] 매크로: SceneStart (bg={bgDisplay}, eyeClose={eyeClose})");
 
             var fx = Core.ScreenFX.Instance;
 
             if (bgPath != null)
             {
-                // 암전(fade overlay) 뒤에서 배경 세팅 (플레이어에게 안 보임)
-                await ExecuteBGAsync(
-                    new ScriptLine("", LineType.BG, "", $"{bgPath}:Cut", NextType.Immediate), ct);
+                // ── SceneEnd에서 fade overlay가 검은 상태(alpha=1)로 유지됨 ──
+                // 검은 화면 뒤에서 스테이지 세팅 (플레이어에게 안 보임)
+                var background = StageManager.Instance?.Background;
+                var character = StageManager.Instance?.Character;
+                character?.ClearAll();
+                if (background != null)
+                    await background.ChangeBackgroundAsync(bgPath, BGTransition.Cut, 0f, ct);
 
                 if (eyeClose)
                 {
-                    // Eye 바 세팅 → FadeIn → Eye 바가 배경을 가림 (여전히 검은 화면)
-                    // 이후 EyeOpen으로 배경 노출
                     fx?.EyeCloseImmediate();
-                    if (fx != null)
-                        await fx.FadeInAsync(0.3f, ct);
-                    Debug.Log($"[ScriptRunner] SceneStart: BG '{bgPath}' (EyeClose 유지, 대사 가능)");
                 }
                 else
                 {
-                    // FadeIn으로 배경이 바로 보임
                     fx?.EyeOpenImmediate();
-                    if (fx != null)
-                        await fx.FadeInAsync(0.6f, ct);
-                    Debug.Log($"[ScriptRunner] SceneStart: BG '{bgPath}' (페이드인)");
                 }
             }
             else
             {
-                // 배경 미지정 → Eye 해제 + FadeIn
                 fx?.EyeOpenImmediate();
-                if (fx != null)
-                    await fx.FadeInAsync(0.6f, ct);
-                Debug.Log("[ScriptRunner] SceneStart: FadeIn (배경 미지정)");
             }
+
+            // 화면 밝히기 (대사창은 첫 Text에서 자연스럽게 Show)
+            float fadeDuration = eyeClose ? 0.3f : 0.6f;
+            if (fx != null)
+                await fx.FadeInAsync(fadeDuration, ct);
+
+            if (bgPath != null)
+                Debug.Log($"[ScriptRunner] SceneStart: BG '{bgPath}' ({(eyeClose ? "EyeClose 유지, 대사 가능" : "페이드인")})");
+            else
+                Debug.Log("[ScriptRunner] SceneStart: FadeIn (배경 미지정)");
         }
 
         /// <summary>

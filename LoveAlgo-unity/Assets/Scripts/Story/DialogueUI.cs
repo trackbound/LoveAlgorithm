@@ -67,10 +67,15 @@ namespace LoveAlgo.Story
         float originalY;
 
         [Header("설정")]
-        [SerializeField] float typingSpeed = 0.04f;
-        [SerializeField] float punctuationDelay = 0.12f;  // 문장부호 최대 추가 딜레이
-        [SerializeField] float jitterAmount = 0.15f;       // 타이핑 리듬 랜덤 변동 (±15%)
-        [SerializeField] int punctuationLookahead = 2;     // 문장부호 N글자 전부터 감속 시작
+        [SerializeField] float typingSpeed = 0.03f;
+        const float baseTypingSpeed = 0.044f;  // 포스트-포즈 스케일 기준 속도 (기본 슬라이더 0.3 시 실제 값)
+
+        [Header("포스트-포즈 (문장부호/개행 뒤 일시정지 — baseTypingSpeed 기준값, 속도에 비례 스케일)")]
+        [SerializeField] float newlinePostPause = 0.18f;      // 개행 후 정지
+        [SerializeField] float periodPostPause = 0.12f;       // . ! ? ~ … 후 정지
+        [SerializeField] float commaPostPause = 0.06f;        // , 후 정지
+        [SerializeField] float ellipsisDotPause = 0.07f;      // 연속 점(.) 각각의 딜레이
+        [SerializeField] float jitterAmount = 0.04f;          // 미세 리듬 변동 (±4%)
 
         // 인라인 태그 콜백
         public Action<string> OnEmoteTag;   // 표정 변경 요청
@@ -81,13 +86,7 @@ namespace LoveAlgo.Story
         bool isHidden;
         bool needsFadeIn;  // 다음 Show 시 페이드인 필요 여부
 
-        /// <summary>
-        /// 타이핑 사운드 쿨다운 (글자 출력 연동 + 최소 간격 제한)
-        /// 글자가 나올 때마다 소리를 내되, 너무 빠르면 쿨다운으로 스킵
-        /// → 문장부호 감속 시 소리도 자연스럽게 느려지고, Wait 구간에서는 소리 없음
-        /// </summary>
-        float lastTypingSoundTime;  // 마지막 사운드 재생 시각 (Time.unscaledTime)
-        [SerializeField] float typingSoundMinInterval = 0.06f;  // 최소 사운드 간격 (이보다 빠르면 스킵)
+        // 타이핑 사운드 — 쿨다운은 UISoundManager에서 일괄 관리
 
         /// <summary>
         /// 마지막 표시된 텍스트 길이 (Auto 딜레이 계산용)
@@ -99,8 +98,8 @@ namespace LoveAlgo.Story
         /// </summary>
         public void SetTextSpeed(float normalized)
         {
-            // 0=느림(0.08s/char), 1=빠름(0.01s/char)
-            typingSpeed = Mathf.Lerp(0.08f, 0.01f, normalized);
+            // 0=느림(0.068s/char), 0.4=기본(0.044s), 1=빠름(0.008s/char)
+            typingSpeed = Mathf.Lerp(0.068f, 0.008f, normalized);
         }
 
         // 대사 로그
@@ -110,6 +109,8 @@ namespace LoveAlgo.Story
         // 인라인 태그 정규식
         static readonly Regex InlineTagRegex = new(@"<(wait|sfx|emote|speed)=([^/>]+)(/?)>", RegexOptions.Compiled);
         static readonly Regex SpeedEndRegex = new(@"</speed>", RegexOptions.Compiled);
+        // 로그용: 모든 인라인 태그 제거 (<wait=1/>, <emote=Default/>, <sfx=060/>, <speed=0.5>...</speed>)
+        static readonly Regex StripTagsRegex = new(@"<(wait|sfx|emote|speed)=([^/>]*)/?>|</speed>", RegexOptions.Compiled);
 
         void Awake()
         {
@@ -158,8 +159,8 @@ namespace LoveAlgo.Story
             speaker = SubstituteVariables(speaker);
             text = SubstituteVariables(text);
 
-            // 로그에 추가
-            AddToLog(speaker, text);
+            // 로그에 추가 (인라인 태그 제거된 클린 텍스트)
+            AddToLog(speaker, StripTagsRegex.Replace(text, ""));
 
             // 화자 설정 (Show 전에 호출 → 이전 텍스트 잔상 방지)
             SetSpeaker(speaker);
@@ -178,20 +179,16 @@ namespace LoveAlgo.Story
             dialogueText.ForceMeshUpdate();
             dialogueText.maxVisibleCharacters = 0;
 
-            // 대사창 표시 (Hide 상태가 아닐 때만, 텍스트가 비워진 후 보여줄)
+            // 대사창 표시 — 페이드인과 타이핑을 동시 시작 (대기 제거)
             if (!isHidden)
             {
-                bool shouldWaitFade = needsFadeIn;
                 Show();
-                if (shouldWaitFade)
-                    await UniTask.Delay(System.TimeSpan.FromSeconds(fadeDuration), cancellationToken: ct);
             }
 
             float currentSpeed = typingSpeed;
+            // 포스트-포즈 스케일: 현재 속도/기준 속도 → 빠르면 포즈도 짧게, 느리면 길게
+            float pauseScale = Mathf.Clamp(typingSpeed / baseTypingSpeed, 0.3f, 2.5f);
             int visibleCount = 0;
-
-            // 타이핑 사운드 초기화 (글자 출력 시점에 쿨다운 기반으로 재생)
-            lastTypingSoundTime = 0f;
 
             try
             {
@@ -208,7 +205,8 @@ namespace LoveAlgo.Story
                     switch (seg.Type)
                     {
                         case SegmentType.Text:
-                            // 글자별 타이핑 — 부드러운 리듬
+                            // ── 상용 VN 표준: 일정 속도 타이핑 + 포스트-포즈 ──
+                            // 글자는 일정하게 빠르게 찍고, 문장부호/개행 직후에만 잠시 멈춤
                             string content = seg.Content;
                             for (int i = 0; i < content.Length; i++)
                             {
@@ -218,29 +216,27 @@ namespace LoveAlgo.Story
                                 visibleCount++;
                                 dialogueText.maxVisibleCharacters = visibleCount;
 
-                                // 줄바꿈은 딜레이 생략
-                                if (c == '\n' || c == '\r') continue;
-
-                                // 타이핑 사운드: 글자 출력에 연동, 쿨다운으로 연타 방지
-                                TryPlayTypingSound();
-
-                                // ── 부드러운 딜레이 계산 ──
-                                float charDelay = currentSpeed;
-
-                                // 문장부호 감속: 문장부호 자체 + N글자 전부터 점진 감속
-                                float punctWeight = GetPunctuationWeight(c, content, i);
-                                if (punctWeight > 0f)
+                                // 개행: 글자 찍기만 하고 포스트-포즈로 처리
+                                if (c == '\n' || c == '\r')
                                 {
-                                    // EaseOutQuad 커브로 부드럽게 감속
-                                    float easedWeight = punctWeight * punctWeight;  // InQuad: 점진적으로 느려짐
-                                    charDelay += punctuationDelay * easedWeight;
+                                    if (!skipRequested)
+                                        await UniTask.Delay(TimeSpan.FromSeconds(newlinePostPause * pauseScale), cancellationToken: ct);
+                                    continue;
                                 }
 
-                                // 자연스러운 리듬 변동 (미세한 랜덤 지터)
-                                float jitter = 1f + UnityEngine.Random.Range(-jitterAmount, jitterAmount);
-                                charDelay *= jitter;
+                                // 타이핑 사운드 (쿨다운은 UISoundManager에서 관리)
+                                LoveAlgo.UI.UISoundManager.Instance?.PlayTyping();
 
+                                // 기본 딜레이 (일정 속도) + 미세 지터
+                                float charDelay = currentSpeed * (1f + UnityEngine.Random.Range(-jitterAmount, jitterAmount));
                                 await UniTask.Delay(TimeSpan.FromSeconds(charDelay), cancellationToken: ct);
+
+                                // ── 포스트-포즈: 글자 찍힌 직후 추가 정지 (속도 비례) ──
+                                float postPause = GetPostPause(c, content, i) * pauseScale;
+                                if (postPause > 0f && !skipRequested)
+                                {
+                                    await UniTask.Delay(TimeSpan.FromSeconds(postPause), cancellationToken: ct);
+                                }
                             }
                             break;
 
@@ -287,45 +283,30 @@ namespace LoveAlgo.Story
         }
 
         /// <summary>
-        /// 문장부호 가중치 계산 — 문장부호 N글자 전부터 점진 감속
-        /// 0.0 = 일반 글자, 1.0 = 문장부호 자체
+        /// 포스트-포즈 계산 — 글자 출력 직후 추가 정지 시간
+        /// 상용 VN 표준: 일정 속도로 찍다가 문장부호 직후에만 잠시 멈춤
         /// </summary>
-        float GetPunctuationWeight(char c, string text, int index)
+        float GetPostPause(char c, string text, int index)
         {
-            // 현재 글자가 문장부호
-            if (IsMajorPunctuation(c))
-            {
-                // 연속 문장부호(예: "..." "!!" "?!")일 때 마지막 것만 딜레이
-                if (index + 1 < text.Length && IsMajorPunctuation(text[index + 1]))
-                    return 0.1f;  // 중간 점은 빠르게 통과
-                return 1.0f;     // 마지막 점에서만 풀 딜레이
-            }
-            if (c == ',') return 0.4f;  // 쉼표는 약한 감속
+            // 쉼표
+            if (c == ',')
+                return commaPostPause;
 
-            // 다음 N글자 안에 문장부호가 있으면 점진 감속
-            // 단, 바로 다음이 연속 문장부호 시작이면 감속 불필요
-            int lookahead = punctuationLookahead;
-            for (int ahead = 1; ahead <= lookahead && index + ahead < text.Length; ahead++)
+            // 연속 문장부호 (... !! ?! 등)
+            if (IsSentenceEndPunctuation(c))
             {
-                char nextC = text[index + ahead];
-                if (IsMajorPunctuation(nextC))
-                {
-                    // 연속 문장부호의 첫 번째이고, 뒤에 더 있으면 감속 약하게
-                    if (index + ahead + 1 < text.Length && IsMajorPunctuation(text[index + ahead + 1]))
-                    {
-                        float t = 1f - ((float)ahead / (lookahead + 1));
-                        return t * 0.15f;  // 연속 문장부호 진입은 약하게만
-                    }
-                    // ahead=1이면 weight 높고, ahead=lookahead이면 낮음
-                    float tw = 1f - ((float)ahead / (lookahead + 1));
-                    return tw * 0.5f;
-                }
+                // 뒤에 같은 종류가 더 오면 → 연속 점 딜레이 (각 점마다 약간)
+                if (index + 1 < text.Length && IsSentenceEndPunctuation(text[index + 1]))
+                    return ellipsisDotPause;
+
+                // 마지막 문장부호 → 풀 포스트-포즈
+                return periodPostPause;
             }
 
             return 0f;
         }
 
-        bool IsMajorPunctuation(char c)
+        bool IsSentenceEndPunctuation(char c)
         {
             return c == '.' || c == '!' || c == '?' || c == '~' || c == '\u2026';  // \u2026 = …
         }
@@ -585,6 +566,7 @@ namespace LoveAlgo.Story
                 skipRequested = true;
                 dialogueText.text = fullText;
                 dialogueText.maxVisibleCharacters = fullText?.Length ?? 0;
+                dialogueText.ForceMeshUpdate();
                 isTyping = false;
                 ShowNextIndicator();
             }
@@ -894,18 +876,7 @@ namespace LoveAlgo.Story
 
         #endregion
 
-        /// <summary>
-        /// 타이핑 사운드 재생 (쿨다운 기반)
-        /// 글자 출력에 연동되어 자연스러운 리듬을 유지하면서,
-        /// 최소 간격(typingSoundMinInterval)으로 너무 빠른 연타를 방지
-        /// </summary>
-        void TryPlayTypingSound()
-        {
-            float now = Time.unscaledTime;
-            if (now - lastTypingSoundTime < typingSoundMinInterval) return;
-            lastTypingSoundTime = now;
-            LoveAlgo.UI.UISoundManager.Instance?.PlayTyping();
-        }
+
 
         #region 버튼 핸들러
 

@@ -389,7 +389,7 @@ MonoBehaviour:
   nextSprite: {fileID: 21300000, guid: 19e65c7b40a6b2b44924792a7601221a, type: 3}
   nextDisabledSprite: {fileID: 21300000, guid: e23510e6929966442ac9114bd106f05c, type: 3}
   slotsPerPage: 6
-  userSlots: 29
+  userSlots: 30
 --- !u!1 &5050167194412585359
 GameObject:
   m_ObjectHideFlags: 0
@@ -607,12 +607,6 @@ MonoBehaviour:
   normalChild: {fileID: 0}
   hoverChild: {fileID: 0}
   pressedChild: {fileID: 0}
-  useColorTint: 1
-  colorTarget: {fileID: 0}
-  normalColor: {r: 1, g: 1, b: 1, a: 1}
-  hoverColor: {r: 0.96, g: 0.96, b: 0.96, a: 1}
-  pressedColor: {r: 0.85, g: 0.85, b: 0.85, a: 1}
-  colorFadeDuration: 0.1
   useScaleEffect: 0
   hoverScale: 1.05
   pressedScale: 0.95
@@ -894,12 +888,6 @@ MonoBehaviour:
   normalChild: {fileID: 0}
   hoverChild: {fileID: 0}
   pressedChild: {fileID: 0}
-  useColorTint: 1
-  colorTarget: {fileID: 0}
-  normalColor: {r: 1, g: 1, b: 1, a: 1}
-  hoverColor: {r: 0.96, g: 0.96, b: 0.96, a: 1}
-  pressedColor: {r: 0.85, g: 0.85, b: 0.85, a: 1}
-  colorFadeDuration: 0.1
   useScaleEffect: 0
   hoverScale: 1.05
   pressedScale: 0.95
@@ -1200,12 +1188,6 @@ MonoBehaviour:
   normalChild: {fileID: 0}
   hoverChild: {fileID: 0}
   pressedChild: {fileID: 0}
-  useColorTint: 1
-  colorTarget: {fileID: 0}
-  normalColor: {r: 1, g: 1, b: 1, a: 1}
-  hoverColor: {r: 0.96, g: 0.96, b: 0.96, a: 1}
-  pressedColor: {r: 0.85, g: 0.85, b: 0.85, a: 1}
-  colorFadeDuration: 0.1
   useScaleEffect: 0
   hoverScale: 1.05
   pressedScale: 0.95
@@ -1402,12 +1384,6 @@ MonoBehaviour:
   normalChild: {fileID: 0}
   hoverChild: {fileID: 0}
   pressedChild: {fileID: 0}
-  useColorTint: 1
-  colorTarget: {fileID: 0}
-  normalColor: {r: 1, g: 1, b: 1, a: 1}
-  hoverColor: {r: 0.96, g: 0.96, b: 0.96, a: 1}
-  pressedColor: {r: 0.85, g: 0.85, b: 0.85, a: 1}
-  colorFadeDuration: 0.1
   useScaleEffect: 0
   hoverScale: 1.05
   pressedScale: 0.95
@@ -1587,12 +1563,6 @@ MonoBehaviour:
   normalChild: {fileID: 0}
   hoverChild: {fileID: 0}
   pressedChild: {fileID: 0}
-  useColorTint: 1
-  colorTarget: {fileID: 0}
-  normalColor: {r: 1, g: 1, b: 1, a: 1}
-  hoverColor: {r: 0.96, g: 0.96, b: 0.96, a: 1}
-  pressedColor: {r: 0.85, g: 0.85, b: 0.85, a: 1}
-  colorFadeDuration: 0.1
   useScaleEffect: 0
   hoverScale: 1.05
   pressedScale: 0.95
@@ -1789,12 +1759,6 @@ MonoBehaviour:
   normalChild: {fileID: 0}
   hoverChild: {fileID: 0}
   pressedChild: {fileID: 0}
-  useColorTint: 1
-  colorTarget: {fileID: 0}
-  normalColor: {r: 1, g: 1, b: 1, a: 1}
-  hoverColor: {r: 0.96, g: 0.96, b: 0.96, a: 1}
-  pressedColor: {r: 0.85, g: 0.85, b: 0.85, a: 1}
-  colorFadeDuration: 0.1
   useScaleEffect: 0
   hoverScale: 1.05
   pressedScale: 0.95
@@ -2099,12 +2063,6 @@ MonoBehaviour:
   normalChild: {fileID: 0}
   hoverChild: {fileID: 0}
   pressedChild: {fileID: 0}
-  useColorTint: 1
-  colorTarget: {fileID: 0}
-  normalColor: {r: 1, g: 1, b: 1, a: 1}
-  hoverColor: {r: 0.96, g: 0.96, b: 0.96, a: 1}
-  pressedColor: {r: 0.85, g: 0.85, b: 0.85, a: 1}
-  colorFadeDuration: 0.1
   useScaleEffect: 0
   hoverScale: 1.05
   pressedScale: 0.95
@@ -2300,12 +2258,6 @@ MonoBehaviour:
   normalChild: {fileID: 0}
   hoverChild: {fileID: 0}
   pressedChild: {fileID: 0}
-  useColorTint: 1
-  colorTarget: {fileID: 0}
-  normalColor: {r: 1, g: 1, b: 1, a: 1}
-  hoverColor: {r: 0.96, g: 0.96, b: 0.96, a: 1}
-  pressedColor: {r: 0.85, g: 0.85, b: 0.85, a: 1}
-  colorFadeDuration: 0.1
   useScaleEffect: 0
   hoverScale: 1.05
   pressedScale: 0.95

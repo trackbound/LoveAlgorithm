@@ -106,7 +106,7 @@ namespace LoveAlgo.Story
             // 시나리오 작가가 Next를 생략해도 자연스러운 흐름이 되도록
             if (string.IsNullOrEmpty(nextStr))
             {
-                nextType = GetDefaultNextType(type);
+                nextType = GetDefaultNextType(type, value);
             }
 
             return new ScriptLine(lineId, type, speaker, value, nextType, delay);
@@ -165,7 +165,7 @@ namespace LoveAlgo.Story
         /// 타입별 Next 생략 시 기본값
         /// 시나리오 작가가 Next를 비워도 자연스러운 흐름을 위해
         /// </summary>
-        static NextType GetDefaultNextType(LineType type)
+        static NextType GetDefaultNextType(LineType type, string value = "")
         {
             switch (type)
             {
@@ -173,10 +173,18 @@ namespace LoveAlgo.Story
                 case LineType.Text:
                     return NextType.Click;
 
+                // CG: 닫기(Close/Exit) → 완료 대기, 표시 → 클릭 대기 (CG 감상 시간)
+                case LineType.CG:
+                {
+                    var cmd = value.Split(':')[0];
+                    bool isClose = cmd.Equals("Close", StringComparison.OrdinalIgnoreCase)
+                                || cmd.Equals("Exit", StringComparison.OrdinalIgnoreCase);
+                    return isClose ? NextType.Await : NextType.Click;
+                }
+
                 // 시각 연출: 완료 대기 (등장/전환/효과가 끝나야 자연스러움)
                 case LineType.Char:
                 case LineType.BG:
-                case LineType.CG:
                 case LineType.SD:
                 case LineType.FX:
                 case LineType.Choice:

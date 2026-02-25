@@ -77,12 +77,17 @@ namespace LoveAlgo.Story
             string command = parts[0];
 
             // Exit / Close 명령
+            // 형식: Close[:duration] 또는 Close:Fade:duration
             if (command.Equals("Exit", System.StringComparison.OrdinalIgnoreCase)
                 || command.Equals("Close", System.StringComparison.OrdinalIgnoreCase))
             {
                 float duration = defaultDuration;
-                if (parts.Length >= 2 && float.TryParse(parts[1], out float d))
-                    duration = d;
+                // Close:Fade:4 → parts[1]="Fade", parts[2]="4"
+                // Close:2       → parts[1]="2"
+                if (parts.Length >= 3 && float.TryParse(parts[2], out float d3))
+                    duration = d3;
+                else if (parts.Length >= 2 && float.TryParse(parts[1], out float d1))
+                    duration = d1;
 
                 await HideAsync(duration, ct);
                 return;

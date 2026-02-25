@@ -106,6 +106,17 @@ namespace LoveAlgo.Core
                 flashOverlay.raycastTarget = false;
             }
 
+            // Eye 바가 Inspector에서 미바인딩 시 자동 생성
+            EnsureEyeBars();
+
+            // dialogueUITransform 자동 바인딩 (별도 캔버스라 Inspector 연결 어려움)
+            if (dialogueUITransform == null)
+            {
+                var dialogueUI = LoveAlgo.UI.UIManager.Instance?.DialogueUI;
+                if (dialogueUI != null)
+                    dialogueUITransform = dialogueUI.GetComponent<RectTransform>();
+            }
+
             EnsureBindings();
         }
 
@@ -813,6 +824,63 @@ namespace LoveAlgo.Core
         float eyeHalfHeight;
         bool eyeInitialized;
         Sequence eyeSequence;
+
+        /// <summary>
+        /// Eye 바가 없으면 런타임에 자동 생성 (Stage 캔버스 최상단 — BG/캐릭터를 가리되 대사창은 안 가림)
+        /// </summary>
+        void EnsureEyeBars()
+        {
+            if (eyeTop != null && eyeBottom != null) return;
+
+            // Eye 바는 Stage 캔버스(sort 0)에 배치해야
+            // Overlay 캔버스(Dialogue, sort 1)보다 아래에서 렌더됨
+            Transform eyeParent = null;
+
+            // 1. stageCanvas가 바인딩되어 있으면 그 아래에 생성
+            if (stageCanvas != null)
+            {
+                eyeParent = stageCanvas.transform;
+            }
+            else
+            {
+                // 2. StageManager → StageRig → StageCanvas 탐색
+                var stageRig = StageManager.Instance?.GetComponentInChildren<StageRig>(true);
+                if (stageRig?.StageCanvas != null)
+                    eyeParent = stageRig.StageCanvas.transform;
+            }
+
+            if (eyeParent == null)
+            {
+                Debug.LogWarning("[ScreenFX] EnsureEyeBars: Stage 캔버스를 찾을 수 없어 Eye 바 생성 불가");
+                return;
+            }
+
+            if (eyeTop == null)
+            {
+                var goTop = new GameObject("EyeTop", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+                goTop.layer = LayerMask.NameToLayer("UI");
+                goTop.transform.SetParent(eyeParent, false);
+                goTop.transform.SetAsLastSibling();  // Stage 내 최상단 (BG/캐릭터 위)
+                eyeTop = goTop.GetComponent<Image>();
+                eyeTop.color = Color.black;
+                eyeTop.raycastTarget = false;
+                goTop.SetActive(false);
+            }
+
+            if (eyeBottom == null)
+            {
+                var goBottom = new GameObject("EyeBottom", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+                goBottom.layer = LayerMask.NameToLayer("UI");
+                goBottom.transform.SetParent(eyeParent, false);
+                goBottom.transform.SetAsLastSibling();
+                eyeBottom = goBottom.GetComponent<Image>();
+                eyeBottom.color = Color.black;
+                eyeBottom.raycastTarget = false;
+                goBottom.SetActive(false);
+            }
+
+            Debug.Log("[ScreenFX] Eye 바 자동 생성 완료 (Stage 캔버스)");
+        }
 
         /// <summary>
         /// Eye 바 초기화 (최초 1회)

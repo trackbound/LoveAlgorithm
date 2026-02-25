@@ -105,7 +105,7 @@ namespace LoveAlgo.Examples
             // 3. 선택 후 피드백
             if (feedbackManager != null && result != null)
             {
-                feedbackManager.PlayImportantDialogueFeedback(Color.green);
+                feedbackManager.PlayImportantDialogueFeedback(Color.green).Forget();
             }
         }
 
@@ -119,7 +119,7 @@ namespace LoveAlgo.Examples
 
             if (reactionSystem != null)
             {
-                reactionSystem.PlayReaction(reactionType);
+                reactionSystem.PlayReaction(reactionType).Forget();
             }
         }
 
@@ -131,7 +131,7 @@ namespace LoveAlgo.Examples
             if (feedbackManager != null)
             {
                 // 리플 효과만 (파티클은 선택지에만)
-                feedbackManager.PlayRipple(screenPosition, default);
+                feedbackManager.PlayRipple(screenPosition, default).Forget();
             }
         }
 

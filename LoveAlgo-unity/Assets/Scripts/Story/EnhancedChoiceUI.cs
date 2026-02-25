@@ -211,7 +211,7 @@ namespace LoveAlgo.Story
             var selectedButton = enhancedButtons[selectedIndex];
 
             // 선택된 버튼 애니메이션
-            selectedButton.PlaySelectionAnimation();
+            selectedButton.PlaySelectionAnimation().Forget();
 
             // 나머지 버튼 페이드아웃
             var fadeoutTasks = new List<UniTask>();

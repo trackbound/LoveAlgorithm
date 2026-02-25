@@ -57,7 +57,9 @@ namespace LoveAlgo.UI
                 slotItems[i]?.Setup(i, OnSlotClicked);
             }
 
-            totalPages = Mathf.CeilToInt((float)userSlots / slotsPerPage);
+            // 자동저장 슬롯(1) + 유저 슬롯(userSlots)
+            int totalSlots = 1 + userSlots;
+            totalPages = Mathf.CeilToInt((float)totalSlots / slotsPerPage);
         }
 
         #region Show/Hide
@@ -124,12 +126,12 @@ namespace LoveAlgo.UI
 
         /// <summary>
         /// 로컬 인덱스 → 글로벌 슬롯 인덱스 변환
-        /// 팝업에서는 유저 슬롯(1~N)만 노출
+        /// 1페이지: 자동저장(0) + 유저 슬롯(1~5)
+        /// 2페이지+: 유저 슬롯(6~11, 12~17, ...)
         /// </summary>
         int GetGlobalSlotIndex(int localIndex)
         {
-            int startIndex = (currentPage - 1) * slotsPerPage;
-            return SaveManager.UserSlotStart + startIndex + localIndex;
+            return (currentPage - 1) * slotsPerPage + localIndex;
         }
 
         async UniTaskVoid OnSaveSlotClicked(int slotIndex)
@@ -163,7 +165,8 @@ namespace LoveAlgo.UI
             if (!SaveManager.Exists(slotIndex)) return;
 
             // 로드 확인
-            bool confirm = await PopupManager.Instance.ConfirmAsync("해당 데이터를 불러오시겠습니까?");
+            bool confirm = await PopupManager.Instance.ConfirmAsync(
+                "이 부분부터 시작할까요?", "예", "아니오");
             if (!confirm) return;
 
             // 로드는 씬 전환이므로 팝업 닫고 실행
@@ -176,6 +179,8 @@ namespace LoveAlgo.UI
 
         void RefreshSlots()
         {
+            int totalSlots = 1 + userSlots; // 자동저장(0) + 유저 슬롯(1~N)
+
             for (int i = 0; i < slotItems.Count; i++)
             {
                 var slot = slotItems[i];
@@ -184,7 +189,7 @@ namespace LoveAlgo.UI
                 int globalIndex = GetGlobalSlotIndex(i);
 
                 // 범위 초과 체크
-                if (globalIndex > userSlots)
+                if (globalIndex >= totalSlots)
                 {
                     slot.gameObject.SetActive(false);
                     continue;
@@ -192,8 +197,12 @@ namespace LoveAlgo.UI
 
                 slot.gameObject.SetActive(true);
 
-                slot.Setup(i, OnSlotClicked, autoSave: false);
+                bool isAutoSave = (globalIndex == SaveManager.AutoSaveSlot);
+                slot.Setup(i, OnSlotClicked, autoSave: isAutoSave);
                 slot.SetDisplayNumber(globalIndex);
+
+                // 세이브 모드에서 자동저장 슬롯은 클릭 불가
+                slot.SetInteractable(!isSaveMode || !isAutoSave);
 
                 // 세이브 데이터 확인
                 var data = SaveManager.Load(globalIndex);

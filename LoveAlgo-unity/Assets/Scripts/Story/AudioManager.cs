@@ -146,7 +146,8 @@ namespace LoveAlgo.Story
                 crossfadeDuration = cfd;
             }
 
-            await PlayBGMAsync(name, crossfadeDuration, ct);
+            // BGM 페이드는 백그라운드로 처리 — 스크립트 진행을 차단하지 않음
+            PlayBGMAsync(name, crossfadeDuration, ct).Forget();
         }
 
         public async UniTask PlayBGMAsync(string name, float fadeDuration = -1f, CancellationToken ct = default)

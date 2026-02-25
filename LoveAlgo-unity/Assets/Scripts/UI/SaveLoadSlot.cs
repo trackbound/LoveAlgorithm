@@ -47,7 +47,16 @@ namespace LoveAlgo.UI
         {
             displayNumber = globalSlotIndex;
             if (slotNumberText != null)
-                slotNumberText.text = isAutoSaveSlot ? "Auto" : $"슬롯 {globalSlotIndex}";
+                slotNumberText.text = isAutoSaveSlot ? "자동 저장" : $"슬롯 {globalSlotIndex}";
+        }
+
+        /// <summary>
+        /// 버튼 인터랙션 설정
+        /// </summary>
+        public void SetInteractable(bool interactable)
+        {
+            if (button != null)
+                button.interactable = interactable;
         }
 
         /// <summary>
@@ -58,7 +67,7 @@ namespace LoveAlgo.UI
             hasData = false;
 
             if (slotNumberText != null)
-                slotNumberText.text = isAutoSaveSlot ? "Auto" : $"슬롯 {displayNumber}";
+                slotNumberText.text = isAutoSaveSlot ? "자동 저장" : $"슬롯 {displayNumber}";
             
             if (emptyLabel != null)
                 emptyLabel.SetActive(true);
@@ -75,7 +84,7 @@ namespace LoveAlgo.UI
             hasData = true;
             
             if (slotNumberText != null)
-                slotNumberText.text = isAutoSaveSlot ? "Auto" : $"슬롯 {displayNumber}";
+                slotNumberText.text = isAutoSaveSlot ? "자동 저장" : $"슬롯 {displayNumber}";
 
             if (chapterText != null)
                 chapterText.text = chapter ?? "알 수 없음";

@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.Threading;
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
 using Cysharp.Threading.Tasks;
 using LoveAlgo.Story;
 
@@ -11,6 +10,7 @@ namespace LoveAlgo.UI
     /// <summary>
     /// 대사 로그 팝업 — 채팅 스타일
     /// 연속 같은 화자의 대사를 하나의 그룹으로 묶어 표시
+    /// 타입별 프리팹: Character / Extra / User / Narration
     ///
     /// 최적화: 증분 빌드 — 이전 Show 이후 추가된 로그만 생성
     /// </summary>
@@ -21,15 +21,11 @@ namespace LoveAlgo.UI
         [SerializeField] RectTransform contentRoot;
         [SerializeField] Button closeButton;
 
-        [Header("프리팹")]
-        [SerializeField] LogEntryUI entryPrefab;
-
-        [Header("스프라이트")]
-        [SerializeField] Sprite characterTextboxSprite;
-        [SerializeField] Sprite userTextboxSprite;
-
-        [Header("독백 스타일")]
-        [SerializeField] TMP_FontAsset narrationFont;
+        [Header("프리팹 (각 타입별 레이아웃 — LogEntryBase 서브클래스)")]
+        [SerializeField] LogEntryBase characterEntryPrefab;  // 캐릭터 (초상화 + 네임 + 버블)
+        [SerializeField] LogEntryBase extraEntryPrefab;      // 엑스트라 (네임 + 버블)
+        [SerializeField] LogEntryBase userEntryPrefab;       // 유저 (네임 + 버블)
+        [SerializeField] LogEntryBase narrationEntryPrefab;  // 독백 (버블만)
 
         [Header("캐릭터 초상화")]
         [SerializeField] List<PortraitEntry> portraits;
@@ -41,13 +37,13 @@ namespace LoveAlgo.UI
         readonly Dictionary<string, Sprite> portraitLookup = new();
 
         // 생성된 항목
-        readonly List<LogEntryUI> spawnedEntries = new();
+        readonly List<LogEntryBase> spawnedEntries = new();
 
         // 증분 빌드 상태
         int builtCount;              // 이미 빌드한 로그 수
         string lastSpeaker;          // 마지막 그룹의 화자
         string lastCharId;           // 마지막 그룹의 캐릭터ID
-        LogEntryUI lastGroup;        // 마지막 그룹 (연속 대사 추가용)
+        LogEntryBase lastGroup;      // 마지막 그룹 (연속 대사 추가용)
         CancellationTokenSource buildCts;  // 중복 빌드 방지용
 
         public bool IsVisible => gameObject.activeSelf;
@@ -119,27 +115,26 @@ namespace LoveAlgo.UI
 
                 if (!sameGroup)
                 {
-                    lastGroup = Instantiate(entryPrefab, contentRoot);
-                    lastGroup.SetAssets(
-                        characterTextboxSprite, userTextboxSprite,
-                        narrationFont);
+                    // ── 타입별 프리팹 선택 ──
+                    LogEntryBase prefab;
+                    Sprite portrait = null;
 
                     if (isNarration)
                     {
-                        lastGroup.SetNarrationMode();
+                        prefab = narrationEntryPrefab;
                     }
-                    else if (!string.IsNullOrEmpty(entry.CharacterId))
+                    else if (string.IsNullOrEmpty(entry.CharacterId))
                     {
-                        var portrait = GetPortrait(entry.CharacterId);
-                        if (portrait != null)
-                            lastGroup.SetCharacterWithPortrait(entry.Speaker, portrait);
-                        else
-                            lastGroup.SetExtraEntry(entry.Speaker);
+                        prefab = userEntryPrefab;
                     }
                     else
                     {
-                        lastGroup.SetUserEntry(entry.Speaker);
+                        portrait = GetPortrait(entry.CharacterId);
+                        prefab = portrait != null ? characterEntryPrefab : extraEntryPrefab;
                     }
+
+                    lastGroup = Instantiate(prefab, contentRoot);
+                    lastGroup.Init(entry.Speaker, portrait);
 
                     lastSpeaker = entry.Speaker;
                     lastCharId = entry.CharacterId;

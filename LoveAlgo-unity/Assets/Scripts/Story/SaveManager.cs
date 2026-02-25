@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using Newtonsoft.Json;
+using Cysharp.Threading.Tasks;
 using LoveAlgo.Core;
 using LoveAlgo.UI;
 
@@ -361,7 +362,35 @@ namespace LoveAlgo.Story
 
         /// <summary>
         /// 팝업 열기 전 게임 화면을 임시 파일로 미리 캡처
-        /// UI 팝업이 화면에 뜨기 전에 호출해야 게임 장면이 찍힘
+        /// UI를 숨기고 1프레임 대기 후 캡처 → UI/팝업이 썸네일에 포함되지 않음
+        /// </summary>
+        public static async UniTask CapturePendingScreenshotAsync()
+        {
+            try
+            {
+                string folder = Path.Combine(Application.persistentDataPath, SaveFolder);
+                if (!Directory.Exists(folder))
+                    Directory.CreateDirectory(folder);
+
+                var tex = await CaptureStageOnlyTextureAsync();
+                var thumb = CropAndScaleTexture(tex, ThumbnailWidth, ThumbnailHeight);
+                File.WriteAllBytes(
+                    Path.Combine(folder, "save_pending_thumb.png"),
+                    thumb.EncodeToPNG()
+                );
+                UnityEngine.Object.Destroy(tex);
+                UnityEngine.Object.Destroy(thumb);
+                Debug.Log("[SaveManager] 팬딩 스크린샷 캡처 완료");
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning($"[SaveManager] 팬딩 스크린샷 실패: {e.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 동기 버전 (하위 호환 — 자동저장 등에서 사용)
+        /// 같은 프레임 캡처이므로 UI가 찍힐 수 있음. 가능하면 Async 버전 사용
         /// </summary>
         public static void CapturePendingScreenshot()
         {
@@ -371,7 +400,7 @@ namespace LoveAlgo.Story
                 if (!Directory.Exists(folder))
                     Directory.CreateDirectory(folder);
 
-                var tex = CaptureStageOnlyTexture();
+                var tex = CaptureStageOnlyTextureSync();
                 var thumb = CropAndScaleTexture(tex, ThumbnailWidth, ThumbnailHeight);
                 File.WriteAllBytes(
                     Path.Combine(folder, "save_pending_thumb.png"),
@@ -379,7 +408,7 @@ namespace LoveAlgo.Story
                 );
                 UnityEngine.Object.Destroy(tex);
                 UnityEngine.Object.Destroy(thumb);
-                Debug.Log("[SaveManager] 팬딩 스크린샷 캡처 완료");
+                Debug.Log("[SaveManager] 팬딩 스크린샷 캡처 완료 (sync)");
             }
             catch (Exception e)
             {
@@ -418,7 +447,7 @@ namespace LoveAlgo.Story
         {
             try
             {
-                var tex = CaptureStageOnlyTexture();
+                var tex = CaptureStageOnlyTextureSync();
                 // 슬롯 비율(400x128)에 맞춰 중앙 크롭 후 축소
                 var thumb = CropAndScaleTexture(tex, ThumbnailWidth, ThumbnailHeight);
                 byte[] png = thumb.EncodeToPNG();
@@ -435,11 +464,29 @@ namespace LoveAlgo.Story
         }
 
         /// <summary>
-        /// 썸네일 캡처 시 포함/제외 제어:
-        /// 포함: 스테이지(배경/캐릭터/CG/SD)
-        /// 제외: 메인 UI, 팝업 UI
+        /// 비동기 캡처: UI 숨김 → 1프레임 대기(렌더 반영) → 캡처 → UI 복원
+        /// ScreenCapture.CaptureScreenshotAsTexture()는 현재까지 렌더된 프레임버퍼를 읽으므로
+        /// SetActive(false) 후 같은 프레임에서 캡처하면 이전 프레임(UI 포함)이 찍힐 수 있음
         /// </summary>
-        static Texture2D CaptureStageOnlyTexture()
+        static async UniTask<Texture2D> CaptureStageOnlyTextureAsync()
+        {
+            var snapshot = HideUIForThumbnailCapture();
+            try
+            {
+                // UI 비활성화가 렌더에 반영되도록 1프레임 대기
+                await UniTask.WaitForEndOfFrame();
+                return ScreenCapture.CaptureScreenshotAsTexture();
+            }
+            finally
+            {
+                RestoreUIAfterThumbnailCapture(snapshot);
+            }
+        }
+
+        /// <summary>
+        /// 동기 캡처 (폴백) — ForceUpdateCanvases 후 즉시 캡처
+        /// </summary>
+        static Texture2D CaptureStageOnlyTextureSync()
         {
             var snapshot = HideUIForThumbnailCapture();
             try

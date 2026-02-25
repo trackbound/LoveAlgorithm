@@ -34,7 +34,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 1, y: -64.1}
+  m_AnchoredPosition: {x: 1, y: -72.6}
   m_SizeDelta: {x: 1241.794, y: 119.959}
   m_Pivot: {x: 0.5, y: 0}
 --- !u!222 &2321683843453961759
@@ -287,12 +287,6 @@ MonoBehaviour:
   normalChild: {fileID: 0}
   hoverChild: {fileID: 0}
   pressedChild: {fileID: 0}
-  useColorTint: 1
-  colorTarget: {fileID: 0}
-  normalColor: {r: 1, g: 1, b: 1, a: 1}
-  hoverColor: {r: 0.96, g: 0.96, b: 0.96, a: 1}
-  pressedColor: {r: 0.78, g: 0.78, b: 0.78, a: 1}
-  colorFadeDuration: 0.1
   useScaleEffect: 0
   hoverScale: 1.05
   pressedScale: 0.95
@@ -473,12 +467,6 @@ MonoBehaviour:
   normalChild: {fileID: 0}
   hoverChild: {fileID: 0}
   pressedChild: {fileID: 0}
-  useColorTint: 1
-  colorTarget: {fileID: 0}
-  normalColor: {r: 1, g: 1, b: 1, a: 1}
-  hoverColor: {r: 0.96, g: 0.96, b: 0.96, a: 1}
-  pressedColor: {r: 0.78, g: 0.78, b: 0.78, a: 1}
-  colorFadeDuration: 0.1
   useScaleEffect: 0
   hoverScale: 1.05
   pressedScale: 0.95
@@ -713,7 +701,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &3220286301399149567
 RectTransform:
   m_ObjectHideFlags: 0
@@ -814,8 +802,6 @@ MonoBehaviour:
   showButtonObject: {fileID: 0}
   nameBox: {fileID: 0}
   canvasGroup: {fileID: 7426445390462172110}
-  typingAudioSource: {fileID: 0}
-  typingSFX: {fileID: 8300000, guid: bea9dda7472cdbb4fb7eff1ef4d10c8a, type: 3}
   characterDatabase: {fileID: 11400000, guid: c3e9b03245e024d46b8565778375d528, type: 2}
   monologueDotsImage: {fileID: 5299168437301087334}
   dotsFrameRate: 0.2
@@ -823,15 +809,14 @@ MonoBehaviour:
   slideDuration: 0.25
   slideDistance: 200
   typingSpeed: 0.03
-  punctuationDelay: 0.12
+  newlinePostPause: 0.18
+  periodPostPause: 0.12
+  commaPostPause: 0.06
+  ellipsisDotPause: 0.07
   jitterAmount: 0.15
-  punctuationLookahead: 2
   blinkInterval: 0.6
   bounceAmplitude: 4
   indicatorPopDuration: 0.25
-  minPitch: 0.9
-  maxPitch: 1.1
-  useUISoundManager: 1
   autoModeIndicator: {fileID: 0}
   autoButtonActiveColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
 --- !u!1 &5441486065902426640
@@ -975,12 +960,6 @@ MonoBehaviour:
   normalChild: {fileID: 0}
   hoverChild: {fileID: 0}
   pressedChild: {fileID: 0}
-  useColorTint: 1
-  colorTarget: {fileID: 0}
-  normalColor: {r: 1, g: 1, b: 1, a: 1}
-  hoverColor: {r: 0.96, g: 0.96, b: 0.96, a: 1}
-  pressedColor: {r: 0.78, g: 0.78, b: 0.78, a: 1}
-  colorFadeDuration: 0.1
   useScaleEffect: 0
   hoverScale: 1.05
   pressedScale: 0.95
@@ -1126,12 +1105,6 @@ MonoBehaviour:
   normalChild: {fileID: 0}
   hoverChild: {fileID: 0}
   pressedChild: {fileID: 0}
-  useColorTint: 1
-  colorTarget: {fileID: 0}
-  normalColor: {r: 1, g: 1, b: 1, a: 1}
-  hoverColor: {r: 0.96, g: 0.96, b: 0.96, a: 1}
-  pressedColor: {r: 0.78, g: 0.78, b: 0.78, a: 1}
-  colorFadeDuration: 0.1
   useScaleEffect: 0
   hoverScale: 1.05
   pressedScale: 0.95
@@ -1277,12 +1250,6 @@ MonoBehaviour:
   normalChild: {fileID: 0}
   hoverChild: {fileID: 0}
   pressedChild: {fileID: 0}
-  useColorTint: 1
-  colorTarget: {fileID: 0}
-  normalColor: {r: 1, g: 1, b: 1, a: 1}
-  hoverColor: {r: 0.96, g: 0.96, b: 0.96, a: 1}
-  pressedColor: {r: 0.78, g: 0.78, b: 0.78, a: 1}
-  colorFadeDuration: 0.1
   useScaleEffect: 0
   hoverScale: 1.05
   pressedScale: 0.95
@@ -1428,12 +1395,6 @@ MonoBehaviour:
   normalChild: {fileID: 0}
   hoverChild: {fileID: 0}
   pressedChild: {fileID: 0}
-  useColorTint: 1
-  colorTarget: {fileID: 0}
-  normalColor: {r: 1, g: 1, b: 1, a: 1}
-  hoverColor: {r: 0.96, g: 0.96, b: 0.96, a: 1}
-  pressedColor: {r: 0.78, g: 0.78, b: 0.78, a: 1}
-  colorFadeDuration: 0.1
   useScaleEffect: 0
   hoverScale: 1.05
   pressedScale: 0.95
@@ -1696,12 +1657,6 @@ MonoBehaviour:
   normalChild: {fileID: 0}
   hoverChild: {fileID: 0}
   pressedChild: {fileID: 0}
-  useColorTint: 1
-  colorTarget: {fileID: 0}
-  normalColor: {r: 1, g: 1, b: 1, a: 1}
-  hoverColor: {r: 0.96, g: 0.96, b: 0.96, a: 1}
-  pressedColor: {r: 0.78, g: 0.78, b: 0.78, a: 1}
-  colorFadeDuration: 0.1
   useScaleEffect: 0
   hoverScale: 1.05
   pressedScale: 0.95

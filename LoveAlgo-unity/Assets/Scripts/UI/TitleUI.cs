@@ -209,11 +209,11 @@ namespace LoveAlgo.UI
 
         async UniTaskVoid ConfirmNewGame()
         {
-            // 세이브 데이터가 있으면 확인 팝업
+            // 저장 데이터가 있으면 확인 팝업
             if (HasAnySaveData())
             {
                 bool confirmed = await PopupManager.Instance.ConfirmAsync(
-                    "기존 진행이 사라집니다.\n처음부터 시작하시겠어요?");
+                    "저장된 데이터가 있습니다.\n새 게임을 시작할까요?", "예", "아니오");
                 if (!confirmed) return;
             }
 
@@ -223,7 +223,31 @@ namespace LoveAlgo.UI
         void OnContinueClick()
         {
             Debug.Log("[TitleUI] Continue - 이어하기");
-            GameManager.Instance?.ContinueGame();
+            HandleContinue().Forget();
+        }
+
+        async UniTaskVoid HandleContinue()
+        {
+            bool hasAutoSave = SaveManager.Exists(SaveManager.AutoSaveSlot);
+
+            if (hasAutoSave)
+            {
+                // 자동저장 데이터 있음 → 확인 후 로드
+                bool confirmed = await PopupManager.Instance.ConfirmAsync(
+                    "자동 저장 부분부터 시작할까요?", "예", "아니오");
+                if (!confirmed) return;
+
+                GameManager.Instance?.LoadGame(SaveManager.AutoSaveSlot);
+            }
+            else
+            {
+                // 자동저장 데이터 없음 → 새 게임 안내
+                bool confirmed = await PopupManager.Instance.ConfirmAsync(
+                    "저장된 데이터가 없습니다.\n새 게임을 시작할까요?", "예", "아니오");
+                if (!confirmed) return;
+
+                GameManager.Instance?.StartNewGame();
+            }
         }
 
         void OnLoadClick()
@@ -280,10 +304,9 @@ namespace LoveAlgo.UI
 
         void UpdateContinueButton()
         {
-            bool hasSave = HasAnySaveData();
-
+            // Continue 버튼은 항상 활성화 (자동저장 없으면 새 게임 안내)
             if (continueButton != null)
-                continueButton.interactable = hasSave;
+                continueButton.interactable = true;
         }
 
         bool HasAnySaveData()
