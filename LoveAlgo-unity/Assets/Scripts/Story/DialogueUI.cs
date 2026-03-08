@@ -106,17 +106,25 @@ namespace LoveAlgo.Story
         readonly List<DialogueLogEntry> dialogueLog = new();
         public IReadOnlyList<DialogueLogEntry> DialogueLog => dialogueLog;
 
-        // 인라인 태그 정규식
-        static readonly Regex InlineTagRegex = new(@"<(wait|sfx|emote|speed)=([^/>]+)(/?)>", RegexOptions.Compiled);
+        // 인라인 태그 정규식 (값에 / 가 포함될 수 있으므로 [^>]+ 사용, trailing / 는 후처리로 제거)
+        static readonly Regex InlineTagRegex = new(@"<(wait|sfx|emote|speed)=([^>]+)>", RegexOptions.Compiled);
         static readonly Regex SpeedEndRegex = new(@"</speed>", RegexOptions.Compiled);
-        // 로그용: 모든 인라인 태그 제거 (<wait=1/>, <emote=Default/>, <sfx=060/>, <speed=0.5>...</speed>)
-        static readonly Regex StripTagsRegex = new(@"<(wait|sfx|emote|speed)=([^/>]*)/?>|</speed>", RegexOptions.Compiled);
+        // 로그용: 모든 인라인 태그 제거
+        static readonly Regex StripTagsRegex = new(@"<(wait|sfx|emote|speed)=[^>]+>|</speed>", RegexOptions.Compiled);
 
         void Awake()
         {
             rectTransform = GetComponent<RectTransform>();
             if (rectTransform != null)
                 originalY = rectTransform.anchoredPosition.y;
+
+            // Auto 버튼 기본 색상을 즉시 캡처 (타이밍 문제 방지)
+            if (autoButton != null)
+            {
+                var btnImage = autoButton.GetComponent<Image>();
+                if (btnImage != null)
+                    autoButtonNormalColor = btnImage.color;
+            }
 
             HideNextIndicator();
             SetupButtons();
@@ -342,7 +350,10 @@ namespace LoveAlgo.Story
                 // 태그 처리
                 string tagName = m.Groups[1].Value.ToLower();
                 string tagValue = m.Groups[2].Value;
-                bool isSelfClosing = m.Groups[3].Value == "/";
+
+                // trailing / 제거 (self-closing 태그: <emote=Default/> → "Default/" → "Default")
+                if (tagValue.EndsWith("/"))
+                    tagValue = tagValue.Substring(0, tagValue.Length - 1);
 
                 switch (tagName)
                 {
@@ -925,8 +936,6 @@ namespace LoveAlgo.Story
                 var btnImage = autoButton.GetComponent<Image>();
                 if (btnImage != null)
                 {
-                    if (autoButtonNormalColor == default)
-                        autoButtonNormalColor = btnImage.color;
                     btnImage.color = isAuto ? autoButtonActiveColor : autoButtonNormalColor;
                 }
             }

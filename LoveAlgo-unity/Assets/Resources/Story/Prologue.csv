@@ -127,7 +127,7 @@ DEMO_2,Place,,첫 전공수업 | 공대 강의실,>
 ,Text,,"일상생활하면서 계속 상황 주고 생성형 답변 유도하면서 재학습시키면,\n내 일상에 대한 데이터는 베이스 자체를 키울 수 있을 것 같고,",
 ,Text,,그러고 나면 대학생 전체로 파이를 좀 키워서...,
 ,Text,,저기.,
-,Sound,,BGM:Daeun,>
+,Sound,,BGM:Daeun:Fade:4.0,>
 ,Char,,C:Enter:Daeun,await
 ,Text,서다은,혹시 {{Player}}님 맞으세요?,
 ,Text,,아까 시끄러운 무리에 있던 그 여자애다.\n입학했을 때부터 항상 사람들하고 몰려다니던.,
@@ -274,7 +274,7 @@ yeun_reunion,Text,,목소리를 들으니 이제 조금 더 기억이 나기 시
 ,Char,,C:Exit,await
 
 # 로아 메시지 도착
-,Sound,,BGM:Daily2,
+,Sound,,BGM:Daily2:Fade:3.0,
 ,FX,,Wait:0.5,await
 ,Text,,<sfx=060/>핸드폰에 남겨진 예은의 번호를 저장하자 로아의 메시지가 왔다.,
 ,Char,,C:Enter:Roa:Default:Roa_Mob_1,await
@@ -325,7 +325,7 @@ go_home,Text,{{Player}},지금은 그냥 피곤해. 얼른 집에 가야겠어.\
 ,Flow,,LoadingScene,await
 
 # 2일차
-,FX,,SceneStart,await
+,FX,,SceneStart:BG_MyRoom_Bed_Day:EyeClose,await
 ,Sound,,BGM:Daily2,
 ,Place,,새 학기 2일차 | 침대 위,>
 ,FX,,Wait:0.5,await
@@ -348,7 +348,7 @@ go_home,Text,{{Player}},지금은 그냥 피곤해. 얼른 집에 가야겠어.\
 ,Text,로아,"으으, 진짜! {{Player}}, 대답해!",
 ,Text,{{Player}},"알았어, 알았어.",
 ,Text,로아,챙겨줘도 대답도 안 하고. 계속 그러면 나 정말...,
-,Text,로아,"<emote=Surprise/>아, 맞다! 잠시만, 오늘 조금 춥다고 했어! <emote=Default/Roa_Mob_Default>옷 하나 더 챙겨!",
+,Text,로아,"<emote=Surprise/>아, 맞다! 잠시만, 오늘 조금 춥다고 했어! <emote=Default/>옷 하나 더 챙겨!",
 ,Text,,"알았어, 알았어.",
 ,Text,로아,"<emote=BrightSmile/>좋아, 그럼 출발!",
 ,Text,,핸드폰을 넣고 문을 나섰다.,

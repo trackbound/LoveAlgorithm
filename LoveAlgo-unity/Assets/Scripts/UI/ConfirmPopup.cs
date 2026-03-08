@@ -105,6 +105,8 @@ namespace LoveAlgo.UI
         {
             gameObject.SetActive(false);
             PopupManager.Instance?.ShowTopDimmer(false);
+            // 외부에서 Hide() 호출 시에도 대기 중인 UniTask를 완료 (cancel 아닌 false 반환)
+            tcs?.TrySetResult(false);
         }
     }
 }

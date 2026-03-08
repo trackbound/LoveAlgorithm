@@ -305,6 +305,9 @@ namespace LoveAlgo.UI
         {
             if (currentModal != null)
             {
+                // Modal 위에 떠 있는 ConfirmPopup이 있으면 먼저 닫기
+                DismissActiveConfirmPopups();
+
                 // Hide() 메서드 호출 (슬라이딩 애니메이션 실행)
                 var popup = currentModal.GetComponent<ModalPopupBase>();
                 if (popup != null)
@@ -324,6 +327,9 @@ namespace LoveAlgo.UI
         {
             if (currentModal != null)
             {
+                // Modal 위에 떠 있는 ConfirmPopup이 있으면 먼저 닫기
+                DismissActiveConfirmPopups();
+
                 var popup = currentModal.GetComponent<ModalPopupBase>();
                 ShowDimmer(false);  // 디머와 패널 동시 페이드
 
@@ -334,6 +340,18 @@ namespace LoveAlgo.UI
 
                 currentModal = null;
             }
+        }
+
+        /// <summary>
+        /// 활성 상태인 Confirm/ScheduleConfirm 팝업을 모두 닫기
+        /// Hide()가 tcs.TrySetResult(false)를 호출하므로 대기 중인 UniTask도 자동 완료됨
+        /// </summary>
+        void DismissActiveConfirmPopups()
+        {
+            if (confirmPopup != null && confirmPopup.IsVisible)
+                confirmPopup.Hide();
+            if (scheduleConfirmPopup != null && scheduleConfirmPopup.IsVisible)
+                scheduleConfirmPopup.Hide();
         }
 
         GameObject FindModalPrefab<T>() where T : ModalPopupBase

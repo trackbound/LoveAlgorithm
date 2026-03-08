@@ -556,9 +556,14 @@ namespace LoveAlgo.Core
             if (ScreenFX.Instance != null)
                 await ScreenFX.Instance.FadeOutAsync(2f, ct);
 
-            // 자동저장 후 5초 블랙 화면 유지
+            // 자동저장
             AutoSave();
-            await UniTask.Delay(5000, cancellationToken: ct);
+
+            // 데모 종료 안내 (사용자가 확인 후 진행)
+            if (UI.PopupManager.Instance != null)
+                await UI.PopupManager.Instance.AlertAsync("데모 버전 플레이가 종료되었습니다.\n자동 저장되었습니다.");
+            else
+                await UniTask.Delay(3000, cancellationToken: ct);
 
             // 타이틀로 복귀
             GoToTitle();

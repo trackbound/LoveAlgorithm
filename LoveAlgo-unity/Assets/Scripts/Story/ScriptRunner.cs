@@ -1021,7 +1021,7 @@ namespace LoveAlgo.Story
         ///   3. 암전 유지 (fade overlay alpha=1 상태로 끝)
         ///      → 이후 SceneStart가 새 배경 세팅 후 FadeIn으로 열어줌
         /// 
-        /// BGM은 건드리지 않음 — 시나리오에서 필요 시 직접 제어
+        /// BGM도 정리 (1초 페이드아웃) — 씬 전환 시 자연스럽게 BGM 끊김
         /// </summary>
         async UniTask ExecuteMacroSceneEndAsync(string[] parts, CancellationToken ct)
         {
@@ -1036,11 +1036,15 @@ namespace LoveAlgo.Story
             if (fx != null)
                 await fx.FadeOutAsync(fadeDuration, ct);
 
-            // 2. 암전 뒤에서 시각 요소만 정리 (BGM은 유지)
+            // 2. 암전 뒤에서 시각 요소 정리 + BGM 정리
             dialogueUI?.HideImmediate();
             stage?.Character?.ClearAll();
             stage?.VirtualBG?.HideImmediate();
             UIManager.Instance?.PlaceUI?.HideImmediate();
+
+            // BGM 페이드아웃 (씬 전환 시 자연스럽게 끊기도록)
+            if (AudioManager.Instance != null)
+                await AudioManager.Instance.ExecuteAsync("BGM:Stop:Fade:1.0", ct);
 
             // 3. 암전 유지 — fade overlay alpha=1 상태로 끝
             //    SceneStart 또는 LoadingScene이 이어받아 처리
