@@ -9,6 +9,24 @@ namespace LoveAlgo.Story
     /// </summary>
     public static class ScriptParser
     {
+        // ── :Fade 생략 시 UX 기본 duration (LineType별) ──
+        static readonly Dictionary<LineType, float> DefaultFadeDuration = new()
+        {
+            { LineType.BG,    0.5f },
+            { LineType.Char,  0.3f },
+            { LineType.CG,    0.5f },
+            { LineType.Sound, 1.0f },
+        };
+
+        /// <summary>
+        /// LineType별 기본 페이드 duration 조회
+        /// :Fade 파라미터가 생략된 경우 이 값으로 자동 보충
+        /// </summary>
+        public static float GetDefaultFadeDuration(LineType type)
+        {
+            return DefaultFadeDuration.TryGetValue(type, out var d) ? d : 0f;
+        }
+
         /// <summary>
         /// TextAsset에서 스크립트 파싱
         /// </summary>
@@ -44,7 +62,7 @@ namespace LoveAlgo.Story
                 if (row.StartsWith("#")) continue;
 
                 // 헤더 스킵 (첫 줄이 LineID,Type... 인 경우)
-                if (row.StartsWith("LineID,")) continue;
+                if (row.StartsWith("LineID,", StringComparison.OrdinalIgnoreCase)) continue;
 
                 // CSV 파싱
                 var line = ParseLine(row, lineNumber);
@@ -65,20 +83,12 @@ namespace LoveAlgo.Story
         {
             var columns = CsvUtility.SplitCsv(row);
 
-            // Option 타입은 Next 컬럼이 필요 없으므로 4개 허용
-            int minColumns = 4;
-            if (columns.Length >= 2 && columns[1].Trim().Equals("Option", StringComparison.OrdinalIgnoreCase))
-            {
-                minColumns = 4;
-            }
-            else
-            {
-                minColumns = 5;
-            }
+            // Next 컬럼 생략 허용 = 최소 4컬럼 (LineID, Type, Speaker, Value)
+            const int minColumns = 4;
 
             if (columns.Length < minColumns)
             {
-                Debug.LogWarning($"[ScriptParser] Line {lineNumber}: 컬럼 부족 ({columns.Length}/{minColumns}) - {row}");
+                Debug.LogWarning($"[ScriptParser] Line {lineNumber}: 컬럼 부족 ({columns.Length}/{minColumns}) - \"{TruncateForLog(row)}\"");
                 return null;
             }
 
@@ -151,7 +161,8 @@ namespace LoveAlgo.Story
             }
 
             // 숫자인 경우 Delay
-            if (float.TryParse(nextStr, out delay))
+            if (float.TryParse(nextStr, System.Globalization.NumberStyles.Float,
+                    System.Globalization.CultureInfo.InvariantCulture, out delay))
             {
                 nextType = NextType.Delay;
                 return;
@@ -231,7 +242,7 @@ namespace LoveAlgo.Story
                 {
                     if (index.ContainsKey(lines[i].LineID))
                     {
-                        Debug.LogWarning($"[ScriptParser] 중복 LineID: {lines[i].LineID}");
+                        Debug.LogError($"[ScriptParser] 중복 LineID: '{lines[i].LineID}' (index {index[lines[i].LineID]} vs {i}). 첫 번째만 사용됩니다.");
                     }
                     else
                     {
@@ -241,6 +252,15 @@ namespace LoveAlgo.Story
             }
 
             return index;
+        }
+
+        /// <summary>
+        /// 로그 출력용 문자열 잘라내기
+        /// </summary>
+        static string TruncateForLog(string s, int max = 80)
+        {
+            if (s == null) return "";
+            return s.Length <= max ? s : s.Substring(0, max) + "…";
         }
     }
 }

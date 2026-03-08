@@ -26,8 +26,11 @@ namespace LoveAlgo.Story
     {
         /// <summary>
         /// 스프라이트 캐시 (Resources.Load 중복 호출 방지)
+        /// LRU 방식: MaxCacheSize 초과 시 가장 오래된 항목 제거
         /// </summary>
         static readonly Dictionary<string, Sprite> spriteCache = new();
+        static readonly LinkedList<string> cacheOrder = new();
+        const int MaxCacheSize = 40;
 
         /// <summary>
         /// 스프라이트 캐시 전체 클리어 (장면 전환 시 호출하여 메모리 해제)
@@ -35,6 +38,7 @@ namespace LoveAlgo.Story
         public static void ClearSpriteCache()
         {
             spriteCache.Clear();
+            cacheOrder.Clear();
             Debug.Log($"[CharacterSlot] 스프라이트 캐시 클리어");
         }
 
@@ -321,7 +325,10 @@ namespace LoveAlgo.Story
             string path = CharacterEmoteMapping.GetPath(character, emote);
 
             if (spriteCache.TryGetValue(path, out var cached))
+            {
+                TouchCache(path);
                 return cached;
+            }
 
             var sprite = Resources.Load<Sprite>(path);
 
@@ -330,19 +337,53 @@ namespace LoveAlgo.Story
             {
                 string fallback = CharacterEmoteMapping.GetPath(character, "Default");
                 if (spriteCache.TryGetValue(fallback, out cached))
+                {
+                    TouchCache(fallback);
                     return cached;
+                }
 
                 sprite = Resources.Load<Sprite>(fallback);
                 if (sprite != null)
-                    spriteCache[fallback] = sprite;
+                    AddToCache(fallback, sprite);
 
                 return sprite;
             }
 
             if (sprite != null)
-                spriteCache[path] = sprite;
+                AddToCache(path, sprite);
 
             return sprite;
+        }
+
+        /// <summary>
+        /// 캐시에 항목 추가 (MaxCacheSize 초과 시 LRU 제거)
+        /// </summary>
+        static void AddToCache(string key, Sprite sprite)
+        {
+            if (spriteCache.ContainsKey(key))
+            {
+                TouchCache(key);
+                return;
+            }
+
+            while (spriteCache.Count >= MaxCacheSize && cacheOrder.Count > 0)
+            {
+                string oldest = cacheOrder.First.Value;
+                cacheOrder.RemoveFirst();
+                spriteCache.Remove(oldest);
+            }
+
+            spriteCache[key] = sprite;
+            cacheOrder.AddLast(key);
+        }
+
+        /// <summary>
+        /// LRU 순서 갱신 (최근 사용으로 이동)
+        /// </summary>
+        static void TouchCache(string key)
+        {
+            cacheOrder.Remove(key);
+            cacheOrder.AddLast(key);
         }
 
         void SetSlotAlpha(float alpha)
@@ -459,6 +500,16 @@ namespace LoveAlgo.Story
             await slotCanvasGroup.DOFade(targetAlpha, duration)
                 .SetEase(Ease.OutQuad)
                 .ToUniTask(cancellationToken: ct);
+        }
+
+        void OnDestroy()
+        {
+            DOTween.Kill(slotCanvasGroup);
+            DOTween.Kill(frontCanvasGroup);
+            DOTween.Kill(backCanvasGroup);
+            DOTween.Kill(rectTransform);
+            RectTransform target = imageContainer != null ? imageContainer : imageFront?.rectTransform;
+            DOTween.Kill(target);
         }
 
         #endregion

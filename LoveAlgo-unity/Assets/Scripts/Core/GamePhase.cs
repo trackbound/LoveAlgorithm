@@ -5,6 +5,9 @@ namespace LoveAlgo.Core
     /// </summary>
     public enum GamePhase
     {
+        /// <summary>상태 전환 중 (재진입 방지용)</summary>
+        Transitioning = -1,
+
         Title,
         Username,
         Prologue,

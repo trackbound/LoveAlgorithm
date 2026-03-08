@@ -176,6 +176,11 @@ namespace LoveAlgo.UI
             FocusInput();
         }
 
+        void OnDestroy()
+        {
+            if (inputBox != null) DOTween.Kill(inputBox);
+        }
+
         #endregion
     }
 }

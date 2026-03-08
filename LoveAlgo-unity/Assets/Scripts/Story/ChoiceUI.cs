@@ -256,9 +256,15 @@ namespace LoveAlgo.Story
         {
             foreach (var btn in spawnedButtons)
             {
-                Destroy(btn);
+                if (btn != null) Destroy(btn);
             }
             spawnedButtons.Clear();
+        }
+
+        void OnDestroy()
+        {
+            ClearButtons();
+            if (canvasGroup != null) DOTween.Kill(canvasGroup);
         }
 
         #region 표시/숨김

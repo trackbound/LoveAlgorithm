@@ -297,5 +297,12 @@ namespace LoveAlgo.Story
             sprite = Resources.Load<Sprite>($"SD/{sdName}");
             return sprite;
         }
+
+        void OnDestroy()
+        {
+            DOTween.Kill(layerCanvasGroup);
+            DOTween.Kill(frontCanvasGroup);
+            DOTween.Kill(backCanvasGroup);
+        }
     }
 }

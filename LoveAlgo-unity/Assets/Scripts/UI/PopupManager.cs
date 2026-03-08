@@ -57,6 +57,12 @@ namespace LoveAlgo.UI
             InitPopups();
         }
 
+        protected override void OnDestroy()
+        {
+            base.OnDestroy();
+            if (dimmerCanvasGroup != null) dimmerCanvasGroup.DOKill();
+        }
+
         void Update()
         {
             // ESC 키로 팝업 닫기 (새 Input System)

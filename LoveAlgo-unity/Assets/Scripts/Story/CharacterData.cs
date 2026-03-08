@@ -72,6 +72,10 @@ namespace LoveAlgo.Story
         [Tooltip("호감도 도달 시 트리거되는 이벤트")]
         public List<LoveEvent> loveEvents = new();
 
+        [Header("특수 연출")]
+        [Tooltip("등장/퇴장 시 오버레이(글리치 등) 자동 연동")]
+        public bool UseOverlay;
+
         [Header("스토리 플래그")]
         [Tooltip("이 캐릭터 루트 진입에 필요한 플래그")]
         public List<string> routeRequiredFlags = new();

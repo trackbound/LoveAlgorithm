@@ -51,6 +51,9 @@ namespace LoveAlgo.Core
             Reset();
         }
 
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void DomainReload() => Reset();
+
         /// <summary>초기화 (새 게임 시)</summary>
         public static void Reset()
         {

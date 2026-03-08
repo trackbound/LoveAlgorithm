@@ -53,8 +53,8 @@ namespace LoveAlgo.Story
             var parts = value.Split(':');
             string bgName = parts[0];
 
-            // 전환 타입 파싱 (기본값: Fade)
-            BGTransition transition = BGTransition.Fade;
+            // 전환 타입 파싱 (기본값: Cross — 캐릭터 유지 크로스페이드)
+            BGTransition transition = BGTransition.Cross;
             float duration = defaultDuration;
 
             if (parts.Length >= 2)
@@ -170,11 +170,17 @@ namespace LoveAlgo.Story
         /// </summary>
         public void Clear()
         {
-            imageFront.sprite = null;
-            imageFront.enabled = false;
-            imageBack.sprite = null;
-            imageBack.enabled = false;
+            DOTween.Kill(frontCanvasGroup);
+            DOTween.Kill(backCanvasGroup);
+            if (imageFront != null) { imageFront.sprite = null; imageFront.enabled = false; }
+            if (imageBack != null) { imageBack.sprite = null; imageBack.enabled = false; }
             currentBackground = null;
+        }
+
+        void OnDestroy()
+        {
+            DOTween.Kill(frontCanvasGroup);
+            DOTween.Kill(backCanvasGroup);
         }
 
         /// <summary>
@@ -205,7 +211,7 @@ namespace LoveAlgo.Story
                 case "cut": return BGTransition.Cut;
                 case "fade": return BGTransition.Fade;
                 case "cross": return BGTransition.Cross;
-                default: return BGTransition.Cut;
+                default: return BGTransition.Cross;
             }
         }
 

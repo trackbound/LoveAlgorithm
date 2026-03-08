@@ -157,7 +157,7 @@ namespace LoveAlgo.UI
             builtCount = log.Count;
 
             // 스크롤 (레이아웃 계산 대기)
-            await ScrollToBottomAsync2();
+            await ScrollToBottomAsync();
         }
 
         Sprite GetPortrait(string characterId)
@@ -166,6 +166,14 @@ namespace LoveAlgo.UI
                 return null;
             portraitLookup.TryGetValue(characterId.ToLower(), out var sprite);
             return sprite;
+        }
+
+        void OnDestroy()
+        {
+            buildCts?.Cancel();
+            buildCts?.Dispose();
+            buildCts = null;
+            ClearEntries();
         }
 
         void ClearEntries()
@@ -182,16 +190,7 @@ namespace LoveAlgo.UI
             lastCharId = null;
         }
 
-        async UniTaskVoid ScrollToBottomAsync()
-        {
-            if (scrollRect == null) return;
-            await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
-            await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
-            if (scrollRect != null)
-                scrollRect.verticalNormalizedPosition = 0f;
-        }
-
-        async UniTask ScrollToBottomAsync2()
+        async UniTask ScrollToBottomAsync()
         {
             if (scrollRect == null) return;
             // 2프레임 대기로 레이아웃 완전 반영 보장

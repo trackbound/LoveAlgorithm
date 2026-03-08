@@ -129,6 +129,10 @@ namespace LoveAlgo.Core
         {
             base.OnDestroy();
             KillEyeSequence();
+
+            if (fadeOverlay != null) DOTween.Kill(fadeOverlay);
+            if (flashOverlay != null) DOTween.Kill(flashOverlay);
+            if (stageTransform != null) DOTween.Kill(stageTransform);
         }
 
         void EnsureBindings()

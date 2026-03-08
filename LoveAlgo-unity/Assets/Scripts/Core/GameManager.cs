@@ -28,6 +28,11 @@ namespace LoveAlgo.Core
         public int RemainingActions { get; private set; } = GameConstants.ActionsPerDay;  // 하루 남은 행동 수 (기획서: 2회 - 낮/밤)
         public string PlayerName { get; private set; } = "";
 
+        /// <summary>비동기 전환 진행 중 재진입 방지 플래그</summary>
+        bool isTransitioning;
+        /// <summary>로드 진행 중 재진입 방지 플래그</summary>
+        bool isLoading;
+
         /// <summary>
         /// 다음 날로 진행 (스크립트 매크로용)
         /// </summary>
@@ -80,6 +85,12 @@ namespace LoveAlgo.Core
         /// </summary>
         public void ChangePhase(GamePhase newPhase)
         {
+            if (CurrentPhase == newPhase && newPhase != GamePhase.DayLoop)
+            {
+                Debug.LogWarning($"[GameManager] ChangePhase 중복 호출 무시: {newPhase}");
+                return;
+            }
+
             var prevPhase = CurrentPhase;
             CurrentPhase = newPhase;
 
@@ -481,46 +492,59 @@ namespace LoveAlgo.Core
         /// </summary>
         async UniTaskVoid TransitionToPrologueAsync()
         {
-            var ct = this.GetCancellationTokenOnDestroy();
-            var fx = ScreenFX.Instance;
-            var loading = LoadingScreen.Instance;
+            if (isTransitioning)
+            {
+                Debug.LogWarning("[GameManager] TransitionToPrologueAsync 중복 호출 무시");
+                return;
+            }
+            isTransitioning = true;
+            try
+            {
+                var ct = this.GetCancellationTokenOnDestroy();
+                var fx = ScreenFX.Instance;
+                var loading = LoadingScreen.Instance;
 
-            // 1) 여유 있게 페이드 아웃
-            if (fx != null)
-                await fx.FadeOutAsync(0.8f, ct);
-            else
-                await UniTask.Yield(ct);
+                // 1) 여유 있게 페이드 아웃
+                if (fx != null)
+                    await fx.FadeOutAsync(0.8f, ct);
+                else
+                    await UniTask.Yield(ct);
 
-            // 2) 암전 상태에서 잠시 머무름 (호흡)
-            await UniTask.Delay(System.TimeSpan.FromSeconds(0.4f), cancellationToken: ct);
+                // 2) 암전 상태에서 잠시 머무름 (호흡)
+                await UniTask.Delay(System.TimeSpan.FromSeconds(0.4f), cancellationToken: ct);
 
-            // 3) 로딩 화면 표시 (암전 위에)
-            if (loading != null)
-                await loading.ShowAsync(ct);
+                // 3) 로딩 화면 표시 (암전 위에)
+                if (loading != null)
+                    await loading.ShowAsync(ct);
 
-            // 4) 페이드 해제 (로딩 화면이 부드럽게 드러남)
-            if (fx != null)
-                await fx.FadeInAsync(0.6f, ct);
+                // 4) 페이드 해제 (로딩 화면이 부드럽게 드러남)
+                if (fx != null)
+                    await fx.FadeInAsync(0.6f, ct);
 
-            // 5) UI 전환 + 프롤로그 준비 (로딩 화면 뒤에서)
-            ChangePhase(GamePhase.Prologue);
+                // 5) UI 전환 + 프롤로그 준비 (로딩 화면 뒤에서)
+                ChangePhase(GamePhase.Prologue);
 
-            // 6) 로딩 화면 충분히 보여줌 + 프롤로그 초기화 대기
-            await UniTask.Delay(System.TimeSpan.FromSeconds(1.5f), cancellationToken: ct);
+                // 6) 로딩 화면 충분히 보여줌 + 프롤로그 초기화 대기
+                await UniTask.Delay(System.TimeSpan.FromSeconds(1.5f), cancellationToken: ct);
 
-            // 7) 부드럽게 페이드 아웃 (로딩 화면 위에 암전)
-            if (fx != null)
-                await fx.FadeOutAsync(0.6f, ct);
+                // 7) 부드럽게 페이드 아웃 (로딩 화면 위에 암전)
+                if (fx != null)
+                    await fx.FadeOutAsync(0.6f, ct);
 
-            // 8) 프롤로그 첫 BG 세팅 완료 대기 (빈 화면 방지)
-            await UniTask.DelayFrame(3, cancellationToken: ct);
+                // 8) 프롤로그 첫 BG 세팅 완료 대기 (빈 화면 방지)
+                await UniTask.DelayFrame(3, cancellationToken: ct);
 
-            // 9) 로딩 화면 제거
-            loading?.HideImmediate();
+                // 9) 로딩 화면 제거
+                loading?.HideImmediate();
 
-            // 9) 인게임 페이드 인
-            if (fx != null)
-                await fx.FadeInAsync(0.8f, ct);
+                // 10) 인게임 페이드 인
+                if (fx != null)
+                    await fx.FadeInAsync(0.8f, ct);
+            }
+            finally
+            {
+                isTransitioning = false;
+            }
         }
 
         /// <summary>
@@ -660,64 +684,77 @@ namespace LoveAlgo.Core
 
         async UniTaskVoid EndDayAsync()
         {
-            var ct = this.GetCancellationTokenOnDestroy();
-
-            // 저녁 이벤트 체크
-            var eveningEvent = DayEventTable.GetEvent(CurrentDay, DayTiming.Evening);
-            if (eveningEvent != null)
+            if (isTransitioning)
             {
-                await RunDayEventInline(eveningEvent, ct);
-            }
-
-            var fx = ScreenFX.Instance;
-            var loading = LoadingScreen.Instance;
-
-            // ── 1. 페이드 아웃 ──
-            if (fx != null)
-                await fx.FadeOutAsync(0.8f, ct);
-
-            // ── 2. 로딩 화면 준비 (암전 뒤에서) ──
-            if (loading != null)
-                await loading.ShowAsync(ct);
-
-            // ── 3. 페이드 해제 → 로딩 화면 드러남 ──
-            if (fx != null)
-                await fx.FadeInAsync(0.5f, ct);
-
-            // ── 4. 날짜 처리 + 자동저장 ──
-            CurrentDay++;
-            RemainingActions = GameConstants.ActionsPerDay;
-            UIManager.Instance?.ScheduleUI?.ResetDailyLimits();
-            Debug.Log($"[GameManager] {CurrentDay}일차 시작");
-
-            // 최대 일차 초과 시 엔딩 진입
-            if (CurrentDay > GameConstants.MaxDay)
-            {
-                if (fx != null) await fx.FadeOutAsync(0.5f, ct);
-                loading?.HideImmediate();
-                ChangePhase(GamePhase.Ending);
+                Debug.LogWarning("[GameManager] EndDayAsync 중복 호출 무시");
                 return;
             }
+            isTransitioning = true;
+            try
+            {
+                var ct = this.GetCancellationTokenOnDestroy();
 
-            AutoSave();
+                // 저녁 이벤트 체크
+                var eveningEvent = DayEventTable.GetEvent(CurrentDay, DayTiming.Evening);
+                if (eveningEvent != null)
+                {
+                    await RunDayEventInline(eveningEvent, ct);
+                }
 
-            // ── 5. 로딩 화면 유지 ──
-            await UniTask.Delay(1200, cancellationToken: ct);
+                var fx = ScreenFX.Instance;
+                var loading = LoadingScreen.Instance;
 
-            // ── 6. 페이드로 로딩 가림 ──
-            if (fx != null)
-                await fx.FadeOutAsync(0.5f, ct);
+                // ── 1. 페이드 아웃 ──
+                if (fx != null)
+                    await fx.FadeOutAsync(0.8f, ct);
 
-            // ── 7. 로딩 제거 + 다음 Phase 준비 (암전 뒤) ──
-            loading?.HideImmediate();
-            ChangePhase(GamePhase.DayLoop);
+                // ── 2. 로딩 화면 준비 (암전 뒤에서) ──
+                if (loading != null)
+                    await loading.ShowAsync(ct);
 
-            // ── 8. 1프레임 대기 (UI 레이아웃 정리) ──
-            await UniTask.Yield(ct);
+                // ── 3. 페이드 해제 → 로딩 화면 드러남 ──
+                if (fx != null)
+                    await fx.FadeInAsync(0.5f, ct);
 
-            // ── 9. 페이드 인 (새 하루 시작) ──
-            if (fx != null)
-                await fx.FadeInAsync(0.8f, ct);
+                // ── 4. 날짜 처리 + 자동저장 ──
+                CurrentDay++;
+                RemainingActions = GameConstants.ActionsPerDay;
+                UIManager.Instance?.ScheduleUI?.ResetDailyLimits();
+                Debug.Log($"[GameManager] {CurrentDay}일차 시작");
+
+                // 최대 일차 초과 시 엔딩 진입
+                if (CurrentDay > GameConstants.MaxDay)
+                {
+                    if (fx != null) await fx.FadeOutAsync(0.5f, ct);
+                    loading?.HideImmediate();
+                    ChangePhase(GamePhase.Ending);
+                    return;
+                }
+
+                AutoSave();
+
+                // ── 5. 로딩 화면 유지 ──
+                await UniTask.Delay(1200, cancellationToken: ct);
+
+                // ── 6. 페이드로 로딩 가림 ──
+                if (fx != null)
+                    await fx.FadeOutAsync(0.5f, ct);
+
+                // ── 7. 로딩 제거 + 다음 Phase 준비 (암전 뒤) ──
+                loading?.HideImmediate();
+                ChangePhase(GamePhase.DayLoop);
+
+                // ── 8. 1프레임 대기 (UI 레이아웃 정리) ──
+                await UniTask.Yield(ct);
+
+                // ── 9. 페이드 인 (새 하루 시작) ──
+                if (fx != null)
+                    await fx.FadeInAsync(0.8f, ct);
+            }
+            finally
+            {
+                isTransitioning = false;
+            }
         }
 
         /// <summary>
@@ -781,59 +818,72 @@ namespace LoveAlgo.Core
 
         async UniTaskVoid LoadFromSaveData(SaveData data)
         {
-            // 이전 BGM 정리 (페이드아웃 완료 대기)
-            if (Story.AudioManager.Instance != null)
+            if (isLoading)
             {
-                Story.AudioManager.Instance.StopBGMImmediate();
-            }
-            ScriptRunner.Instance?.Stop();
-
-            // 이전 장면 정리
-            CleanupStage();
-
-            PlayerName = data.PlayerName;
-            CurrentDay = data.CurrentDay;
-            RemainingActions = data.RemainingActions;
-
-            // GameState 전체 복원 (스탯, 호감도, 플래그, 돈 등)
-            SaveManager.ApplyToGameState(data);
-
-            // 스크립트 위치 복원 (스토리 실행 중이었던 경우)
-            if (!string.IsNullOrEmpty(data.ScriptName) &&
-                (data.Phase == GamePhase.Prologue || data.Phase == GamePhase.DayLoop))
-            {
-                // Phase를 먼저 설정해야 입력 핸들러(StoryInputHandler)가 클릭을 처리함
-                CurrentPhase = data.Phase;
-
-                UIManager.Instance?.ShowOnly(MainUIType.Dialogue);
-
-                // 대화창을 숨김 상태로 시작 (첨 대사 시점에 자동 표시)
-                var dialogueUI = UIManager.Instance?.DialogueUI;
-                dialogueUI?.Clear();
-                dialogueUI?.ClearLog();  // 이전 세션 로그 제거 (중복 방지)
-                dialogueUI?.HideImmediate();
-
-                // 장면 상태 복원 (배경, 캐릭터, BGM)
-                await RestoreStageState(data);
-
-                var runner = ScriptRunner.Instance;
-                if (runner != null)
-                {
-                    // 프롤로그면 종료 이벤트 연결
-                    if (data.Phase == GamePhase.Prologue)
-                    {
-                        runner.OnScriptEnd -= OnPrologueEnd;
-                        runner.OnScriptEnd += OnPrologueEnd;
-                    }
-
-                    await runner.StartScriptFrom(data.ScriptName, data.LineId, data.LineIndex);
-                }
-
+                Debug.LogWarning("[GameManager] LoadFromSaveData 중복 호출 무시");
                 return;
             }
+            isLoading = true;
+            try
+            {
+                // 이전 BGM 정리 (페이드아웃 완료 대기)
+                if (Story.AudioManager.Instance != null)
+                {
+                    Story.AudioManager.Instance.StopBGMImmediate();
+                }
+                ScriptRunner.Instance?.Stop();
 
-            // 스크립트가 없으면 Phase로 복귀
-            ChangePhase(data.Phase);
+                // 이전 장면 정리
+                CleanupStage();
+
+                PlayerName = data.PlayerName;
+                CurrentDay = data.CurrentDay;
+                RemainingActions = data.RemainingActions;
+
+                // GameState 전체 복원 (스탯, 호감도, 플래그, 돈 등)
+                SaveManager.ApplyToGameState(data);
+
+                // 스크립트 위치 복원 (스토리 실행 중이었던 경우)
+                if (!string.IsNullOrEmpty(data.ScriptName) &&
+                    (data.Phase == GamePhase.Prologue || data.Phase == GamePhase.DayLoop))
+                {
+                    // Phase를 먼저 설정해야 입력 핸들러(StoryInputHandler)가 클릭을 처리함
+                    CurrentPhase = data.Phase;
+
+                    UIManager.Instance?.ShowOnly(MainUIType.Dialogue);
+
+                    // 대화창을 숨김 상태로 시작 (첨 대사 시점에 자동 표시)
+                    var dialogueUI = UIManager.Instance?.DialogueUI;
+                    dialogueUI?.Clear();
+                    dialogueUI?.ClearLog();  // 이전 세션 로그 제거 (중복 방지)
+                    dialogueUI?.HideImmediate();
+
+                    // 장면 상태 복원 (배경, 캐릭터, BGM)
+                    await RestoreStageState(data);
+
+                    var runner = ScriptRunner.Instance;
+                    if (runner != null)
+                    {
+                        // 프롤로그면 종료 이벤트 연결
+                        if (data.Phase == GamePhase.Prologue)
+                        {
+                            runner.OnScriptEnd -= OnPrologueEnd;
+                            runner.OnScriptEnd += OnPrologueEnd;
+                        }
+
+                        await runner.StartScriptFrom(data.ScriptName, data.LineId, data.LineIndex);
+                    }
+
+                    return;
+                }
+
+                // 스크립트가 없으면 Phase로 복귀
+                ChangePhase(data.Phase);
+            }
+            finally
+            {
+                isLoading = false;
+            }
         }
 
         #endregion

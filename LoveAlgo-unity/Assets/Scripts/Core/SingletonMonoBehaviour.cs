@@ -1,3 +1,4 @@
+using DG.Tweening;
 using UnityEngine;
 
 namespace LoveAlgo
@@ -10,10 +11,14 @@ namespace LoveAlgo
     {
         public static T Instance { get; private set; }
 
+        /// <summary>Instance가 유효한지 (파괴 예정이 아닌지) 확인</summary>
+        public static bool IsAlive => Instance != null;
+
         protected virtual void Awake()
         {
             if (Instance != null && Instance != this)
             {
+                Debug.LogWarning($"[Singleton] {typeof(T).Name} 중복 인스턴스 파괴: {gameObject.name}");
                 Destroy(gameObject);
                 return;
             }
@@ -30,7 +35,10 @@ namespace LoveAlgo
         protected virtual void OnDestroy()
         {
             if (Instance == this)
+            {
+                DOTween.Kill(this);
                 Instance = null;
+            }
         }
     }
 }

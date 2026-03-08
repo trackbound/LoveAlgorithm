@@ -266,5 +266,10 @@ namespace LoveAlgo.Story
             currentOverlay = null;
             isShowing = false;
         }
+
+        void OnDestroy()
+        {
+            DOTween.Kill(canvasGroup);
+        }
     }
 }

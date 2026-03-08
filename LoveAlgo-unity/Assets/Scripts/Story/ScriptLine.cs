@@ -38,12 +38,12 @@ namespace LoveAlgo.Story
     [Serializable]
     public class ScriptLine
     {
-        public string LineID;       // 점프 대상 앵커 (없으면 빈 문자열)
-        public LineType Type;       // 라인 종류
-        public string Speaker;      // Text 타입의 화자 (없으면 빈 문자열)
-        public string Value;        // Type별 데이터
-        public NextType NextType;   // 진행 방식
-        public float DelaySeconds;  // NextType.Delay일 때 대기 시간
+        public string LineID { get; internal set; }       // 점프 대상 앵커
+        public LineType Type { get; internal set; }       // 라인 종류
+        public string Speaker { get; internal set; }      // 화자
+        public string Value { get; internal set; }        // 데이터
+        public NextType NextType { get; internal set; }   // 진행 방식
+        public float DelaySeconds { get; internal set; }  // Delay 시 대기 시간
 
         public ScriptLine() { }
 

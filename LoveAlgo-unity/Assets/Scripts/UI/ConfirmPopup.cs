@@ -91,14 +91,14 @@ namespace LoveAlgo.UI
 
         void OnConfirm()
         {
-            Hide();
             tcs?.TrySetResult(true);
+            Hide();
         }
 
         void OnCancel()
         {
-            Hide();
             tcs?.TrySetResult(false);
+            Hide();
         }
 
         public void Hide()
@@ -107,6 +107,12 @@ namespace LoveAlgo.UI
             PopupManager.Instance?.ShowTopDimmer(false);
             // 외부에서 Hide() 호출 시에도 대기 중인 UniTask를 완료 (cancel 아닌 false 반환)
             tcs?.TrySetResult(false);
+        }
+
+        void OnDestroy()
+        {
+            tcs?.TrySetCanceled();
+            tcs = null;
         }
     }
 }

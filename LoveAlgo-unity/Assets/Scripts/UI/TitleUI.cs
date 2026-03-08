@@ -46,6 +46,9 @@ namespace LoveAlgo.UI
         [Header("데코 크로스페이드")]
         [SerializeField] float decoCrossfadeDuration = 0.2f;
 
+        /// <summary>비동기 버튼 처리 중 재진입 방지</summary>
+        bool isBusy;
+
         void Start()
         {
             // 초기 호버 텍스트 비활성화
@@ -209,15 +212,24 @@ namespace LoveAlgo.UI
 
         async UniTaskVoid ConfirmNewGame()
         {
-            // 저장 데이터가 있으면 확인 팝업
-            if (HasAnySaveData())
+            if (isBusy) return;
+            isBusy = true;
+            try
             {
-                bool confirmed = await PopupManager.Instance.ConfirmAsync(
-                    "저장된 데이터가 있습니다.\n새 게임을 시작할까요?", "예", "아니오");
-                if (!confirmed) return;
-            }
+                // 저장 데이터가 있으면 확인 팝업
+                if (HasAnySaveData())
+                {
+                    bool confirmed = await PopupManager.Instance.ConfirmAsync(
+                        "저장된 데이터가 있습니다.\n새 게임을 시작할까요?", "예", "아니오");
+                    if (!confirmed) return;
+                }
 
-            GameManager.Instance?.StartNewGame();
+                GameManager.Instance?.StartNewGame();
+            }
+            finally
+            {
+                isBusy = false;
+            }
         }
 
         void OnContinueClick()
@@ -228,25 +240,34 @@ namespace LoveAlgo.UI
 
         async UniTaskVoid HandleContinue()
         {
-            bool hasAutoSave = SaveManager.Exists(SaveManager.AutoSaveSlot);
-
-            if (hasAutoSave)
+            if (isBusy) return;
+            isBusy = true;
+            try
             {
-                // 자동저장 데이터 있음 → 확인 후 로드
-                bool confirmed = await PopupManager.Instance.ConfirmAsync(
-                    "자동 저장 부분부터 시작할까요?", "예", "아니오");
-                if (!confirmed) return;
+                bool hasAutoSave = SaveManager.Exists(SaveManager.AutoSaveSlot);
 
-                GameManager.Instance?.LoadGame(SaveManager.AutoSaveSlot);
+                if (hasAutoSave)
+                {
+                    // 자동저장 데이터 있음 → 확인 후 로드
+                    bool confirmed = await PopupManager.Instance.ConfirmAsync(
+                        "자동 저장 부분부터 시작할까요?", "예", "아니오");
+                    if (!confirmed) return;
+
+                    GameManager.Instance?.LoadGame(SaveManager.AutoSaveSlot);
+                }
+                else
+                {
+                    // 자동저장 데이터 없음 → 새 게임 안내
+                    bool confirmed = await PopupManager.Instance.ConfirmAsync(
+                        "저장된 데이터가 없습니다.\n새 게임을 시작할까요?", "예", "아니오");
+                    if (!confirmed) return;
+
+                    GameManager.Instance?.StartNewGame();
+                }
             }
-            else
+            finally
             {
-                // 자동저장 데이터 없음 → 새 게임 안내
-                bool confirmed = await PopupManager.Instance.ConfirmAsync(
-                    "저장된 데이터가 없습니다.\n새 게임을 시작할까요?", "예", "아니오");
-                if (!confirmed) return;
-
-                GameManager.Instance?.StartNewGame();
+                isBusy = false;
             }
         }
 
@@ -281,11 +302,20 @@ namespace LoveAlgo.UI
 
         async UniTaskVoid ConfirmExit()
         {
-            bool confirmed = await PopupManager.Instance.ConfirmAsync("게임을 종료하시겠습니까?");
-            
-            if (confirmed)
+            if (isBusy) return;
+            isBusy = true;
+            try
             {
-                QuitGame();
+                bool confirmed = await PopupManager.Instance.ConfirmAsync("게임을 종료하시겠습니까?");
+                
+                if (confirmed)
+                {
+                    QuitGame();
+                }
+            }
+            finally
+            {
+                isBusy = false;
             }
         }
 
@@ -342,5 +372,19 @@ namespace LoveAlgo.UI
         }
 
         #endregion
+
+        void OnDestroy()
+        {
+            // 데코 CanvasGroup DOTween 정리
+            GameObject[] decos = { decoNormal, decoStart, decoContinue, decoLoad, decoExtra, decoSettings, decoExit };
+            foreach (var d in decos)
+            {
+                if (d != null)
+                {
+                    var cg = d.GetComponent<CanvasGroup>();
+                    if (cg != null) cg.DOKill();
+                }
+            }
+        }
     }
 }

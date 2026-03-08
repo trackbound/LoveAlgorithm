@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace LoveAlgo.Core
 {
@@ -67,6 +68,12 @@ namespace LoveAlgo.Core
         static DayEventTable()
         {
             BuildTable();
+        }
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void DomainReload()
+        {
+            firedEvents.Clear();
         }
 
         /// <summary>

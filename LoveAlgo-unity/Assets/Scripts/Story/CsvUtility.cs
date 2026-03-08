@@ -20,6 +20,79 @@ namespace LoveAlgo.Story
             public int StartLine { get; }
         }
 
+        // 공유 StringBuilder — 재할당 방지 (SplitRecords/SplitCsv는 동시 호출되지 않음)
+        [System.ThreadStatic] static StringBuilder _sb;
+        static StringBuilder GetBuilder()
+        {
+            var sb = _sb ??= new StringBuilder(256);
+            sb.Clear();
+            return sb;
+        }
+
+        /// <summary>
+        /// 따옴표 문자 처리 (SplitRecords와 SplitCsv 공통)
+        /// isRecordMode=true 면 따옴표 문자 자체도 output에 유지 (레코드 분리 시 원본 보존용)
+        /// </summary>
+        static void HandleQuoteChar(
+            string text, ref int i, StringBuilder current,
+            ref bool inQuotes, ref bool fieldStart,
+            bool isRecordMode)
+        {
+            // 따옴표 안에서 따옴표 두 개("")는 이스케이프
+            if (inQuotes && i + 1 < text.Length && text[i + 1] == '"')
+            {
+                if (isRecordMode)
+                {
+                    current.Append('"');
+                    current.Append('"');
+                }
+                else
+                {
+                    current.Append('"');
+                }
+                i++;
+                return;
+            }
+
+            if (inQuotes)
+            {
+                bool canClose;
+                if (isRecordMode)
+                {
+                    canClose = i + 1 >= text.Length
+                        || text[i + 1] == ','
+                        || text[i + 1] == '\r'
+                        || text[i + 1] == '\n';
+                }
+                else
+                {
+                    canClose = i + 1 >= text.Length || text[i + 1] == ',';
+                }
+
+                if (canClose)
+                {
+                    inQuotes = false;
+                    if (isRecordMode) current.Append('"');
+                    fieldStart = false;
+                }
+                else
+                {
+                    current.Append('"');
+                }
+                return;
+            }
+
+            if (fieldStart)
+            {
+                inQuotes = true;
+                if (isRecordMode) current.Append('"');
+                return;
+            }
+
+            current.Append('"');
+            fieldStart = false;
+        }
+
         /// <summary>
         /// CSV 전체 텍스트를 레코드 단위로 분리한다. (따옴표 밖 개행만 레코드 구분)
         /// </summary>
@@ -28,7 +101,7 @@ namespace LoveAlgo.Story
             var records = new List<CsvRecord>();
             if (string.IsNullOrEmpty(csv)) return records;
 
-            var current = new StringBuilder();
+            var current = GetBuilder();
             bool inQuotes = false;
             bool fieldStart = true;
             int currentLine = 1;
@@ -40,40 +113,7 @@ namespace LoveAlgo.Story
 
                 if (c == '"')
                 {
-                    if (inQuotes && i + 1 < csv.Length && csv[i + 1] == '"')
-                    {
-                        current.Append('"');
-                        current.Append('"');
-                        i++;
-                    }
-                    else if (inQuotes)
-                    {
-                        bool canClose = i + 1 >= csv.Length
-                            || csv[i + 1] == ','
-                            || csv[i + 1] == '\r'
-                            || csv[i + 1] == '\n';
-
-                        if (canClose)
-                        {
-                            inQuotes = false;
-                            current.Append(c);
-                            fieldStart = false;
-                        }
-                        else
-                        {
-                            current.Append(c);
-                        }
-                    }
-                    else if (fieldStart)
-                    {
-                        inQuotes = true;
-                        current.Append(c);
-                    }
-                    else
-                    {
-                        current.Append(c);
-                        fieldStart = false;
-                    }
+                    HandleQuoteChar(csv, ref i, current, ref inQuotes, ref fieldStart, isRecordMode: true);
                     continue;
                 }
 
@@ -140,7 +180,7 @@ namespace LoveAlgo.Story
             var result = new List<string>();
             bool inQuotes = false;
             bool fieldStart = true;
-            var current = new StringBuilder();
+            var current = GetBuilder();
 
             for (int i = 0; i < line.Length; i++)
             {
@@ -148,33 +188,7 @@ namespace LoveAlgo.Story
 
                 if (c == '"')
                 {
-                    if (inQuotes && i + 1 < line.Length && line[i + 1] == '"')
-                    {
-                        current.Append('"');
-                        i++;
-                    }
-                    else if (inQuotes)
-                    {
-                        bool canClose = i + 1 >= line.Length || line[i + 1] == ',';
-                        if (canClose)
-                        {
-                            inQuotes = false;
-                            fieldStart = false;
-                        }
-                        else
-                        {
-                            current.Append(c);
-                        }
-                    }
-                    else if (fieldStart)
-                    {
-                        inQuotes = true;
-                    }
-                    else
-                    {
-                        current.Append(c);
-                        fieldStart = false;
-                    }
+                    HandleQuoteChar(line, ref i, current, ref inQuotes, ref fieldStart, isRecordMode: false);
                 }
                 else if (c == ',' && !inQuotes)
                 {

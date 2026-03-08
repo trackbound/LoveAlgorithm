@@ -87,6 +87,7 @@ namespace LoveAlgo.Schedule
             canvasGroup.interactable = true;
             canvasGroup.blocksRaycasts = true;
 
+            canvasGroup.DOKill();
             await canvasGroup.DOFade(1f, showDuration).SetEase(Ease.OutQuad).ToUniTask();
         }
 
@@ -98,6 +99,7 @@ namespace LoveAlgo.Schedule
             canvasGroup.interactable = false;
             canvasGroup.blocksRaycasts = false;
 
+            canvasGroup.DOKill();
             await canvasGroup.DOFade(0f, hideDuration).SetEase(Ease.OutQuad).ToUniTask();
             gameObject.SetActive(false);
         }
@@ -265,5 +267,11 @@ namespace LoveAlgo.Schedule
         }
 
         #endregion
+
+        void OnDestroy()
+        {
+            if (canvasGroup != null)
+                canvasGroup.DOKill();
+        }
     }
 }

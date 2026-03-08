@@ -163,6 +163,8 @@ namespace LoveAlgo.Story
         /// </summary>
         public async UniTask ShowTextAsync(string speaker, string text, CancellationToken ct)
         {
+            if (dialogueText == null) return;
+
             // 변수 치환 ({{PlayerName}} 등)
             speaker = SubstituteVariables(speaker);
             text = SubstituteVariables(text);
@@ -549,9 +551,13 @@ namespace LoveAlgo.Story
         {
             StopDotsAnimation();
             KillAnimations();
+            StopBlinkAnimation();
+
+            // DOTween: 이 오브젝트에 연결된 모든 트윈 정리
+            DOTween.Kill(nextIndicator);
 
             // Auto 모드 이벤트 구독 해제
-            if (ScriptRunner.Instance != null)
+            if (ScriptRunner.IsAlive)
                 ScriptRunner.Instance.OnAutoModeChanged -= UpdateAutoVisual;
         }
 
@@ -611,13 +617,13 @@ namespace LoveAlgo.Story
         {
             // ScriptRunner가 준비될 때까지 대기 (최대 5초)
             float elapsed = 0f;
-            while (ScriptRunner.Instance == null && elapsed < 5f)
+            while (!ScriptRunner.IsAlive && elapsed < 5f)
             {
                 await UniTask.Yield();
                 elapsed += Time.deltaTime;
             }
 
-            if (ScriptRunner.Instance != null)
+            if (ScriptRunner.IsAlive)
                 ScriptRunner.Instance.OnAutoModeChanged += UpdateAutoVisual;
         }
 
@@ -1037,7 +1043,11 @@ namespace LoveAlgo.Story
         public void Clear()
         {
             if (nameText != null) nameText.text = "";
-            if (dialogueText != null) dialogueText.text = "";
+            if (dialogueText != null)
+            {
+                dialogueText.text = "";
+                dialogueText.maxVisibleCharacters = 0;
+            }
             HideNextIndicator();
         }
     }

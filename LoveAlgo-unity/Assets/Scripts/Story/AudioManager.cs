@@ -128,10 +128,10 @@ namespace LoveAlgo.Story
         async UniTask HandleBGMAsync(string name, string[] parts, CancellationToken ct)
         {
             // BGM:Stop or BGM:Stop:Fade:1.0
-            if (name == "Stop")
+            if (name.Equals("Stop", StringComparison.OrdinalIgnoreCase))
             {
                 float fadeDuration = defaultFadeDuration;
-                if (parts.Length >= 4 && parts[2] == "Fade" && float.TryParse(parts[3], out float fd))
+                if (parts.Length >= 4 && parts[2].Equals("Fade", StringComparison.OrdinalIgnoreCase) && float.TryParse(parts[3], out float fd))
                 {
                     fadeDuration = fd;
                 }
@@ -141,7 +141,7 @@ namespace LoveAlgo.Story
 
             // BGM:Name or BGM:Name:Fade:1.0
             float crossfadeDuration = -1f;  // -1 = 기본 페이드 (3초)
-            if (parts.Length >= 4 && parts[2] == "Fade" && float.TryParse(parts[3], out float cfd))
+            if (parts.Length >= 4 && parts[2].Equals("Fade", StringComparison.OrdinalIgnoreCase) && float.TryParse(parts[3], out float cfd))
             {
                 crossfadeDuration = cfd;
             }
@@ -559,7 +559,8 @@ namespace LoveAlgo.Story
 
         public void StopVoice()
         {
-            voiceSource.Stop();
+            if (voiceSource != null)
+                voiceSource.Stop();
         }
 
         #endregion
@@ -674,6 +675,12 @@ namespace LoveAlgo.Story
         AudioClip LoadAudioClip(string path)
         {
             return Resources.Load<AudioClip>(path);
+        }
+
+        protected override void OnDestroy()
+        {
+            base.OnDestroy();
+            DOTween.Kill(bgmSource);
         }
     }
 }

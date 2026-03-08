@@ -265,5 +265,14 @@ namespace LoveAlgo.Story
             if (backgroundDimGroup != null)
                 backgroundDimGroup.alpha = 0f;
         }
+
+        void OnDestroy()
+        {
+            nameBoxAnimation?.Kill();
+            dialogueBoxAnimation?.Kill();
+            DOTween.Kill(nameBoxTransform);
+            DOTween.Kill(dialogueBoxTransform);
+            DOTween.Kill(backgroundDimGroup);
+        }
     }
 }

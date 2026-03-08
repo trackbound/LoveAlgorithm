@@ -108,12 +108,12 @@ namespace LoveAlgo.Story
                 return;
             }
 
-            // 액션 파싱
+            // 액션 파싱 (대소문자 무시)
             string action = parts[1];
 
-            switch (action)
+            switch (action.ToLowerInvariant())
             {
-                case "Enter":
+                case "enter":
                     // 형식: 슬롯:Enter:캐릭터[:표정[:오버레이]]  — 페이드 (기본)
                     if (parts.Length >= 3)
                     {
@@ -122,7 +122,7 @@ namespace LoveAlgo.Story
                         string overlay = parts.Length >= 5 ? parts[4] : null;
 
                         // 로아: 글리치 SFX 즉시 + 캐릭터&오버레이 동시 페이드
-                        if (IsRoaCharacter(character))
+                        if (IsOverlayCharacter(character))
                             PlayGlitchSFX();
 
                         if (!string.IsNullOrEmpty(overlay))
@@ -139,7 +139,7 @@ namespace LoveAlgo.Story
                     }
                     break;
 
-                case "EnterUp":
+                case "enterup":
                     // 형식: 슬롯:EnterUp:캐릭터[:표정[:오버레이]]  — 아래에서 위로 슬라이드 + 페이드
                     if (parts.Length >= 3)
                     {
@@ -147,7 +147,7 @@ namespace LoveAlgo.Story
                         string emote = parts.Length >= 4 ? parts[3] : "Default";
                         string overlay = parts.Length >= 5 ? parts[4] : null;
 
-                        if (IsRoaCharacter(character))
+                        if (IsOverlayCharacter(character))
                             PlayGlitchSFX();
 
                         if (!string.IsNullOrEmpty(overlay))
@@ -164,7 +164,7 @@ namespace LoveAlgo.Story
                     }
                     break;
 
-                case "Emote":
+                case "emote":
                     // 형식: 슬롯:Emote:표정[:오버레이]
                     if (parts.Length >= 3)
                     {
@@ -186,13 +186,13 @@ namespace LoveAlgo.Story
                     }
                     break;
 
-                case "Exit":
+                case "exit":
                     // 형식: 슬롯:Exit  — 페이드 (기본)
                     {
                         string exitingCharacter = slot.CurrentCharacter;
 
                         // 로아: 글리치 SFX 즉시 + 캐릭터&오버레이 동시 페이드아웃
-                        if (IsRoaCharacter(exitingCharacter))
+                        if (IsOverlayCharacter(exitingCharacter))
                         {
                             PlayGlitchSFX();
                             await UniTask.WhenAll(
@@ -207,12 +207,12 @@ namespace LoveAlgo.Story
                     }
                     break;
 
-                case "ExitDown":
+                case "exitdown":
                     // 형식: 슬롯:ExitDown  — 아래로 슬라이드 + 페이드
                     {
                         string exitingCharacter = slot.CurrentCharacter;
 
-                        if (IsRoaCharacter(exitingCharacter))
+                        if (IsOverlayCharacter(exitingCharacter))
                         {
                             PlayGlitchSFX();
                             await UniTask.WhenAll(
@@ -369,12 +369,18 @@ namespace LoveAlgo.Story
         #region 오버레이 (로아)
 
         /// <summary>
-        /// 로아 캐릭터인지 확인
+        /// 오버레이 연동이 필요한 캐릭터인지 확인 (CharacterDatabase에서 판별)
         /// </summary>
-        static bool IsRoaCharacter(string characterName)
+        bool IsOverlayCharacter(string characterName)
         {
-            return !string.IsNullOrEmpty(characterName) &&
-                   characterName.Equals("Roa", StringComparison.OrdinalIgnoreCase);
+            if (string.IsNullOrEmpty(characterName)) return false;
+            if (characterDatabase != null)
+            {
+                var data = characterDatabase.GetCharacterById(characterName);
+                return data != null && data.UseOverlay;
+            }
+            // DB 없으면 기존 하드코드 폴백
+            return characterName.Equals("Roa", StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -404,8 +410,7 @@ namespace LoveAlgo.Story
         }
 
         /// <summary>
-        /// 글리치 효과음 재생 (로아 등장/퇴장 시 자동)
-        /// Resources/Audio/SFX/083_Glitch.wav
+        /// 오버레이 효과음 재생 (오버레이 캐릭터 등장/퇴장 시 자동)
         /// </summary>
         static void PlayGlitchSFX()
         {
@@ -413,6 +418,11 @@ namespace LoveAlgo.Story
         }
 
         #endregion
+
+        void OnDestroy()
+        {
+            DOTween.Kill(layerCanvasGroup);
+        }
 
         #region 캐릭터 FX
 

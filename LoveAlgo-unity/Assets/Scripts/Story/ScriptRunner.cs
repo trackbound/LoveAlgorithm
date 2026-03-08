@@ -22,7 +22,13 @@ namespace LoveAlgo.Story
         int currentIndex;
         bool isRunning;
         CancellationTokenSource cts;
+        readonly object ctsLock = new();
         string currentScriptName;  // 현재 실행 중인 스크립트명 (저장용)
+
+        // 캐시된 매니저 참조 (매 프레임 Instance 탐색 회피)
+        DialogueUI cachedDialogueUI;
+        StageManager cachedStage;
+        AudioManager cachedAudio;
 
         // 외부에서 클릭 입력 받을 때 사용
         bool waitingForClick;
@@ -76,12 +82,15 @@ namespace LoveAlgo.Story
 
         void Start()
         {
+            // 매니저 참조 캐시 (매 프레임 Instance 탐색 회피)
+            cachedDialogueUI = UIManager.Instance?.DialogueUI;
+            cachedStage = StageManager.Instance;
+            cachedAudio = AudioManager.Instance;
+
             // 인라인 Emote 태그 콜백 연결 (UIManager, StageManager 초기화 후)
-            var dialogueUI = UIManager.Instance?.DialogueUI;
-            var stage = StageManager.Instance;
-            if (dialogueUI != null && stage?.Character != null)
+            if (cachedDialogueUI != null && cachedStage?.Character != null)
             {
-                dialogueUI.OnEmoteTag = emote => stage.CharacterEmote("C", emote);
+                cachedDialogueUI.OnEmoteTag = emote => cachedStage.CharacterEmote("C", emote);
             }
         }
 
@@ -229,18 +238,25 @@ namespace LoveAlgo.Story
         public void Stop()
         {
             isRunning = false;
-            cts?.Cancel();
-            cts?.Dispose();
-            cts = null;
+
+            // CTS를 로컬 변수로 swap-out 후 정리 (Cancel→Dispose 간 race 방지)
+            CancellationTokenSource oldCts;
+            lock (ctsLock)
+            {
+                oldCts = cts;
+                cts = null;
+            }
+            oldCts?.Cancel();
+            oldCts?.Dispose();
 
             // 독백 상태 즉시 초기화 (로드/점프 시 잔여 상태 방지)
-            UIManager.Instance?.DialogueUI?.ResetMonologueState();
-            var monologueDim = StageManager.Instance?.MonologueDim;
+            cachedDialogueUI?.ResetMonologueState();
+            var monologueDim = cachedStage?.MonologueDim;
             if (monologueDim != null && monologueDim.IsShowing)
                 monologueDim.HideImmediate();
 
             // 음성 정지
-            AudioManager.Instance?.StopVoice();
+            cachedAudio?.StopVoice();
         }
 
         /// <summary>
@@ -347,10 +363,9 @@ namespace LoveAlgo.Story
         public void OnClick()
         {
             // 타이핑 중이면 먼저 텍스트 완성
-            var dialogueUI = UIManager.Instance?.DialogueUI;
-            if (dialogueUI != null && dialogueUI.IsTyping)
+            if (cachedDialogueUI != null && cachedDialogueUI.IsTyping)
             {
-                dialogueUI.RequestSkip();
+                cachedDialogueUI.RequestSkip();
                 return;  // 이번 클릭은 완성에만 사용 → 다음 클릭에서 진행
             }
 
@@ -518,9 +533,9 @@ namespace LoveAlgo.Story
                     // Place는 fire-and-forget이므로 Await 시 완료 대기
                     if (line.Type == LineType.Place)
                     {
-                        var placeUI = UIManager.Instance?.PlaceUI;
-                        if (placeUI != null && placeUI.IsShowing)
-                            await UniTask.WaitUntil(() => !placeUI.IsShowing, cancellationToken: ct);
+                    var placeUI = UIManager.Instance?.PlaceUI;
+                    if (placeUI != null && placeUI.IsShowing)
+                        await UniTask.WaitUntil(() => !placeUI.IsShowing, cancellationToken: ct);
                     }
                     break;
 
@@ -541,7 +556,7 @@ namespace LoveAlgo.Story
             if (autoMode)
             {
                 // Auto 모드: 텍스트 길이에 따라 딜레이 조절
-                int textLen = UIManager.Instance?.DialogueUI?.LastDisplayedTextLength ?? 0;
+                int textLen = cachedDialogueUI?.LastDisplayedTextLength ?? 0;
                 float dynamicDelay = autoDelayBase + (textLen * autoDelayPerCharacter);
                 dynamicDelay = Mathf.Clamp(dynamicDelay, autoDelayMin, autoDelayMax);
 
@@ -573,7 +588,7 @@ namespace LoveAlgo.Story
 
             // 독백 딤 처리
             bool isMonologue = string.IsNullOrEmpty(line.Speaker);
-            var monologueDim = StageManager.Instance?.MonologueDim;
+            var monologueDim = cachedStage?.MonologueDim;
             if (monologueDim != null)
             {
                 if (isMonologue && !monologueDim.IsShowing)
@@ -587,10 +602,9 @@ namespace LoveAlgo.Story
             }
 
             // 대사 UI에 텍스트 표시
-            var dialogueUI = UIManager.Instance?.DialogueUI;
-            if (dialogueUI != null)
+            if (cachedDialogueUI != null)
             {
-                await dialogueUI.ShowTextAsync(line.Speaker, line.Value, ct);
+                await cachedDialogueUI.ShowTextAsync(line.Speaker, line.Value, ct);
             }
             else
             {
@@ -601,7 +615,7 @@ namespace LoveAlgo.Story
         async UniTask ExecuteCharAsync(ScriptLine line, CancellationToken ct)
         {
             // 캐릭터 제어
-            var character = StageManager.Instance?.Character;
+            var character = cachedStage?.Character;
             if (character != null)
             {
                 await character.ExecuteAsync(line.Value, ct);
@@ -618,11 +632,12 @@ namespace LoveAlgo.Story
             var parts = line.Value.Split(':');
             string bgName = parts[0];
             bool isCut = parts.Length >= 2 && parts[1].Equals("Cut", System.StringComparison.OrdinalIgnoreCase);
-            bool isCrossFade = parts.Length >= 2 && parts[1].Equals("Cross", System.StringComparison.OrdinalIgnoreCase);
-            bool isFade = !isCut && !isCrossFade;
+            bool isFade = parts.Length >= 2 && parts[1].Equals("Fade", System.StringComparison.OrdinalIgnoreCase);
+            // 전환 타입 생략 시 기본값: Cross (캐릭터 유지한 채 BG 크로스페이드)
+            bool isCrossFade = !isCut && !isFade;
 
             // 동일 배경이면 전환 효과 스킵 (DEMO 점프 등 환경 세팅용)
-            var background = StageManager.Instance?.Background;
+            var background = cachedStage?.Background;
             if (background != null && !string.IsNullOrEmpty(background.CurrentBackground)
                 && background.CurrentBackground.Equals(bgName, System.StringComparison.OrdinalIgnoreCase))
             {
@@ -631,7 +646,7 @@ namespace LoveAlgo.Story
             }
 
             // CG가 화면을 덮고 있는 동안에는 페이드 없이 배경만 즉시 교체
-            var cgLayer = StageManager.Instance?.CG;
+            var cgLayer = cachedStage?.CG;
             bool cgCoversScreen = cgLayer != null && cgLayer.IsShowing;
 
             if (cgCoversScreen)
@@ -645,7 +660,7 @@ namespace LoveAlgo.Story
             }
             else if (isCut || isCrossFade)
             {
-                // Cut / Cross: BackgroundLayer에 위임 (BG 이미지만 전환, 캐릭터 유지)
+                // Cut / Cross(기본): BackgroundLayer에 위임 (BG 이미지만 전환, 캐릭터 유지)
                 // Cut  → 즉시 교체 (화면 깜빡임 없음)
                 // Cross → 크로스페이드 (캐릭터 유지한 채 BG만 블렌딩)
                 if (background != null)
@@ -655,13 +670,13 @@ namespace LoveAlgo.Story
             }
             else
             {
-                // Fade(기본): ScreenFX FadeOut → 검은 화면에서 캐릭터 제거 + 배경 교체 → FadeIn
+                // Fade(명시적): ScreenFX FadeOut → 검은 화면에서 캐릭터 제거 + 배경 교체 → FadeIn
                 // 장면 전환 느낌의 무거운 연출. 캐릭터를 FadeOut 전에 ExitAsync 하면
                 // 퇴장이 보여서 부자연스러움 → FadeOut 완료 후 즉시 ClearAll 처리
 
-                var character = StageManager.Instance?.Character;
+                var character = cachedStage?.Character;
                 var screenFX = Core.ScreenFX.Instance;
-                var dialogueUI = UIManager.Instance?.DialogueUI;
+                var dialogueUI = cachedDialogueUI;
 
                 // 전환 파라미터 파싱 (BackgroundLayer.ExecuteAsync와 동일 로직)
                 float duration = 2.0f;  // BackgroundLayer defaultDuration
@@ -689,7 +704,7 @@ namespace LoveAlgo.Story
                     await screenFX.FadeInAsync(halfDuration, ct);
 
                 // AudioManager에 캐릭터 퇴장 알림
-                AudioManager.Instance?.OnAllCharactersExit();
+                cachedAudio?.OnAllCharactersExit();
             }
         }
 
@@ -702,25 +717,23 @@ namespace LoveAlgo.Story
             if (!isExit)
             {
                 // CG 표시 시: 캐릭터 자동 퇴장 + 대사창 숨김
-                var character = StageManager.Instance?.Character;
+                var character = cachedStage?.Character;
                 if (character != null)
                 {
                     await character.ExitAllAsync(ct);
                 }
                 
                 // 대사창 숨김
-                var dialogueUI = UIManager.Instance?.DialogueUI;
-                dialogueUI?.Hide();
+                cachedDialogueUI?.Hide();
             }
             else
             {
                 // CG 종료 시: 대사창 표시
-                var dialogueUI = UIManager.Instance?.DialogueUI;
-                dialogueUI?.Show();
+                cachedDialogueUI?.Show();
             }
             
             // CG 레이어 제어
-            var cg = StageManager.Instance?.CG;
+            var cg = cachedStage?.CG;
             if (cg != null)
             {
                 await cg.ExecuteAsync(line.Value, ct);
@@ -734,14 +747,14 @@ namespace LoveAlgo.Story
         async UniTask ExecuteSDAsync(ScriptLine line, CancellationToken ct)
         {
             // SD 컷씬 레이어 제어 (캐릭터/대사창 유지)
-            var sd = StageManager.Instance?.SDCutscene;
+            var sd = cachedStage?.SDCutscene;
             if (sd == null)
             {
                 Debug.Log($"[SD] {line.Value}");
                 return;
             }
 
-            var charLayer = StageManager.Instance?.Character;
+            var charLayer = cachedStage?.Character;
             string command = line.Value.Split(':')[0];
             bool isExit = command.Equals("Exit", StringComparison.OrdinalIgnoreCase)
                        || command.Equals("Close", StringComparison.OrdinalIgnoreCase);
@@ -764,7 +777,7 @@ namespace LoveAlgo.Story
         async UniTask ExecuteOverlayAsync(ScriptLine line, CancellationToken ct)
         {
             // 오버레이 레이어 제어
-            var overlay = StageManager.Instance?.VirtualBG;
+            var overlay = cachedStage?.VirtualBG;
             if (overlay != null)
             {
                 await overlay.ExecuteAsync(line.Value, ct);
@@ -778,9 +791,9 @@ namespace LoveAlgo.Story
         async UniTask ExecuteSoundAsync(ScriptLine line, CancellationToken ct)
         {
             // 오디오 재생
-            if (AudioManager.Instance != null)
+            if (cachedAudio != null)
             {
-                await AudioManager.Instance.ExecuteAsync(line.Value, ct);
+                await cachedAudio.ExecuteAsync(line.Value, ct);
             }
             else
             {
@@ -808,28 +821,28 @@ namespace LoveAlgo.Story
         async UniTask ExecuteFXAsync(ScriptLine line, CancellationToken ct)
         {
             var parts = line.Value.Split(':');
-            var command = parts[0];
-            var dialogueUI = UIManager.Instance?.DialogueUI;
+            var command = parts[0].ToLowerInvariant();
+            var dialogueUI = cachedDialogueUI;
             
             // 매크로 명령 (여러 서브시스템을 한번에 실행)
             switch (command)
             {
-                case "DayEnd":
+                case "dayend":
                     await ExecuteMacroDayEndAsync(parts, ct);
                     return;
-                case "DayStart":
+                case "daystart":
                     await ExecuteMacroDayStartAsync(parts, ct);
                     return;
-                case "SceneEnd":
+                case "sceneend":
                     await ExecuteMacroSceneEndAsync(parts, ct);
                     return;
-                case "SceneStart":
+                case "scenestart":
                     await ExecuteMacroSceneStartAsync(parts, ct);
                     return;
-                case "Setup":
+                case "setup":
                     await ExecuteMacroSetupAsync(line.Value, ct);
                     return;
-                case "Wait":
+                case "wait":
                     // 단순 대기: FX,,Wait[:초],next
                     float waitSec = parts.Length > 1 && float.TryParse(parts[1], out float ws) ? ws : 1.0f;
                     await UniTask.Delay(System.TimeSpan.FromSeconds(waitSec), cancellationToken: ct);
@@ -839,17 +852,17 @@ namespace LoveAlgo.Story
             // 대사창 제어 명령
             switch (command)
             {
-                case "FadeOut":
+                case "fadeout":
                     // FadeOut 후 대사창 숨기기 (즉시 Hide하면 깜박임 발생)
                     // → 페이드 완료 후 숨김
                     break;
                     
-                case "DialogueHide":
+                case "dialoguehide":
                     // 대사창 숨김 (단독 명령)
                     dialogueUI?.Hide();
                     return; // ScreenFX 실행 안 함
                     
-                case "DialogueShow":
+                case "dialogueshow":
                     // 대사창 표시 (단독 명령) — 이전 대사 제거 후 표시
                     dialogueUI?.Clear();
                     dialogueUI?.Show();
@@ -868,7 +881,7 @@ namespace LoveAlgo.Story
             }
 
             // FadeOut 완료 후 대사창 숨김 (화면이 완전히 덮인 후)
-            if (command == "FadeOut")
+            if (command == "fadeout")
             {
                 dialogueUI?.HideImmediate();
             }
@@ -897,9 +910,9 @@ namespace LoveAlgo.Story
             float startTime = Time.time;
             Debug.Log($"[ScriptRunner] 매크로: DayEnd (fade={fadeDuration}s, total={totalDuration}s)");
 
-            var dialogueUI = UIManager.Instance?.DialogueUI;
+            var dialogueUI = cachedDialogueUI;
             var fx = Core.ScreenFX.Instance;
-            var stage = StageManager.Instance;
+            var stage = cachedStage;
 
             // 1. 화면 암전 (FadeOut)
             if (fx != null)
@@ -911,8 +924,8 @@ namespace LoveAlgo.Story
             stage?.VirtualBG?.HideImmediate();
             UIManager.Instance?.PlaceUI?.HideImmediate();
 
-            if (AudioManager.Instance != null)
-                await AudioManager.Instance.ExecuteAsync("BGM:Stop", ct);
+            if (cachedAudio != null)
+                await cachedAudio.ExecuteAsync("BGM:Stop", ct);
 
             // 3. 배경 → 블랙 + 눈 감긴 상태 세팅 (다음 아침 EyeOpen용)
             await ExecuteBGAsync(
@@ -1028,9 +1041,9 @@ namespace LoveAlgo.Story
             float fadeDuration = parts.Length > 1 && float.TryParse(parts[1], out float fd) ? fd : 0.5f;
             Debug.Log($"[ScriptRunner] 매크로: SceneEnd (fade={fadeDuration}s)");
 
-            var dialogueUI = UIManager.Instance?.DialogueUI;
+            var dialogueUI = cachedDialogueUI;
             var fx = Core.ScreenFX.Instance;
-            var stage = StageManager.Instance;
+            var stage = cachedStage;
 
             // 1. 빠른 암전
             if (fx != null)
@@ -1043,8 +1056,8 @@ namespace LoveAlgo.Story
             UIManager.Instance?.PlaceUI?.HideImmediate();
 
             // BGM 페이드아웃 (씬 전환 시 자연스럽게 끊기도록)
-            if (AudioManager.Instance != null)
-                await AudioManager.Instance.ExecuteAsync("BGM:Stop:Fade:1.0", ct);
+            if (cachedAudio != null)
+                await cachedAudio.ExecuteAsync("BGM:Stop:Fade:1.0", ct);
 
             // 3. 암전 유지 — fade overlay alpha=1 상태로 끝
             //    SceneStart 또는 LoadingScene이 이어받아 처리
@@ -1093,8 +1106,8 @@ namespace LoveAlgo.Story
             {
                 // ── SceneEnd에서 fade overlay가 검은 상태(alpha=1)로 유지됨 ──
                 // 검은 화면 뒤에서 스테이지 세팅 (플레이어에게 안 보임)
-                var background = StageManager.Instance?.Background;
-                var character = StageManager.Instance?.Character;
+                var background = cachedStage?.Background;
+                var character = cachedStage?.Character;
                 character?.ClearAll();
                 if (background != null)
                     await background.ChangeBackgroundAsync(bgPath, BGTransition.Cut, 0f, ct);
@@ -1149,9 +1162,9 @@ namespace LoveAlgo.Story
 
             Debug.Log($"[ScriptRunner] 매크로: Setup ({entries.Length}개 항목)");
 
-            var background = StageManager.Instance?.Background;
-            var character = StageManager.Instance?.Character;
-            var overlay = StageManager.Instance?.VirtualBG;
+            var background = cachedStage?.Background;
+            var character = cachedStage?.Character;
+            var overlay = cachedStage?.VirtualBG;
 
             foreach (var entry in entries)
             {
@@ -1179,12 +1192,12 @@ namespace LoveAlgo.Story
 
                     case "BGM":
                         // 동일 BGM이면 스킵
-                        if (AudioManager.Instance != null)
+                        if (cachedAudio != null)
                         {
-                            string currentBGM = AudioManager.Instance.CurrentBGM;
+                            string currentBGM = cachedAudio.CurrentBGM;
                             if (!string.Equals(currentBGM, value, System.StringComparison.OrdinalIgnoreCase))
                             {
-                                await AudioManager.Instance.ExecuteAsync($"BGM:{value}", ct);
+                                await cachedAudio.ExecuteAsync($"BGM:{value}", ct);
                                 Debug.Log($"[ScriptRunner] Setup: BGM → '{value}'");
                             }
                         }

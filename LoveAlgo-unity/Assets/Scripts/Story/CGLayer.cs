@@ -206,5 +206,10 @@ namespace LoveAlgo.Story
 
             return sprite;
         }
+
+        void OnDestroy()
+        {
+            DOTween.Kill(canvasGroup);
+        }
     }
 }

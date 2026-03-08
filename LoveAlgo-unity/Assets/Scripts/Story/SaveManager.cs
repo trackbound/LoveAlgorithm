@@ -688,17 +688,22 @@ namespace LoveAlgo.Story
         static Texture2D ScaleTexture(Texture2D source, int targetWidth, int targetHeight)
         {
             var rt = RenderTexture.GetTemporary(targetWidth, targetHeight, 0, RenderTextureFormat.ARGB32);
-            Graphics.Blit(source, rt);
             var prev = RenderTexture.active;
-            RenderTexture.active = rt;
+            try
+            {
+                Graphics.Blit(source, rt);
+                RenderTexture.active = rt;
 
-            var result = new Texture2D(targetWidth, targetHeight, TextureFormat.RGB24, false);
-            result.ReadPixels(new Rect(0, 0, targetWidth, targetHeight), 0, 0);
-            result.Apply();
-
-            RenderTexture.active = prev;
-            RenderTexture.ReleaseTemporary(rt);
-            return result;
+                var result = new Texture2D(targetWidth, targetHeight, TextureFormat.RGB24, false);
+                result.ReadPixels(new Rect(0, 0, targetWidth, targetHeight), 0, 0);
+                result.Apply();
+                return result;
+            }
+            finally
+            {
+                RenderTexture.active = prev;
+                RenderTexture.ReleaseTemporary(rt);
+            }
         }
 
         /// <summary>

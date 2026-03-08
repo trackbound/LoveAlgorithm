@@ -140,6 +140,9 @@ namespace LoveAlgo.UI
             // 스케일 복원 (Kill 후 중간값 방지)
             if (panelRect != null)
                 panelRect.localScale = Vector3.one;
+
+            // Hide 애니메이션이 Kill 되었으면 대기 중인 HideAsync 해제
+            hideCompletionSource?.TrySetResult();
         }
 
         /// <summary>
