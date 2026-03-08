@@ -40,6 +40,11 @@ namespace LoveAlgo.Core
 
         protected override void OnSingletonAwake()
         {
+            // ── 빌드 시 Debug.Log 비활성화 (Warning/Error는 유지) ──
+#if !UNITY_EDITOR
+            Debug.unityLogger.filterLogType = LogType.Warning;
+#endif
+
             // DOTween 초기화 - 용량 설정으로 IndexOutOfRangeException 방지
             DOTween.Init(recycleAllByDefault: true, useSafeMode: true, logBehaviour: LogBehaviour.ErrorsOnly);
             DOTween.SetTweensCapacity(tweenersCapacity, sequencesCapacity);
