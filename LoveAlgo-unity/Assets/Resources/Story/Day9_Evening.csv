@@ -1,7 +1,7 @@
-LineID,Type,Speaker,Value,Next
+﻿LineID,Type,Speaker,Value,Next
 # ═══ Day 9 저녁 - 축제 전날 밤 ═══
 ,FX,,FadeOut:0.5,await
-,BG,,CampusStreet/BG_Campus_Street1_Night,await
+,BG,,BG_Campus_Street1_Day:Cross,await
 ,Sound,,BGM:Night,>
 ,FX,,FadeIn:1.0,await
 ,Text,,"캠퍼스에 축제 준비가 한창이다.\n내일부터 3일간 학교 축제가 시작된다.",click

@@ -1,11 +1,11 @@
-LineID,Type,Speaker,Value,Next
+﻿LineID,Type,Speaker,Value,Next
 # ═══ 3차 개인 이벤트 (Day 26) ═══
 # 히로인 선택 후 데이트 이벤트, 선택한 히로인에게 +9 포인트
 # 기획서: 이전에 선택한 히로인을 다시 선택하면 +2 보너스 (HeroinePointTracker 처리)
-,BG,,Black,await
+,BG,,BG_BlackCut:Cut,await
 ,Sound,,BGM:Stop:Fade:1.0,await
 ,FX,,FadeIn:1.0,await
-,BG,,CampusStreet/BG_Campus_Street1_Day:Cross:2.0,await
+,BG,,BG_Campus_Street1_Day:Cross:2.0,await
 ,Sound,,BGM:Daily1,>
 ,Text,,"학기 종강이 다가온다.\n마지막으로 특별한 시간을 보내고 싶다.",click
 ,Text,,"누구와 함께할까?",click

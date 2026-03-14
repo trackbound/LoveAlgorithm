@@ -1,9 +1,9 @@
-LineID,Type,Speaker,Value,Next
+﻿LineID,Type,Speaker,Value,Next
 # ═══ MT Day 2 (Day 21) - 포인트 +5 부여 ═══
-,BG,,Black,await
+,BG,,BG_BlackCut:Cut,await
 ,Sound,,BGM:Stop:Fade:1.0,await
 ,FX,,FadeIn:1.0,await
-,BG,,MT/BG_MT_Night:Cross:2.0,await
+,BG,,BG_MT_Night:Cross:2.0,await
 ,Sound,,BGM:Night,>
 ,Text,,"MT 둘째 날 밤.\n모닥불 주변에 모두 모였다.",click
 ,Text,,"담력 시험이 시작된다.\n누구와 짝을 이룰까?",click

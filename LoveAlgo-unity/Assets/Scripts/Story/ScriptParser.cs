@@ -83,8 +83,8 @@ namespace LoveAlgo.Story
         {
             var columns = CsvUtility.SplitCsv(row);
 
-            // Next 컬럼 생략 허용 = 최소 4컬럼 (LineID, Type, Speaker, Value)
-            const int minColumns = 4;
+            // 5컬럼 필수: LineID, Type, Speaker, Value, Next
+            const int minColumns = 5;
 
             if (columns.Length < minColumns)
             {
@@ -97,7 +97,7 @@ namespace LoveAlgo.Story
             string typeStr = columns[1].Trim();
             string speaker = columns[2].Trim();
             string value = columns[3].Trim();
-            string nextStr = columns.Length >= 5 ? columns[4].Trim() : "";
+            string nextStr = columns[4].Trim();
 
             // 리터럴 \n을 실제 줄바꿈으로 치환 (타이핑 효과에서 \가 잠깐 보이는 버그 방지)
             value = value.Replace("\\n", "\n");
@@ -109,14 +109,29 @@ namespace LoveAlgo.Story
                 return null;
             }
 
-            // Next 파싱
+            // Next 파싱 (엄격 모드: 빈 Next는 오류)
             ParseNext(nextStr, out NextType nextType, out float delay);
 
-            // 빈 Next → 타입별 UX 기본값 자동 적용
-            // 시나리오 작가가 Next를 생략해도 자연스러운 흐름이 되도록
+            // 빈 Next → Option/Choice만 허용, 나머지는 오류
             if (string.IsNullOrEmpty(nextStr))
             {
-                nextType = GetDefaultNextType(type, value);
+                if (type != LineType.Option && type != LineType.Choice)
+                {
+                    Debug.LogError($"[ScriptParser] Line {lineNumber}: Next 컬럼이 비어있습니다 (Type={type}). "
+                        + "Next를 명시하세요: >(즉시), click(클릭대기), await(완료대기), 숫자(딜레이). "
+                        + $"Immediate로 대체합니다. — \"{TruncateForLog(row)}\"");
+                }
+            }
+
+            // BG 전환 타입 생략 검증
+            if (type == LineType.BG && !string.IsNullOrEmpty(value))
+            {
+                var bgParts = value.Split(':');
+                if (bgParts.Length < 2)
+                {
+                    Debug.LogWarning($"[ScriptParser] Line {lineNumber}: BG 전환 타입(Cut/Fade/Cross) 생략됨. "
+                        + $"명시적으로 지정하세요 — 예: {value}:Cross");
+                }
             }
 
             return new ScriptLine(lineId, type, speaker, value, nextType, delay);
@@ -170,46 +185,6 @@ namespace LoveAlgo.Story
 
             // 기본값
             nextType = NextType.Immediate;
-        }
-
-        /// <summary>
-        /// 타입별 Next 생략 시 기본값
-        /// 시나리오 작가가 Next를 비워도 자연스러운 흐름을 위해
-        /// </summary>
-        static NextType GetDefaultNextType(LineType type, string value = "")
-        {
-            switch (type)
-            {
-                // 대사: 플레이어 클릭 대기
-                case LineType.Text:
-                    return NextType.Click;
-
-                // CG: 닫기(Close/Exit) → 완료 대기, 표시 → 클릭 대기 (CG 감상 시간)
-                case LineType.CG:
-                {
-                    var cmd = value.Split(':')[0];
-                    bool isClose = cmd.Equals("Close", StringComparison.OrdinalIgnoreCase)
-                                || cmd.Equals("Exit", StringComparison.OrdinalIgnoreCase);
-                    return isClose ? NextType.Await : NextType.Click;
-                }
-
-                // 시각 연출: 완료 대기 (등장/전환/효과가 끝나야 자연스러움)
-                case LineType.Char:
-                case LineType.BG:
-                case LineType.SD:
-                case LineType.FX:
-                case LineType.Choice:
-                    return NextType.Await;
-
-                // 배경 처리: 즉시 진행 (BGM은 배경 재생, Flow는 제어 흐름, Overlay는 로아와 동시)
-                case LineType.Overlay:
-                case LineType.Sound:
-                case LineType.Flow:
-                case LineType.Place:
-                case LineType.Option:
-                default:
-                    return NextType.Immediate;
-            }
         }
 
         /// <summary>

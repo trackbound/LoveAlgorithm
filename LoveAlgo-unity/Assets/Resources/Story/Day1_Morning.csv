@@ -1,7 +1,7 @@
-LineID,Type,Speaker,Value,Next
+﻿LineID,Type,Speaker,Value,Next
 # ═══ Day 1 아침 - 프롤로그 직후 첫 데이룹 시작 ═══
 # 프롤로그 끝나고 DayLoop 진입 시 자동 실행
-,BG,,MyRoom/BG_MyRoom_Interior_Day,await
+,BG,,BG_MyRoom_Interior_Day:Cross,await
 ,Sound,,BGM:Daily1,>
 ,FX,,EyeOpen:1.0,await
 ,Text,,"새로운 하루가 시작됐다.\n어제 만난 사람들이 머릿속에 맴돈다.",click

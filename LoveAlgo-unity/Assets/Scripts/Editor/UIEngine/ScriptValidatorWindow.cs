@@ -398,6 +398,9 @@ namespace LoveAlgo.Editor.UIEngine
 
         void ValidateLine(TextAsset script, ScriptLine line, int lineNumber, Dictionary<string, int> lineIndex)
         {
+            // 공통: Next 컬럼 명시 검증 (Option/Choice 제외)
+            ValidateNextExplicit(script, line, lineNumber);
+
             switch (line.Type)
             {
                 case LineType.Text:
@@ -412,6 +415,14 @@ namespace LoveAlgo.Editor.UIEngine
                     ValidateBG(script, line, lineNumber);
                     break;
                     
+                case LineType.CG:
+                    ValidateCG(script, line, lineNumber);
+                    break;
+                    
+                case LineType.FX:
+                    ValidateFX(script, line, lineNumber);
+                    break;
+                    
                 case LineType.Sound:
                     ValidateSound(script, line, lineNumber);
                     break;
@@ -423,6 +434,42 @@ namespace LoveAlgo.Editor.UIEngine
                 case LineType.Option:
                     ValidateOption(script, line, lineNumber, lineIndex);
                     break;
+            }
+        }
+
+        /// <summary>
+        /// Next 컬럼 명시 검증: 시나리오 의도가 인게임 흐름에 정확히 반영되도록
+        /// </summary>
+        void ValidateNextExplicit(TextAsset script, ScriptLine line, int lineNumber)
+        {
+            // Option/Choice는 Next가 무시되므로 검증 제외
+            if (line.Type == LineType.Option || line.Type == LineType.Choice)
+                return;
+
+            // Next가 Immediate이면서 CSV에 명시적으로 작성되지 않았을 가능성 체크
+            // (Parser에서 빈 Next를 Immediate로 대체하므로, 여기서는 원본 CSV를 다시 검사)
+            // 주의: 에디터 검증은 파싱 후 ScriptLine만 볼 수 있으므로,
+            // NextType가 Immediate이면서 대사/연출 유형이면 의도적 생략 가능성 경고
+            if (line.NextType == NextType.Immediate)
+            {
+                switch (line.Type)
+                {
+                    case LineType.Text:
+                        AddResult(script, lineNumber, line.LineID, ErrorLevel.Error, "Next",
+                            "Text 라인의 Next가 Immediate(>)입니다. "
+                            + "click(클릭대기)이 의도된 것이 아닌지 확인하세요.");
+                        break;
+                    
+                    case LineType.Char:
+                    case LineType.BG:
+                    case LineType.CG:
+                    case LineType.SD:
+                    case LineType.FX:
+                        AddResult(script, lineNumber, line.LineID, ErrorLevel.Warning, "Next",
+                            $"{line.Type} 라인의 Next가 Immediate(>)입니다. "
+                            + "await(연출 완료 대기)가 의도된 것이 아닌지 확인하세요.");
+                        break;
+                }
             }
         }
 
@@ -545,7 +592,7 @@ namespace LoveAlgo.Editor.UIEngine
                 return;
             }
             
-            // 형식: 배경이름[:전환타입:시간]
+            // 형식: 배경이름:전환타입[:시간]
             var parts = line.Value.Split(':');
             string bgName = parts[0];
             
@@ -562,16 +609,75 @@ namespace LoveAlgo.Editor.UIEngine
                 }
             }
             
-            // 전환 타입 검증
-            if (parts.Length >= 2)
+            // 전환 타입 필수 검증 (엄격 모드)
+            if (parts.Length < 2)
+            {
+                AddResult(script, lineNumber, line.LineID, ErrorLevel.Error, "BG",
+                    $"BG 전환 타입(Cut/Fade/Cross) 생략됨. 명시하세요 — 예: {bgName}:Cross");
+            }
+            else
             {
                 string transition = parts[1];
                 var validTransitions = new[] { "Cut", "Fade", "Cross", "Slide" };
                 if (!validTransitions.Contains(transition))
                 {
                     AddResult(script, lineNumber, line.LineID, ErrorLevel.Error, "BG",
-                        $"알 수 없는 전환 타입: {transition}");
+                        $"알 수 없는 전환 타입: {transition} (Cut/Fade/Cross/Slide만 가능)");
                 }
+                
+                // Fade 시 duration 필수
+                if (transition == "Fade" && parts.Length < 3)
+                {
+                    AddResult(script, lineNumber, line.LineID, ErrorLevel.Warning, "BG",
+                        "BG Fade 전환에 duration이 생략됨. 예: " + bgName + ":Fade:1.0");
+                }
+            }
+        }
+
+        void ValidateCG(TextAsset script, ScriptLine line, int lineNumber)
+        {
+            if (string.IsNullOrEmpty(line.Value))
+            {
+                AddResult(script, lineNumber, line.LineID, ErrorLevel.Error, "CG",
+                    "빈 CG 명령");
+                return;
+            }
+            
+            var parts = line.Value.Split(':');
+            string command = parts[0];
+            bool isExit = command.Equals("Exit", StringComparison.OrdinalIgnoreCase)
+                       || command.Equals("Close", StringComparison.OrdinalIgnoreCase);
+            
+            // CG 표시 시 전환 타입 검증
+            if (!isExit && parts.Length < 2)
+            {
+                AddResult(script, lineNumber, line.LineID, ErrorLevel.Warning, "CG",
+                    $"CG 전환 타입(Fade/Cut) 생략됨. 예: {command}:Fade:1.0");
+            }
+        }
+
+        void ValidateFX(TextAsset script, ScriptLine line, int lineNumber)
+        {
+            if (string.IsNullOrEmpty(line.Value))
+            {
+                AddResult(script, lineNumber, line.LineID, ErrorLevel.Error, "FX",
+                    "빈 FX 명령");
+                return;
+            }
+            
+            var parts = line.Value.Split(':');
+            string command = parts[0].ToLowerInvariant();
+            
+            var knownCommands = new[] {
+                "fadeout", "fadein", "camshake", "flash", "eyeopen", "eyeclose",
+                "eyecloseimmediate", "eyeblink", "dayend", "daystart", "sceneend",
+                "scenestart", "setup", "wait", "dialoguehide", "dialogueshow"
+            };
+            
+            if (!knownCommands.Contains(command))
+            {
+                AddResult(script, lineNumber, line.LineID, ErrorLevel.Warning, "FX",
+                    $"알 수 없는 FX 명령: {parts[0]}");
             }
         }
 

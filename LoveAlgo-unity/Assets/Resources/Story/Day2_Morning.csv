@@ -1,6 +1,6 @@
-LineID,Type,Speaker,Value,Next
+﻿LineID,Type,Speaker,Value,Next
 # ═══ Day 2 아침 - 캠퍼스 길에서 서다은 조우 ═══
-,BG,,MyRoom/BG_MyRoom_Interior_Day,await
+,BG,,BG_MyRoom_Interior_Day:Cross,await
 ,Sound,,BGM:Daily1,>
 ,FX,,EyeOpen:1.0,await
 ,Text,,"2일차 아침.\n아직 캠퍼스 생활에 완전히 익숙해지지는 않았다.",click
@@ -13,7 +13,7 @@ LineID,Type,Speaker,Value,Next
 ,Overlay,,FadeOut:0.3,>
 # 캠퍼스로 이동
 ,FX,,FadeOut:1.0,await
-,BG,,CampusStreet/BG_Campus_Street1_Day,await
+,BG,,BG_Campus_Street1_Day:Cross,await
 ,Sound,,BGM:Daily2,>
 ,FX,,FadeIn:1.0,await
 ,Text,,"캠퍼스를 걷고 있는데, 저 앞에 익숙한 얼굴이 보였다.",click

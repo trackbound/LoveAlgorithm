@@ -1,10 +1,10 @@
-LineID,Type,Speaker,Value,Next
+﻿LineID,Type,Speaker,Value,Next
 # ═══ 서다은 새드 엔딩 ═══
-,BG,,Black,await
+,BG,,BG_BlackCut:Cut,await
 ,Sound,,BGM:Stop:Fade:2.0,await
 ,Text,,"......",click
 ,FX,,FadeIn:1.0,await
-,BG,,CampusStreet/BG_Campus_Street1_Day:Cross:2.0,await
+,BG,,BG_Campus_Street1_Day:Cross:2.0,await
 ,Sound,,BGM:Night,>
 ,Text,,"도서관에서 다은이와 마주쳤다.",click
 ,Char,,C:Enter:Daeun:Default,await

@@ -1,6 +1,6 @@
-LineID,Type,Speaker,Value,Next
+﻿LineID,Type,Speaker,Value,Next
 # ═══ Day 4 아침 - 대학 생활 루틴 정착 ═══
-,BG,,MyRoom/BG_MyRoom_Interior_Day,await
+,BG,,BG_MyRoom_Interior_Day:Cross,await
 ,Sound,,BGM:Daily1,>
 ,FX,,EyeOpen:1.0,await
 ,Text,,"4일차.\n슬슬 대학 생활의 리듬이 잡히기 시작했다.",click

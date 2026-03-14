@@ -1,6 +1,6 @@
-LineID,Type,Speaker,Value,Next
+﻿LineID,Type,Speaker,Value,Next
 # ═══ Day 13 아침 - 축제 후 일상 복귀 ═══
-,BG,,MyRoom/BG_MyRoom_Interior_Day,await
+,BG,,BG_MyRoom_Interior_Day:Cross,await
 ,Sound,,BGM:Daily1,>
 ,FX,,EyeOpen:1.0,await
 ,Text,,"13일차.\n축제가 끝나고 다시 평범한 일상으로 돌아왔다.",click

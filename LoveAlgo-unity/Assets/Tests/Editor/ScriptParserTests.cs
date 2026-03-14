@@ -233,5 +233,83 @@ namespace LoveAlgo.Tests
             Assert.AreEqual(LineType.FX, result[6].Type);
             Assert.AreEqual(LineType.Flow, result[7].Type);
         }
+
+        #region Strict Mode Tests
+
+        [Test]
+        public void Parse_MissingNextColumn_ReturnsNull()
+        {
+            // 4컬럼만 있으면 (Next 컬럼 누락) 파싱 실패
+            var csv = ",Text,로아,안녕!";
+            var result = ScriptParser.Parse(csv);
+
+            Assert.AreEqual(0, result.Count);
+        }
+
+        [Test]
+        public void Parse_EmptyNext_TextLine_FallsBackToImmediate()
+        {
+            // 빈 Next는 Immediate로 대체 (LogError 발생하지만 파싱은 됨)
+            var csv = ",Text,로아,안녕!,";
+            var result = ScriptParser.Parse(csv);
+
+            Assert.AreEqual(1, result.Count);
+            Assert.AreEqual(NextType.Immediate, result[0].NextType);
+        }
+
+        [Test]
+        public void Parse_EmptyNext_OptionLine_AllowedSilently()
+        {
+            // Option은 빈 Next 허용 (Choice에서 수집하므로)
+            var csv = ",Option,,선택|target,";
+            var result = ScriptParser.Parse(csv);
+
+            Assert.AreEqual(1, result.Count);
+            Assert.AreEqual(LineType.Option, result[0].Type);
+        }
+
+        [Test]
+        public void Parse_ExplicitNext_AlwaysRespected()
+        {
+            // 모든 타입에서 명시적 Next가 정확히 반영되는지 확인
+            var csv = @",Text,로아,안녕!,click
+,BG,,School:Cut,>
+,Char,,C:Enter:Roa,await
+,Sound,,BGM:Morning,1.5
+,FX,,FadeOut,await";
+            var result = ScriptParser.Parse(csv);
+
+            Assert.AreEqual(5, result.Count);
+            Assert.AreEqual(NextType.Click, result[0].NextType);
+            Assert.AreEqual(NextType.Immediate, result[1].NextType);
+            Assert.AreEqual(NextType.Await, result[2].NextType);
+            Assert.AreEqual(NextType.Delay, result[3].NextType);
+            Assert.AreEqual(1.5f, result[3].DelaySeconds, 0.01f);
+            Assert.AreEqual(NextType.Await, result[4].NextType);
+        }
+
+        [Test]
+        public void Parse_BGWithoutTransitionType_StillParses()
+        {
+            // BG 전환 타입 생략 시에도 파싱은 됨 (LogWarning 발생)
+            var csv = ",BG,,BG_MyRoom,await";
+            var result = ScriptParser.Parse(csv);
+
+            Assert.AreEqual(1, result.Count);
+            Assert.AreEqual("BG_MyRoom", result[0].Value);
+        }
+
+        [Test]
+        public void Parse_BGWithTransitionType_ParsesCorrectly()
+        {
+            var csv = ",BG,,BG_MyRoom:Fade:1.5,await";
+            var result = ScriptParser.Parse(csv);
+
+            Assert.AreEqual(1, result.Count);
+            Assert.AreEqual("BG_MyRoom:Fade:1.5", result[0].Value);
+            Assert.AreEqual(NextType.Await, result[0].NextType);
+        }
+
+        #endregion
     }
 }

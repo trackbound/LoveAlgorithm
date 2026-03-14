@@ -1,6 +1,6 @@
-LineID,Type,Speaker,Value,Next
+﻿LineID,Type,Speaker,Value,Next
 # ═══ Day 17 아침 - 2차 이벤트 후 감상 ═══
-,BG,,MyRoom/BG_MyRoom_Interior_Day,await
+,BG,,BG_MyRoom_Interior_Day:Cross,await
 ,Sound,,BGM:Daily2,>
 ,FX,,EyeOpen:1.0,await
 ,Text,,"17일차.\n어제의 데이트가 계속 머릿속에서 맴돈다.",click

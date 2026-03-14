@@ -1,6 +1,6 @@
-LineID,Type,Speaker,Value,Next
+﻿LineID,Type,Speaker,Value,Next
 # ═══ Day 27 아침 - 마지막 자유기간 시작 ═══
-,BG,,MyRoom/BG_MyRoom_Interior_Day,await
+,BG,,BG_MyRoom_Interior_Day:Cross,await
 ,Sound,,BGM:Daily2,>
 ,FX,,EyeOpen:1.0,await
 ,Text,,"27일차.\n남은 건 단 3일.",click

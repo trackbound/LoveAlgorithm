@@ -1,9 +1,9 @@
-LineID,Type,Speaker,Value,Next
+﻿LineID,Type,Speaker,Value,Next
 # ═══ 축제 Day 1 (Day 10) ═══
-,BG,,Black,await
+,BG,,BG_BlackCut:Cut,await
 ,Sound,,BGM:Stop:Fade:1.0,await
 ,FX,,FadeIn:1.0,await
-,BG,,CampusStreet/BG_Campus_Street1_Day:Cross:2.0,await
+,BG,,BG_Campus_Street1_Day:Cross:2.0,await
 ,Sound,,BGM:Daily1,>
 ,Text,,"대학 축제 첫째 날.\n캠퍼스가 평소와는 다른 활기로 가득하다.",click
 ,Text,,"노점이 줄지어 있고, 곳곳에서 음악이 흘러나온다.",click

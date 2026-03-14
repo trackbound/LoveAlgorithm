@@ -1,7 +1,7 @@
-LineID,Type,Speaker,Value,Next
+﻿LineID,Type,Speaker,Value,Next
 # ═══ Day 29 저녁 - 고백 전날 밤 ═══
 ,FX,,FadeOut:0.5,await
-,BG,,MyRoom/BG_MyRoom_Interior_Night,await
+,BG,,BG_MyRoom_Interior_Night:Cross,await
 ,Sound,,BGM:Night,>
 ,FX,,FadeIn:1.0,await
 ,Text,,"29일차 밤.\n내일이면... 모든 게 끝난다.",click

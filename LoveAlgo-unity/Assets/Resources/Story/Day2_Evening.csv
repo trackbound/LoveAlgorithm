@@ -1,7 +1,7 @@
-LineID,Type,Speaker,Value,Next
+﻿LineID,Type,Speaker,Value,Next
 # ═══ Day 2 저녁 - 하예은과 도서관에서 우연히 ═══
 ,FX,,FadeOut:0.5,await
-,BG,,Engineering/BG_Engineering_Corridor_Day,await
+,BG,,BG_Engineering_Corridor:Cross,await
 ,Sound,,BGM:Daily1,>
 ,FX,,FadeIn:1.0,await
 ,Text,,"하루 일정을 다 마치고to 나오려는데, 복도에서 누군가와 마주쳤다.",click

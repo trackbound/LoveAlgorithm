@@ -1,6 +1,6 @@
-LineID,Type,Speaker,Value,Next
+﻿LineID,Type,Speaker,Value,Next
 # ═══ Day 23 아침 - MT 후 일상 복귀 ═══
-,BG,,MyRoom/BG_MyRoom_Interior_Day,await
+,BG,,BG_MyRoom_Interior_Day:Cross,await
 ,Sound,,BGM:Daily1,>
 ,FX,,EyeOpen:1.0,await
 ,Text,,"23일차.\nMT에서 돌아온 지 하루. 아직 여운이 남아있다.",click

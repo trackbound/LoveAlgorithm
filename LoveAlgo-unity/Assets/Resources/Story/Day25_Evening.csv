@@ -1,7 +1,7 @@
-LineID,Type,Speaker,Value,Next
+﻿LineID,Type,Speaker,Value,Next
 # ═══ Day 25 저녁 - 3차 이벤트 전날, 도희원과 조우 ═══
 ,FX,,FadeOut:0.5,await
-,BG,,StudentCenter/BG_StudentCenter_Front_Night,await
+,BG,,BG_StudentCenter_Front_Night:Cross,await
 ,Sound,,BGM:Night,>
 ,FX,,FadeIn:1.0,await
 ,Text,,"저녁, 학생회관 앞을 지나가고 있었다.",click

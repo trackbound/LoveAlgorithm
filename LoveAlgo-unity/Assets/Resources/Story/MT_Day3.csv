@@ -1,9 +1,9 @@
-LineID,Type,Speaker,Value,Next
+﻿LineID,Type,Speaker,Value,Next
 # ═══ MT Day 3 (Day 22) - 마지막 날 ═══
-,BG,,Black,await
+,BG,,BG_BlackCut:Cut,await
 ,Sound,,BGM:Stop:Fade:1.0,await
 ,FX,,FadeIn:1.0,await
-,BG,,MT/BG_MT_Day:Cross:2.0,await
+,BG,,BG_MT_Day:Cross:2.0,await
 ,Sound,,BGM:Morning,>
 ,Text,,"MT 마지막 날 아침.\n짐을 싸며 아쉬움이 밀려온다.",click
 ,Char,,C:Enter:Daeun:Smile,await

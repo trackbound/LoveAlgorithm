@@ -85,7 +85,7 @@ namespace LoveAlgo.Core
         /// </summary>
         public void ChangePhase(GamePhase newPhase)
         {
-            if (CurrentPhase == newPhase && newPhase != GamePhase.DayLoop)
+            if (CurrentPhase == newPhase && newPhase != GamePhase.DayLoop && newPhase != GamePhase.Title)
             {
                 Debug.LogWarning($"[GameManager] ChangePhase 중복 호출 무시: {newPhase}");
                 return;

@@ -191,6 +191,13 @@ namespace LoveAlgo.Shop
 
             if (!confirmed) return;
 
+            // 확인 후 소지금 재검증 (대기 중 소비 가능)
+            if (gs.Money < total)
+            {
+                PopupManager.Instance?.Toast("소지금 부족", "소지금이 부족합니다.");
+                return;
+            }
+
             // 구매 실행
             gs.AddMoney(-total);
             foreach (var kv in cart)

@@ -1,10 +1,10 @@
-LineID,Type,Speaker,Value,Next
+﻿LineID,Type,Speaker,Value,Next
 # ═══ 하예은 해피 엔딩 ═══
-,BG,,Black,await
+,BG,,BG_BlackCut:Cut,await
 ,Sound,,BGM:Stop:Fade:2.0,await
 ,Text,,"......",click
 ,FX,,FadeIn:1.0,await
-,BG,,CampusStreet/BG_Campus_Street1_Day:Cross:2.0,await
+,BG,,BG_Campus_Street1_Day:Cross:2.0,await
 ,Sound,,BGM:Daily1,>
 ,Text,,"학기 마지막 날. 약속한 장소로 향했다.",click
 ,Char,,C:Enter:Yeun:Smile,await

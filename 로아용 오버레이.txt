@@ -1,6 +1,0 @@
-Roa_Mob_1	Roa_Mob_Default
-Roa_Mob_2	Roa_Mob_Negative
-Roa_Mob_3	Roa_Mob_Positive
-Roa_PC_1	Roa_PC_Default
-Roa_PC_2	Roa_PC_Negative
-Roa_PC_3	Roa_PC_Positive

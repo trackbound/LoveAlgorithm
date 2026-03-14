@@ -17,7 +17,7 @@ namespace LoveAlgo.Data
         public static readonly Dictionary<string, string> Paths = new(StringComparer.OrdinalIgnoreCase)
         {
             // (root)
-            { "BG_Black", "Backgrounds/BG_Black" },
+            { "BG_BlackCut", "Backgrounds/BG_BlackCut" },
 
             // CampusStreet
             { "BG_Campus_Street1_Day", "Backgrounds/CampusStreet/BG_Campus_Street1_Day" },
@@ -26,6 +26,10 @@ namespace LoveAlgo.Data
             // ClubRoom
             { "BG_ClubRoom_Interior_Day", "Backgrounds/ClubRoom/BG_ClubRoom_Interior_Day" },
             { "BG_ClubRoom_Interior_Day_Cherry", "Backgrounds/ClubRoom/BG_ClubRoom_Interior_Day_Cherry" },
+
+            // ConvenienceStore
+            { "BG_ConvenienceStore_Inside", "Backgrounds/ConvenienceStore/BG_ConvenienceStore_Inside" },
+            { "BG_ConvenienceStore_Night", "Backgrounds/ConvenienceStore/BG_ConvenienceStore_Night" },
 
             // Engineering
             { "BG_Engineering_Classroom", "Backgrounds/Engineering/BG_Engineering_Classroom" },
@@ -57,7 +61,8 @@ namespace LoveAlgo.Data
         public static readonly Dictionary<string, string> LegacyNames = new(StringComparer.OrdinalIgnoreCase)
         {
             // ── 영어 별칭 (하위 호환) ──
-            { "Black", "BG_Black" },
+            { "Black", "BG_BlackCut" },
+            { "BG_Black", "BG_BlackCut" },
             { "MyRoom", "BG_MyRoom_Interior_Day" },
             { "MyRoom_Night", "BG_MyRoom_Interior_Night" },
             { "Bed", "BG_MyRoom_Bed_Day" },

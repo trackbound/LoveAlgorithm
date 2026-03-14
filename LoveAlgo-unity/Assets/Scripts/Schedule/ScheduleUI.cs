@@ -197,11 +197,12 @@ namespace LoveAlgo.Schedule
 
             if (confirmed)
             {
-                // 상하차 사용 기록
+                onScheduleSelected?.Invoke(type);
+
+                // 상하차 사용 기록 (콜백 성공 후)
                 if (type == ScheduleType.PartTime_Loading)
                     usedLoadingToday = true;
 
-                onScheduleSelected?.Invoke(type);
                 await HideAsync();
             }
         }

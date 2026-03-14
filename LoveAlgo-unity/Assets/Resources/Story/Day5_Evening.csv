@@ -1,7 +1,7 @@
-LineID,Type,Speaker,Value,Next
+﻿LineID,Type,Speaker,Value,Next
 # ═══ Day 5 저녁 - 내일 이벤트 예고 (로아) ═══
 ,FX,,FadeOut:0.5,await
-,BG,,MyRoom/BG_MyRoom_Interior_Night,await
+,BG,,BG_MyRoom_Interior_Night:Cross,await
 ,Sound,,BGM:Night,>
 ,FX,,FadeIn:1.0,await
 ,Text,,"집에 돌아와 쉬고 있는데, 핸드폰이 울렸다.",click

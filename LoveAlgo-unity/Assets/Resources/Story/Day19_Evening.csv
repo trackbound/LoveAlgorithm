@@ -1,7 +1,7 @@
-LineID,Type,Speaker,Value,Next
+﻿LineID,Type,Speaker,Value,Next
 # ═══ Day 19 저녁 - MT 전날, 하예은과 조우 ═══
 ,FX,,FadeOut:0.5,await
-,BG,,Engineering/BG_Engineering_Corridor_Day,await
+,BG,,BG_Engineering_Corridor:Cross,await
 ,Sound,,BGM:Daily2,>
 ,FX,,FadeIn:1.0,await
 ,Text,,"집에 가려는데, 복도에서 하예은과 마주쳤다.",click

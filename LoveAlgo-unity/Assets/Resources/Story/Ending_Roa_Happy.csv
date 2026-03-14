@@ -1,11 +1,11 @@
-LineID,Type,Speaker,Value,Next
+﻿LineID,Type,Speaker,Value,Next
 # ═══ 로아 해피 엔딩 - 히든 루트 (피로≥70 + 포인트 충족) ═══
-,BG,,Black,await
+,BG,,BG_BlackCut:Cut,await
 ,Sound,,BGM:Stop:Fade:2.0,await
 ,Text,,"......",click
 ,Text,,"피곤하다.\n최근 들어 점점 더 피곤해지는 것 같다.",click
 ,FX,,FadeIn:1.0,await
-,BG,,MyRoom/BG_MyRoom_Interior_Night_LightOn:Cross:2.0,await
+,BG,,BG_MyRoom_Interior_Night_LightOn:Cross:2.0,await
 ,Sound,,BGM:Night,>
 ,Text,,"날이 늦었는데 잠이 오지 않는다.\n그때, 익숙한 목소리가 들렸다.",click
 # 로아 등장

@@ -1,6 +1,6 @@
-LineID,Type,Speaker,Value,Next
+﻿LineID,Type,Speaker,Value,Next
 # ═══ Day 3 아침 - 이봄 첫 대화 ═══
-,BG,,MyRoom/BG_MyRoom_Interior_Day,await
+,BG,,BG_MyRoom_Interior_Day:Cross,await
 ,Sound,,BGM:Daily1,>
 ,FX,,EyeOpen:1.0,await
 ,Text,,"3일차.\n대학 생활에 조금씩 익숙해지고 있다.",click
@@ -14,7 +14,7 @@ LineID,Type,Speaker,Value,Next
 ,Overlay,,FadeOut:0.3,>
 # 캠퍼스
 ,FX,,FadeOut:1.0,await
-,BG,,CampusStreet/BG_Campus_Street2_Day,await
+,BG,,BG_Campus_Street2_Day:Cross,await
 ,Sound,,BGM:Daily2,>
 ,FX,,FadeIn:1.0,await
 ,Text,,"캠퍼스를 걷다 보니 벤치에 누군가 앉아 있었다.\n스케치북을 들고 무언가를 그리고 있다.",click

@@ -1,7 +1,7 @@
-LineID,Type,Speaker,Value,Next
+﻿LineID,Type,Speaker,Value,Next
 # ═══ Day 15 저녁 - 서다은과 도서관 ═══
 ,FX,,FadeOut:0.5,await
-,BG,,Library/BG_Library_Day,await
+,BG,,BG_Library_Day:Cross,await
 ,Sound,,BGM:Daeun,>
 ,FX,,FadeIn:1.0,await
 ,Text,,"저녁 시간, 도서관에서 공부를 하고 있었다.",click

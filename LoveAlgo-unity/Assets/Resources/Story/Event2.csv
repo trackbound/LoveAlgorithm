@@ -1,10 +1,10 @@
-LineID,Type,Speaker,Value,Next
+﻿LineID,Type,Speaker,Value,Next
 # ═══ 2차 개인 이벤트 (Day 16) ═══
 # 히로인 선택 후 데이트 이벤트, 선택한 히로인에게 +6 포인트
-,BG,,Black,await
+,BG,,BG_BlackCut:Cut,await
 ,Sound,,BGM:Stop:Fade:1.0,await
 ,FX,,FadeIn:1.0,await
-,BG,,CampusStreet/BG_Campus_Street1_Day:Cross:2.0,await
+,BG,,BG_Campus_Street1_Day:Cross:2.0,await
 ,Sound,,BGM:Daily1,>
 ,Text,,"중간고사가 끝나고 여유로운 주말.",click
 ,Text,,"누구와 보내고 싶은 하루.",click

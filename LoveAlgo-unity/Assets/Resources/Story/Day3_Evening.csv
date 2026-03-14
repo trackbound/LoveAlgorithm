@@ -1,13 +1,13 @@
-LineID,Type,Speaker,Value,Next
+﻿LineID,Type,Speaker,Value,Next
 # ═══ Day 3 저녁 - 도희원과 학생회관 ═══
 ,FX,,FadeOut:0.5,await
-,BG,,StudentCenter/BG_StudentCenter_Front_Night,await
+,BG,,BG_StudentCenter_Front_Night:Cross,await
 ,Sound,,BGM:Night,>
 ,FX,,FadeIn:1.0,await
 ,Text,,"밤이 되어 학생회관 앞을 지나가려는데, 불이 켜진 사무실이 보였다.",click
 ,Text,,"이 시간에 누가 아직 남아 있는 걸까.",click
 # 도희원 등장
-,BG,,StudentCenter/BG_StudentCenter_Office_Day,await
+,BG,,BG_StudentCenter_Office:Cross,await
 ,Char,,C:Enter:Heewon,await
 ,Sound,,BGM:Heewon,>
 ,Text,도희원,"...누구세요? 아, {{PlayerName}} 씨?",click
@@ -37,7 +37,7 @@ leave_heewon,Text,{{PlayerName}},그럼 무리하지 마세요. 먼저 가볼게
 # ─── 합류 ───
 heewon_end,Char,,C:Exit,await
 ,Sound,,BGM:Night,>
-,BG,,StudentCenter/BG_StudentCenter_Front_Night,await
+,BG,,BG_StudentCenter_Front_Night:Cross,await
 ,Text,,"밤공기가 차갑다.\n집으로 돌아가자.",click
 ,FX,,FadeOut:1.0,await
 ,Flow,,End,>

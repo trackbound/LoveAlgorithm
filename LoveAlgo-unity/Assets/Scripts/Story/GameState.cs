@@ -98,7 +98,7 @@ namespace LoveAlgo.Story
 
         public void AddMoney(int value)
         {
-            money += value;
+            money = Mathf.Max(0, money + value);
             Debug.Log($"[GameState] Money += {value} (현재: {money})");
         }
 

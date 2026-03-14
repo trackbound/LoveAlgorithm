@@ -1,10 +1,10 @@
-LineID,Type,Speaker,Value,Next
+﻿LineID,Type,Speaker,Value,Next
 # ═══ 1차 개인 이벤트 (Day 6) ═══
 # 히로인 선택 후 데이트 이벤트, 선택한 히로인에게 +3 포인트
-,BG,,Black,await
+,BG,,BG_BlackCut:Cut,await
 ,Sound,,BGM:Stop:Fade:1.0,await
 ,FX,,FadeIn:1.0,await
-,BG,,CampusStreet/BG_Campus_Street1_Day:Cross:2.0,await
+,BG,,BG_Campus_Street1_Day:Cross:2.0,await
 ,Sound,,BGM:Daily1,>
 ,Text,,"주말이다.\n누군가와 시간을 보내고 싶은 기분이 들었다.",click
 ,Text,,"누구에게 연락해볼까?",click

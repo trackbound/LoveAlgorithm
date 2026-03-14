@@ -88,14 +88,12 @@ namespace LoveAlgo.Shop
 
             if (heroineSlotPrefab == null || heroineListContainer == null) return;
 
-            string[] names = { "하예은", "서다은", "이봄", "도희원", "로아" };
-
             for (int i = 0; i < GameConstants.HeroineIds.Length; i++)
             {
                 var slot = Instantiate(heroineSlotPrefab, heroineListContainer);
                 string heroineId = GameConstants.HeroineIds[i];
                 int remaining = ShopManager.GetRemainingGiftPoints(heroineId);
-                slot.Setup(heroineId, names[i], remaining, OnHeroineSelected);
+                slot.Setup(heroineId, GameConstants.HeroineNames[i], remaining, OnHeroineSelected);
                 activeHeroineSlots.Add(slot);
             }
         }
@@ -147,15 +145,9 @@ namespace LoveAlgo.Shop
 
         string GetHeroineName(string id)
         {
-            return id switch
-            {
-                "Yeun" => "하예은",
-                "Daeun" => "서다은",
-                "Bom" => "이봄",
-                "Heewon" => "도희원",
-                "Roa" => "로아",
-                _ => id
-            };
+            return GameConstants.HeroineById.TryGetValue(id, out var config)
+                ? config.DisplayName
+                : id;
         }
 
         void ClearItemList()
