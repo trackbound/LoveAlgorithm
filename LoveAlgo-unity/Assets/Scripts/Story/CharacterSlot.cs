@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
-using LoveAlgo.Data;
 using UnityEngine;
 using UnityEngine.UI;
 using DG.Tweening;
@@ -317,12 +316,11 @@ namespace LoveAlgo.Story
 
         /// <summary>
         /// 스프라이트 로드 (캐시 지원, Default 폴백)
-        /// CharacterEmoteMapping을 통해 표정 이름 → 실제 경로(01_Default 등) 해석
+        /// 경로: Characters/{character}/{emote}
         /// </summary>
         Sprite LoadSprite(string character, string emote)
         {
-            // CharacterEmoteMapping으로 경로 해석 (한글 별칭, 숫자 접두사 생략 모두 지원)
-            string path = CharacterEmoteMapping.GetPath(character, emote);
+            string path = $"Characters/{character}/{emote}";
 
             if (spriteCache.TryGetValue(path, out var cached))
             {
@@ -335,7 +333,7 @@ namespace LoveAlgo.Story
             // Default로 폴백
             if (sprite == null && emote != "Default")
             {
-                string fallback = CharacterEmoteMapping.GetPath(character, "Default");
+                string fallback = $"Characters/{character}/Default";
                 if (spriteCache.TryGetValue(fallback, out cached))
                 {
                     TouchCache(fallback);

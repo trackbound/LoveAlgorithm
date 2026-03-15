@@ -1,6 +1,7 @@
 ﻿LineID,Type,Speaker,Value,Next
 # 0일차
-DEMO_0,BG,,BG_BlackCut:Cut,await
+,BG,,BG_BlackCut:Cut,await
+,FX,,Wait:0.5,await
 ,Text,,어... <wait=1/>됐다.,click
 ,Sound,,BGM:Roa,>
 

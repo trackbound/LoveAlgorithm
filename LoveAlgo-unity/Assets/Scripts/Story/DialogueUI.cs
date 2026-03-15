@@ -118,21 +118,10 @@ namespace LoveAlgo.Story
             if (rectTransform != null)
                 originalY = rectTransform.anchoredPosition.y;
 
-            // Auto 버튼 기본 색상을 즉시 캡처 (타이밍 문제 방지)
-            if (autoButton != null)
-            {
-                var btnImage = autoButton.GetComponent<Image>();
-                if (btnImage != null)
-                    autoButtonNormalColor = btnImage.color;
-            }
-
             HideNextIndicator();
             SetupButtons();
             LoadMonologueDotSprites();
             if (showButtonObject != null) showButtonObject.SetActive(false);
-
-            // ScriptRunner의 Auto 모드 변경 이벤트 구독
-            SubscribeAutoModeEvent();
 
             // 저장된 텍스트 속도 복원
             float savedSpeed = PlayerPrefs.GetFloat("TextSpeed", 0.4f);
@@ -555,10 +544,6 @@ namespace LoveAlgo.Story
 
             // DOTween: 이 오브젝트에 연결된 모든 트윈 정리
             DOTween.Kill(nextIndicator);
-
-            // Auto 모드 이벤트 구독 해제
-            if (ScriptRunner.IsAlive)
-                ScriptRunner.Instance.OnAutoModeChanged -= UpdateAutoVisual;
         }
 
         /// <summary>
@@ -602,29 +587,6 @@ namespace LoveAlgo.Story
         public void RequestSkip()
         {
             CompleteText();
-        }
-
-        /// <summary>
-        /// ScriptRunner의 Auto 모드 변경 이벤트 구독
-        /// </summary>
-        void SubscribeAutoModeEvent()
-        {
-            // Awake 시점에 ScriptRunner가 아직 없을 수 있으므로 지연 구독
-            SubscribeAutoModeEventAsync().Forget();
-        }
-
-        async UniTaskVoid SubscribeAutoModeEventAsync()
-        {
-            // ScriptRunner가 준비될 때까지 대기 (최대 5초)
-            float elapsed = 0f;
-            while (!ScriptRunner.IsAlive && elapsed < 5f)
-            {
-                await UniTask.Yield();
-                elapsed += Time.deltaTime;
-            }
-
-            if (ScriptRunner.IsAlive)
-                ScriptRunner.Instance.OnAutoModeChanged += UpdateAutoVisual;
         }
 
         #region 표시/숨김
@@ -920,33 +882,16 @@ namespace LoveAlgo.Story
             PopupManager.Instance?.ShowSettings();
         }
 
-        [Header("Auto 모드 표시")]
-        [SerializeField] GameObject autoModeIndicator;  // "AUTO" 아이콘/텍스트
-        [SerializeField] Color autoButtonActiveColor = Color.yellow;
-        Color autoButtonNormalColor;
-
         void OnAutoClick()
         {
             var runner = ScriptRunner.Instance;
             if (runner != null)
             {
                 runner.ToggleAutoMode();
-                UpdateAutoVisual(runner.IsAutoMode);
+                // ButtonEX Toggle 모드가 시각 피드백 처리
+                var btnEX = autoButton?.GetComponent<ButtonEX>();
+                if (btnEX != null) btnEX.SetToggle(runner.IsAutoMode);
             }
-        }
-
-        public void UpdateAutoVisual(bool isAuto)
-        {
-            if (autoButton != null)
-            {
-                var btnImage = autoButton.GetComponent<Image>();
-                if (btnImage != null)
-                {
-                    btnImage.color = isAuto ? autoButtonActiveColor : autoButtonNormalColor;
-                }
-            }
-            if (autoModeIndicator != null)
-                autoModeIndicator.SetActive(isAuto);
         }
 
         void OnLogClick()

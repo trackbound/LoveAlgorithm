@@ -115,7 +115,7 @@ namespace LoveAlgo.Shop
 
             if (!confirmed) return;
 
-            int points = ShopManager.GiveGift(selectedItem.Id, heroineId);
+            int points = ShopManager.GiveGift(selectedItem.Id, heroineId, IsEvent3OrLater());
 
             if (points > 0)
             {
@@ -148,6 +148,15 @@ namespace LoveAlgo.Shop
             return GameConstants.HeroineById.TryGetValue(id, out var config)
                 ? config.DisplayName
                 : id;
+        }
+
+        /// <summary>현재 3차 이벤트(FreeTime5) 이후인지 판정</summary>
+        static bool IsEvent3OrLater()
+        {
+            var gm = GameManager.Instance;
+            if (gm == null) return false;
+            var dayInfo = GameTimeline.GetDayInfo(gm.CurrentDay);
+            return dayInfo != null && dayInfo.Arc >= StoryArc.FreeTime5;
         }
 
         void ClearItemList()

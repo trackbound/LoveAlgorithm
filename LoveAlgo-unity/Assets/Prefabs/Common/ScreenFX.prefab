@@ -416,10 +416,30 @@ MonoBehaviour:
   stageCanvas: {fileID: 0}
   stageCamera: {fileID: 0}
   stageTransform: {fileID: 0}
+  dialogueUITransform: {fileID: 0}
   defaultFadeDuration: 0.5
   defaultFlashDuration: 0.1
   shakeFrequency: 25
   noiseSeed: 0
+  shakeAttackRatio: 0.12
+  shakeDecayPower: 2.2
+  cameraPositionScale: 0.01
   shakePresetWeak: 10
   shakePresetMedium: 25
   shakePresetStrong: 50
+  stageShakeXMultiplier: 1
+  stageShakeYMultiplier: 0.35
+  stageShakeRotationMultiplier: 0.06
+  stageShakeFrequencyMultiplier: 1
+  stageImpactFrequencyHz: 5
+  stageImpactDamping: 5.2
+  dialogueShakeXMultiplier: 1
+  dialogueShakeYMultiplier: 0.12
+  dialogueShakeRotationMultiplier: 0.02
+  dialogueShakeFrequencyMultiplier: 1
+  dialogueImpactFrequencyHz: 6
+  dialogueImpactDamping: 6.5
+  shakeHitlagSeconds: 0.025
+  impactFlashStrengthThreshold: 20
+  impactFlashAlpha: 0.3
+  impactFlashDuration: 0.06

@@ -103,6 +103,7 @@ MonoBehaviour:
   m_VerticalAlignment: 256
   m_textAlignment: 65535
   m_characterSpacing: 8.6
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -232,7 +233,6 @@ MonoBehaviour:
   eventText: {fileID: 3930862799418877608}
   placeText: {fileID: 3043569123387543093}
   eventLine: {fileID: 0}
-  slideDistance: 200
   enterDuration: 0.4
   exitDuration: 0.35
   defaultHoldDuration: 2
@@ -351,6 +351,7 @@ MonoBehaviour:
   m_VerticalAlignment: 256
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0

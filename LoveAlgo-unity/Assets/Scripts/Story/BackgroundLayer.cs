@@ -4,7 +4,6 @@ using UnityEngine;
 using UnityEngine.UI;
 using DG.Tweening;
 using LoveAlgo.Core;
-using LoveAlgo.Data;
 
 namespace LoveAlgo.Story
 {
@@ -184,21 +183,11 @@ namespace LoveAlgo.Story
         }
 
         /// <summary>
-        /// 스프라이트 로드 (BgPathMapping 데이터 사용)
+        /// 스프라이트 로드 — Backgrounds/{bgName} 경로로 직접 로드
         /// </summary>
         Sprite LoadSprite(string bgName)
         {
-            var candidates = BgPathResolver.ResolvePaths(bgName);
-            for (int i = 0; i < candidates.Count; i++)
-            {
-                var sprite = Resources.Load<Sprite>(candidates[i]);
-                if (sprite != null)
-                {
-                    return sprite;
-                }
-            }
-
-            return null;
+            return Resources.Load<Sprite>($"Backgrounds/{bgName}");
         }
 
         /// <summary>

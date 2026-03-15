@@ -282,6 +282,8 @@ MonoBehaviour:
   backCanvasGroup: {fileID: 3759857655725944968}
   imageContainer: {fileID: 7916410087051710459}
   fadeDuration: 0.3
+  exitDuration: 0.25
   emoteFadeDuration: 0.2
   enterOffset: 100
+  exitSlideDistance: 30
   characterDatabase: {fileID: 11400000, guid: c3e9b03245e024d46b8565778375d528, type: 2}

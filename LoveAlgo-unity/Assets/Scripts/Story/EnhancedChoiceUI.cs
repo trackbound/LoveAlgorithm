@@ -148,11 +148,11 @@ namespace LoveAlgo.Story
                 }
                 else
                 {
-                    // 폴백: HoverButton
-                    var hoverButton = buttonObj.GetComponent<HoverButton>();
-                    if (hoverButton != null)
+                    // 폴백: ButtonEX
+                    var buttonEX = buttonObj.GetComponent<ButtonEX>();
+                    if (buttonEX != null)
                     {
-                        hoverButton.SetText(option.ButtonText);
+                        buttonEX.SetText(option.ButtonText);
                     }
                     else
                     {

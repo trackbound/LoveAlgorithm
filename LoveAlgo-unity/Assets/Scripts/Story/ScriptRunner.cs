@@ -929,7 +929,7 @@ namespace LoveAlgo.Story
 
             // 3. 배경 → 블랙 + 눈 감긴 상태 세팅 (다음 아침 EyeOpen용)
             await ExecuteBGAsync(
-                new ScriptLine("", LineType.BG, "", "Black", NextType.Immediate), ct);
+                new ScriptLine("", LineType.BG, "", "BG_BlackCut", NextType.Immediate), ct);
             fx?.EyeCloseImmediate();
 
             // 4. 페이드 오버레이 해제 (BG Black + Eye Bar 모두 검정, 시각적 차이 없음)

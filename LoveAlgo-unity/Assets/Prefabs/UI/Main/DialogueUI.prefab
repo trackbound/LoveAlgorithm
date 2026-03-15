@@ -112,6 +112,7 @@ MonoBehaviour:
   m_VerticalAlignment: 256
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 61.8
   m_lineSpacingMax: 0
@@ -157,8 +158,7 @@ GameObject:
   - component: {fileID: 2196582712670247150}
   - component: {fileID: 4491937537289696252}
   - component: {fileID: 5763639000684040219}
-  - component: {fileID: 6560468012373591211}
-  - component: {fileID: 388299961812884759}
+  - component: {fileID: 8690403747544743459}
   m_Layer: 0
   m_Name: Auto
   m_TagString: Untagged
@@ -267,7 +267,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
---- !u!114 &6560468012373591211
+--- !u!114 &8690403747544743459
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -276,56 +276,29 @@ MonoBehaviour:
   m_GameObject: {fileID: 579250272978982816}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2bcfa84d821221c4e941d580e5597a98, type: 3}
+  m_Script: {fileID: 11500000, guid: 56fc0838e76f26e499c3fb90f6590636, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.UI.HoverButton
-  hoverMode: 1
-  targetImage: {fileID: 4491937537289696252}
-  normalSprite: {fileID: 21300000, guid: 9f0713d26af79a843906a0d3e9d625ea, type: 3}
-  hoverSprite: {fileID: 21300000, guid: a96bda7c80860144c9ad279883636723, type: 3}
-  pressedSprite: {fileID: 0}
+  m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.UI.ButtonEX
+  mode: 2
+  overrideTargetImage: {fileID: 4491937537289696252}
+  normalSprite: {fileID: 0}
+  hoverSprite: {fileID: 0}
+  onSprite: {fileID: 21300000, guid: 79894f3c40050814282f96a9420890bd, type: 3}
+  offSprite: {fileID: 21300000, guid: 9f0713d26af79a843906a0d3e9d625ea, type: 3}
+  onHoverSprite: {fileID: 21300000, guid: a96bda7c80860144c9ad279883636723, type: 3}
+  offHoverSprite: {fileID: 21300000, guid: a96bda7c80860144c9ad279883636723, type: 3}
   normalChild: {fileID: 0}
   hoverChild: {fileID: 0}
   pressedChild: {fileID: 0}
+  usePressedTint: 1
+  pressedTint: {r: 0.85, g: 0.85, b: 0.85, a: 1}
+  colorTargets: []
+  normalColors: []
+  hoverColors: []
   useScaleEffect: 0
   hoverScale: 1.05
   pressedScale: 0.95
   scaleDuration: 0.1
---- !u!114 &388299961812884759
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 579250272978982816}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5c76472563f3c884d8f348d479b00f75, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.UI.ToggleButton
-  toggleMode: 0
-  isOn: 0
-  targetImage: {fileID: 4491937537289696252}
-  offSprite: {fileID: 21300000, guid: 9f0713d26af79a843906a0d3e9d625ea, type: 3}
-  offHoverSprite: {fileID: 21300000, guid: a96bda7c80860144c9ad279883636723, type: 3}
-  onSprite: {fileID: 21300000, guid: 79894f3c40050814282f96a9420890bd, type: 3}
-  onHoverSprite: {fileID: 21300000, guid: a96bda7c80860144c9ad279883636723, type: 3}
-  offChild: {fileID: 0}
-  offHoverChild: {fileID: 0}
-  onChild: {fileID: 0}
-  onHoverChild: {fileID: 0}
-  useColorTint: 1
-  colorTarget: {fileID: 0}
-  normalColor: {r: 1, g: 1, b: 1, a: 1}
-  pressedColor: {r: 0.85, g: 0.85, b: 0.85, a: 1}
-  disabledColor: {r: 0.6, g: 0.6, b: 0.6, a: 0.5}
-  colorFadeDuration: 0.1
-  useScaleEffect: 0
-  hoverScale: 1.05
-  scaleDuration: 0.1
-  playSound: 1
-  toggleOnSfx: ToggleOn
-  toggleOffSfx: ToggleOff
 --- !u!1 &1210824994466349200
 GameObject:
   m_ObjectHideFlags: 0
@@ -338,7 +311,7 @@ GameObject:
   - component: {fileID: 3044373222252989639}
   - component: {fileID: 6787139351577922093}
   - component: {fileID: 2288302811830302595}
-  - component: {fileID: 6151626315698056942}
+  - component: {fileID: 6137433630254707944}
   m_Layer: 0
   m_Name: Load
   m_TagString: Untagged
@@ -447,7 +420,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
---- !u!114 &6151626315698056942
+--- !u!114 &6137433630254707944
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -456,17 +429,25 @@ MonoBehaviour:
   m_GameObject: {fileID: 1210824994466349200}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2bcfa84d821221c4e941d580e5597a98, type: 3}
+  m_Script: {fileID: 11500000, guid: 56fc0838e76f26e499c3fb90f6590636, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.UI.HoverButton
-  hoverMode: 1
-  targetImage: {fileID: 6787139351577922093}
+  m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.UI.ButtonEX
+  mode: 1
+  overrideTargetImage: {fileID: 6787139351577922093}
   normalSprite: {fileID: 21300000, guid: c20cf4e018943d74689c8ac3ed5e4511, type: 3}
   hoverSprite: {fileID: 21300000, guid: f2f97461f0ff3f14ebf3b2bae1d884fb, type: 3}
-  pressedSprite: {fileID: 0}
+  onSprite: {fileID: 0}
+  offSprite: {fileID: 0}
+  onHoverSprite: {fileID: 0}
+  offHoverSprite: {fileID: 0}
   normalChild: {fileID: 0}
   hoverChild: {fileID: 0}
   pressedChild: {fileID: 0}
+  usePressedTint: 1
+  pressedTint: {r: 0.85, g: 0.85, b: 0.85, a: 1}
+  colorTargets: []
+  normalColors: []
+  hoverColors: []
   useScaleEffect: 0
   hoverScale: 1.05
   pressedScale: 0.95
@@ -649,6 +630,7 @@ MonoBehaviour:
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 22.5
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -701,7 +683,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &3220286301399149567
 RectTransform:
   m_ObjectHideFlags: 0
@@ -831,7 +813,7 @@ GameObject:
   - component: {fileID: 5113873833610848637}
   - component: {fileID: 3399895572812914133}
   - component: {fileID: 1520351635953896926}
-  - component: {fileID: 2564922316231614354}
+  - component: {fileID: 7196811871577585369}
   m_Layer: 0
   m_Name: Title
   m_TagString: Untagged
@@ -940,7 +922,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
---- !u!114 &2564922316231614354
+--- !u!114 &7196811871577585369
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -949,17 +931,25 @@ MonoBehaviour:
   m_GameObject: {fileID: 5441486065902426640}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2bcfa84d821221c4e941d580e5597a98, type: 3}
+  m_Script: {fileID: 11500000, guid: 56fc0838e76f26e499c3fb90f6590636, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.UI.HoverButton
-  hoverMode: 1
-  targetImage: {fileID: 0}
+  m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.UI.ButtonEX
+  mode: 1
+  overrideTargetImage: {fileID: 0}
   normalSprite: {fileID: 0}
   hoverSprite: {fileID: 21300000, guid: 1272ccb40ff051a4ca977a400330b706, type: 3}
-  pressedSprite: {fileID: 0}
+  onSprite: {fileID: 0}
+  offSprite: {fileID: 0}
+  onHoverSprite: {fileID: 0}
+  offHoverSprite: {fileID: 0}
   normalChild: {fileID: 0}
   hoverChild: {fileID: 0}
   pressedChild: {fileID: 0}
+  usePressedTint: 1
+  pressedTint: {r: 0.85, g: 0.85, b: 0.85, a: 1}
+  colorTargets: []
+  normalColors: []
+  hoverColors: []
   useScaleEffect: 0
   hoverScale: 1.05
   pressedScale: 0.95
@@ -976,7 +966,7 @@ GameObject:
   - component: {fileID: 4356548906345673556}
   - component: {fileID: 6619414587703222964}
   - component: {fileID: 135879885529116274}
-  - component: {fileID: 713466179012001151}
+  - component: {fileID: 4485645961063455812}
   m_Layer: 0
   m_Name: Hide
   m_TagString: Untagged
@@ -1085,7 +1075,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
---- !u!114 &713466179012001151
+--- !u!114 &4485645961063455812
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1094,17 +1084,25 @@ MonoBehaviour:
   m_GameObject: {fileID: 6267112567338196896}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2bcfa84d821221c4e941d580e5597a98, type: 3}
+  m_Script: {fileID: 11500000, guid: 56fc0838e76f26e499c3fb90f6590636, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.UI.HoverButton
-  hoverMode: 1
-  targetImage: {fileID: 6619414587703222964}
+  m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.UI.ButtonEX
+  mode: 1
+  overrideTargetImage: {fileID: 6619414587703222964}
   normalSprite: {fileID: 21300000, guid: d292b51ca8890d748b80f6a16c832b5e, type: 3}
   hoverSprite: {fileID: 21300000, guid: 16f89294a3005c642a432eb6ee83a643, type: 3}
-  pressedSprite: {fileID: 0}
+  onSprite: {fileID: 0}
+  offSprite: {fileID: 0}
+  onHoverSprite: {fileID: 0}
+  offHoverSprite: {fileID: 0}
   normalChild: {fileID: 0}
   hoverChild: {fileID: 0}
   pressedChild: {fileID: 0}
+  usePressedTint: 1
+  pressedTint: {r: 0.85, g: 0.85, b: 0.85, a: 1}
+  colorTargets: []
+  normalColors: []
+  hoverColors: []
   useScaleEffect: 0
   hoverScale: 1.05
   pressedScale: 0.95
@@ -1121,7 +1119,7 @@ GameObject:
   - component: {fileID: 4804149240635632786}
   - component: {fileID: 3190976054161602987}
   - component: {fileID: 8461221882483127556}
-  - component: {fileID: 3349732967456338481}
+  - component: {fileID: 7056684048720824027}
   m_Layer: 0
   m_Name: Save
   m_TagString: Untagged
@@ -1230,7 +1228,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
---- !u!114 &3349732967456338481
+--- !u!114 &7056684048720824027
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1239,17 +1237,25 @@ MonoBehaviour:
   m_GameObject: {fileID: 7060227628932811540}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2bcfa84d821221c4e941d580e5597a98, type: 3}
+  m_Script: {fileID: 11500000, guid: 56fc0838e76f26e499c3fb90f6590636, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.UI.HoverButton
-  hoverMode: 1
-  targetImage: {fileID: 3190976054161602987}
+  m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.UI.ButtonEX
+  mode: 1
+  overrideTargetImage: {fileID: 3190976054161602987}
   normalSprite: {fileID: 21300000, guid: 6f1c01ae585675d4987f4dae6f643fae, type: 3}
   hoverSprite: {fileID: 21300000, guid: cfc98974463579942800fa71200f25ba, type: 3}
-  pressedSprite: {fileID: 0}
+  onSprite: {fileID: 0}
+  offSprite: {fileID: 0}
+  onHoverSprite: {fileID: 0}
+  offHoverSprite: {fileID: 0}
   normalChild: {fileID: 0}
   hoverChild: {fileID: 0}
   pressedChild: {fileID: 0}
+  usePressedTint: 1
+  pressedTint: {r: 0.85, g: 0.85, b: 0.85, a: 1}
+  colorTargets: []
+  normalColors: []
+  hoverColors: []
   useScaleEffect: 0
   hoverScale: 1.05
   pressedScale: 0.95
@@ -1266,7 +1272,7 @@ GameObject:
   - component: {fileID: 4963879358281191140}
   - component: {fileID: 7297898015155994071}
   - component: {fileID: 1718695856016186888}
-  - component: {fileID: 7648808050818385732}
+  - component: {fileID: 1291565505171656794}
   m_Layer: 0
   m_Name: Config
   m_TagString: Untagged
@@ -1375,7 +1381,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
---- !u!114 &7648808050818385732
+--- !u!114 &1291565505171656794
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1384,17 +1390,25 @@ MonoBehaviour:
   m_GameObject: {fileID: 7468220960299843163}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2bcfa84d821221c4e941d580e5597a98, type: 3}
+  m_Script: {fileID: 11500000, guid: 56fc0838e76f26e499c3fb90f6590636, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.UI.HoverButton
-  hoverMode: 1
-  targetImage: {fileID: 7297898015155994071}
+  m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.UI.ButtonEX
+  mode: 1
+  overrideTargetImage: {fileID: 7297898015155994071}
   normalSprite: {fileID: 21300000, guid: 74580a951c90592459d467c8059a3d06, type: 3}
   hoverSprite: {fileID: 21300000, guid: fb63bc1f666efb34a81941ba407d321a, type: 3}
-  pressedSprite: {fileID: 0}
+  onSprite: {fileID: 0}
+  offSprite: {fileID: 0}
+  onHoverSprite: {fileID: 0}
+  offHoverSprite: {fileID: 0}
   normalChild: {fileID: 0}
   hoverChild: {fileID: 0}
   pressedChild: {fileID: 0}
+  usePressedTint: 1
+  pressedTint: {r: 0.85, g: 0.85, b: 0.85, a: 1}
+  colorTargets: []
+  normalColors: []
+  hoverColors: []
   useScaleEffect: 0
   hoverScale: 1.05
   pressedScale: 0.95
@@ -1528,7 +1542,7 @@ GameObject:
   - component: {fileID: 1868552917295377351}
   - component: {fileID: 2746744812392008623}
   - component: {fileID: 1142697187560962905}
-  - component: {fileID: 7185908372869003307}
+  - component: {fileID: 8186713506183921977}
   m_Layer: 0
   m_Name: Log
   m_TagString: Untagged
@@ -1637,7 +1651,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
---- !u!114 &7185908372869003307
+--- !u!114 &8186713506183921977
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1646,17 +1660,25 @@ MonoBehaviour:
   m_GameObject: {fileID: 8977878187914187230}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2bcfa84d821221c4e941d580e5597a98, type: 3}
+  m_Script: {fileID: 11500000, guid: 56fc0838e76f26e499c3fb90f6590636, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.UI.HoverButton
-  hoverMode: 1
-  targetImage: {fileID: 2746744812392008623}
+  m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.UI.ButtonEX
+  mode: 1
+  overrideTargetImage: {fileID: 2746744812392008623}
   normalSprite: {fileID: 21300000, guid: a057d2051345c3441b2a804263b25e6e, type: 3}
   hoverSprite: {fileID: 21300000, guid: dafe64586850cbe4f8467e39d4edfbfb, type: 3}
-  pressedSprite: {fileID: 0}
+  onSprite: {fileID: 0}
+  offSprite: {fileID: 0}
+  onHoverSprite: {fileID: 0}
+  offHoverSprite: {fileID: 0}
   normalChild: {fileID: 0}
   hoverChild: {fileID: 0}
   pressedChild: {fileID: 0}
+  usePressedTint: 1
+  pressedTint: {r: 0.85, g: 0.85, b: 0.85, a: 1}
+  colorTargets: []
+  normalColors: []
+  hoverColors: []
   useScaleEffect: 0
   hoverScale: 1.05
   pressedScale: 0.95

@@ -137,10 +137,10 @@ namespace LoveAlgo.Story
                 buttonObj.SetActive(true);
 
                 // 텍스트 설정 (ChildSwap 대응: normal/hover 텍스트 모두 갱신)
-                var hoverButton = buttonObj.GetComponent<HoverButton>();
-                if (hoverButton != null)
+                var buttonEX = buttonObj.GetComponent<ButtonEX>();
+                if (buttonEX != null)
                 {
-                    hoverButton.SetText(option.ButtonText);
+                    buttonEX.SetText(option.ButtonText);
                 }
                 else
                 {

@@ -256,7 +256,6 @@ MonoBehaviour:
   buttonPrefab: {fileID: 4961197146932592112, guid: bc93bda81b8570943aeee0889de5c767, type: 3}
   canvasGroup: {fileID: 4256496022308243339}
   fadeDuration: 0.2
-  choiceAppearDelay: 0.1
   choiceAppearDuration: 0.3
   choiceAppearEase: 0
 --- !u!1001 &748540797753140616
@@ -428,14 +427,14 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 4961197146932592112, guid: bc93bda81b8570943aeee0889de5c767, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 954174862801492572}
+      addedObject: {fileID: 690626735375419252}
   m_SourcePrefab: {fileID: 100100000, guid: bc93bda81b8570943aeee0889de5c767, type: 3}
 --- !u!1 &5673109905187248248 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 4961197146932592112, guid: bc93bda81b8570943aeee0889de5c767, type: 3}
   m_PrefabInstance: {fileID: 748540797753140616}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &954174862801492572
+--- !u!114 &690626735375419252
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -444,23 +443,25 @@ MonoBehaviour:
   m_GameObject: {fileID: 5673109905187248248}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2bcfa84d821221c4e941d580e5597a98, type: 3}
+  m_Script: {fileID: 11500000, guid: 56fc0838e76f26e499c3fb90f6590636, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.UI.HoverButton
-  hoverMode: 1
-  targetImage: {fileID: 0}
+  m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.UI.ButtonEX
+  mode: 1
+  overrideTargetImage: {fileID: 0}
   normalSprite: {fileID: 0}
   hoverSprite: {fileID: 21300000, guid: 575a54af94b08b44fa096a0590277a3f, type: 3}
-  pressedSprite: {fileID: 0}
+  onSprite: {fileID: 0}
+  offSprite: {fileID: 0}
+  onHoverSprite: {fileID: 0}
+  offHoverSprite: {fileID: 0}
   normalChild: {fileID: 0}
   hoverChild: {fileID: 0}
   pressedChild: {fileID: 0}
-  useColorTint: 1
-  colorTarget: {fileID: 0}
-  normalColor: {r: 1, g: 1, b: 1, a: 1}
-  hoverColor: {r: 0.96, g: 0.96, b: 0.96, a: 1}
-  pressedColor: {r: 0.78, g: 0.78, b: 0.78, a: 1}
-  colorFadeDuration: 0.1
+  usePressedTint: 1
+  pressedTint: {r: 0.85, g: 0.85, b: 0.85, a: 1}
+  colorTargets: []
+  normalColors: []
+  hoverColors: []
   useScaleEffect: 0
   hoverScale: 1.05
   pressedScale: 0.95

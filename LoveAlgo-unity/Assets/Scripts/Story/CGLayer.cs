@@ -186,25 +186,14 @@ namespace LoveAlgo.Story
         }
 
         /// <summary>
-        /// 스프라이트 로드
+        /// 스프라이트 로드 — CG/{cgName} 경로로 직접 로드
         /// </summary>
         Sprite LoadSprite(string cgName)
         {
-            // CG/ 접두사가 붙어 있으면 제거 (CSV 호환)
             if (cgName.StartsWith("CG/", System.StringComparison.OrdinalIgnoreCase))
                 cgName = cgName.Substring(3);
 
-            // CgPathMapping으로 경로 조회
-            var path = Data.CgPathMapping.GetPath(cgName);
-            var sprite = Resources.Load<Sprite>(path);
-
-            if (sprite == null)
-            {
-                // 폴백: 직접 경로
-                sprite = Resources.Load<Sprite>($"CG/{cgName}");
-            }
-
-            return sprite;
+            return Resources.Load<Sprite>($"CG/{cgName}");
         }
 
         void OnDestroy()

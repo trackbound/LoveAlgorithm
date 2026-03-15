@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using LoveAlgo.Story;
 
 namespace LoveAlgo.Core
 {
@@ -76,12 +77,16 @@ namespace LoveAlgo.Core
 
         /// <summary>
         /// 포인트 추가
+        /// GameState.lovePoints도 자동 동기화하여 CSV 조건 평가가 정확히 작동
         /// </summary>
         public static void AddPoint(string heroineId, PointCategory category, int value)
         {
             if (!points.ContainsKey(heroineId)) return;
             points[heroineId][category] += value;
             Debug.Log($"[PointTracker] {heroineId} {category} +{value} (현재: {points[heroineId][category]})");
+
+            // GameState.lovePoints 동기화 (CSV 조건 Love:Roa>=30 등이 정확히 작동)
+            AffinityCalculator.SyncToGameState(heroineId);
         }
 
         /// <summary>
@@ -206,6 +211,9 @@ namespace LoveAlgo.Core
                 foreach (var kv in data.EventChoices)
                     eventChoices[kv.Key] = kv.Value;
             }
+
+            // 로드 후 GameState.lovePoints 동기화
+            AffinityCalculator.SyncAllToGameState();
         }
 
         #endregion

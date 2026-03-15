@@ -280,22 +280,14 @@ namespace LoveAlgo.Story
         }
 
         /// <summary>
-        /// 스프라이트 로드 (Resources/SD/ 에서)
+        /// 스프라이트 로드 — SD/{sdName} 경로로 직접 로드
         /// </summary>
         Sprite LoadSprite(string sdName)
         {
-            // SD/ 접두사가 붙어 있으면 제거 (CSV 호환)
             if (sdName.StartsWith("SD/", System.StringComparison.OrdinalIgnoreCase))
                 sdName = sdName.Substring(3);
 
-            // SdPathMapping으로 경로 조회
-            var path = Data.SdPathMapping.GetPath(sdName);
-            var sprite = Resources.Load<Sprite>(path);
-            if (sprite != null) return sprite;
-
-            // 폴백: 직접 경로
-            sprite = Resources.Load<Sprite>($"SD/{sdName}");
-            return sprite;
+            return Resources.Load<Sprite>($"SD/{sdName}");
         }
 
         void OnDestroy()

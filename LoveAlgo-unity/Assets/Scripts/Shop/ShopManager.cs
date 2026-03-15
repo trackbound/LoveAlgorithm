@@ -123,10 +123,13 @@ namespace LoveAlgo.Shop
         #region 선물
 
         /// <summary>
-        /// 히로인에게 선물 주기
+        /// 히로인에게 선물 주기 (기획서: 계층 기반 포인트)
         /// </summary>
+        /// <param name="itemId">선물 아이템 ID</param>
+        /// <param name="heroineId">대상 히로인 ID</param>
+        /// <param name="isEvent3OrLater">3차 이벤트(FreeTime5) 이후 여부</param>
         /// <returns>실제 부여된 포인트 (0이면 실패)</returns>
-        public static int GiveGift(string itemId, string heroineId)
+        public static int GiveGift(string itemId, string heroineId, bool isEvent3OrLater = false)
         {
             var item = ItemDatabase.Get(itemId);
             if (item == null || item.Category != ItemCategory.Gift)
@@ -150,8 +153,10 @@ namespace LoveAlgo.Shop
                 return 0;
             }
 
+            // 계층 기반 포인트 계산 (기획서 4.2)
+            int points = ItemEffectSystem.GetGiftPoints(item.Tier, isEvent3OrLater);
+
             // 히로인 전용 선물을 다른 히로인에게 주면 효과 절반
-            int points = item.EffectValue;
             if (item.IsHeroineSpecific && item.TargetHeroine != heroineId)
             {
                 points = Mathf.Max(1, points / 2);
@@ -186,10 +191,12 @@ namespace LoveAlgo.Shop
         #region 소모품
 
         /// <summary>
-        /// 소모품 사용
+        /// 소모품 사용 (기획서: 동일날 중복 시 50% 패널티)
         /// </summary>
+        /// <param name="itemId">소모품 아이템 ID</param>
+        /// <param name="currentDay">현재 날짜 (중복 패널티 판정용)</param>
         /// <returns>성공 여부</returns>
-        public static bool UseConsumable(string itemId)
+        public static bool UseConsumable(string itemId, int currentDay = -1)
         {
             var item = ItemDatabase.Get(itemId);
             if (item == null || item.Category != ItemCategory.Consumable)
@@ -207,10 +214,47 @@ namespace LoveAlgo.Shop
             var gs = GameState.Instance;
             if (gs == null) return false;
 
-            // 소모품 효과 적용 (현재: 피로 회복)
-            gs.AddStat("Fatigue", -item.EffectValue);
-            Debug.Log($"[ShopManager] 소모품 사용: {item.Name} (피로 -{item.EffectValue})");
+            // 동일날 중복 사용 시 50% 패널티 적용
+            int effect = item.EffectValue;
+            if (currentDay >= 0)
+                effect = ItemEffectSystem.ApplyDuplicatePenalty(item.GetDuplicateTag(), effect, currentDay);
+
+            gs.AddStat("Fatigue", -effect);
+            Debug.Log($"[ShopManager] 소모품 사용: {item.Name} (피로 -{effect}, 원본 -{item.EffectValue})");
             return true;
+        }
+
+        #endregion
+
+        #region 세션 버프
+
+        /// <summary>
+        /// 세션 버프 아이템 사용 (기획서: 자유행동 1회 스탯 보정)
+        /// </summary>
+        /// <param name="itemId">세션 버프 아이템 ID</param>
+        /// <param name="currentDay">현재 날짜 (중복 패널티 판정용)</param>
+        /// <returns>적용될 실제 버프값 (0이면 실패)</returns>
+        public static int UseSessionBuff(string itemId, int currentDay)
+        {
+            var item = ItemDatabase.Get(itemId);
+            if (item == null || item.Category != ItemCategory.SessionBuff)
+            {
+                Debug.LogWarning($"[ShopManager] 세션 버프 아이템이 아님: {itemId}");
+                return 0;
+            }
+
+            if (GetItemCount(itemId) <= 0)
+            {
+                Debug.LogWarning($"[ShopManager] 인벤토리에 없음: {itemId}");
+                return 0;
+            }
+
+            if (!RemoveItem(itemId))
+                return 0;
+
+            int buffValue = ItemEffectSystem.ActivateSessionBuff(item, currentDay);
+            Debug.Log($"[ShopManager] 세션 버프 사용: {item.Name} ({item.EffectStat} +{buffValue})");
+            return buffValue;
         }
 
         #endregion
@@ -223,7 +267,8 @@ namespace LoveAlgo.Shop
             return new ShopSaveData
             {
                 Inventory = new Dictionary<string, int>(inventory),
-                GiftPointsGiven = new Dictionary<string, int>(giftPointsGiven)
+                GiftPointsGiven = new Dictionary<string, int>(giftPointsGiven),
+                EffectData = ItemEffectSystem.GetSaveData()
             };
         }
 
@@ -244,6 +289,8 @@ namespace LoveAlgo.Shop
                 foreach (var kv in data.GiftPointsGiven)
                     giftPointsGiven[kv.Key] = kv.Value;
             }
+
+            ItemEffectSystem.RestoreFromSave(data.EffectData);
         }
 
         #endregion
@@ -260,5 +307,8 @@ namespace LoveAlgo.Shop
 
         /// <summary>히로인별 선물 포인트 누적</summary>
         public Dictionary<string, int> GiftPointsGiven = new();
+
+        /// <summary>아이템 효과 시스템 데이터 (세션 버프, 중복 추적)</summary>
+        public ItemEffectSaveData EffectData;
     }
 }

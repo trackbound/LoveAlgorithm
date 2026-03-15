@@ -12,8 +12,7 @@ namespace LoveAlgo.Schedule
 {
     /// <summary>
     /// 스케줄 선택 UI
-    /// 기획서 기준: 운동 / 공부 / 알바(편의점·상하차) / 투자 / 아이템 구매
-    /// 탭 없이 전체 메뉴를 한 화면에 표시
+    /// 탭 3개(알바/운동/공부) × 슬롯 3개 + 상점 크로스페이드 패널
     /// </summary>
     public class ScheduleUI : MonoBehaviour
     {
@@ -21,6 +20,7 @@ namespace LoveAlgo.Schedule
         [SerializeField] CanvasGroup canvasGroup;
         [SerializeField] float showDuration = 0.3f;
         [SerializeField] float hideDuration = 0.2f;
+        [SerializeField] float crossFadeDuration = 0.25f;
 
         [Header("왼쪽 패널 - 정보")]
         [SerializeField] TMP_Text dayText;
@@ -34,7 +34,20 @@ namespace LoveAlgo.Schedule
         [SerializeField] StatGauge perseveranceGauge;
         [SerializeField] StatGauge fatigueGauge;
 
-        [Header("스케줄 슬롯")]
+        [Header("탭 버튼 (알바/운동/공부)")]
+        [SerializeField] Button tabPartTime;
+        [SerializeField] Button tabExercise;
+        [SerializeField] Button tabStudy;
+
+        [Header("카테고리 컨테이너 (탭별 슬롯 그룹)")]
+        [SerializeField] GameObject containerPartTime;
+        [SerializeField] GameObject containerExercise;
+        [SerializeField] GameObject containerStudy;
+
+        [Header("카테고리 설명")]
+        [SerializeField] TMP_Text categoryDescText;
+
+        [Header("스케줄 슬롯 (전체 9개)")]
         [SerializeField] ScheduleSlot[] scheduleSlots;
 
         [Header("하단 버튼 (행동 소비 없음)")]
@@ -43,8 +56,22 @@ namespace LoveAlgo.Schedule
         [SerializeField] Button phoneButton;
         [SerializeField] GameObject phoneNewBadge;
 
+        [Header("크로스페이드 패널")]
+        [SerializeField] CanvasGroup scheduleContent;
+        [SerializeField] CanvasGroup shopContent;
+        [SerializeField] Shop.ShopPopup shopPanel;
+
         /// <summary>오늘 상하차를 이미 했는지 (하루 1회 제한)</summary>
         bool usedLoadingToday;
+
+        /// <summary>현재 상점 패널이 활성화 상태인지</summary>
+        bool isShopVisible;
+
+        /// <summary>크로스페이드 진행 중 여부</summary>
+        bool isCrossFading;
+
+        /// <summary>현재 활성 탭</summary>
+        ScheduleCategory activeTab;
 
         Action<ScheduleType> onScheduleSelected;
 
@@ -56,6 +83,14 @@ namespace LoveAlgo.Schedule
                 slot?.SetCallback(OnScheduleClick);
             }
 
+            // 탭 버튼 콜백
+            if (tabPartTime != null)
+                tabPartTime.onClick.AddListener(() => SwitchTab(ScheduleCategory.PartTime));
+            if (tabExercise != null)
+                tabExercise.onClick.AddListener(() => SwitchTab(ScheduleCategory.Exercise));
+            if (tabStudy != null)
+                tabStudy.onClick.AddListener(() => SwitchTab(ScheduleCategory.Study));
+
             // 상점/선물/폰 버튼 (행동 소비 없음)
             if (shopButton != null)
                 shopButton.onClick.AddListener(OnShopClick);
@@ -64,6 +99,10 @@ namespace LoveAlgo.Schedule
             if (phoneButton != null)
                 phoneButton.onClick.AddListener(OnPhoneClick);
 
+            // 상점 뒤로가기 콜백
+            if (shopPanel != null)
+                shopPanel.OnBackRequested += OnShopBack;
+
             // 초기 상태
             if (canvasGroup != null)
             {
@@ -71,14 +110,30 @@ namespace LoveAlgo.Schedule
                 canvasGroup.interactable = false;
                 canvasGroup.blocksRaycasts = false;
             }
+
+            // 크로스페이드 초기 상태: 스케줄 표시, 상점 숨김
+            SetPanelVisible(scheduleContent, true);
+            SetPanelVisible(shopContent, false);
+            isShopVisible = false;
+
+            // 기본 탭: 알바
+            SwitchTab(ScheduleCategory.PartTime);
         }
 
         /// <summary>
-        /// UI 표시
+        /// UI 표시 (항상 스케줄 패널로 시작)
         /// </summary>
         public async UniTask ShowAsync(Action<ScheduleType> onSelected)
         {
             onScheduleSelected = onSelected;
+
+            // 항상 스케줄 패널로 리셋
+            SetPanelVisible(scheduleContent, true);
+            SetPanelVisible(shopContent, false);
+            isShopVisible = false;
+
+            // 기본 탭으로 리셋
+            SwitchTab(ScheduleCategory.PartTime);
 
             RefreshInfo();
             RefreshStats();
@@ -242,12 +297,126 @@ namespace LoveAlgo.Schedule
 
         string FormatStat(int value) => value > 0 ? $"+ {value}" : value.ToString();
 
+        #region 탭 전환
+
+        /// <summary>탭 전환 — 해당 카테고리 컨테이너만 표시</summary>
+        void SwitchTab(ScheduleCategory category)
+        {
+            activeTab = category;
+
+            if (containerPartTime != null) containerPartTime.SetActive(category == ScheduleCategory.PartTime);
+            if (containerExercise != null) containerExercise.SetActive(category == ScheduleCategory.Exercise);
+            if (containerStudy != null)    containerStudy.SetActive(category == ScheduleCategory.Study);
+
+            if (categoryDescText != null)
+                categoryDescText.text = ScheduleTable.GetCategoryDescription(category);
+        }
+
+        #endregion
+
         #region 상점/선물
 
-        /// <summary>상점 열기 (행동 소비 없음)</summary>
+        /// <summary>상점 열기 — 크로스페이드로 상점 패널 전환</summary>
         void OnShopClick()
         {
-            LoveAlgo.UI.PopupManager.Instance?.ShowModal<Shop.ShopPopup>();
+            if (isShopVisible || isCrossFading) return;
+            CrossFadeToShopAsync().Forget();
+        }
+
+        /// <summary>외부에서 상점 패널을 직접 열 때 사용 (테스트 등)</summary>
+        public void OpenShop()
+        {
+            OnShopClick();
+        }
+
+        /// <summary>상점에서 뒤로가기 — 크로스페이드로 스케줄 패널 복귀</summary>
+        void OnShopBack()
+        {
+            if (!isShopVisible || isCrossFading) return;
+            CrossFadeToScheduleAsync().Forget();
+        }
+
+        /// <summary>스케줄 → 상점 크로스페이드</summary>
+        async UniTaskVoid CrossFadeToShopAsync()
+        {
+            isCrossFading = true;
+
+            // 상점 데이터 초기화
+            shopPanel?.Open();
+
+            // 상점 패널 활성화 (alpha 0에서 시작)
+            if (shopContent != null)
+            {
+                shopContent.gameObject.SetActive(true);
+                shopContent.alpha = 0f;
+            }
+
+            // 동시 페이드: 스케줄 out + 상점 in
+            var seq = DOTween.Sequence();
+            if (scheduleContent != null)
+            {
+                seq.Join(scheduleContent.DOFade(0f, crossFadeDuration).SetEase(Ease.OutQuad));
+            }
+            if (shopContent != null)
+            {
+                seq.Join(shopContent.DOFade(1f, crossFadeDuration).SetEase(Ease.OutQuad));
+            }
+            seq.SetUpdate(true);
+
+            await seq.ToUniTask();
+
+            // 스케줄 패널 비활성화
+            SetPanelVisible(scheduleContent, false);
+            SetPanelVisible(shopContent, true);
+            isShopVisible = true;
+            isCrossFading = false;
+        }
+
+        /// <summary>상점 → 스케줄 크로스페이드</summary>
+        async UniTaskVoid CrossFadeToScheduleAsync()
+        {
+            isCrossFading = true;
+
+            // 구매 후 정보 갱신
+            RefreshInfo();
+            RefreshStats();
+
+            // 스케줄 패널 활성화 (alpha 0에서 시작)
+            if (scheduleContent != null)
+            {
+                scheduleContent.gameObject.SetActive(true);
+                scheduleContent.alpha = 0f;
+            }
+
+            // 동시 페이드: 상점 out + 스케줄 in
+            var seq = DOTween.Sequence();
+            if (shopContent != null)
+            {
+                seq.Join(shopContent.DOFade(0f, crossFadeDuration).SetEase(Ease.OutQuad));
+            }
+            if (scheduleContent != null)
+            {
+                seq.Join(scheduleContent.DOFade(1f, crossFadeDuration).SetEase(Ease.OutQuad));
+            }
+            seq.SetUpdate(true);
+
+            await seq.ToUniTask();
+
+            // 상점 패널 비활성화
+            SetPanelVisible(shopContent, false);
+            SetPanelVisible(scheduleContent, true);
+            isShopVisible = false;
+            isCrossFading = false;
+        }
+
+        /// <summary>CanvasGroup 패널 즉시 표시/숨김</summary>
+        static void SetPanelVisible(CanvasGroup cg, bool visible)
+        {
+            if (cg == null) return;
+            cg.alpha = visible ? 1f : 0f;
+            cg.interactable = visible;
+            cg.blocksRaycasts = visible;
+            cg.gameObject.SetActive(visible);
         }
 
         /// <summary>선물 주기 (행동 소비 없음)</summary>
@@ -273,6 +442,13 @@ namespace LoveAlgo.Schedule
         {
             if (canvasGroup != null)
                 canvasGroup.DOKill();
+            if (scheduleContent != null)
+                scheduleContent.DOKill();
+            if (shopContent != null)
+                shopContent.DOKill();
+
+            if (shopPanel != null)
+                shopPanel.OnBackRequested -= OnShopBack;
         }
     }
 }

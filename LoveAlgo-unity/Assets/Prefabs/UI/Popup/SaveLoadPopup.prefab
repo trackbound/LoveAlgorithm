@@ -150,6 +150,7 @@ MonoBehaviour:
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -478,7 +479,7 @@ GameObject:
   - component: {fileID: 2926460542389285392}
   - component: {fileID: 7665715585295185225}
   - component: {fileID: 387391465605723954}
-  - component: {fileID: 8821926530208231520}
+  - component: {fileID: 7139687590281992039}
   m_Layer: 0
   m_Name: btn_saveload_page_next
   m_TagString: Untagged
@@ -587,7 +588,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
---- !u!114 &8821926530208231520
+--- !u!114 &7139687590281992039
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -596,17 +597,25 @@ MonoBehaviour:
   m_GameObject: {fileID: 6479795027242244626}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2bcfa84d821221c4e941d580e5597a98, type: 3}
+  m_Script: {fileID: 11500000, guid: 56fc0838e76f26e499c3fb90f6590636, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.UI.HoverButton
-  hoverMode: 1
-  targetImage: {fileID: 0}
+  m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.UI.ButtonEX
+  mode: 1
+  overrideTargetImage: {fileID: 0}
   normalSprite: {fileID: 0}
   hoverSprite: {fileID: 0}
-  pressedSprite: {fileID: 0}
+  onSprite: {fileID: 0}
+  offSprite: {fileID: 0}
+  onHoverSprite: {fileID: 0}
+  offHoverSprite: {fileID: 0}
   normalChild: {fileID: 0}
   hoverChild: {fileID: 0}
   pressedChild: {fileID: 0}
+  usePressedTint: 1
+  pressedTint: {r: 0.85, g: 0.85, b: 0.85, a: 1}
+  colorTargets: []
+  normalColors: []
+  hoverColors: []
   useScaleEffect: 0
   hoverScale: 1.05
   pressedScale: 0.95
@@ -714,6 +723,7 @@ MonoBehaviour:
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: -6.8
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -759,7 +769,7 @@ GameObject:
   - component: {fileID: 603406035567868201}
   - component: {fileID: 6559292931841370785}
   - component: {fileID: 5322169198634503315}
-  - component: {fileID: 6647224714189715959}
+  - component: {fileID: 4989770287311797508}
   m_Layer: 0
   m_Name: btn_saveload_page_prev
   m_TagString: Untagged
@@ -868,7 +878,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
---- !u!114 &6647224714189715959
+--- !u!114 &4989770287311797508
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -877,17 +887,25 @@ MonoBehaviour:
   m_GameObject: {fileID: 7811716475930122572}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2bcfa84d821221c4e941d580e5597a98, type: 3}
+  m_Script: {fileID: 11500000, guid: 56fc0838e76f26e499c3fb90f6590636, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.UI.HoverButton
-  hoverMode: 1
-  targetImage: {fileID: 0}
+  m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.UI.ButtonEX
+  mode: 1
+  overrideTargetImage: {fileID: 0}
   normalSprite: {fileID: 0}
   hoverSprite: {fileID: 0}
-  pressedSprite: {fileID: 0}
+  onSprite: {fileID: 0}
+  offSprite: {fileID: 0}
+  onHoverSprite: {fileID: 0}
+  offHoverSprite: {fileID: 0}
   normalChild: {fileID: 0}
   hoverChild: {fileID: 0}
   pressedChild: {fileID: 0}
+  usePressedTint: 1
+  pressedTint: {r: 0.85, g: 0.85, b: 0.85, a: 1}
+  colorTargets: []
+  normalColors: []
+  hoverColors: []
   useScaleEffect: 0
   hoverScale: 1.05
   pressedScale: 0.95
@@ -1150,7 +1168,7 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 7673009745470024640, guid: 0c8cac25f41129742a976ff0f0aa6102, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 7684340739911302137}
+      addedObject: {fileID: 5048093876087934792}
   m_SourcePrefab: {fileID: 100100000, guid: 0c8cac25f41129742a976ff0f0aa6102, type: 3}
 --- !u!114 &1995272323006161956 stripped
 MonoBehaviour:
@@ -1168,7 +1186,7 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 7673009745470024640, guid: 0c8cac25f41129742a976ff0f0aa6102, type: 3}
   m_PrefabInstance: {fileID: 1308121376777300951}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &7684340739911302137
+--- !u!114 &5048093876087934792
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1177,17 +1195,25 @@ MonoBehaviour:
   m_GameObject: {fileID: 8672631902047174679}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2bcfa84d821221c4e941d580e5597a98, type: 3}
+  m_Script: {fileID: 11500000, guid: 56fc0838e76f26e499c3fb90f6590636, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.UI.HoverButton
-  hoverMode: 1
-  targetImage: {fileID: 0}
+  m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.UI.ButtonEX
+  mode: 1
+  overrideTargetImage: {fileID: 0}
   normalSprite: {fileID: 0}
   hoverSprite: {fileID: 0}
-  pressedSprite: {fileID: 0}
+  onSprite: {fileID: 0}
+  offSprite: {fileID: 0}
+  onHoverSprite: {fileID: 0}
+  offHoverSprite: {fileID: 0}
   normalChild: {fileID: 0}
   hoverChild: {fileID: 0}
   pressedChild: {fileID: 0}
+  usePressedTint: 1
+  pressedTint: {r: 0.85, g: 0.85, b: 0.85, a: 1}
+  colorTargets: []
+  normalColors: []
+  hoverColors: []
   useScaleEffect: 0
   hoverScale: 1.05
   pressedScale: 0.95
@@ -1341,7 +1367,7 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 7673009745470024640, guid: 0c8cac25f41129742a976ff0f0aa6102, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 4050017332924052403}
+      addedObject: {fileID: 1651395848680479908}
   m_SourcePrefab: {fileID: 100100000, guid: 0c8cac25f41129742a976ff0f0aa6102, type: 3}
 --- !u!114 &1887166906181388343 stripped
 MonoBehaviour:
@@ -1364,7 +1390,7 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 7673009745470024640, guid: 0c8cac25f41129742a976ff0f0aa6102, type: 3}
   m_PrefabInstance: {fileID: 1416189257730754500}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &4050017332924052403
+--- !u!114 &1651395848680479908
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1373,17 +1399,25 @@ MonoBehaviour:
   m_GameObject: {fileID: 8780701051895278596}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2bcfa84d821221c4e941d580e5597a98, type: 3}
+  m_Script: {fileID: 11500000, guid: 56fc0838e76f26e499c3fb90f6590636, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.UI.HoverButton
-  hoverMode: 1
-  targetImage: {fileID: 0}
+  m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.UI.ButtonEX
+  mode: 1
+  overrideTargetImage: {fileID: 0}
   normalSprite: {fileID: 0}
   hoverSprite: {fileID: 0}
-  pressedSprite: {fileID: 0}
+  onSprite: {fileID: 0}
+  offSprite: {fileID: 0}
+  onHoverSprite: {fileID: 0}
+  offHoverSprite: {fileID: 0}
   normalChild: {fileID: 0}
   hoverChild: {fileID: 0}
   pressedChild: {fileID: 0}
+  usePressedTint: 1
+  pressedTint: {r: 0.85, g: 0.85, b: 0.85, a: 1}
+  colorTargets: []
+  normalColors: []
+  hoverColors: []
   useScaleEffect: 0
   hoverScale: 1.05
   pressedScale: 0.95
@@ -1536,14 +1570,14 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 7673009745470024640, guid: 0c8cac25f41129742a976ff0f0aa6102, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 4389882906191730120}
+      addedObject: {fileID: 4495572114423394212}
   m_SourcePrefab: {fileID: 100100000, guid: 0c8cac25f41129742a976ff0f0aa6102, type: 3}
 --- !u!1 &3043860425541152279 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 7673009745470024640, guid: 0c8cac25f41129742a976ff0f0aa6102, type: 3}
   m_PrefabInstance: {fileID: 4630253865867281879}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &4389882906191730120
+--- !u!114 &4495572114423394212
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1552,17 +1586,25 @@ MonoBehaviour:
   m_GameObject: {fileID: 3043860425541152279}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2bcfa84d821221c4e941d580e5597a98, type: 3}
+  m_Script: {fileID: 11500000, guid: 56fc0838e76f26e499c3fb90f6590636, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.UI.HoverButton
-  hoverMode: 1
-  targetImage: {fileID: 0}
+  m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.UI.ButtonEX
+  mode: 1
+  overrideTargetImage: {fileID: 0}
   normalSprite: {fileID: 0}
   hoverSprite: {fileID: 0}
-  pressedSprite: {fileID: 0}
+  onSprite: {fileID: 0}
+  offSprite: {fileID: 0}
+  onHoverSprite: {fileID: 0}
+  offHoverSprite: {fileID: 0}
   normalChild: {fileID: 0}
   hoverChild: {fileID: 0}
   pressedChild: {fileID: 0}
+  usePressedTint: 1
+  pressedTint: {r: 0.85, g: 0.85, b: 0.85, a: 1}
+  colorTargets: []
+  normalColors: []
+  hoverColors: []
   useScaleEffect: 0
   hoverScale: 1.05
   pressedScale: 0.95
@@ -1727,7 +1769,7 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 7673009745470024640, guid: 0c8cac25f41129742a976ff0f0aa6102, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 7165012238395247466}
+      addedObject: {fileID: 3284916146732869139}
   m_SourcePrefab: {fileID: 100100000, guid: 0c8cac25f41129742a976ff0f0aa6102, type: 3}
 --- !u!224 &3355778660583776799 stripped
 RectTransform:
@@ -1739,7 +1781,7 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 7673009745470024640, guid: 0c8cac25f41129742a976ff0f0aa6102, type: 3}
   m_PrefabInstance: {fileID: 5016725789714656348}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &7165012238395247466
+--- !u!114 &3284916146732869139
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1748,17 +1790,25 @@ MonoBehaviour:
   m_GameObject: {fileID: 3450597562298550172}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2bcfa84d821221c4e941d580e5597a98, type: 3}
+  m_Script: {fileID: 11500000, guid: 56fc0838e76f26e499c3fb90f6590636, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.UI.HoverButton
-  hoverMode: 1
-  targetImage: {fileID: 0}
+  m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.UI.ButtonEX
+  mode: 1
+  overrideTargetImage: {fileID: 0}
   normalSprite: {fileID: 0}
   hoverSprite: {fileID: 0}
-  pressedSprite: {fileID: 0}
+  onSprite: {fileID: 0}
+  offSprite: {fileID: 0}
+  onHoverSprite: {fileID: 0}
+  offHoverSprite: {fileID: 0}
   normalChild: {fileID: 0}
   hoverChild: {fileID: 0}
   pressedChild: {fileID: 0}
+  usePressedTint: 1
+  pressedTint: {r: 0.85, g: 0.85, b: 0.85, a: 1}
+  colorTargets: []
+  normalColors: []
+  hoverColors: []
   useScaleEffect: 0
   hoverScale: 1.05
   pressedScale: 0.95
@@ -1866,22 +1916,66 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8555031338639543714, guid: 0c8cac25f41129742a976ff0f0aa6102, type: 3}
+      propertyPath: m_Transition
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 7673009745470024640, guid: 0c8cac25f41129742a976ff0f0aa6102, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6687943671748367175}
   m_SourcePrefab: {fileID: 100100000, guid: 0c8cac25f41129742a976ff0f0aa6102, type: 3}
 --- !u!224 &4355912636356360420 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 7713790328323771971, guid: 0c8cac25f41129742a976ff0f0aa6102, type: 3}
   m_PrefabInstance: {fileID: 6304947230829901479}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &4396548616461426023 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7673009745470024640, guid: 0c8cac25f41129742a976ff0f0aa6102, type: 3}
+  m_PrefabInstance: {fileID: 6304947230829901479}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &6687943671748367175
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4396548616461426023}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56fc0838e76f26e499c3fb90f6590636, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.UI.ButtonEX
+  mode: 0
+  overrideTargetImage: {fileID: 0}
+  normalSprite: {fileID: 0}
+  hoverSprite: {fileID: 0}
+  onSprite: {fileID: 0}
+  offSprite: {fileID: 0}
+  onHoverSprite: {fileID: 0}
+  offHoverSprite: {fileID: 0}
+  normalChild: {fileID: 0}
+  hoverChild: {fileID: 0}
+  pressedChild: {fileID: 0}
+  usePressedTint: 1
+  pressedTint: {r: 0.85, g: 0.85, b: 0.85, a: 1}
+  colorTargets: []
+  normalColors: []
+  hoverColors: []
+  useScaleEffect: 0
+  hoverScale: 1.05
+  pressedScale: 0.95
+  scaleDuration: 0.1
 --- !u!114 &6838835833385417044 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 691233192418775027, guid: 0c8cac25f41129742a976ff0f0aa6102, type: 3}
   m_PrefabInstance: {fileID: 6304947230829901479}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
+  m_GameObject: {fileID: 4396548616461426023}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 968f758959654a14da2bcb2270630716, type: 3}
@@ -2031,7 +2125,7 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 7673009745470024640, guid: 0c8cac25f41129742a976ff0f0aa6102, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 134164438358249275}
+      addedObject: {fileID: 4543845559958536847}
   m_SourcePrefab: {fileID: 100100000, guid: 0c8cac25f41129742a976ff0f0aa6102, type: 3}
 --- !u!224 &1055807255112226125 stripped
 RectTransform:
@@ -2043,7 +2137,7 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 7673009745470024640, guid: 0c8cac25f41129742a976ff0f0aa6102, type: 3}
   m_PrefabInstance: {fileID: 7325694638682774286}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &134164438358249275
+--- !u!114 &4543845559958536847
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -2052,17 +2146,25 @@ MonoBehaviour:
   m_GameObject: {fileID: 1141127868604117198}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2bcfa84d821221c4e941d580e5597a98, type: 3}
+  m_Script: {fileID: 11500000, guid: 56fc0838e76f26e499c3fb90f6590636, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.UI.HoverButton
-  hoverMode: 1
-  targetImage: {fileID: 0}
+  m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.UI.ButtonEX
+  mode: 1
+  overrideTargetImage: {fileID: 0}
   normalSprite: {fileID: 0}
   hoverSprite: {fileID: 0}
-  pressedSprite: {fileID: 0}
+  onSprite: {fileID: 0}
+  offSprite: {fileID: 0}
+  onHoverSprite: {fileID: 0}
+  offHoverSprite: {fileID: 0}
   normalChild: {fileID: 0}
   hoverChild: {fileID: 0}
   pressedChild: {fileID: 0}
+  usePressedTint: 1
+  pressedTint: {r: 0.85, g: 0.85, b: 0.85, a: 1}
+  colorTargets: []
+  normalColors: []
+  hoverColors: []
   useScaleEffect: 0
   hoverScale: 1.05
   pressedScale: 0.95
@@ -2226,7 +2328,7 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 7673009745470024640, guid: 0c8cac25f41129742a976ff0f0aa6102, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 7693366779183689469}
+      addedObject: {fileID: 2218867952590811877}
   m_SourcePrefab: {fileID: 100100000, guid: 0c8cac25f41129742a976ff0f0aa6102, type: 3}
 --- !u!224 &1902365353507887454 stripped
 RectTransform:
@@ -2238,7 +2340,7 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 7673009745470024640, guid: 0c8cac25f41129742a976ff0f0aa6102, type: 3}
   m_PrefabInstance: {fileID: 8172463610292606749}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &7693366779183689469
+--- !u!114 &2218867952590811877
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -2247,17 +2349,25 @@ MonoBehaviour:
   m_GameObject: {fileID: 1951868363178638557}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2bcfa84d821221c4e941d580e5597a98, type: 3}
+  m_Script: {fileID: 11500000, guid: 56fc0838e76f26e499c3fb90f6590636, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.UI.HoverButton
-  hoverMode: 1
-  targetImage: {fileID: 0}
+  m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.UI.ButtonEX
+  mode: 1
+  overrideTargetImage: {fileID: 0}
   normalSprite: {fileID: 0}
   hoverSprite: {fileID: 0}
-  pressedSprite: {fileID: 0}
+  onSprite: {fileID: 0}
+  offSprite: {fileID: 0}
+  onHoverSprite: {fileID: 0}
+  offHoverSprite: {fileID: 0}
   normalChild: {fileID: 0}
   hoverChild: {fileID: 0}
   pressedChild: {fileID: 0}
+  usePressedTint: 1
+  pressedTint: {r: 0.85, g: 0.85, b: 0.85, a: 1}
+  colorTargets: []
+  normalColors: []
+  hoverColors: []
   useScaleEffect: 0
   hoverScale: 1.05
   pressedScale: 0.95

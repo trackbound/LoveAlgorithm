@@ -55,6 +55,8 @@ MonoBehaviour:
   slotC: {fileID: 1727691601604535163}
   slotR: {fileID: 3397189173927012406}
   characterDatabase: {fileID: 11400000, guid: c3e9b03245e024d46b8565778375d528, type: 2}
+  layerCanvasGroup: {fileID: 0}
+  layerFadeDuration: 0.3
 --- !u!1001 &2079438172566647228
 PrefabInstance:
   m_ObjectHideFlags: 0

@@ -51,6 +51,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.Story.OverlayLayer
   overlayImage: {fileID: 5363547752717122497}
   canvasGroup: {fileID: 1700230110455239198}
+  overlayEntries: []
   defaultDuration: 0.5
   defaultAlpha: 0.7
 --- !u!1 &1018098879918418197

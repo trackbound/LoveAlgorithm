@@ -150,7 +150,6 @@ namespace LoveAlgo.Core
             {
                 runner.OnScriptEnd -= OnPrologueEnd;
                 runner.OnScriptEnd += OnPrologueEnd;
-                runner.StartScript(prologueScript).Forget();
             }
         }
 
@@ -302,116 +301,14 @@ namespace LoveAlgo.Core
         }
 
         /// <summary>
-        /// 엔딩 히로인 결정 (기획서 기준)
-        /// 포인트 = 이벤트 + 대화 + 선물 + 미니게임 + 스탯보정 + 피로보정(로아)
-        /// 총 포인트 ≥ 히로인별 임계치 → 해피엔딩, 미달 → 새드엔딩
-        /// 
-        /// 조건: 해당 히로인 이벤트 최소 1회 이상 선택 필수
-        /// 로아: 모든 이벤트에서 로아만 선택 + 피로 ≥70
+        /// 엔딩 히로인 결정 — AffinityCalculator에 위임
         /// </summary>
-        string DetermineEndingHeroine()
-        {
-            var gs = GameState.Instance;
-            if (gs == null) return null;
-
-            // 히든 루트: 로아 (피로 ≥70 + 포인트 ≥ 46)
-            int roaPoints = HeroinePointTracker.GetTotalPoint("Roa") + GetRoaFatigueBonus(gs);
-            if (gs.GetStat("Fatigue") >= 70 && roaPoints >= GameConstants.EndingThresholds[0])
-                return "Roa";
-
-            // 나머지 히로인 (Yeun=1, Daeun=2, Bom=3, Heewon=4)
-            string best = null;
-            int bestMargin = -1;
-
-            for (int i = 1; i < GameConstants.HeroineCount; i++)
-            {
-                string id = GameConstants.HeroineIds[i];
-
-                // 기획서: 최소 1회 이상 이벤트 참여 필수
-                if (HeroinePointTracker.GetEventSelectionCount(id) < 1)
-                    continue;
-
-                int total = HeroinePointTracker.GetTotalPoint(id) + CalcStatBonus(gs, i);
-                int threshold = GameConstants.EndingThresholds[i];
-
-                if (total >= threshold)
-                {
-                    int margin = total - threshold;
-                    if (margin > bestMargin)
-                    {
-                        bestMargin = margin;
-                        best = id;
-                    }
-                }
-            }
-
-            return best; // null → 노멀 엔딩
-        }
+        string DetermineEndingHeroine() => AffinityCalculator.DetermineEndingHeroine();
 
         /// <summary>
-        /// 해피/새드 엔딩 분기 판정
-        /// best 히로인이 있으면 해피, 임계치 미달이면 새드
+        /// 해피/새드 엔딩 분기 판정 — AffinityCalculator에 위임
         /// </summary>
-        bool IsHappyEnding(string heroineId)
-        {
-            if (string.IsNullOrEmpty(heroineId)) return false;
-
-            int idx = System.Array.IndexOf(GameConstants.HeroineIds, heroineId);
-            if (idx < 0) return false;
-
-            var gs = GameState.Instance;
-            int total = HeroinePointTracker.GetTotalPoint(heroineId);
-            if (heroineId == "Roa")
-                total += GetRoaFatigueBonus(gs);
-            else
-                total += CalcStatBonus(gs, idx);
-
-            return total >= GameConstants.EndingThresholds[idx];
-        }
-
-        /// <summary>
-        /// 스탯 보정 계산 (로아 제외)
-        /// 선호스탯이 최고스탯이면 +3, 공동1등이면 +1
-        /// </summary>
-        int CalcStatBonus(GameState gs, int heroineIndex)
-        {
-            string preferredStat = GameConstants.HeroinePreferredStat[heroineIndex];
-            int preferredValue = gs.GetStat(preferredStat);
-            if (preferredValue <= 0) return 0;
-
-            // 모든 스탯 중 최고값 찾기 (피로 제외)
-            int maxValue = 0;
-            int maxCount = 0;
-            foreach (var statId in new[] { "Str", "Int", "Soc", "Per" })
-            {
-                int val = gs.GetStat(statId);
-                if (val > maxValue)
-                {
-                    maxValue = val;
-                    maxCount = 1;
-                }
-                else if (val == maxValue && val > 0)
-                {
-                    maxCount++;
-                }
-            }
-
-            if (preferredValue < maxValue) return 0;   // 2등 이하
-            if (maxCount == 1) return 3;                // 단독 1등
-            return 1;                                    // 공동 1등
-        }
-
-        /// <summary>
-        /// 로아 피로 보정 (기획서: 70~79:+3 / 80~89:+6 / 90~100:+10)
-        /// </summary>
-        int GetRoaFatigueBonus(GameState gs)
-        {
-            int fatigue = gs.GetStat("Fatigue");
-            if (fatigue >= 90) return 10;
-            if (fatigue >= 80) return 6;
-            if (fatigue >= 70) return 3;
-            return 0;
-        }
+        bool IsHappyEnding(string heroineId) => AffinityCalculator.IsHappyEnding(heroineId);
 
         /// <summary>
         /// 엔딩 스크립트 종료 후 타이틀 복귀
@@ -521,25 +418,25 @@ namespace LoveAlgo.Core
                 if (fx != null)
                     await fx.FadeInAsync(0.6f, ct);
 
-                // 5) UI 전환 + 프롤로그 준비 (로딩 화면 뒤에서)
+                // 5) UI 전환 + 프롤로그 UI 준비 (로딩 화면 뒤에서)
                 ChangePhase(GamePhase.Prologue);
 
-                // 6) 로딩 화면 충분히 보여줌 + 프롤로그 초기화 대기
+                // 6) 로딩 화면 충분히 보여줌
                 await UniTask.Delay(System.TimeSpan.FromSeconds(1.5f), cancellationToken: ct);
 
                 // 7) 부드럽게 페이드 아웃 (로딩 화면 위에 암전)
                 if (fx != null)
                     await fx.FadeOutAsync(0.6f, ct);
 
-                // 8) 프롤로그 첫 BG 세팅 완료 대기 (빈 화면 방지)
-                await UniTask.DelayFrame(3, cancellationToken: ct);
-
-                // 9) 로딩 화면 제거
+                // 8) 로딩 화면 제거 (암전 상태라 안 보임)
                 loading?.HideImmediate();
 
-                // 10) 인게임 페이드 인
+                // 9) 인게임 페이드 인
                 if (fx != null)
                     await fx.FadeInAsync(0.8f, ct);
+
+                // 10) 프롤로그 스크립트 실행 (전환 완료 후 시작)
+                ScriptRunner.Instance?.StartScript(prologueScript).Forget();
             }
             finally
             {
@@ -627,8 +524,18 @@ namespace LoveAlgo.Core
                     gs.AddStat("Fatigue", effect.fatigueChange);
                     gs.AddMoney(effect.moneyChange);
 
+                    // 세션 버프 소비 (자유행동 1회 동안 스탯 보정)
+                    var (buffStat, buffBonus) = Shop.ItemEffectSystem.ConsumeSessionBuff();
+                    if (buffStat != null && buffBonus > 0)
+                    {
+                        gs.AddStat(buffStat, buffBonus);
+                        Debug.Log($"[GameManager] 세션 버프 적용: {buffStat} +{buffBonus}");
+                    }
+
                     // 스탯 변화 피드백 토스트
                     string feedback = BuildScheduleFeedback(effect);
+                    if (buffStat != null && buffBonus > 0)
+                        feedback += $"\n<color=#FFD700>버프: {buffStat} +{buffBonus}</color>";
                     PopupManager.Instance?.Toast(effect.displayName, feedback, 2.5f);
                 }
             }
