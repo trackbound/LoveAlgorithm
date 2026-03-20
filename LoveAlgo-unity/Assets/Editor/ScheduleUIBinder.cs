@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using LoveAlgo.Schedule;
+using LoveAlgo.UI;
 
 namespace LoveAlgo.Editor
 {
@@ -48,10 +49,36 @@ namespace LoveAlgo.Editor
 
                 var so = new SerializedObject(ui);
 
-                // ── 1. 탭 버튼 바인딩 ──
-                BindButton(so, "tabPartTime", root, "tab_parttime");
-                BindButton(so, "tabExercise", root, "tab-exercise");
-                BindButton(so, "tabStudy", root, "tab_study");
+                // ── 1. 탭 그룹 바인딩 ──
+                var tabNames = new[] { "tab_parttime", "tab-exercise", "tab_study" };
+                var tabParent = FindChild(root.transform, tabNames[0])?.parent;
+
+                if (tabParent != null)
+                {
+                    var tg = tabParent.GetComponent<TabGroup>();
+                    if (tg == null)
+                        tg = tabParent.gameObject.AddComponent<TabGroup>();
+
+                    // TabGroup.tabs[] 배열 채우기
+                    var tgSo = new SerializedObject(tg);
+                    var tabsProp = tgSo.FindProperty("tabs");
+                    tabsProp.arraySize = tabNames.Length;
+                    for (int i = 0; i < tabNames.Length; i++)
+                    {
+                        var tabT = FindChild(root.transform, tabNames[i]);
+                        if (tabT != null)
+                        {
+                            // ButtonEX 추가 (없으면)
+                            var bex = tabT.GetComponent<ButtonEX>();
+                            if (bex == null)
+                                bex = tabT.gameObject.AddComponent<ButtonEX>();
+                            tabsProp.GetArrayElementAtIndex(i).objectReferenceValue = bex;
+                        }
+                    }
+                    tgSo.ApplyModifiedProperties();
+
+                    so.FindProperty("tabGroup").objectReferenceValue = tg;
+                }
 
                 // shopButton = btn_shop
                 BindButton(so, "shopButton", root, "btn_shop");

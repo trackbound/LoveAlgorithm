@@ -203,7 +203,7 @@ GameObject:
   - component: {fileID: 8060048773967669431}
   - component: {fileID: 5795218690000616613}
   m_Layer: 5
-  m_Name: Button (1)
+  m_Name: Close2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -339,6 +339,7 @@ MonoBehaviour:
   colorTargets: []
   normalColors: []
   hoverColors: []
+  selectedColors: []
   useScaleEffect: 0
   hoverScale: 1.05
   pressedScale: 0.95
@@ -357,7 +358,7 @@ GameObject:
   - component: {fileID: 7484730827006278692}
   - component: {fileID: 7015889675342848601}
   m_Layer: 5
-  m_Name: Button
+  m_Name: Close1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -492,6 +493,7 @@ MonoBehaviour:
   colorTargets: []
   normalColors: []
   hoverColors: []
+  selectedColors: []
   useScaleEffect: 0
   hoverScale: 1.05
   pressedScale: 0.95

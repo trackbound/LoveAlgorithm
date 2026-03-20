@@ -7,6 +7,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using LoveAlgo.Core;
 using LoveAlgo.Story;
+using LoveAlgo.UI;
 
 namespace LoveAlgo.Schedule
 {
@@ -34,10 +35,8 @@ namespace LoveAlgo.Schedule
         [SerializeField] StatGauge perseveranceGauge;
         [SerializeField] StatGauge fatigueGauge;
 
-        [Header("탭 버튼 (알바/운동/공부)")]
-        [SerializeField] Button tabPartTime;
-        [SerializeField] Button tabExercise;
-        [SerializeField] Button tabStudy;
+        [Header("탭 그룹 (알바/운동/공부)")]
+        [SerializeField] TabGroup tabGroup;
 
         [Header("카테고리 컨테이너 (탭별 슬롯 그룹)")]
         [SerializeField] GameObject containerPartTime;
@@ -55,6 +54,10 @@ namespace LoveAlgo.Schedule
         [SerializeField] Button giftButton;
         [SerializeField] Button phoneButton;
         [SerializeField] GameObject phoneNewBadge;
+        [SerializeField] Button helpButton;
+
+        [Header("헬프 패널")]
+        [SerializeField] ScheduleHelpPanel helpPanel;
 
         [Header("크로스페이드 패널")]
         [SerializeField] CanvasGroup scheduleContent;
@@ -83,13 +86,9 @@ namespace LoveAlgo.Schedule
                 slot?.SetCallback(OnScheduleClick);
             }
 
-            // 탭 버튼 콜백
-            if (tabPartTime != null)
-                tabPartTime.onClick.AddListener(() => SwitchTab(ScheduleCategory.PartTime));
-            if (tabExercise != null)
-                tabExercise.onClick.AddListener(() => SwitchTab(ScheduleCategory.Exercise));
-            if (tabStudy != null)
-                tabStudy.onClick.AddListener(() => SwitchTab(ScheduleCategory.Study));
+            // 탭 그룹 콜백
+            if (tabGroup != null)
+                tabGroup.OnTabChanged += OnTabChanged;
 
             // 상점/선물/폰 버튼 (행동 소비 없음)
             if (shopButton != null)
@@ -98,6 +97,8 @@ namespace LoveAlgo.Schedule
                 giftButton.onClick.AddListener(OnGiftClick);
             if (phoneButton != null)
                 phoneButton.onClick.AddListener(OnPhoneClick);
+            if (helpButton != null)
+                helpButton.onClick.AddListener(() => helpPanel?.Open());
 
             // 상점 뒤로가기 콜백
             if (shopPanel != null)
@@ -117,6 +118,7 @@ namespace LoveAlgo.Schedule
             isShopVisible = false;
 
             // 기본 탭: 알바
+            tabGroup?.Select(0, notify: false);
             SwitchTab(ScheduleCategory.PartTime);
         }
 
@@ -133,6 +135,7 @@ namespace LoveAlgo.Schedule
             isShopVisible = false;
 
             // 기본 탭으로 리셋
+            tabGroup?.Select(0, notify: false);
             SwitchTab(ScheduleCategory.PartTime);
 
             RefreshInfo();
@@ -242,11 +245,12 @@ namespace LoveAlgo.Schedule
             }
 
             var effect = ScheduleTable.Get(type);
+            string message = $"{effect.displayName}을(를) 진행하시겠습니까?";
             string effectText = BuildEffectText(type, effect);
 
             // 기획서: dim + 확인 팝업
             var confirmed = await LoveAlgo.UI.PopupManager.Instance.ScheduleConfirmAsync(
-                $"{effect.displayName}",
+                message,
                 effectText
             );
 
@@ -267,37 +271,42 @@ namespace LoveAlgo.Schedule
         /// </summary>
         string BuildEffectText(ScheduleType type, ScheduleEffect effect)
         {
-            // 투자는 별도 표시
             if (type == ScheduleType.Invest)
             {
                 var gs = GameState.Instance;
                 int currentMoney = gs?.Money ?? 0;
-                return $"현재 자산: {currentMoney:N0}원\n결과: ±50~100% (랜덤)";
+                return $"자산 {currentMoney:N0}원 / 결과 ±50~100%";
             }
 
-            var lines = new List<string>();
+            var parts = new List<string>();
 
-            if (effect.strengthChange != 0)
-                lines.Add($"체력 {FormatStat(effect.strengthChange)}");
-            if (effect.intelligenceChange != 0)
-                lines.Add($"지성 {FormatStat(effect.intelligenceChange)}");
-            if (effect.socialChange != 0)
-                lines.Add($"사교성 {FormatStat(effect.socialChange)}");
-            if (effect.perseveranceChange != 0)
-                lines.Add($"끈기 {FormatStat(effect.perseveranceChange)}");
-            if (effect.fatigueChange != 0)
-                lines.Add($"피로 {FormatStat(effect.fatigueChange)}");
-            if (effect.moneyChange > 0)
-                lines.Add($"+{effect.moneyChange:N0}원");
-            else if (effect.moneyChange < 0)
-                lines.Add($"{effect.moneyChange:N0}원");
+            if (effect.strengthChange != 0)     parts.Add($"체력 {FormatStat(effect.strengthChange)}");
+            if (effect.intelligenceChange != 0) parts.Add($"지성 {FormatStat(effect.intelligenceChange)}");
+            if (effect.socialChange != 0)       parts.Add($"사교성 {FormatStat(effect.socialChange)}");
+            if (effect.perseveranceChange != 0) parts.Add($"끈기 {FormatStat(effect.perseveranceChange)}");
+            if (effect.fatigueChange != 0)      parts.Add($"피로 {FormatStat(effect.fatigueChange)}");
+            if (effect.moneyChange > 0)         parts.Add($"+{effect.moneyChange:N0}원");
+            else if (effect.moneyChange < 0)    parts.Add($"{effect.moneyChange:N0}원");
 
-            return string.Join("\n", lines);
+            return string.Join(" / ", parts);
         }
 
-        string FormatStat(int value) => value > 0 ? $"+ {value}" : value.ToString();
+        string FormatStat(int value) => value > 0 ? $"+{value}" : value.ToString();
 
         #region 탭 전환
+
+        static readonly ScheduleCategory[] TabCategories =
+        {
+            ScheduleCategory.PartTime,
+            ScheduleCategory.Exercise,
+            ScheduleCategory.Study,
+        };
+
+        void OnTabChanged(int index)
+        {
+            if (index >= 0 && index < TabCategories.Length)
+                SwitchTab(TabCategories[index]);
+        }
 
         /// <summary>탭 전환 — 해당 카테고리 컨테이너만 표시</summary>
         void SwitchTab(ScheduleCategory category)

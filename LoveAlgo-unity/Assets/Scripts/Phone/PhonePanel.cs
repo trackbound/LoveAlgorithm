@@ -19,10 +19,8 @@ namespace LoveAlgo.Phone
     /// </summary>
     public class PhonePanel : ModalPopupBase
     {
-        [Header("탭 버튼")]
-        [SerializeField] Button tabFriend;
-        [SerializeField] Button tabChat;
-        [SerializeField] Button tabTheme;
+        [Header("탭 그룹")]
+        [SerializeField] TabGroup tabGroup;
 
         [Header("패널")]
         [SerializeField] GameObject friendListPanel;
@@ -60,15 +58,15 @@ namespace LoveAlgo.Phone
         {
             base.Awake();
 
-            if (tabFriend != null) tabFriend.onClick.AddListener(() => SwitchTab(0));
-            if (tabChat != null) tabChat.onClick.AddListener(() => SwitchTab(1));
-            if (tabTheme != null) tabTheme.onClick.AddListener(() => SwitchTab(2));
+            if (tabGroup != null)
+                tabGroup.OnTabChanged += SwitchTab;
             if (backButton != null) backButton.onClick.AddListener(OnBackClick);
             if (profileCloseButton != null) profileCloseButton.onClick.AddListener(HideProfile);
         }
 
         public override void Show()
         {
+            tabGroup?.Select(0, notify: false);
             SwitchTab(0);
             HideChatRoom();
             HideProfile();

@@ -142,18 +142,19 @@ MonoBehaviour:
   offSprite: {fileID: 0}
   onHoverSprite: {fileID: 0}
   offHoverSprite: {fileID: 0}
-  normalChild: {fileID: 9038612503011560227}
+  normalChild: {fileID: 0}
   hoverChild: {fileID: 0}
   pressedChild: {fileID: 0}
   usePressedTint: 1
   pressedTint: {r: 0.85, g: 0.85, b: 0.85, a: 1}
   colorTargets:
-  - {fileID: 0}
+  - {fileID: 2256205404737692135}
   normalColors:
   - {r: 0.28627452, g: 0.28235295, b: 0.28627452, a: 1}
   hoverColors:
   - {r: 1, g: 1, b: 1, a: 1}
-  useScaleEffect: 0
+  selectedColors: []
+  useScaleEffect: 1
   hoverScale: 1.05
   pressedScale: 0.95
   scaleDuration: 0.1

@@ -63,6 +63,7 @@ namespace LoveAlgo.UI
         [SerializeField] TMP_Text[] colorTargets;
         [SerializeField] Color[] normalColors;
         [SerializeField] Color[] hoverColors;
+        [SerializeField] Color[] selectedColors;  // Toggle 모드 전용 (isOn=true)
 
         // ── 스케일 효과 (선택, 모든 모드) ────────────
         [Header("스케일 효과 (선택)")]
@@ -227,7 +228,7 @@ namespace LoveAlgo.UI
             }
 
             ApplyPressedTint(isPressed);
-            ApplyTextColors(isHovered || isPressed);
+            ApplyToggleTextColors();
         }
 
         // ── ChildSwap ───────────────────────────────
@@ -276,6 +277,29 @@ namespace LoveAlgo.UI
             if (colorTargets == null) return;
 
             var colors = highlight ? hoverColors : normalColors;
+            if (colors == null) return;
+
+            int count = Mathf.Min(colorTargets.Length, colors.Length);
+            for (int i = 0; i < count; i++)
+            {
+                if (colorTargets[i] != null)
+                    colorTargets[i].color = colors[i];
+            }
+        }
+
+        // ── Toggle 전용: normal / hover / selected 3단계 ──
+        void ApplyToggleTextColors()
+        {
+            if (colorTargets == null) return;
+
+            Color[] colors;
+            if (isHovered || isPressed)
+                colors = hoverColors;
+            else if (isOn && selectedColors != null && selectedColors.Length > 0)
+                colors = selectedColors;
+            else
+                colors = normalColors;
+
             if (colors == null) return;
 
             int count = Mathf.Min(colorTargets.Length, colors.Length);

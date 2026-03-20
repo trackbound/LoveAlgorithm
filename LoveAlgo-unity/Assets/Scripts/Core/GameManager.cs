@@ -157,9 +157,6 @@ namespace LoveAlgo.Core
         {
             var dayInfo = GameTimeline.GetDayInfo(CurrentDay);
 
-            // ── 메신저 일차별 메시지 발송 ──
-            Phone.MessengerManager.TriggerDayMessages(CurrentDay);
-
             // ── 고백 이벤트 (Day 30) ──
             if (dayInfo?.Type == DayType.Confession)
             {
@@ -167,23 +164,7 @@ namespace LoveAlgo.Core
                 return;
             }
 
-            // ── 이벤트 날 (자유행동 없음) ──
-            if (dayInfo != null && (dayInfo.Type == DayType.PersonalEvent || dayInfo.Type == DayType.GroupEvent))
-            {
-                EnterEventDay(dayInfo);
-                return;
-            }
-
-            // ── 자유행동 날 ──
-            // 아침 이벤트 체크 (DayEventTable — 일차별 컷씬)
-            var morningEvent = DayEventTable.GetEvent(CurrentDay, DayTiming.Morning);
-            if (morningEvent != null)
-            {
-                RunDayEventAsync(morningEvent, showScheduleAfter: true).Forget();
-                return;
-            }
-
-            // 이벤트 없으면 스케줄 UI 직접 표시
+            // 이벤트 날 / 아침 컷씬 / 메신저 메시지는 데모에서 스킵 → 바로 스케줄 UI
             ShowScheduleUI();
         }
 
@@ -445,8 +426,7 @@ namespace LoveAlgo.Core
         }
 
         /// <summary>
-        /// 프롤로그 종료 (ScriptRunner OnScriptEnd에서 호출)
-        /// 현재 컨텐츠 종료 지점이므로 저장 팝업 후 타이틀 복귀
+        /// 프롤로그 종료 → DayLoop 진입
         /// </summary>
         void OnPrologueEnd()
         {
@@ -456,8 +436,115 @@ namespace LoveAlgo.Core
                 runner.OnScriptEnd -= OnPrologueEnd;
             }
 
-            // 페이드아웃 → 저장 팝업 → 타이틀 복귀
-            OnContentEnd();
+            EnterDayLoopSimpleAsync().Forget();
+        }
+
+        /// <summary>
+        /// 프롤로그 → DayLoop 단순 전환 (데모용: 로딩 화면 없이 페이드만)
+        /// </summary>
+        async UniTaskVoid EnterDayLoopSimpleAsync()
+        {
+            if (isTransitioning) return;
+            isTransitioning = true;
+            try
+            {
+                var ct = this.GetCancellationTokenOnDestroy();
+                var fx = ScreenFX.Instance;
+
+                if (fx != null)
+                    await fx.FadeOutAsync(0.5f, ct);
+
+                CleanupStage();
+                ChangePhase(GamePhase.DayLoop);
+                AutoSave();
+
+                await UniTask.Yield(ct);
+
+                if (fx != null)
+                    await fx.FadeInAsync(0.5f, ct);
+            }
+            finally
+            {
+                isTransitioning = false;
+            }
+        }
+
+        /// <summary>
+        /// Prologue → DayLoop 전환 (로딩 화면 연출)
+        /// </summary>
+        async UniTaskVoid TransitionToDayLoopAsync()
+        {
+            if (isTransitioning)
+            {
+                Debug.LogWarning("[GameManager] TransitionToDayLoopAsync 중복 호출 무시");
+                return;
+            }
+            isTransitioning = true;
+            try
+            {
+                var ct = this.GetCancellationTokenOnDestroy();
+                var fx = ScreenFX.Instance;
+                var loading = LoadingScreen.Instance;
+
+                // 1) 페이드 아웃
+                if (fx != null)
+                    await fx.FadeOutAsync(0.8f, ct);
+
+                await UniTask.Delay(System.TimeSpan.FromSeconds(0.4f), cancellationToken: ct);
+
+                // 2) 로딩 화면 표시
+                if (loading != null)
+                    await loading.ShowAsync(ct);
+
+                if (fx != null)
+                    await fx.FadeInAsync(0.5f, ct);
+
+                // 3) Phase 전환 + 자동저장
+                CleanupStage();
+                ChangePhase(GamePhase.DayLoop);
+                AutoSave();
+
+                // 4) 로딩 유지
+                await UniTask.Delay(1200, cancellationToken: ct);
+
+                // 5) 로딩 가림 → 제거
+                if (fx != null)
+                    await fx.FadeOutAsync(0.5f, ct);
+
+                loading?.HideImmediate();
+                await UniTask.Yield(ct);
+
+                // 6) 페이드 인
+                if (fx != null)
+                    await fx.FadeInAsync(0.8f, ct);
+            }
+            finally
+            {
+                isTransitioning = false;
+            }
+        }
+
+        /// <summary>
+        /// 테스트용: 프롤로그 스킵하고 DayLoop 직행
+        /// </summary>
+        public void SkipToDayLoop()
+        {
+            AudioManager.Instance?.StopBGMAsync().Forget();
+            ScriptRunner.Instance?.Stop();
+            CleanupStage();
+
+            GameState.Instance?.ResetAll();
+            DayEventTable.ResetFired();
+            HeroinePointTracker.Reset();
+            Phone.MessengerManager.Reset();
+
+            PlayerName = "테스터";
+            GameState.Instance?.SetPlayerName(PlayerName);
+            CurrentDay = 1;
+            RemainingActions = GameConstants.ActionsPerDay;
+            GameState.Instance?.AddMoney(100000);
+
+            ChangePhase(GamePhase.DayLoop);
         }
 
         /// <summary>

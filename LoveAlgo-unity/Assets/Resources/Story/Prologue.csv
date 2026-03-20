@@ -10,7 +10,7 @@
 ,Text,로아,"나는 너와 함께하게 된 일상형 비서 AI, 로아야.",click
 ,Text,로아,"만나서 기뻐!\n아직 너의 데이터를 정리하는 중이니까, 잠시만 기다려줘.",click
 ,Text,로아,난 너한테 필요한 사람이 될 거야. 내가 없으면 안 될 만큼!\n,click
-,BG,,BG_MyRoom_Desk:Cut,>
+,BG,,BG_MyRoom_Desk:Cross,>
 ,CG,,Close,await
 
 # 자취방_책상

@@ -47,7 +47,7 @@ namespace LoveAlgo.Schedule
                 nameText.text = effect.displayName;
 
             if (effectText != null)
-                effectText.text = BuildEffectText(effect);
+                effectText.text = effect.description;
         }
 
         /// <summary>
