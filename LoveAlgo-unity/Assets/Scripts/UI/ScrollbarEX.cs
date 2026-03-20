@@ -5,44 +5,47 @@ using UnityEngine.EventSystems;
 namespace LoveAlgo.UI
 {
     /// <summary>
-    /// Unity Scrollbar 보조 컴포넌트
-    /// - 핸들 최소 크기 보정 (콘텐츠가 많아도 핸들이 너무 작아지지 않음)
-    /// - 핸들 호버 스프라이트 전환
-    /// - Scrollbar.Transition 강제 None
+    /// Unity Scrollbar 보조 컴포넌트 (비주얼 자식 패턴)
+    ///
+    /// Scrollbar/Handle의 Image → 투명 (Unity가 RectTransform 자유 제어)
+    /// 비주얼 → 자식 Image로 표시 (고정 크기, 깨짐 없음)
+    ///
+    /// 구조:
+    ///   Scrollbar (Image: 투명)
+    ///     ├─ TrackVisual  (Image: 트랙 스프라이트, 스트레치)
+    ///     └─ Handle Slide Area
+    ///          └─ Handle (Image: 투명)
+    ///               └─ HandleVisual (Image: 핸들 스프라이트, 고정 크기)
     /// </summary>
     [RequireComponent(typeof(Scrollbar))]
     public class ScrollbarEX : MonoBehaviour,
         IPointerEnterHandler, IPointerExitHandler
     {
-        [Header("최소 핸들 크기 (0~1)")]
-        [SerializeField, Range(0.02f, 0.5f)] float minHandleSize = 0.1f;
+        [Header("비주얼")]
+        [SerializeField] Image handleVisual;
 
         [Header("핸들 호버 스프라이트")]
         [SerializeField] Sprite handleHoverSprite;
 
+        [Header("최소 핸들 크기 (0~1, 클릭 영역 보장)")]
+        [SerializeField, Range(0.02f, 0.5f)] float minHandleSize = 0.1f;
+
         Scrollbar scrollbar;
-        Image handleImage;
         Sprite handleNormalSprite;
         bool isHovered;
 
         void Awake()
         {
             scrollbar = GetComponent<Scrollbar>();
-            scrollbar.transition = Selectable.Transition.None;
-
-            if (scrollbar.handleRect != null)
-            {
-                handleImage = scrollbar.handleRect.GetComponent<Image>();
-                if (handleImage != null)
-                    handleNormalSprite = handleImage.sprite;
-            }
+            if (handleVisual != null)
+                handleNormalSprite = handleVisual.sprite;
         }
 
         void OnEnable()
         {
             isHovered = false;
-            if (handleImage != null && handleNormalSprite != null)
-                handleImage.sprite = handleNormalSprite;
+            if (handleVisual != null && handleNormalSprite != null)
+                handleVisual.sprite = handleNormalSprite;
         }
 
         void LateUpdate()
@@ -53,16 +56,16 @@ namespace LoveAlgo.UI
 
         public void OnPointerEnter(PointerEventData eventData)
         {
-            if (handleImage == null || handleHoverSprite == null) return;
+            if (handleVisual == null || handleHoverSprite == null) return;
             isHovered = true;
-            handleImage.sprite = handleHoverSprite;
+            handleVisual.sprite = handleHoverSprite;
         }
 
         public void OnPointerExit(PointerEventData eventData)
         {
-            if (handleImage == null) return;
+            if (handleVisual == null) return;
             isHovered = false;
-            handleImage.sprite = handleNormalSprite;
+            handleVisual.sprite = handleNormalSprite;
         }
 
         /// <summary>핸들 스프라이트 런타임 교체</summary>
@@ -70,8 +73,8 @@ namespace LoveAlgo.UI
         {
             handleNormalSprite = normal;
             handleHoverSprite = hover;
-            if (handleImage != null)
-                handleImage.sprite = isHovered && hover != null ? hover : normal;
+            if (handleVisual != null)
+                handleVisual.sprite = isHovered && hover != null ? hover : normal;
         }
     }
 }
