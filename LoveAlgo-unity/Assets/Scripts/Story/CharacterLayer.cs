@@ -271,6 +271,8 @@ namespace LoveAlgo.Story
             {
                 slot?.Clear();
             }
+
+            AudioManager.Instance?.OnAllCharactersExit();
         }
 
         /// <summary>

@@ -1010,10 +1010,6 @@ namespace LoveAlgo.Core
             Story.AudioManager.Instance?.StopBGMImmediate();
             Story.AudioManager.Instance?.StopVoice();
 
-            // DOTween 트윈 정리 — KillAll()은 팝업 애니메이션 등 전역 트윈을 파괴할 수 있으므로
-            // 완료되지 않은 트윈만 안전하게 정리
-            DOTween.KillAll(complete: false);
-
             // 캐릭터 스프라이트 캐시 정리
             CharacterSlot.ClearSpriteCache();
 

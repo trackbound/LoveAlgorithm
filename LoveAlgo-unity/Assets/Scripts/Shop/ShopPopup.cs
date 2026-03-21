@@ -30,6 +30,8 @@ namespace LoveAlgo.Shop
 
         [Header("호버 설명 팝업")]
         [SerializeField] ShopItemDetailPopup itemDetailPopup;
+        [Tooltip("Detail 팝업 위치 계산 기준 (그리드 ScrollRect의 Viewport)")]
+        [SerializeField] RectTransform saleViewport;
 
         [Header("프리팹")]
         [SerializeField] ShopSaleSlot saleSlotPrefab;
@@ -57,6 +59,8 @@ namespace LoveAlgo.Shop
 
             if (backButton != null)
                 backButton.onClick.AddListener(OnBackClick);
+
+            EnsureSaleSlotPool();
         }
 
         /// <summary>패널 열릴 때 초기화 (ScheduleUI가 호출)</summary>
@@ -79,45 +83,56 @@ namespace LoveAlgo.Shop
         /// <summary>판매 목록 생성 (GridLayoutGroup으로 배치)</summary>
         void PopulateSaleList()
         {
-            foreach (var slot in activeSaleSlots)
-            {
-                if (slot != null) Destroy(slot.gameObject);
-            }
-            activeSaleSlots.Clear();
             slotMap.Clear();
 
             if (saleSlotPrefab == null || saleContainer == null) return;
 
             var items = ItemDatabase.GetAll();
-            foreach (var item in items)
+            EnsureSaleSlotPool(items.Count);
+
+            for (int i = 0; i < activeSaleSlots.Count; i++)
+            {
+                var slot = activeSaleSlots[i];
+                if (slot == null) continue;
+
+                bool shouldShow = i < items.Count;
+                slot.gameObject.SetActive(shouldShow);
+                if (!shouldShow) continue;
+
+                var item = items[i];
+                slot.Setup(item, OnSlotClicked, OnSlotHovered);
+                slotMap[item.Id] = slot;
+            }
+        }
+
+        void EnsureSaleSlotPool(int requiredCount = -1)
+        {
+            if (saleSlotPrefab == null || saleContainer == null) return;
+
+            if (requiredCount < 0)
+                requiredCount = ItemDatabase.GetAll().Count;
+
+            while (activeSaleSlots.Count < requiredCount)
             {
                 var slot = Instantiate(saleSlotPrefab, saleContainer);
-                slot.Setup(item, OnSlotToggled, OnSlotHovered);
+                slot.gameObject.SetActive(false);
                 activeSaleSlots.Add(slot);
-                slotMap[item.Id] = slot;
             }
         }
 
         #endregion
 
-        #region 토글 선택
+        #region 클릭 → 장바구니 추가
 
-        /// <summary>슬롯 토글 콜백 — 선택/해제 시 장바구니 반영</summary>
-        void OnSlotToggled(ShopSaleSlot slot, bool selected)
+        /// <summary>슬롯 클릭 콜백 — 클릭할 때마다 수량 +1</summary>
+        void OnSlotClicked(ShopSaleSlot slot)
         {
             if (slot.Item == null) return;
 
-            if (selected)
-            {
-                // 장바구니에 1개 추가
-                cart[slot.Item.Id] = 1;
-            }
-            else
-            {
-                // 장바구니에서 제거
-                cart.Remove(slot.Item.Id);
-            }
+            var id = slot.Item.Id;
+            cart[id] = cart.TryGetValue(id, out int qty) ? qty + 1 : 1;
 
+            slot.SetSelected(true);
             UISoundManager.Instance?.PlayClick();
             RefreshCart();
         }
@@ -143,8 +158,8 @@ namespace LoveAlgo.Shop
         {
             if (itemDetailPopup == null) return;
             var slotRect = slot.GetComponent<RectTransform>();
-            var gridRect = saleContainer as RectTransform;
-            itemDetailPopup.Show(slot.Item, slotRect, gridRect);
+            var vpRect = saleViewport != null ? saleViewport : saleContainer as RectTransform;
+            itemDetailPopup.Show(slot.Item, slotRect, vpRect);
         }
 
         void HideItemDetail()
@@ -178,22 +193,25 @@ namespace LoveAlgo.Shop
         /// <summary>장바구니 UI 갱신</summary>
         void RefreshCart()
         {
-            foreach (var slot in activeCartSlots)
-            {
-                if (slot != null) Destroy(slot.gameObject);
-            }
-            activeCartSlots.Clear();
-
             if (cartSlotPrefab == null || cartContainer == null) return;
 
+            EnsureCartSlotPool(cart.Count);
+
+            int index = 0;
             foreach (var kv in cart)
             {
                 var item = ItemDatabase.Get(kv.Key);
                 if (item == null) continue;
 
-                var slot = Instantiate(cartSlotPrefab, cartContainer);
+                var slot = activeCartSlots[index++];
+                slot.gameObject.SetActive(true);
                 slot.Setup(item, kv.Value, OnCartQuantityChanged);
-                activeCartSlots.Add(slot);
+            }
+
+            for (int i = index; i < activeCartSlots.Count; i++)
+            {
+                if (activeCartSlots[i] != null)
+                    activeCartSlots[i].gameObject.SetActive(false);
             }
 
             // 합계 갱신
@@ -219,6 +237,18 @@ namespace LoveAlgo.Shop
             return total;
         }
 
+        void EnsureCartSlotPool(int requiredCount)
+        {
+            if (cartSlotPrefab == null || cartContainer == null) return;
+
+            while (activeCartSlots.Count < requiredCount)
+            {
+                var slot = Instantiate(cartSlotPrefab, cartContainer);
+                slot.gameObject.SetActive(false);
+                activeCartSlots.Add(slot);
+            }
+        }
+
         #endregion
 
         #region 구매
@@ -236,7 +266,7 @@ namespace LoveAlgo.Shop
             var gs = GameState.Instance;
             if (gs == null || gs.Money < total)
             {
-                await (PopupManager.Instance?.AlertAsync("소지 금액을 초과하여 구매할 수 없어요!") ?? UniTask.CompletedTask);
+                PopupManager.Instance?.Toast("구매 불가", "소지금액을 초과하여 구매할 수 없어요!.");
                 return;
             }
 
@@ -251,7 +281,7 @@ namespace LoveAlgo.Shop
             // 확인 후 소지금 재검증
             if (gs.Money < total)
             {
-                await (PopupManager.Instance?.AlertAsync("소지 금액을 초과하여 구매할 수 없어요!") ?? UniTask.CompletedTask);
+                PopupManager.Instance?.Toast("구매 불가", "소지금액을 초과하여 구매할 수 없어요!");
                 return;
             }
 

@@ -13,6 +13,7 @@ namespace LoveAlgo.Shop
         static readonly Dictionary<string, ItemData> items = new();
         static List<ItemData> cachedAll;
         static bool initialized;
+        static readonly Dictionary<string, Sprite> spriteCache = new();
 
         /// <summary>필요 시 자동 초기화</summary>
         static void EnsureInit()
@@ -25,7 +26,10 @@ namespace LoveAlgo.Shop
             if (catalog != null && catalog.Items.Count > 0)
             {
                 foreach (var item in catalog.Items)
+                {
+                    ResolveIconReferences(item);
                     items[item.Id] = item;
+                }
             }
             else
             {
@@ -39,6 +43,7 @@ namespace LoveAlgo.Shop
         {
             items.Clear();
             cachedAll = null;
+            spriteCache.Clear();
             initialized = false;
             EnsureInit();
         }
@@ -135,7 +140,34 @@ namespace LoveAlgo.Shop
             };
 
             foreach (var item in defaultItems)
+            {
+                ResolveIconReferences(item);
                 items[item.Id] = item;
+            }
+        }
+
+        static void ResolveIconReferences(ItemData item)
+        {
+            if (item == null) return;
+
+            // IconSprite와 DetailSprite는 SO에서 직접 바인딩됨 (Art/Item/Icon, Art/Item)
+            // Resources 폴백용 로드 (개발 중 임시)
+            if (item.IconSprite == null && !string.IsNullOrEmpty(item.IconPath))
+                item.IconSprite = LoadSpriteCached(item.IconPath);
+        }
+
+        static Sprite LoadSpriteCached(string resourcePath)
+        {
+            if (string.IsNullOrEmpty(resourcePath))
+                return null;
+
+            if (spriteCache.TryGetValue(resourcePath, out var cached))
+                return cached;
+
+            var sprite = Resources.Load<Sprite>(resourcePath);
+            if (sprite != null)
+                spriteCache[resourcePath] = sprite;
+            return sprite;
         }
         #endregion
     }

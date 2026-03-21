@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.IO;
 using UnityEditor;
 using UnityEngine;
 using LoveAlgo.Shop;
@@ -89,6 +90,14 @@ namespace LoveAlgo.Editor
                 elem.FindPropertyRelative("TargetHeroine").stringValue = item.TargetHeroine ?? "";
                 elem.FindPropertyRelative("EffectValue").intValue = item.EffectValue;
                 elem.FindPropertyRelative("IconPath").stringValue = item.IconPath ?? "";
+
+                // IconPath에서 파일명만 추출 (Items/xxx → xxx)
+                string iconName = item.IconPath?.Replace("Items/", "") ?? "";
+                // Art/Item/Icon/{name} — SaleSlot, CartSlot 공통 아이콘
+                elem.FindPropertyRelative("IconSprite").objectReferenceValue = FindSpriteInArt($"Item/Icon/{iconName}");
+                // Art/Item/{name} — Detail 팝업용 큰 이미지
+                elem.FindPropertyRelative("DetailSprite").objectReferenceValue = FindSpriteInArt($"Item/{iconName}");
+
                 elem.FindPropertyRelative("Tier").enumValueIndex = (int)item.Tier;
                 elem.FindPropertyRelative("Availability").enumValueIndex = (int)item.Availability;
                 elem.FindPropertyRelative("EffectStat").stringValue = item.EffectStat ?? "";
@@ -276,6 +285,52 @@ namespace LoveAlgo.Editor
             EditorUtility.FocusProjectWindow();
             Selection.activeObject = so;
             Debug.Log($"[SOGenerator] 생성 완료: {path}");
+        }
+
+        static Sprite FindSpriteInResources(string resourcePath)
+        {
+            if (string.IsNullOrEmpty(resourcePath))
+                return null;
+
+            string expected = $"Assets/Resources/{resourcePath}";
+            string fileName = Path.GetFileName(resourcePath);
+            var guids = AssetDatabase.FindAssets($"{fileName} t:Sprite", new[] { "Assets/Resources" });
+
+            foreach (var guid in guids)
+            {
+                string assetPath = AssetDatabase.GUIDToAssetPath(guid);
+                string withoutExt = Path.ChangeExtension(assetPath, null)?.Replace('\\', '/');
+                if (string.Equals(withoutExt, expected, System.StringComparison.OrdinalIgnoreCase))
+                    return AssetDatabase.LoadAssetAtPath<Sprite>(assetPath);
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Art 폴더에서 스프라이트 검색
+        /// 경로 예: "Item/Icon/turtleman" → "Assets/Art/Item/Icon/turtleman.png"
+        /// </summary>
+        static Sprite FindSpriteInArt(string artPath)
+        {
+            if (string.IsNullOrEmpty(artPath))
+                return null;
+
+            string expected = $"Assets/Art/{artPath}";
+            string fileName = Path.GetFileName(artPath);
+            var guids = AssetDatabase.FindAssets($"{fileName} t:Sprite", new[] { "Assets/Art" });
+
+            foreach (var guid in guids)
+            {
+                string assetPath = AssetDatabase.GUIDToAssetPath(guid);
+                string withoutExt = Path.ChangeExtension(assetPath, null)?.Replace('\\', '/');
+                if (string.Equals(withoutExt, expected, System.StringComparison.OrdinalIgnoreCase))
+                    return AssetDatabase.LoadAssetAtPath<Sprite>(assetPath);
+            }
+
+            // Art 폴더에 없으면 경고 (이미지 미배치 상태)
+            Debug.LogWarning($"[SOGenerator] Art 폴더에 스프라이트 없음: {expected}");
+            return null;
         }
     }
 }

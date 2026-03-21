@@ -132,6 +132,8 @@ namespace LoveAlgo.Story
         {
             if (!isShowing) return;
 
+            DOTween.Kill(canvasGroup);
+
             // 페이드아웃 — Linear로 점진적 퇴장
             if (canvasGroup != null && duration > 0)
             {
@@ -164,6 +166,8 @@ namespace LoveAlgo.Story
         /// </summary>
         public void Clear()
         {
+            DOTween.Kill(canvasGroup);
+
             if (canvasGroup != null)
             {
                 canvasGroup.alpha = 0f;

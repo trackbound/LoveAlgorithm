@@ -208,6 +208,10 @@ namespace LoveAlgo.Story
         {
             if (!isShowing) return;
 
+            DOTween.Kill(layerCanvasGroup);
+            DOTween.Kill(frontCanvasGroup);
+            DOTween.Kill(backCanvasGroup);
+
             if (layerCanvasGroup != null && duration > 0f)
             {
                 await layerCanvasGroup.DOFade(0f, duration)
@@ -241,6 +245,10 @@ namespace LoveAlgo.Story
         /// </summary>
         public void Clear()
         {
+            DOTween.Kill(layerCanvasGroup);
+            DOTween.Kill(frontCanvasGroup);
+            DOTween.Kill(backCanvasGroup);
+
             if (layerCanvasGroup != null)
                 layerCanvasGroup.alpha = 0f;
 
@@ -269,6 +277,10 @@ namespace LoveAlgo.Story
         /// </summary>
         public void HideImmediate()
         {
+            DOTween.Kill(layerCanvasGroup);
+            DOTween.Kill(frontCanvasGroup);
+            DOTween.Kill(backCanvasGroup);
+
             if (layerCanvasGroup != null)
                 layerCanvasGroup.alpha = 0f;
             if (sdImageFront != null)

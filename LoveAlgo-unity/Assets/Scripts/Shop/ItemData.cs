@@ -1,4 +1,5 @@
 using System;
+using UnityEngine;
 
 namespace LoveAlgo.Shop
 {
@@ -69,19 +70,30 @@ namespace LoveAlgo.Shop
         public int EffectValue;
 
         /// <summary>
-        /// Sale 슬롯용 큰 이미지 경로 (Resources 기준)
+        /// 아이템 이름 (Art/Item/{name}, Art/Item/Icon/{name} 경로용)
         /// </summary>
         public string IconPath;
 
         /// <summary>
-        /// Cart 슬롯용 작은 아이콘 경로 (자동 파생: Items/xxx → Items/Icon/xxx)
+        /// 아이콘 스프라이트 (SaleSlot, CartSlot 공통 사용)
+        /// 경로: Art/Item/Icon/{name}
         /// </summary>
-        public string IconSmallPath
-        {
-            get => !string.IsNullOrEmpty(IconPath) && IconPath.StartsWith("Items/")
-                ? IconPath.Replace("Items/", "Items/Icon/")
-                : IconPath;
-        }
+        public Sprite IconSprite;
+
+        /// <summary>
+        /// 상세 팔업용 큰 이미지 스프라이트
+        /// 경로: Art/Item/{name}
+        /// </summary>
+        public Sprite DetailSprite;
+
+        /// <summary>SaleSlot/CartSlot용 아이콘</summary>
+        public Sprite GetSaleIcon() => IconSprite;
+
+        /// <summary>장바구니용 아이콘 (SaleSlot과 동일)</summary>
+        public Sprite GetSmallIcon() => IconSprite;
+
+        /// <summary>상세 팔업용 큰 이미지 (Art/Item/{name})</summary>
+        public Sprite GetDetailImage() => DetailSprite != null ? DetailSprite : IconSprite;
 
         /// <summary>
         /// 선물 계층 (기획서: 계층에 따라 2차/3차 이벤트 포인트 결정)

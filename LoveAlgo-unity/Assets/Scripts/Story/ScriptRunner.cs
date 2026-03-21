@@ -1328,7 +1328,7 @@ namespace LoveAlgo.Story
 
             if (result && lineIndex.TryGetValue(jumpTarget, out int targetIndex))
             {
-                currentIndex = targetIndex;
+                currentIndex = targetIndex - 1; // 루프 말미에서 +1 되므로 보정
                 Debug.Log($"[Flow:If] 점프: {jumpTarget} (index: {targetIndex})");
                 return true;
             }

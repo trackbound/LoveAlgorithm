@@ -255,6 +255,8 @@ namespace LoveAlgo.Story
         /// </summary>
         public void HideImmediate()
         {
+            DOTween.Kill(canvasGroup);
+
             if (canvasGroup != null)
             {
                 canvasGroup.alpha = 0f;

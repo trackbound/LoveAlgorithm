@@ -84,7 +84,9 @@ namespace LoveAlgo.Story
         bool skipRequested;
         string fullText;
         bool isHidden;
-        bool needsFadeIn;  // 다음 Show 시 페이드인 필요 여부
+#pragma warning disable CS0414 // 향후 페이드인 조건 분기용 (현재 할당만)
+        bool needsFadeIn;
+#pragma warning restore CS0414
 
         // 타이핑 사운드 — 쿨다운은 UISoundManager에서 일괄 관리
 
@@ -107,7 +109,7 @@ namespace LoveAlgo.Story
         public IReadOnlyList<DialogueLogEntry> DialogueLog => dialogueLog;
 
         // 인라인 태그 정규식 (값에 / 가 포함될 수 있으므로 [^>]+ 사용, trailing / 는 후처리로 제거)
-        static readonly Regex InlineTagRegex = new(@"<(wait|sfx|emote|speed)=([^>]+)>", RegexOptions.Compiled);
+        static readonly Regex InlineTagRegex = new(@"<(wait|sfx|emote|speed)=([^>]+)>|</speed>", RegexOptions.Compiled);
         static readonly Regex SpeedEndRegex = new(@"</speed>", RegexOptions.Compiled);
         // 로그용: 모든 인라인 태그 제거
         static readonly Regex StripTagsRegex = new(@"<(wait|sfx|emote|speed)=[^>]+>|</speed>", RegexOptions.Compiled);
@@ -333,9 +335,15 @@ namespace LoveAlgo.Story
                 if (m.Index > lastIndex)
                 {
                     string before = text.Substring(lastIndex, m.Index - lastIndex);
-                    before = SpeedEndRegex.Replace(before, ""); // </speed> 제거
                     if (!string.IsNullOrEmpty(before))
                         segments.Add(new TextSegment { Type = SegmentType.Text, Content = before });
+                }
+
+                if (m.Value.Equals("</speed>", StringComparison.OrdinalIgnoreCase))
+                {
+                    segments.Add(new TextSegment { Type = SegmentType.SpeedEnd, Content = "" });
+                    lastIndex = m.Index + m.Length;
+                    continue;
                 }
 
                 // 태그 처리
@@ -369,12 +377,6 @@ namespace LoveAlgo.Story
             if (lastIndex < text.Length)
             {
                 string remaining = text.Substring(lastIndex);
-                remaining = SpeedEndRegex.Replace(remaining, "");
-
-                // </speed> 위치에서 속도 복귀 삽입
-                if (text.Substring(lastIndex).Contains("</speed>"))
-                    segments.Add(new TextSegment { Type = SegmentType.SpeedEnd, Content = "" });
-
                 if (!string.IsNullOrEmpty(remaining))
                     segments.Add(new TextSegment { Type = SegmentType.Text, Content = remaining });
             }

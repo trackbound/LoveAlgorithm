@@ -131,6 +131,8 @@ namespace LoveAlgo.Story
         /// </summary>
         public void HideImmediate()
         {
+            DOTween.Kill(canvasGroup);
+
             if (canvasGroup != null)
             {
                 canvasGroup.alpha = 0f;
@@ -147,6 +149,8 @@ namespace LoveAlgo.Story
         /// </summary>
         public void ShowImmediate(float alpha = -1f)
         {
+            DOTween.Kill(canvasGroup);
+
             if (alpha < 0f) alpha = defaultAlpha;
 
             if (dimImage != null)

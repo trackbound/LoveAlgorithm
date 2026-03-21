@@ -268,6 +268,8 @@ namespace LoveAlgo.Story
                 File.Delete(path);
                 Debug.Log($"[SaveManager] 슬롯 {slot} 삭제");
             }
+
+            DeleteScreenshot(slot);
         }
 
         /// <summary>

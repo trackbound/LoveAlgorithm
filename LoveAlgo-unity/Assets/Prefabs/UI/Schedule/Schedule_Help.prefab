@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8959337323758030600}
   - component: {fileID: 3729600983686008193}
+  - component: {fileID: 1598210475192215038}
   m_Layer: 5
   m_Name: Schedule_Help
   m_TagString: Untagged
@@ -52,6 +53,21 @@ CanvasGroup:
   m_Interactable: 1
   m_BlocksRaycasts: 1
   m_IgnoreParentGroups: 0
+--- !u!114 &1598210475192215038
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2669360328544559525}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ad7843cce62ce3b4eb174b634bf4f42c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.Schedule.ScheduleHelpPanel
+  closeButtons:
+  - {fileID: 7484730827006278692}
+  - {fileID: 8060048773967669431}
 --- !u!1 &3248800898091026361
 GameObject:
   m_ObjectHideFlags: 0

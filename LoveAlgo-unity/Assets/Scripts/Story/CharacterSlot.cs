@@ -152,15 +152,15 @@ namespace LoveAlgo.Story
         /// </summary>
         bool PrepareEnter(string characterName, string resolvedEmote)
         {
-            currentCharacter = characterName;
-            currentEmote = resolvedEmote;
-
-            var sprite = LoadSprite(currentCharacter, currentEmote);
+            var sprite = LoadSprite(characterName, resolvedEmote);
             if (sprite == null)
             {
-                Debug.LogWarning($"[CharacterSlot] 스프라이트 없음: {currentCharacter}/{currentEmote}");
+                Debug.LogWarning($"[CharacterSlot] 스프라이트 없음: {characterName}/{resolvedEmote}");
                 return false;
             }
+
+            currentCharacter = characterName;
+            currentEmote = resolvedEmote;
 
             imageFront.sprite = sprite;
             imageFront.enabled = true;
@@ -280,6 +280,13 @@ namespace LoveAlgo.Story
         /// </summary>
         public void Clear()
         {
+            DOTween.Kill(slotCanvasGroup);
+            DOTween.Kill(frontCanvasGroup);
+            DOTween.Kill(backCanvasGroup);
+            DOTween.Kill(rectTransform);
+            RectTransform target = imageContainer != null ? imageContainer : imageFront?.rectTransform;
+            DOTween.Kill(target);
+
             SetSlotAlpha(0f);
             SetImageAlpha(frontCanvasGroup, 0f);
             SetImageAlpha(backCanvasGroup, 0f);

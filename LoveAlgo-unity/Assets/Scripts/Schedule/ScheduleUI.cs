@@ -9,6 +9,10 @@ using LoveAlgo.Core;
 using LoveAlgo.Story;
 using LoveAlgo.UI;
 
+// DOTween + UniTask 브릿지에서 Tweener가 awaitable로 인식되어 발생하는 경고 억제
+// seq.Join()에 전달되므로 의도된 동작
+#pragma warning disable CS4014
+
 namespace LoveAlgo.Schedule
 {
     /// <summary>

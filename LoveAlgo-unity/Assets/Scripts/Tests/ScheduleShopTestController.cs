@@ -16,7 +16,9 @@ namespace LoveAlgo
     {
         [Header("시작 설정")]
         [SerializeField] int startMoney = 100000;
+#pragma warning disable CS0414 // 인스펙터 설정용 필드 (향후 사용 예정)
         [SerializeField] int startDay = 1;
+#pragma warning restore CS0414
         [SerializeField] bool autoStartDayLoop = true;
 
         bool panelOpen = true;

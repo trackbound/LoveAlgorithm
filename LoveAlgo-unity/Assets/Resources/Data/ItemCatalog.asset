@@ -22,6 +22,8 @@ MonoBehaviour:
     TargetHeroine: Yeun
     EffectValue: 0
     IconPath: Items/turtleman
+    IconSprite: {fileID: 21300000, guid: 47c869cdb65cc03439b4d72bbc133492, type: 3}
+    DetailSprite: {fileID: 21300000, guid: bf35b338066507c49aad1ba11ae51e83, type: 3}
     Tier: 1
     Availability: 0
     EffectStat: 
@@ -35,6 +37,8 @@ MonoBehaviour:
     TargetHeroine: Yeun
     EffectValue: 0
     IconPath: Items/ankle support
+    IconSprite: {fileID: 21300000, guid: 1c3eaf839b97e89449521fef91f65069, type: 3}
+    DetailSprite: {fileID: 21300000, guid: 9a76b52553f12294e8bcabfaa88a9418, type: 3}
     Tier: 3
     Availability: 1
     EffectStat: 
@@ -48,6 +52,8 @@ MonoBehaviour:
     TargetHeroine: Yeun
     EffectValue: 0
     IconPath: Items/dining ticket
+    IconSprite: {fileID: 21300000, guid: d7f4bba847fbe1e418d26c84d8731e81, type: 3}
+    DetailSprite: {fileID: 21300000, guid: 10267623d1feb6449b3c827a94d118fa, type: 3}
     Tier: 4
     Availability: 2
     EffectStat: 
@@ -61,6 +67,8 @@ MonoBehaviour:
     TargetHeroine: Daeun
     EffectValue: 0
     IconPath: Items/3clolor pen
+    IconSprite: {fileID: 21300000, guid: 1b6161e347405ca42acb328bde795844, type: 3}
+    DetailSprite: {fileID: 21300000, guid: 9d65bc952763fb84290851191e380021, type: 3}
     Tier: 1
     Availability: 0
     EffectStat: 
@@ -74,6 +82,8 @@ MonoBehaviour:
     TargetHeroine: Daeun
     EffectValue: 0
     IconPath: Items/plant
+    IconSprite: {fileID: 21300000, guid: 2b634a0c26f43b246a0ca2ecc1882473, type: 3}
+    DetailSprite: {fileID: 21300000, guid: 6f85d1196d089de4095b6bd04e92a2d9, type: 3}
     Tier: 2
     Availability: 1
     EffectStat: 
@@ -87,6 +97,8 @@ MonoBehaviour:
     TargetHeroine: Daeun
     EffectValue: 0
     IconPath: Items/monitor
+    IconSprite: {fileID: 21300000, guid: 9ede58f5132385046b1aa9ebffec48ba, type: 3}
+    DetailSprite: {fileID: 21300000, guid: 4070b9e7659864b42b60c01a0669a060, type: 3}
     Tier: 4
     Availability: 2
     EffectStat: 
@@ -100,6 +112,8 @@ MonoBehaviour:
     TargetHeroine: Bom
     EffectValue: 0
     IconPath: Items/rabbit_keyring
+    IconSprite: {fileID: 21300000, guid: a97fe05c811558f4395c235090d57a68, type: 3}
+    DetailSprite: {fileID: 21300000, guid: 7147083afd684a94bb7c100e256d06bd, type: 3}
     Tier: 1
     Availability: 0
     EffectStat: 
@@ -113,6 +127,8 @@ MonoBehaviour:
     TargetHeroine: Bom
     EffectValue: 0
     IconPath: Items/hairband
+    IconSprite: {fileID: 21300000, guid: 11372bbe9b77240429aff54fcb88fa4c, type: 3}
+    DetailSprite: {fileID: 21300000, guid: 5d47d0bec17b99648918172ef3aa8d02, type: 3}
     Tier: 2
     Availability: 1
     EffectStat: 
@@ -126,6 +142,8 @@ MonoBehaviour:
     TargetHeroine: Bom
     EffectValue: 0
     IconPath: Items/handcream
+    IconSprite: {fileID: 21300000, guid: 5550b6d25bdab56488c1f0f7ee6476cc, type: 3}
+    DetailSprite: {fileID: 21300000, guid: f55bcde1a7dd47f438066d8a2387820d, type: 3}
     Tier: 3
     Availability: 2
     EffectStat: 
@@ -138,6 +156,8 @@ MonoBehaviour:
     TargetHeroine: Heewon
     EffectValue: 0
     IconPath: Items/popup ticket
+    IconSprite: {fileID: 21300000, guid: 01d056178b5985246944c8369819502f, type: 3}
+    DetailSprite: {fileID: 21300000, guid: c05e3f883fc98d54c829ba59bd570dd8, type: 3}
     Tier: 1
     Availability: 0
     EffectStat: 
@@ -151,6 +171,8 @@ MonoBehaviour:
     TargetHeroine: Heewon
     EffectValue: 0
     IconPath: Items/empire diamond
+    IconSprite: {fileID: 21300000, guid: 0ceb0e34a2b51a147a9bf898ab445b5b, type: 3}
+    DetailSprite: {fileID: 21300000, guid: bfe78e29ad6ddcc47b5917d7c9e21e46, type: 3}
     Tier: 3
     Availability: 1
     EffectStat: 
@@ -164,6 +186,8 @@ MonoBehaviour:
     TargetHeroine: Heewon
     EffectValue: 0
     IconPath: Items/CD_tropical glow
+    IconSprite: {fileID: 21300000, guid: 0062a9eb12a1cec4dadbf8b109953936, type: 3}
+    DetailSprite: {fileID: 21300000, guid: a81d03dc697f4fe40b05259ab709604b, type: 3}
     Tier: 4
     Availability: 2
     EffectStat: 
@@ -177,6 +201,8 @@ MonoBehaviour:
     TargetHeroine: Roa
     EffectValue: 0
     IconPath: Items/lamp
+    IconSprite: {fileID: 21300000, guid: 20af9d87746eb044b858970d08b148cd, type: 3}
+    DetailSprite: {fileID: 21300000, guid: b2fd9d7634ef4e943a1e91cfa7b2bfe0, type: 3}
     Tier: 1
     Availability: 0
     EffectStat: 
@@ -190,6 +216,8 @@ MonoBehaviour:
     TargetHeroine: Roa
     EffectValue: 0
     IconPath: Items/headphone
+    IconSprite: {fileID: 21300000, guid: 6f49dca1e2091954bbef4b1ab954c80b, type: 3}
+    DetailSprite: {fileID: 21300000, guid: 22201d587fccf9844930b1243a77634a, type: 3}
     Tier: 3
     Availability: 1
     EffectStat: 
@@ -203,6 +231,8 @@ MonoBehaviour:
     TargetHeroine: Roa
     EffectValue: 0
     IconPath: Items/monitor
+    IconSprite: {fileID: 21300000, guid: 9ede58f5132385046b1aa9ebffec48ba, type: 3}
+    DetailSprite: {fileID: 21300000, guid: 4070b9e7659864b42b60c01a0669a060, type: 3}
     Tier: 4
     Availability: 2
     EffectStat: 
@@ -216,6 +246,8 @@ MonoBehaviour:
     TargetHeroine: 
     EffectValue: 5
     IconPath: Items/energybar
+    IconSprite: {fileID: 21300000, guid: b9055c8284325a841a48ee9317053e84, type: 3}
+    DetailSprite: {fileID: 21300000, guid: 28d07092c0637194a992027d4ce7edf6, type: 3}
     Tier: 0
     Availability: 0
     EffectStat: 
@@ -229,6 +261,8 @@ MonoBehaviour:
     TargetHeroine: 
     EffectValue: 6
     IconPath: Items/energybar
+    IconSprite: {fileID: 21300000, guid: b9055c8284325a841a48ee9317053e84, type: 3}
+    DetailSprite: {fileID: 21300000, guid: 28d07092c0637194a992027d4ce7edf6, type: 3}
     Tier: 0
     Availability: 0
     EffectStat: 
@@ -242,6 +276,8 @@ MonoBehaviour:
     TargetHeroine: 
     EffectValue: 8
     IconPath: Items/vitamin
+    IconSprite: {fileID: 21300000, guid: 9d2870f1949e2e2438f5b6639f7790b6, type: 3}
+    DetailSprite: {fileID: 21300000, guid: 8e86990581cb18e4fbfb4172c33f517b, type: 3}
     Tier: 0
     Availability: 0
     EffectStat: 
@@ -255,6 +291,8 @@ MonoBehaviour:
     TargetHeroine: 
     EffectValue: 12
     IconPath: Items/jelly
+    IconSprite: {fileID: 21300000, guid: 33810709768f7ae4da34dd3c4c73234c, type: 3}
+    DetailSprite: {fileID: 21300000, guid: db214b113ce968a4785d7d1bd559fed1, type: 3}
     Tier: 0
     Availability: 0
     EffectStat: 
@@ -268,6 +306,8 @@ MonoBehaviour:
     TargetHeroine: 
     EffectValue: 15
     IconPath: Items/lamp
+    IconSprite: {fileID: 21300000, guid: 20af9d87746eb044b858970d08b148cd, type: 3}
+    DetailSprite: {fileID: 21300000, guid: b2fd9d7634ef4e943a1e91cfa7b2bfe0, type: 3}
     Tier: 0
     Availability: 0
     EffectStat: 
@@ -282,6 +322,8 @@ MonoBehaviour:
     TargetHeroine: 
     EffectValue: 2
     IconPath: Items/marron bread
+    IconSprite: {fileID: 21300000, guid: db92c6976e16ace408ecfdcca01f87cd, type: 3}
+    DetailSprite: {fileID: 21300000, guid: 57254459eac04fa49b050787d69074bd, type: 3}
     Tier: 0
     Availability: 0
     EffectStat: Str
@@ -296,6 +338,8 @@ MonoBehaviour:
     TargetHeroine: 
     EffectValue: 3
     IconPath: Items/marron bread
+    IconSprite: {fileID: 21300000, guid: db92c6976e16ace408ecfdcca01f87cd, type: 3}
+    DetailSprite: {fileID: 21300000, guid: 57254459eac04fa49b050787d69074bd, type: 3}
     Tier: 0
     Availability: 0
     EffectStat: Str
@@ -310,6 +354,8 @@ MonoBehaviour:
     TargetHeroine: 
     EffectValue: 1
     IconPath: Items/popup ticket
+    IconSprite: {fileID: 21300000, guid: 01d056178b5985246944c8369819502f, type: 3}
+    DetailSprite: {fileID: 21300000, guid: c05e3f883fc98d54c829ba59bd570dd8, type: 3}
     Tier: 0
     Availability: 0
     EffectStat: Int
@@ -323,6 +369,8 @@ MonoBehaviour:
     TargetHeroine: 
     EffectValue: 1
     IconPath: Items/3clolor pen
+    IconSprite: {fileID: 21300000, guid: 1b6161e347405ca42acb328bde795844, type: 3}
+    DetailSprite: {fileID: 21300000, guid: 9d65bc952763fb84290851191e380021, type: 3}
     Tier: 0
     Availability: 0
     EffectStat: Int
@@ -337,6 +385,8 @@ MonoBehaviour:
     TargetHeroine: 
     EffectValue: 1
     IconPath: 
+    IconSprite: {fileID: 0}
+    DetailSprite: {fileID: 0}
     Tier: 0
     Availability: 0
     EffectStat: Int
@@ -350,6 +400,8 @@ MonoBehaviour:
     TargetHeroine: 
     EffectValue: 2
     IconPath: Items/3clolor pen
+    IconSprite: {fileID: 21300000, guid: 1b6161e347405ca42acb328bde795844, type: 3}
+    DetailSprite: {fileID: 21300000, guid: 9d65bc952763fb84290851191e380021, type: 3}
     Tier: 0
     Availability: 0
     EffectStat: Int
@@ -363,6 +415,8 @@ MonoBehaviour:
     TargetHeroine: 
     EffectValue: 1
     IconPath: Items/3clolor pen
+    IconSprite: {fileID: 21300000, guid: 1b6161e347405ca42acb328bde795844, type: 3}
+    DetailSprite: {fileID: 21300000, guid: 9d65bc952763fb84290851191e380021, type: 3}
     Tier: 0
     Availability: 0
     EffectStat: Int
@@ -376,6 +430,8 @@ MonoBehaviour:
     TargetHeroine: 
     EffectValue: 2
     IconPath: 
+    IconSprite: {fileID: 0}
+    DetailSprite: {fileID: 0}
     Tier: 0
     Availability: 0
     EffectStat: Int
@@ -389,6 +445,8 @@ MonoBehaviour:
     TargetHeroine: 
     EffectValue: 1
     IconPath: 
+    IconSprite: {fileID: 0}
+    DetailSprite: {fileID: 0}
     Tier: 0
     Availability: 0
     EffectStat: Int
@@ -402,6 +460,8 @@ MonoBehaviour:
     TargetHeroine: 
     EffectValue: 1
     IconPath: 
+    IconSprite: {fileID: 0}
+    DetailSprite: {fileID: 0}
     Tier: 0
     Availability: 0
     EffectStat: Per

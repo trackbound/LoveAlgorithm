@@ -38,12 +38,8 @@ namespace LoveAlgo.Shop
             quantity = qty;
             onQuantityChanged = onChanged;
 
-            // 아이콘 로드 (Cart용 소형 아이콘)
-            if (iconImage != null && !string.IsNullOrEmpty(item.IconSmallPath))
-            {
-                var sprite = Resources.Load<Sprite>(item.IconSmallPath);
-                if (sprite != null) iconImage.sprite = sprite;
-            }
+            if (iconImage != null)
+                iconImage.sprite = item.GetSmallIcon();
 
             Refresh();
 

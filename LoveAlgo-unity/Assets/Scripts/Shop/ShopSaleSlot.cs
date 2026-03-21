@@ -10,15 +10,15 @@ namespace LoveAlgo.Shop
     /// 상점 판매 슬롯 — 카드형 그리드 아이템
     ///
     /// 프리팹 구조:
-    ///   - img_bg: 카드 배경 (SpriteSwap: normal/hover)
+    ///   - img_bg: 카드 배경 (SpriteSwap: normal/hover/selected)
     ///   - img_icon: 아이템 아이콘 (큰 이미지)
     ///   - txt_name: 아이템 이름
     ///   - txt_price: ₩가격
-    ///   - obj_check: 체크마크 오브젝트 (선택 시 활성)
     ///
     /// 동작:
-    ///   - 클릭 → 토글 선택/해제 (체크마크 + 장바구니 반영)
+    ///   - 클릭 → 장바구니에 추가 (수량 증가)
     ///   - 호버 → 배경 스프라이트 교체 + 설명 팝업 요청
+    ///   - 장바구니에 담긴 상태면 selectedSprite 표시
     /// </summary>
     public class ShopSaleSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     {
@@ -27,18 +27,19 @@ namespace LoveAlgo.Shop
         [SerializeField] Image iconImage;
         [SerializeField] TMP_Text nameText;
         [SerializeField] TMP_Text priceText;
-        [SerializeField] GameObject checkMark;
         [SerializeField] Button slotButton;
 
-        [Header("호버 스프라이트")]
+        [Header("배경 스프라이트")]
         [SerializeField] Sprite normalSprite;
         [SerializeField] Sprite hoverSprite;
+        [SerializeField] Sprite selectedSprite;
 
         ItemData itemData;
-        bool isSelected;
+        bool isInCart;
+        bool isHovered;
 
-        /// <summary>토글 콜백: (슬롯, 선택여부)</summary>
-        Action<ShopSaleSlot, bool> onToggled;
+        /// <summary>클릭 콜백: (슬롯)</summary>
+        Action<ShopSaleSlot> onClicked;
 
         /// <summary>호버 콜백: (슬롯, 호버진입여부)</summary>
         Action<ShopSaleSlot, bool> onHovered;
@@ -46,35 +47,27 @@ namespace LoveAlgo.Shop
         /// <summary>현재 아이템 데이터</summary>
         public ItemData Item => itemData;
 
-        /// <summary>선택 상태</summary>
-        public bool IsSelected => isSelected;
-
         /// <summary>
         /// 슬롯 설정
         /// </summary>
         public void Setup(ItemData item,
-            Action<ShopSaleSlot, bool> onToggle,
+            Action<ShopSaleSlot> onClick,
             Action<ShopSaleSlot, bool> onHover = null)
         {
             itemData = item;
-            onToggled = onToggle;
+            onClicked = onClick;
             onHovered = onHover;
-            isSelected = false;
+            isInCart = false;
+            isHovered = false;
 
             if (nameText != null) nameText.text = item.Name;
             if (priceText != null) priceText.text = $"{item.Price:N0}원";
-            if (checkMark != null) checkMark.SetActive(false);
 
-            // 아이콘 로드
-            if (iconImage != null && !string.IsNullOrEmpty(item.IconPath))
-            {
-                var sprite = Resources.Load<Sprite>(item.IconPath);
-                if (sprite != null) iconImage.sprite = sprite;
-            }
+            if (iconImage != null)
+                iconImage.sprite = item.GetSaleIcon();
 
             // 배경 스프라이트 초기화
-            if (bgImage != null && normalSprite != null)
-                bgImage.sprite = normalSprite;
+            ApplyBgSprite();
 
             if (slotButton != null)
             {
@@ -83,32 +76,43 @@ namespace LoveAlgo.Shop
             }
         }
 
-        /// <summary>외부에서 선택 상태 강제 설정 (장바구니 수량 0 시 해제 등)</summary>
+        /// <summary>외부에서 선택 상태 설정 (장바구니 담김/해제)</summary>
         public void SetSelected(bool selected)
         {
-            isSelected = selected;
-            if (checkMark != null) checkMark.SetActive(isSelected);
+            isInCart = selected;
+            ApplyBgSprite();
         }
 
         void OnClick()
         {
-            isSelected = !isSelected;
-            if (checkMark != null) checkMark.SetActive(isSelected);
-            onToggled?.Invoke(this, isSelected);
+            onClicked?.Invoke(this);
         }
 
         public void OnPointerEnter(PointerEventData eventData)
         {
-            if (bgImage != null && hoverSprite != null)
-                bgImage.sprite = hoverSprite;
+            isHovered = true;
+            ApplyBgSprite();
             onHovered?.Invoke(this, true);
         }
 
         public void OnPointerExit(PointerEventData eventData)
         {
-            if (bgImage != null && normalSprite != null)
-                bgImage.sprite = normalSprite;
+            isHovered = false;
+            ApplyBgSprite();
             onHovered?.Invoke(this, false);
+        }
+
+        /// <summary>현재 상태에 맞는 배경 스프라이트 적용 (우선순위: hover > selected > normal)</summary>
+        void ApplyBgSprite()
+        {
+            if (bgImage == null) return;
+
+            if (isHovered && hoverSprite != null)
+                bgImage.sprite = hoverSprite;
+            else if (isInCart && selectedSprite != null)
+                bgImage.sprite = selectedSprite;
+            else if (normalSprite != null)
+                bgImage.sprite = normalSprite;
         }
     }
 }
