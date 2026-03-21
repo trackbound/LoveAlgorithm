@@ -1,5 +1,6 @@
 using System.Threading;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using LoveAlgo.Story;
@@ -17,15 +18,18 @@ namespace LoveAlgo.Core
 
         [Header("Settings")]
         [SerializeField] string prologueScript = "Prologue";  // 프롤로그 CSV 이름
+        [SerializeField] bool limitDemoToSingleSchedule = true;  // 데모 빌드: 프롤로그 후 스케줄 1회만 진행
 
         [Header("DOTween Settings")]
         [SerializeField] int tweenersCapacity = 500;   // 동시 트위너 수
         [SerializeField] int sequencesCapacity = 125;  // 동시 시퀀스 수
 
+        const string DemoSingleScheduleCompleteFlag = "Demo_SingleScheduleComplete";
+
         // 현재 상태
         public GamePhase CurrentPhase { get; private set; } = GamePhase.Title;
         public int CurrentDay { get; private set; } = 1;
-        public int RemainingActions { get; private set; } = GameConstants.ActionsPerDay;  // 하루 남은 행동 수 (기획서: 2회 - 낮/밤)
+        public int RemainingActions { get; private set; }  // 하루 남은 행동 수 (기획서: 2회 - 낮/밤)
         public string PlayerName { get; private set; } = "";
 
         /// <summary>비동기 전환 진행 중 재진입 방지 플래그</summary>
@@ -57,6 +61,9 @@ namespace LoveAlgo.Core
 
             // 저장된 해상도/전체화면 설정 복원
             RestoreResolution();
+
+            // MonoBehaviour 생성자가 아닌 Awake에서 초기화 (Resources.Load 안전)
+            RemainingActions = GameConstants.ActionsPerDay;
         }
 
         void Start()
@@ -64,10 +71,12 @@ namespace LoveAlgo.Core
             ChangePhase(GamePhase.Title);
         }
 
+/*
         void Update()
         {
             // Shift+S: 프롤로그 스킵 → 스케줄 직행 (기획자 테스트용)
-            if (Input.GetKey(KeyCode.LeftShift) && Input.GetKeyDown(KeyCode.S))
+            var kb = Keyboard.current;
+            if (kb != null && kb.leftShiftKey.isPressed && kb.sKey.wasPressedThisFrame)
             {
                 if (CurrentPhase == GamePhase.Title || CurrentPhase == GamePhase.Prologue
                     || CurrentPhase == GamePhase.Username)
@@ -76,7 +85,7 @@ namespace LoveAlgo.Core
                 }
             }
         }
-
+*/
         /// <summary>
         /// PlayerPrefs에서 해상도/전체화면 설정 복원
         /// </summary>
@@ -168,6 +177,12 @@ namespace LoveAlgo.Core
 
         void EnterDayLoop()
         {
+            if (ShouldReturnToDemoEnd())
+            {
+                OnContentEnd();
+                return;
+            }
+
             var dayInfo = GameTimeline.GetDayInfo(CurrentDay);
 
             // ── 고백 이벤트 (Day 30) ──
@@ -668,6 +683,13 @@ namespace LoveAlgo.Core
         {
             RemainingActions--;
 
+            if (ShouldEndDemoAfterSchedule())
+            {
+                MarkDemoScheduleComplete();
+                OnContentEnd();
+                return;
+            }
+
             if (RemainingActions <= 0)
             {
                 EndDay();
@@ -1096,5 +1118,28 @@ namespace LoveAlgo.Core
         }
 
         #endregion
+
+        bool ShouldEndDemoAfterSchedule()
+        {
+            if (!limitDemoToSingleSchedule)
+                return false;
+
+            return CurrentPhase == GamePhase.DayLoop && !IsDemoScheduleComplete();
+        }
+
+        bool ShouldReturnToDemoEnd()
+        {
+            return limitDemoToSingleSchedule && CurrentPhase == GamePhase.DayLoop && IsDemoScheduleComplete();
+        }
+
+        bool IsDemoScheduleComplete()
+        {
+            return GameState.Instance?.GetFlag(DemoSingleScheduleCompleteFlag) ?? false;
+        }
+
+        void MarkDemoScheduleComplete()
+        {
+            GameState.Instance?.SetFlag(DemoSingleScheduleCompleteFlag, true);
+        }
     }
 }

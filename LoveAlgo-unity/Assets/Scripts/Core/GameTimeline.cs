@@ -67,9 +67,14 @@ namespace LoveAlgo.Core
     public static class GameTimeline
     {
         static readonly Dictionary<int, DayInfo> timeline = new();
+        static bool _initialized;
 
-        static GameTimeline()
+        /// <summary>MonoBehaviour 생성자 밖에서 안전하게 초기화</summary>
+        static void EnsureInit()
         {
+            if (_initialized) return;
+            _initialized = true;
+
             // SO 로드 시도
             var so = Resources.Load<GameBalanceSO>("Data/GameBalance");
             if (so != null && so.Timeline.Count > 0)
@@ -154,6 +159,7 @@ namespace LoveAlgo.Core
         /// <summary>해당 일차의 일정 정보 반환</summary>
         public static DayInfo GetDayInfo(int day)
         {
+            EnsureInit();
             return timeline.TryGetValue(day, out var info) ? info : null;
         }
 

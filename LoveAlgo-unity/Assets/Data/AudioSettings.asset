@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9f80ef87dd9c5a14bb39b6a14156657e, type: 3}
   m_Name: AudioSettings
   m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.Story.AudioSettings
-  defaultBGM: {fileID: 8300000, guid: 180a8aa5f25828842a5560e619d71544, type: 3}
+  defaultBGM: {fileID: 8300000, guid: acda5c16009d69e478e869343688ebe1, type: 3}
   bgmFadeDuration: 4
   autoSwitchOnCharacterEnter: 0
   useCrossfade: 1

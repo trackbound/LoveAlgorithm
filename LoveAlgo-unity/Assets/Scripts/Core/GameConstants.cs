@@ -30,23 +30,31 @@ namespace LoveAlgo
     {
         // ── 히로인 통합 설정 ──
 
+        static bool _initialized;
+
         /// <summary>히로인 설정 목록 (인덱스 = 히로인 순서)</summary>
-        public static readonly HeroineConfig[] Heroines;
+        public static HeroineConfig[] Heroines { get { EnsureInit(); return _heroines; } }
+        static HeroineConfig[] _heroines;
 
         /// <summary>히로인 ID → 설정 빠른 탐색</summary>
-        public static readonly Dictionary<string, HeroineConfig> HeroineById;
+        public static Dictionary<string, HeroineConfig> HeroineById { get { EnsureInit(); return _heroineById; } }
+        static Dictionary<string, HeroineConfig> _heroineById;
 
-        static GameConstants()
+        /// <summary>MonoBehaviour 생성자 밖에서 안전하게 초기화</summary>
+        static void EnsureInit()
         {
+            if (_initialized) return;
+            _initialized = true;
+
             // SO 로드 시도
             var so = Resources.Load<GameBalanceSO>("Data/GameBalance");
             if (so != null && so.Heroines.Count > 0)
             {
-                Heroines = new HeroineConfig[so.Heroines.Count];
+                _heroines = new HeroineConfig[so.Heroines.Count];
                 for (int i = 0; i < so.Heroines.Count; i++)
                 {
                     var h = so.Heroines[i];
-                    Heroines[i] = new HeroineConfig(h.id, h.displayName, h.endingThreshold, h.preferredStat);
+                    _heroines[i] = new HeroineConfig(h.id, h.displayName, h.endingThreshold, h.preferredStat);
                 }
                 _actionsPerDay = so.ActionsPerDay;
                 _maxDay = so.MaxDay;
@@ -56,7 +64,7 @@ namespace LoveAlgo
             else
             {
                 // 하드코딩 폴백
-                Heroines = new HeroineConfig[]
+                _heroines = new HeroineConfig[]
                 {
                     new("Roa",    "로아",   46, "Fatigue"),
                     new("Yeun",   "하예은", 32, "Str"),
@@ -70,36 +78,40 @@ namespace LoveAlgo
                 _minInvestMoney = 30000;
             }
 
-            HeroineById = new Dictionary<string, HeroineConfig>(Heroines.Length);
-            HeroineIds = new string[Heroines.Length];
-            HeroineNames = new string[Heroines.Length];
-            EndingThresholds = new int[Heroines.Length];
-            HeroinePreferredStat = new string[Heroines.Length];
+            _heroineById = new Dictionary<string, HeroineConfig>(_heroines.Length);
+            _heroineIds = new string[_heroines.Length];
+            _heroineNames = new string[_heroines.Length];
+            _endingThresholds = new int[_heroines.Length];
+            _heroinePreferredStat = new string[_heroines.Length];
 
-            for (int i = 0; i < Heroines.Length; i++)
+            for (int i = 0; i < _heroines.Length; i++)
             {
-                ref readonly var h = ref Heroines[i];
-                HeroineById[h.Id] = h;
-                HeroineIds[i] = h.Id;
-                HeroineNames[i] = h.DisplayName;
-                EndingThresholds[i] = h.EndingThreshold;
-                HeroinePreferredStat[i] = h.PreferredStat;
+                ref readonly var h = ref _heroines[i];
+                _heroineById[h.Id] = h;
+                _heroineIds[i] = h.Id;
+                _heroineNames[i] = h.DisplayName;
+                _endingThresholds[i] = h.EndingThreshold;
+                _heroinePreferredStat[i] = h.PreferredStat;
             }
         }
 
         // ── 레거시 호환 (기존 코드가 배열로 접근하는 곳 유지) ──
 
         /// <summary>히로인 ID 목록 (영문)</summary>
-        public static readonly string[] HeroineIds;
+        public static string[] HeroineIds { get { EnsureInit(); return _heroineIds; } }
+        static string[] _heroineIds;
 
         /// <summary>히로인 표시 이름 (한글)</summary>
-        public static readonly string[] HeroineNames;
+        public static string[] HeroineNames { get { EnsureInit(); return _heroineNames; } }
+        static string[] _heroineNames;
 
         /// <summary>히로인별 엔딩 임계치</summary>
-        public static readonly int[] EndingThresholds;
+        public static int[] EndingThresholds { get { EnsureInit(); return _endingThresholds; } }
+        static int[] _endingThresholds;
 
         /// <summary>히로인별 선호 스탯 ID</summary>
-        public static readonly string[] HeroinePreferredStat;
+        public static string[] HeroinePreferredStat { get { EnsureInit(); return _heroinePreferredStat; } }
+        static string[] _heroinePreferredStat;
 
         // ── 스탯 ──
 
@@ -153,19 +165,19 @@ namespace LoveAlgo
 
         // ── 게임플레이 (SO에서 로드, 폴백 있음) ──
 
-        static readonly int _actionsPerDay;
-        static readonly int _maxDay;
-        static readonly int _endingLoveThreshold;
-        static readonly int _minInvestMoney;
+        static int _actionsPerDay;
+        static int _maxDay;
+        static int _endingLoveThreshold;
+        static int _minInvestMoney;
 
         /// <summary>하루 자유행동 횟수 (낮/밤)</summary>
-        public static int ActionsPerDay => _actionsPerDay;
+        public static int ActionsPerDay { get { EnsureInit(); return _actionsPerDay; } }
 
         /// <summary>최대 일차 (이 일수가 지나면 엔딩 진입)</summary>
-        public static int MaxDay => _maxDay;
+        public static int MaxDay { get { EnsureInit(); return _maxDay; } }
 
         /// <summary>엔딩 진입에 필요한 최소 호감도 (레거시)</summary>
-        public static int EndingLoveThreshold => _endingLoveThreshold;
+        public static int EndingLoveThreshold { get { EnsureInit(); return _endingLoveThreshold; } }
 
         // ── 세이브 / 로드 ──
 
@@ -178,6 +190,6 @@ namespace LoveAlgo
         // ── 투자 ──
 
         /// <summary>투자 최소 금액</summary>
-        public static int MinInvestMoney => _minInvestMoney;
+        public static int MinInvestMoney { get { EnsureInit(); return _minInvestMoney; } }
     }
 }

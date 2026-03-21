@@ -1,0 +1,408 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a2d43e731284384409a53a2b217871ee, type: 3}
+  m_Name: ItemCatalog
+  m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.Shop.ItemCatalogSO
+  items:
+  - Id: gift_yeun_towel
+    Name: "\uC2A4\uD3EC\uCE20 \uD0C0\uC6D4"
+    Description: "\uD558\uC608\uC740\uC774 \uC88B\uC544\uD560 \uC2A4\uD3EC\uCE20\uC6A9
+      \uD0C0\uC6D4.\n\"\uC6B4\uB3D9\uD560 \uB54C \uC4F8\uAC8C!\""
+    Price: 8000
+    Category: 0
+    TargetHeroine: Yeun
+    EffectValue: 0
+    IconPath: Items/turtleman
+    Tier: 1
+    Availability: 0
+    EffectStat: 
+    DuplicateTag: 
+  - Id: gift_yeun_shoes
+    Name: "\uB7EC\uB2DD\uD654"
+    Description: "\uAC00\uBCCD\uACE0 \uD2BC\uD2BC\uD55C \uB7EC\uB2DD\uD654.\n\"\uC640
+      \uC774\uAC70 \uC9C4\uC9DC \uC88B\uB2E4!\""
+    Price: 45000
+    Category: 0
+    TargetHeroine: Yeun
+    EffectValue: 0
+    IconPath: Items/ankle support
+    Tier: 3
+    Availability: 1
+    EffectStat: 
+    DuplicateTag: 
+  - Id: gift_yeun_watch
+    Name: "\uC2A4\uD3EC\uCE20 \uC2DC\uACC4"
+    Description: "\uBC29\uC218 \uAE30\uB2A5\uC774 \uC788\uB294 \uC2A4\uD3EC\uCE20
+      \uC2DC\uACC4.\n\"\uB9E4\uC77C \uCC28\uACE0 \uB2E4\uB2D0\uAC8C!\""
+    Price: 85000
+    Category: 0
+    TargetHeroine: Yeun
+    EffectValue: 0
+    IconPath: Items/dining ticket
+    Tier: 4
+    Availability: 2
+    EffectStat: 
+    DuplicateTag: 
+  - Id: gift_daeun_pen
+    Name: "\uACE0\uAE09 \uBCFC\uD39C"
+    Description: "\uC11C\uB2E4\uC740\uC774 \uC88B\uC544\uD560 \uB9CC\uB144\uD544.\n\"...\uAD1C\uCC2E\uC740
+      \uC120\uBB3C\uC774\uB124.\""
+    Price: 10000
+    Category: 0
+    TargetHeroine: Daeun
+    EffectValue: 0
+    IconPath: Items/3clolor pen
+    Tier: 1
+    Availability: 0
+    EffectStat: 
+    DuplicateTag: 
+  - Id: gift_daeun_book
+    Name: "\uC804\uACF5 \uC11C\uC801"
+    Description: "\uD76C\uADC0\uD55C \uC804\uACF5 \uC6D0\uC11C.\n\"\uC774\uAC70...
+      \uAD6C\uD558\uAE30 \uC5B4\uB824\uC6B4 \uAC74\uB370.\""
+    Price: 35000
+    Category: 0
+    TargetHeroine: Daeun
+    EffectValue: 0
+    IconPath: Items/plant
+    Tier: 2
+    Availability: 1
+    EffectStat: 
+    DuplicateTag: 
+  - Id: gift_daeun_tablet
+    Name: "\uD0DC\uBE14\uB9BF \uD39C"
+    Description: "\uACE0\uAE09 \uB514\uC9C0\uD138 \uD544\uAE30 \uD39C.\n\"\uD544\uAE30\uAC10\uC774
+      \uC815\uB9D0 \uC88B\uC544.\""
+    Price: 80000
+    Category: 0
+    TargetHeroine: Daeun
+    EffectValue: 0
+    IconPath: Items/monitor
+    Tier: 4
+    Availability: 2
+    EffectStat: 
+    DuplicateTag: 
+  - Id: gift_bom_sticker
+    Name: "\uC2A4\uD2F0\uCEE4 \uD329"
+    Description: "\uC774\uBD04\uC774 \uC88B\uC544\uD560 \uCE90\uB9AD\uD130 \uC2A4\uD2F0\uCEE4.\n\"\uC774\uAC70
+      \uC9C4\uC9DC \uADC0\uC5EC\uC6CC~!\""
+    Price: 5000
+    Category: 0
+    TargetHeroine: Bom
+    EffectValue: 0
+    IconPath: Items/rabbit_keyring
+    Tier: 1
+    Availability: 0
+    EffectStat: 
+    DuplicateTag: 
+  - Id: gift_bom_acc
+    Name: "\uD5E4\uC5B4 \uC561\uC138\uC11C\uB9AC"
+    Description: "\uD2B8\uB80C\uB514\uD55C \uBA38\uB9AC\uD540 \uC138\uD2B8.\n\"\uC624\uB298\uBD80\uD130
+      \uBC14\uB85C \uD574\uBCFC\uB798!\""
+    Price: 25000
+    Category: 0
+    TargetHeroine: Bom
+    EffectValue: 0
+    IconPath: Items/hairband
+    Tier: 2
+    Availability: 1
+    EffectStat: 
+    DuplicateTag: 
+  - Id: gift_bom_bag
+    Name: "\uBBF8\uB2C8 \uD06C\uB85C\uC2A4\uBC31"
+    Description: "\uBD04\uC774 \uC2A4\uD0C0\uC77C\uC5D0 \uB531 \uB9DE\uB294 \uAC00\uBC29.\n\"\uB300\uBC15...
+      \uC774\uAC70 \uC644\uC804 \uB0B4 \uC2A4\uD0C0\uC77C!\""
+    Price: 65000
+    Category: 0
+    TargetHeroine: Bom
+    EffectValue: 0
+    IconPath: Items/handcream
+    Tier: 3
+    Availability: 2
+    EffectStat: 
+    DuplicateTag: 
+  - Id: gift_heewon_novel
+    Name: "\uBB38\uACE0\uBCF8 \uC18C\uC124"
+    Description: "\uB3C4\uD76C\uC6D0\uC774 \uC88B\uC544\uD560 \uC18C\uC124\uCC45.\n\"...\uC77D\uC5B4\uBCFC\uAC8C.\""
+    Price: 8000
+    Category: 0
+    TargetHeroine: Heewon
+    EffectValue: 0
+    IconPath: Items/popup ticket
+    Tier: 1
+    Availability: 0
+    EffectStat: 
+    DuplicateTag: 
+  - Id: gift_heewon_tea
+    Name: "\uD504\uB9AC\uBBF8\uC5C4 \uD2F0 \uC138\uD2B8"
+    Description: "\uD76C\uADC0\uD55C \uBE14\uB80C\uB529 \uCC28 \uC138\uD2B8.\n\"...\uD5A5\uC774
+      \uC88B\uC544.\""
+    Price: 40000
+    Category: 0
+    TargetHeroine: Heewon
+    EffectValue: 0
+    IconPath: Items/empire diamond
+    Tier: 3
+    Availability: 1
+    EffectStat: 
+    DuplicateTag: 
+  - Id: gift_heewon_music
+    Name: "\uD55C\uC815\uD310 LP"
+    Description: "\uD074\uB798\uC2DD \uD55C\uC815\uD310 \uB808\uCF54\uB4DC.\n\"\uC774\uAC78...
+      \uC5B4\uB5BB\uAC8C \uAD6C\uD55C \uAC70\uC57C?\""
+    Price: 90000
+    Category: 0
+    TargetHeroine: Heewon
+    EffectValue: 0
+    IconPath: Items/CD_tropical glow
+    Tier: 4
+    Availability: 2
+    EffectStat: 
+    DuplicateTag: 
+  - Id: gift_roa_light
+    Name: "LED \uC870\uBA85"
+    Description: "\uB85C\uC544\uAC00 \uC88B\uC544\uD560 \uBC29\uC1A1\uC6A9 \uC870\uBA85.\n\"\uBC29\uC1A1
+      \uD004\uB9AC\uD2F0 \uC5C5! \uACE0\uB9C8\uC6CC!\""
+    Price: 10000
+    Category: 0
+    TargetHeroine: Roa
+    EffectValue: 0
+    IconPath: Items/lamp
+    Tier: 1
+    Availability: 0
+    EffectStat: 
+    DuplicateTag: 
+  - Id: gift_roa_mic
+    Name: "\uCF58\uB374\uC11C \uB9C8\uC774\uD06C"
+    Description: "\uBC29\uC1A1\uC6A9 \uACE0\uAE09 \uB9C8\uC774\uD06C.\n\"\uC18C\uB9AC
+      \uC9C4\uC9DC \uAE68\uB057\uD558\uB2E4!\""
+    Price: 50000
+    Category: 0
+    TargetHeroine: Roa
+    EffectValue: 0
+    IconPath: Items/headphone
+    Tier: 3
+    Availability: 1
+    EffectStat: 
+    DuplicateTag: 
+  - Id: gift_roa_cam
+    Name: "\uC6F9\uCEA0 \uD504\uB85C"
+    Description: "4K \uBC29\uC1A1\uC6A9 \uC6F9\uCEA0.\n\"\uC774\uAC70\uBA74 \uD654\uC9C8
+      \uBBF8\uCCE4\uB2E4!\""
+    Price: 95000
+    Category: 0
+    TargetHeroine: Roa
+    EffectValue: 0
+    IconPath: Items/monitor
+    Tier: 4
+    Availability: 2
+    EffectStat: 
+    DuplicateTag: 
+  - Id: consume_energy_drink
+    Name: "\uC5D0\uB108\uC9C0 \uC74C\uB8CC"
+    Description: "\uC878\uB9B4 \uB54C \uB9C8\uC2DC\uBA74 \uC88B\uC740 \uC5D0\uB108\uC9C0
+      \uC74C\uB8CC.\n\uD53C\uB85C\uAC00 \uC870\uAE08 \uC904\uC5B4\uB4E0\uB2E4."
+    Price: 3000
+    Category: 1
+    TargetHeroine: 
+    EffectValue: 5
+    IconPath: Items/energybar
+    Tier: 0
+    Availability: 0
+    EffectStat: 
+    DuplicateTag: 
+  - Id: consume_energy_bar
+    Name: "\uC5D0\uB108\uC9C0\uBC14"
+    Description: "\uAC04\uD3B8\uD558\uAC8C \uBA39\uC744 \uC218 \uC788\uB294 \uC5D0\uB108\uC9C0\uBC14.\n\uD53C\uB85C\uB97C
+      \uC801\uB2F9\uD788 \uC904\uC5EC\uC900\uB2E4."
+    Price: 5000
+    Category: 1
+    TargetHeroine: 
+    EffectValue: 6
+    IconPath: Items/energybar
+    Tier: 0
+    Availability: 0
+    EffectStat: 
+    DuplicateTag: 
+  - Id: consume_vitamin
+    Name: "\uBE44\uD0C0\uBBFC \uC74C\uB8CC"
+    Description: "\uBE44\uD0C0\uBBFC\uC774 \uD48D\uBD80\uD55C \uAC74\uAC15 \uC74C\uB8CC.\n\uD53C\uB85C
+      \uD68C\uBCF5\uC5D0 \uD6A8\uACFC\uC801\uC774\uB2E4."
+    Price: 8000
+    Category: 1
+    TargetHeroine: 
+    EffectValue: 8
+    IconPath: Items/vitamin
+    Tier: 0
+    Availability: 0
+    EffectStat: 
+    DuplicateTag: 
+  - Id: consume_arginine
+    Name: "\uC544\uB974\uAE30\uB2CC \uC824\uB9AC"
+    Description: "\uACE0\uD568\uB7C9 \uC544\uB974\uAE30\uB2CC \uC824\uB9AC.\n\uD53C\uB85C\uAC00
+      \uD06C\uAC8C \uC904\uC5B4\uB4E0\uB2E4."
+    Price: 15000
+    Category: 1
+    TargetHeroine: 
+    EffectValue: 12
+    IconPath: Items/jelly
+    Tier: 0
+    Availability: 0
+    EffectStat: 
+    DuplicateTag: 
+  - Id: consume_mood_lamp
+    Name: "\uBB34\uB4DC\uB4F1 (\uC544\uB85C\uB9C8)"
+    Description: "\uC544\uB85C\uB9C8 \uBB34\uB4DC\uB4F1. \uC740\uC740\uD55C \uD5A5\uC73C\uB85C\n\uD53C\uB85C\uB97C
+      \uD655\uC2E4\uD788 \uD480\uC5B4\uC900\uB2E4."
+    Price: 25000
+    Category: 1
+    TargetHeroine: 
+    EffectValue: 15
+    IconPath: Items/lamp
+    Tier: 0
+    Availability: 0
+    EffectStat: 
+    DuplicateTag: 
+  - Id: buff_protein_choco
+    Name: "\uD504\uB85C\uD2F4 \uCD08\uCF54\uBC14"
+    Description: "\uC6B4\uB3D9 \uC804\uC5D0 \uBA39\uC73C\uBA74 \uD6A8\uACFC\uC801\uC778
+      \uCD08\uCF54\uBC14.\n\uC790\uC720\uD589\uB3D9 1\uD68C \uCCB4\uB825 \uD6A8\uACFC
+      +2"
+    Price: 8000
+    Category: 2
+    TargetHeroine: 
+    EffectValue: 2
+    IconPath: Items/marron bread
+    Tier: 0
+    Availability: 0
+    EffectStat: Str
+    DuplicateTag: buff_str
+  - Id: buff_protein_straw
+    Name: "\uD504\uB85C\uD2F4 \uB538\uAE30\uBC14"
+    Description: "\uB538\uAE30\uB9DB \uD504\uB85C\uD2F4 \uBC14. \uB9DB\uB3C4 \uC88B\uACE0
+      \uD6A8\uACFC\uB3C4 \uC88B\uB2E4.\n\uC790\uC720\uD589\uB3D9 1\uD68C \uCCB4\uB825
+      \uD6A8\uACFC +3"
+    Price: 12000
+    Category: 2
+    TargetHeroine: 
+    EffectValue: 3
+    IconPath: Items/marron bread
+    Tier: 0
+    Availability: 0
+    EffectStat: Str
+    DuplicateTag: buff_str
+  - Id: buff_note
+    Name: "\uC815\uB9AC \uB178\uD2B8"
+    Description: "\uAE54\uB054\uD55C \uC904 \uB178\uD2B8. \uACF5\uBD80 \uD6A8\uC728\uC774
+      \uC624\uB978\uB2E4.\n\uC790\uC720\uD589\uB3D9 1\uD68C \uC9C0\uC131 \uD6A8\uACFC
+      +1"
+    Price: 3000
+    Category: 2
+    TargetHeroine: 
+    EffectValue: 1
+    IconPath: Items/popup ticket
+    Tier: 0
+    Availability: 0
+    EffectStat: Int
+    DuplicateTag: buff_int
+  - Id: buff_pen
+    Name: "3\uC0C9 \uBCFC\uD39C"
+    Description: "\uC0C9\uAE54\uBCC4 \uD544\uAE30\uAC00 \uAC00\uB2A5\uD55C \uBCFC\uD39C.\n\uC790\uC720\uD589\uB3D9
+      1\uD68C \uC9C0\uC131 \uD6A8\uACFC +1"
+    Price: 3000
+    Category: 2
+    TargetHeroine: 
+    EffectValue: 1
+    IconPath: Items/3clolor pen
+    Tier: 0
+    Availability: 0
+    EffectStat: Int
+    DuplicateTag: buff_int
+  - Id: buff_postit
+    Name: "\uD3EC\uC2A4\uD2B8\uC787 \uC138\uD2B8"
+    Description: "\uD615\uD615\uC0C9\uC0C9 \uD3EC\uC2A4\uD2B8\uC787. \uC815\uB9AC\uC5D0
+      \uB531\uC774\uB2E4.\n\uC790\uC720\uD589\uB3D9 1\uD68C \uC9C0\uC131 \uD6A8\uACFC
+      +1"
+    Price: 4000
+    Category: 2
+    TargetHeroine: 
+    EffectValue: 1
+    IconPath: 
+    Tier: 0
+    Availability: 0
+    EffectStat: Int
+    DuplicateTag: buff_int
+  - Id: buff_highlighter
+    Name: "\uD615\uAD11\uD39C \uC138\uD2B8"
+    Description: "5\uC0C9 \uD615\uAD11\uD39C \uC138\uD2B8. \uC911\uC694\uD55C \uAC74
+      \uD45C\uC2DC!\n\uC790\uC720\uD589\uB3D9 1\uD68C \uC9C0\uC131 \uD6A8\uACFC +2"
+    Price: 6000
+    Category: 2
+    TargetHeroine: 
+    EffectValue: 2
+    IconPath: Items/3clolor pen
+    Tier: 0
+    Availability: 0
+    EffectStat: Int
+    DuplicateTag: buff_int
+  - Id: buff_mech_pencil
+    Name: "\uACE0\uAE09 \uC0E4\uD504"
+    Description: "0.3mm \uC815\uBC00 \uC0E4\uD504. \uD544\uAE30\uAC10\uC774 \uC88B\uB2E4.\n\uC790\uC720\uD589\uB3D9
+      1\uD68C \uC9C0\uC131 \uD6A8\uACFC +1"
+    Price: 5000
+    Category: 2
+    TargetHeroine: 
+    EffectValue: 1
+    IconPath: Items/3clolor pen
+    Tier: 0
+    Availability: 0
+    EffectStat: Int
+    DuplicateTag: buff_int
+  - Id: buff_keyboard
+    Name: "\uAE30\uACC4\uC2DD \uD0A4\uBCF4\uB4DC"
+    Description: "\uCCAD\uCD95 \uAE30\uACC4\uC2DD \uD0A4\uBCF4\uB4DC. \uD0C0\uAC74\uAC10
+      \uCD5C\uACE0.\n\uC790\uC720\uD589\uB3D9 1\uD68C \uC9C0\uC131 \uD6A8\uACFC +2"
+    Price: 35000
+    Category: 2
+    TargetHeroine: 
+    EffectValue: 2
+    IconPath: 
+    Tier: 0
+    Availability: 0
+    EffectStat: Int
+    DuplicateTag: buff_int
+  - Id: buff_mouse
+    Name: "\uAC8C\uC774\uBC0D \uB9C8\uC6B0\uC2A4"
+    Description: "\uC778\uCCB4\uACF5\uD559 \uAC8C\uC774\uBC0D \uB9C8\uC6B0\uC2A4.\n\uC790\uC720\uD589\uB3D9
+      1\uD68C \uC9C0\uC131 \uD6A8\uACFC +1"
+    Price: 25000
+    Category: 2
+    TargetHeroine: 
+    EffectValue: 1
+    IconPath: 
+    Tier: 0
+    Availability: 0
+    EffectStat: Int
+    DuplicateTag: buff_int
+  - Id: buff_vertical_mouse
+    Name: "\uBC84\uD2F0\uCEEC \uB9C8\uC6B0\uC2A4"
+    Description: "\uC190\uBAA9\uC774 \uD3B8\uD55C \uBC84\uD2F0\uCEEC \uB9C8\uC6B0\uC2A4.\n\uC790\uC720\uD589\uB3D9
+      1\uD68C \uB048\uAE30 \uD6A8\uACFC +1"
+    Price: 20000
+    Category: 2
+    TargetHeroine: 
+    EffectValue: 1
+    IconPath: 
+    Tier: 0
+    Availability: 0
+    EffectStat: Per
+    DuplicateTag: buff_per
