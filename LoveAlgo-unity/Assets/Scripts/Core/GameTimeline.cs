@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace LoveAlgo.Core
 {
@@ -61,12 +62,7 @@ namespace LoveAlgo.Core
 
     /// <summary>
     /// 게임 타임라인 정적 테이블
-    /// 30일간의 전체 일정을 정의
-    /// 
-    /// 기획서 기준:
-    ///   개강 → 1차 이벤트 → 축제(3일) → 2차 이벤트 → MT → 3차 이벤트 → 고백 → 엔딩
-    ///   자유행동은 이벤트 사이에 배치
-    ///   이벤트 포인트: 1차+3, 축제+4, 2차+6, MT+5, 3차+9 (총 27점)
+    /// SO(GameBalanceSO)에서 데이터를 로드하며, SO가 없으면 하드코딩 폴백 사용
     /// </summary>
     public static class GameTimeline
     {
@@ -74,7 +70,17 @@ namespace LoveAlgo.Core
 
         static GameTimeline()
         {
-            BuildTimeline();
+            // SO 로드 시도
+            var so = Resources.Load<GameBalanceSO>("Data/GameBalance");
+            if (so != null && so.Timeline.Count > 0)
+            {
+                foreach (var e in so.Timeline)
+                    timeline[e.day] = new DayInfo(e.day, e.type, e.arc, e.eventTag, e.eventPoints);
+            }
+            else
+            {
+                BuildTimeline();
+            }
         }
 
         /// <summary>

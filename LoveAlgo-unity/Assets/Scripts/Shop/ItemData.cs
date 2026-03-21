@@ -69,14 +69,19 @@ namespace LoveAlgo.Shop
         public int EffectValue;
 
         /// <summary>
-        /// Sale 슬롯용 큰 이미지 경로 (Resources 기준, Art/Item 원본)
+        /// Sale 슬롯용 큰 이미지 경로 (Resources 기준)
         /// </summary>
         public string IconPath;
 
         /// <summary>
-        /// Cart 슬롯용 작은 아이콘 경로 (Resources 기준, Art/Item/Icon 원본)
+        /// Cart 슬롯용 작은 아이콘 경로 (자동 파생: Items/xxx → Items/Icon/xxx)
         /// </summary>
-        public string IconSmallPath;
+        public string IconSmallPath
+        {
+            get => !string.IsNullOrEmpty(IconPath) && IconPath.StartsWith("Items/")
+                ? IconPath.Replace("Items/", "Items/Icon/")
+                : IconPath;
+        }
 
         /// <summary>
         /// 선물 계층 (기획서: 계층에 따라 2차/3차 이벤트 포인트 결정)
@@ -99,6 +104,9 @@ namespace LoveAlgo.Shop
         /// </summary>
         public string DuplicateTag;
 
+        /// <summary>SO 직렬화용 기본 생성자</summary>
+        public ItemData() { }
+
         public ItemData(string id, string name, string desc, int price,
             ItemCategory category, string targetHeroine = null,
             int effectValue = 0, string iconPath = null,
@@ -114,10 +122,6 @@ namespace LoveAlgo.Shop
             TargetHeroine = targetHeroine;
             EffectValue = effectValue;
             IconPath = iconPath;
-            // Sale용 경로에서 Cart용 아이콘 경로 자동 파생: "Items/xxx" → "Items/Icon/xxx"
-            IconSmallPath = !string.IsNullOrEmpty(iconPath) && iconPath.StartsWith("Items/")
-                ? iconPath.Replace("Items/", "Items/Icon/")
-                : iconPath;
             Tier = tier;
             Availability = availability;
             EffectStat = effectStat;

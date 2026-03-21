@@ -255,11 +255,10 @@ namespace LoveAlgo.Shop
                 return;
             }
 
-            // 구매 실행
-            gs.AddMoney(-total);
+            // 구매 실행 — ShopManager.Buy()에 소지금 차감 위임
             foreach (var kv in cart)
             {
-                ShopManager.AddItem(kv.Key, kv.Value);
+                ShopManager.Buy(kv.Key, kv.Value);
             }
 
             // 상태 초기화

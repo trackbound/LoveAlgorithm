@@ -151,7 +151,6 @@ GameObject:
   - component: {fileID: 6937115813788981537}
   - component: {fileID: 397649609971443326}
   - component: {fileID: 8021598343465928683}
-  - component: {fileID: 5864637748098721009}
   m_Layer: 0
   m_Name: GiftHeroineSlot
   m_TagString: Untagged
@@ -308,21 +307,6 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
---- !u!114 &5864637748098721009
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5322981281080992558}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 0}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.Shop.GiftHeroineSlot
-  nameText: {fileID: 2498710186042434113}
-  remainingText: {fileID: 8777098967686374997}
-  selectButton: {fileID: 8021598343465928683}
 --- !u!1 &6044485738592608009
 GameObject:
   m_ObjectHideFlags: 0

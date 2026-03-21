@@ -172,7 +172,6 @@ GameObject:
   - component: {fileID: 1457650113914893352}
   - component: {fileID: 4318407909870461985}
   - component: {fileID: 8611688570921087692}
-  - component: {fileID: 2425030523071408528}
   m_Layer: 0
   m_Name: GiftItemSlot
   m_TagString: Untagged
@@ -329,21 +328,6 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
---- !u!114 &2425030523071408528
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5106515531616059457}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 0}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.Shop.GiftItemSlot
-  nameText: {fileID: 671137583580386349}
-  countText: {fileID: 2294239145981434268}
-  selectButton: {fileID: 8611688570921087692}
 --- !u!1 &8082850039699676434
 GameObject:
   m_ObjectHideFlags: 0

@@ -36,10 +36,10 @@ namespace LoveAlgo.Core
         /// <summary>
         /// 다음 날로 진행 (스크립트 매크로용)
         /// </summary>
-        public void AdvanceDay(int actions = GameConstants.ActionsPerDay)
+        public void AdvanceDay(int actions = -1)
         {
             CurrentDay++;
-            RemainingActions = actions;
+            RemainingActions = actions < 0 ? GameConstants.ActionsPerDay : actions;
             Debug.Log($"[GameManager] {CurrentDay}일차 시작 (actions={actions})");
         }
 
@@ -62,6 +62,19 @@ namespace LoveAlgo.Core
         void Start()
         {
             ChangePhase(GamePhase.Title);
+        }
+
+        void Update()
+        {
+            // Shift+S: 프롤로그 스킵 → 스케줄 직행 (기획자 테스트용)
+            if (Input.GetKey(KeyCode.LeftShift) && Input.GetKeyDown(KeyCode.S))
+            {
+                if (CurrentPhase == GamePhase.Title || CurrentPhase == GamePhase.Prologue
+                    || CurrentPhase == GamePhase.Username)
+                {
+                    SkipToDayLoop();
+                }
+            }
         }
 
         /// <summary>

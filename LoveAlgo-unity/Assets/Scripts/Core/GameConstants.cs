@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace LoveAlgo
 {
@@ -30,20 +31,45 @@ namespace LoveAlgo
         // ── 히로인 통합 설정 ──
 
         /// <summary>히로인 설정 목록 (인덱스 = 히로인 순서)</summary>
-        public static readonly HeroineConfig[] Heroines =
-        {
-            new("Roa",    "로아",   46, "Fatigue"),
-            new("Yeun",   "하예은", 32, "Str"),
-            new("Daeun",  "서다은", 35, "Int"),
-            new("Bom",    "이봄",   39, "Soc"),
-            new("Heewon", "도희원", 43, "Per"),
-        };
+        public static readonly HeroineConfig[] Heroines;
 
         /// <summary>히로인 ID → 설정 빠른 탐색</summary>
         public static readonly Dictionary<string, HeroineConfig> HeroineById;
 
         static GameConstants()
         {
+            // SO 로드 시도
+            var so = Resources.Load<GameBalanceSO>("Data/GameBalance");
+            if (so != null && so.Heroines.Count > 0)
+            {
+                Heroines = new HeroineConfig[so.Heroines.Count];
+                for (int i = 0; i < so.Heroines.Count; i++)
+                {
+                    var h = so.Heroines[i];
+                    Heroines[i] = new HeroineConfig(h.id, h.displayName, h.endingThreshold, h.preferredStat);
+                }
+                _actionsPerDay = so.ActionsPerDay;
+                _maxDay = so.MaxDay;
+                _endingLoveThreshold = so.EndingLoveThreshold;
+                _minInvestMoney = so.MinInvestMoney;
+            }
+            else
+            {
+                // 하드코딩 폴백
+                Heroines = new HeroineConfig[]
+                {
+                    new("Roa",    "로아",   46, "Fatigue"),
+                    new("Yeun",   "하예은", 32, "Str"),
+                    new("Daeun",  "서다은", 35, "Int"),
+                    new("Bom",    "이봄",   39, "Soc"),
+                    new("Heewon", "도희원", 43, "Per"),
+                };
+                _actionsPerDay = 2;
+                _maxDay = 30;
+                _endingLoveThreshold = 30;
+                _minInvestMoney = 30000;
+            }
+
             HeroineById = new Dictionary<string, HeroineConfig>(Heroines.Length);
             HeroineIds = new string[Heroines.Length];
             HeroineNames = new string[Heroines.Length];
@@ -125,16 +151,21 @@ namespace LoveAlgo
         /// <summary>기본 해상도 인덱스 (1920×1080)</summary>
         public const int DefaultResolutionIndex = 4;
 
-        // ── 게임플레이 ──
+        // ── 게임플레이 (SO에서 로드, 폴백 있음) ──
+
+        static readonly int _actionsPerDay;
+        static readonly int _maxDay;
+        static readonly int _endingLoveThreshold;
+        static readonly int _minInvestMoney;
 
         /// <summary>하루 자유행동 횟수 (낮/밤)</summary>
-        public const int ActionsPerDay = 2;
+        public static int ActionsPerDay => _actionsPerDay;
 
         /// <summary>최대 일차 (이 일수가 지나면 엔딩 진입)</summary>
-        public const int MaxDay = 30;
+        public static int MaxDay => _maxDay;
 
         /// <summary>엔딩 진입에 필요한 최소 호감도 (레거시)</summary>
-        public const int EndingLoveThreshold = 30;
+        public static int EndingLoveThreshold => _endingLoveThreshold;
 
         // ── 세이브 / 로드 ──
 
@@ -147,6 +178,6 @@ namespace LoveAlgo
         // ── 투자 ──
 
         /// <summary>투자 최소 금액</summary>
-        public const int MinInvestMoney = 30000;
+        public static int MinInvestMoney => _minInvestMoney;
     }
 }
