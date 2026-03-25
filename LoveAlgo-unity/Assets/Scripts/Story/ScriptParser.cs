@@ -134,7 +134,7 @@ namespace LoveAlgo.Story
                 }
             }
 
-            return new ScriptLine(lineId, type, speaker, value, nextType, delay);
+            return new ScriptLine(lineId, type, speaker, value, nextType, delay, lineNumber);
         }
 
         /// <summary>

@@ -84,10 +84,6 @@ namespace LoveAlgo.Schedule
 
         void Awake()
         {
-            // GameState 변경 시 실시간 갱신 (디버그 도구 등)
-            if (GameState.Instance != null)
-                GameState.Instance.OnChanged += OnGameStateChanged;
-
             // 스케줄 슬롯 콜백 설정
             foreach (var slot in scheduleSlots)
             {
@@ -128,6 +124,18 @@ namespace LoveAlgo.Schedule
             // 기본 탭: 알바
             tabGroup?.Select(0, notify: false);
             SwitchTab(ScheduleCategory.PartTime);
+        }
+
+        void OnEnable()
+        {
+            if (GameState.Instance != null)
+                GameState.Instance.OnChanged += OnGameStateChanged;
+        }
+
+        void OnDisable()
+        {
+            if (GameState.Instance != null)
+                GameState.Instance.OnChanged -= OnGameStateChanged;
         }
 
         /// <summary>GameState 변경 시 스탯/머니 실시간 갱신</summary>
@@ -464,9 +472,6 @@ namespace LoveAlgo.Schedule
 
         void OnDestroy()
         {
-            if (GameState.Instance != null)
-                GameState.Instance.OnChanged -= OnGameStateChanged;
-
             if (canvasGroup != null)
                 canvasGroup.DOKill();
             if (scheduleContent != null)

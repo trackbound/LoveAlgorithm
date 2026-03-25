@@ -100,8 +100,10 @@ namespace LoveAlgo.Story
         /// </summary>
         public void SetTextSpeed(float normalized)
         {
-            // 0=느림(0.068s/char), 0.4=기본(0.044s), 1=빠름(0.008s/char)
-            typingSpeed = Mathf.Lerp(0.068f, 0.008f, normalized);
+            // 0=느림(0.068s/char), 0.7=기본(0.044s), 1=빠름(0.008s/char)
+            // 거듭제곱 커브로 느린~중간 구간을 넓게 배분
+            float curved = Mathf.Pow(normalized, 2.5f);
+            typingSpeed = Mathf.Lerp(0.068f, 0.008f, curved);
         }
 
         // 대사 로그
@@ -126,7 +128,7 @@ namespace LoveAlgo.Story
             if (showButtonObject != null) showButtonObject.SetActive(false);
 
             // 저장된 텍스트 속도 복원
-            float savedSpeed = PlayerPrefs.GetFloat("TextSpeed", 0.4f);
+            float savedSpeed = PlayerPrefs.GetFloat("TextSpeed", 0.7f);
             SetTextSpeed(savedSpeed);
         }
 
@@ -980,6 +982,16 @@ namespace LoveAlgo.Story
         public void ClearLog()
         {
             dialogueLog.Clear();
+        }
+
+        /// <summary>
+        /// 외부에서 로그 항목 직접 추가 (로드 시 이전 대사 복원용)
+        /// </summary>
+        public void AddLogEntry(string speaker, string text)
+        {
+            speaker = SubstituteVariables(speaker);
+            text = SubstituteVariables(text);
+            AddToLog(speaker, StripTagsRegex.Replace(text, ""));
         }
 
         #endregion

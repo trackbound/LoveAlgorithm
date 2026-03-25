@@ -189,7 +189,7 @@ namespace LoveAlgo.UI
             voiceRoaSlider?.SetValueWithoutNotify(PlayerPrefs.GetFloat("Voice_Roa", 0.4f));
 
             // 속도
-            textSpeedSlider?.SetValueWithoutNotify(PlayerPrefs.GetFloat("TextSpeed", 0.4f));
+            textSpeedSlider?.SetValueWithoutNotify(PlayerPrefs.GetFloat("TextSpeed", 0.7f));
             autoSpeedSlider?.SetValueWithoutNotify(PlayerPrefs.GetFloat("AutoSpeed", 0.4f));
         }
 
@@ -212,7 +212,7 @@ namespace LoveAlgo.UI
             PlayerPrefs.SetFloat("Voice_Roa", voiceRoaSlider?.value ?? 0.4f);
 
             // 속도
-            PlayerPrefs.SetFloat("TextSpeed", textSpeedSlider?.value ?? 0.4f);
+            PlayerPrefs.SetFloat("TextSpeed", textSpeedSlider?.value ?? 0.7f);
             PlayerPrefs.SetFloat("AutoSpeed", autoSpeedSlider?.value ?? 0.4f);
 
             PlayerPrefs.Save();
@@ -367,7 +367,7 @@ namespace LoveAlgo.UI
             // 슬라이더만 기본값으로 초기화 — 해상도 영역은 건드리지 않음
             const float defaultMaster = 0.8f;
             const float defaultVolume = 0.4f;
-            const float defaultSpeed  = 0.4f;
+            const float defaultSpeed  = 0.7f;
 
             masterSlider?.SetValueWithoutNotify(defaultMaster);
             bgmSlider?.SetValueWithoutNotify(defaultVolume);
@@ -395,7 +395,7 @@ namespace LoveAlgo.UI
             ScriptRunner.Instance?.SetAutoDelay(defaultSpeed);
 
             isDirty = true;
-            PopupManager.Instance?.Toast("초기화", "슬라이더가 기본값으로 초기화되었습니다.");
+            PopupManager.Instance?.Toast("초기화", "기본값으로 변경되었습니다.\n적용 버튼을 눌러 저장하세요.");
         }
 
         #endregion
@@ -455,7 +455,7 @@ namespace LoveAlgo.UI
                 voiceBom    = PlayerPrefs.GetFloat("Voice_Bom", 0.4f),
                 voiceHeewon = PlayerPrefs.GetFloat("Voice_Heewon", 0.4f),
                 voiceRoa    = PlayerPrefs.GetFloat("Voice_Roa", 0.4f),
-                textSpeed   = PlayerPrefs.GetFloat("TextSpeed", 0.4f),
+                textSpeed   = PlayerPrefs.GetFloat("TextSpeed", 0.7f),
                 autoSpeed   = PlayerPrefs.GetFloat("AutoSpeed", 0.4f),
             };
         }

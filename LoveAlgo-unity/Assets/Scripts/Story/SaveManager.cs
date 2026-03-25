@@ -64,6 +64,9 @@ namespace LoveAlgo.Story
 
         // 메신저 데이터
         public Phone.MessengerSaveData MessengerData;
+
+        // 선택지 이력 (로그 복원용)
+        public List<string> ChoiceHistory = new();
     }
 
     /// <summary>
@@ -169,6 +172,10 @@ namespace LoveAlgo.Story
             // 메신저 데이터 저장
             data.MessengerData = Phone.MessengerManager.GetSaveData();
 
+            // 선택지 이력 저장
+            if (GameState.Instance != null)
+                data.ChoiceHistory = GameState.Instance.GetChoiceHistory();
+
             // 장면 상태 저장 (배경, 캐릭터, BGM)
             CaptureStageState(data);
 
@@ -247,6 +254,9 @@ namespace LoveAlgo.Story
                 Phone.MessengerManager.RestoreFromSave(data.MessengerData);
             else
                 Phone.MessengerManager.Reset();
+
+            // 선택지 이력 복원
+            GameState.Instance.SetChoiceHistory(data.ChoiceHistory);
         }
 
         /// <summary>
@@ -270,6 +280,19 @@ namespace LoveAlgo.Story
             }
 
             DeleteScreenshot(slot);
+        }
+
+        /// <summary>
+        /// 모든 세이브/스크린샷 삭제 (빌드 초기화용)
+        /// </summary>
+        public static void DeleteAll()
+        {
+            string folder = Path.Combine(Application.persistentDataPath, SaveFolder);
+            if (Directory.Exists(folder))
+            {
+                Directory.Delete(folder, true);
+                Debug.Log("[SaveManager] 모든 세이브 데이터 삭제");
+            }
         }
 
         /// <summary>

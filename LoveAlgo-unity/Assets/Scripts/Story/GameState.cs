@@ -29,6 +29,9 @@ namespace LoveAlgo.Story
         // 플래그
         Dictionary<string, bool> flags = new();
 
+        // 선택지 이력 (JumpTarget 목록, 로그 복원용)
+        List<string> choiceHistory = new();
+
         public string PlayerName => playerName;
         public int Money => money;
 
@@ -202,6 +205,7 @@ namespace LoveAlgo.Story
             money = 0;
             lovePoints.Clear();
             flags.Clear();
+            choiceHistory.Clear();
             Shop.ShopManager.Reset();
         }
 
@@ -246,6 +250,15 @@ namespace LoveAlgo.Story
             if (data != null)
                 foreach (var kv in data)
                     flags[kv.Key] = kv.Value;
+        }
+
+        public void AddChoice(string jumpTarget) => choiceHistory.Add(jumpTarget);
+        public List<string> GetChoiceHistory() => new(choiceHistory);
+        public void SetChoiceHistory(List<string> data)
+        {
+            choiceHistory.Clear();
+            if (data != null)
+                choiceHistory.AddRange(data);
         }
 
         #endregion

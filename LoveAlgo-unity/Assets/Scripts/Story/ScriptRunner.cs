@@ -160,6 +160,7 @@ namespace LoveAlgo.Story
             // LineId가 있으면 LineId로 점프
             if (!string.IsNullOrEmpty(lineId) && lineIndex.TryGetValue(lineId, out int idx))
             {
+                RebuildLogFromPreviousLines(idx);
                 Stop();
                 currentIndex = idx;
                 cts = new CancellationTokenSource();
@@ -168,6 +169,7 @@ namespace LoveAlgo.Story
             }
             else if (lineIdx > 0 && lineIdx < lines.Count)
             {
+                RebuildLogFromPreviousLines(lineIdx);
                 Stop();
                 currentIndex = lineIdx;
                 cts = new CancellationTokenSource();
@@ -276,6 +278,35 @@ namespace LoveAlgo.Story
             lines != null && currentIndex >= 0 && currentIndex < lines.Count 
             ? lines[currentIndex] 
             : null;
+
+        /// <summary>
+        /// 파싱된 총 라인 수 (디버그용)
+        /// </summary>
+        public int LineCount => lines?.Count ?? 0;
+
+        /// <summary>
+        /// 인덱스로 라인 조회 (디버그용)
+        /// </summary>
+        public ScriptLine GetLine(int index) =>
+            lines != null && index >= 0 && index < lines.Count ? lines[index] : null;
+
+        /// <summary>
+        /// 특정 인덱스부터 강제 실행 (디버그 점프용)
+        /// </summary>
+        public void JumpToIndex(int index)
+        {
+            if (lines == null || index < 0 || index >= lines.Count)
+            {
+                Debug.LogWarning($"[ScriptRunner] JumpToIndex: 범위 초과 ({index}/{lines?.Count ?? 0})");
+                return;
+            }
+
+            Stop();
+            currentIndex = index;
+            cts = new CancellationTokenSource();
+            isRunning = true;
+            RunAsync(cts.Token).Forget();
+        }
 
         /// <summary>
         /// N개의 Text 라인 전으로 되감기 후 재생
@@ -563,6 +594,13 @@ namespace LoveAlgo.Story
                 var delayTask = UniTask.Delay(TimeSpan.FromSeconds(dynamicDelay), cancellationToken: ct);
                 var clickTask = UniTask.WaitUntil(() => clickReceived, cancellationToken: ct);
                 await UniTask.WhenAny(delayTask, clickTask);
+
+                // 팝업(로그 등)이 열려 있으면 닫힐 때까지 대기
+                var popupMgr = PopupManager.Instance;
+                if (popupMgr != null && popupMgr.IsAnyPopupOpen)
+                {
+                    await UniTask.WaitUntil(() => !popupMgr.IsAnyPopupOpen, cancellationToken: ct);
+                }
             }
             else
             {
@@ -572,6 +610,52 @@ namespace LoveAlgo.Story
 
             waitingForClick = false;
             clickReceived = false;
+        }
+
+        /// <summary>
+        /// 로드 시 이전 Text 라인들을 로그에 복원 (최근 씬 구간만)
+        /// SceneStart/LoadingScene 이후 ~ targetIndex 직전까지의 Text 라인 수집
+        /// </summary>
+        void RebuildLogFromPreviousLines(int targetIndex)
+        {
+            var dialogueUI = cachedDialogueUI ?? UIManager.Instance?.DialogueUI;
+            if (dialogueUI == null || lines == null) return;
+
+            // 씬 경계를 역방향으로 찾아 시작점 결정
+            int startIdx = 0;
+            for (int i = targetIndex - 1; i >= 0; i--)
+            {
+                var line = lines[i];
+                // SceneStart, LoadingScene, SceneEnd는 씬 경계
+                if (line.Type == LineType.FX && line.Value != null)
+                {
+                    string val = line.Value;
+                    if (val.StartsWith("SceneStart", System.StringComparison.OrdinalIgnoreCase) ||
+                        val.StartsWith("SceneEnd", System.StringComparison.OrdinalIgnoreCase))
+                    {
+                        startIdx = i + 1;
+                        break;
+                    }
+                }
+                if (line.Type == LineType.Flow && line.Value != null &&
+                    line.Value.Equals("LoadingScene", System.StringComparison.OrdinalIgnoreCase))
+                {
+                    startIdx = i + 1;
+                    break;
+                }
+            }
+
+            // startIdx ~ targetIndex-1 사이 Text 라인을 로그에 추가
+            for (int i = startIdx; i < targetIndex; i++)
+            {
+                var line = lines[i];
+                if (line.Type == LineType.Text && !string.IsNullOrEmpty(line.Value))
+                {
+                    dialogueUI.AddLogEntry(line.Speaker, line.Value);
+                }
+            }
+
+            Debug.Log($"[ScriptRunner] 로그 복원: {startIdx}~{targetIndex - 1} 구간, {dialogueUI.DialogueLog.Count}개 항목");
         }
 
         #region Type별 실행
@@ -1398,6 +1482,9 @@ namespace LoveAlgo.Story
                 
                 if (result != null && !string.IsNullOrEmpty(result.JumpTarget))
                 {
+                    // 선택지 이력 기록
+                    GameState.Instance?.AddChoice(result.JumpTarget);
+
                     if (lineIndex.TryGetValue(result.JumpTarget, out int targetIndex))
                     {
                         currentIndex = targetIndex - 1;

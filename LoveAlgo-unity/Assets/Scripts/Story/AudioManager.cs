@@ -192,24 +192,33 @@ namespace LoveAlgo.Story
 
             if (fadeDuration > 0 && bgmSource.isPlaying)
             {
-                // 크로스페이드: 현재 곡 페이드아웃 후 새 곡 페이드인
+                // 크로스페이드: 짧은 페이드아웃 → 페이드인 (청각적으로 자연스럽게)
                 targetVolume = bgmSource.volume;
-                await bgmSource.DOFade(0f, fadeDuration).ToUniTask(cancellationToken: token);
+                float fadeOutTime = fadeDuration * 0.4f;  // 아웃은 빠르게
+                float fadeInTime = fadeDuration;           // 인은 풀 duration
+
+                await bgmSource.DOFade(0f, fadeOutTime)
+                    .SetEase(Ease.InQuad)     // 처음엔 천천히 줄다가 빠르게 사라짐
+                    .ToUniTask(cancellationToken: token);
 
                 bgmSource.clip = clip;
                 bgmSource.Play();
-                await bgmSource.DOFade(targetVolume, fadeDuration).ToUniTask(cancellationToken: token);
+                await bgmSource.DOFade(targetVolume, fadeInTime)
+                    .SetEase(Ease.InQuad)     // 서서히 올라와 자연스럽게 도달
+                    .ToUniTask(cancellationToken: token);
 
                 // 트윈이 중단되어도 목표 볼륨 보장
                 if (bgmSource != null) bgmSource.volume = targetVolume;
             }
             else if (fadeDuration > 0)
             {
-                // 새로 시작: 페이드인만
+                // 새로 시작: 자연스러운 페이드인 (느리게 시작 → 점차 커짐)
                 bgmSource.volume = 0f;
                 bgmSource.clip = clip;
                 bgmSource.Play();
-                await bgmSource.DOFade(targetVolume, fadeDuration).ToUniTask(cancellationToken: token);
+                await bgmSource.DOFade(targetVolume, fadeDuration)
+                    .SetEase(Ease.InQuad)     // 소리가 서서히 올라오는 느낌
+                    .ToUniTask(cancellationToken: token);
 
                 // 트윈이 중단되어도 목표 볼륨 보장
                 if (bgmSource != null) bgmSource.volume = targetVolume;
@@ -241,7 +250,9 @@ namespace LoveAlgo.Story
 
             if (fadeDuration > 0)
             {
-                await bgmSource.DOFade(0f, fadeDuration).ToUniTask(cancellationToken: token);
+                await bgmSource.DOFade(0f, fadeDuration)
+                    .SetEase(Ease.InQuad)   // 처음엔 천천히 줄다가 빠르게 사라짐
+                    .ToUniTask(cancellationToken: token);
             }
 
             bgmSource.Stop();
@@ -422,19 +433,33 @@ namespace LoveAlgo.Story
 
             if (fadeDuration > 0 && bgmSource.isPlaying)
             {
+                // 크로스페이드: 짧은 페이드아웃 → 페이드인
                 targetVolume = bgmSource.volume;
-                await bgmSource.DOFade(0f, fadeDuration).ToUniTask(cancellationToken: token);
+                float fadeOutTime = fadeDuration * 0.4f;
+                float fadeInTime = fadeDuration;
+
+                await bgmSource.DOFade(0f, fadeOutTime)
+                    .SetEase(Ease.InQuad)
+                    .ToUniTask(cancellationToken: token);
                 bgmSource.clip = clip;
                 bgmSource.Play();
-                await bgmSource.DOFade(targetVolume, fadeDuration).ToUniTask(cancellationToken: token);
+                await bgmSource.DOFade(targetVolume, fadeInTime)
+                    .SetEase(Ease.InQuad)
+                    .ToUniTask(cancellationToken: token);
+
+                if (bgmSource != null) bgmSource.volume = targetVolume;
             }
             else if (fadeDuration > 0)
             {
-                // 페이드 인만
+                // 새로 시작: 자연스러운 페이드인
                 bgmSource.volume = 0f;
                 bgmSource.clip = clip;
                 bgmSource.Play();
-                await bgmSource.DOFade(targetVolume, fadeDuration).ToUniTask(cancellationToken: token);
+                await bgmSource.DOFade(targetVolume, fadeDuration)
+                    .SetEase(Ease.InQuad)
+                    .ToUniTask(cancellationToken: token);
+
+                if (bgmSource != null) bgmSource.volume = targetVolume;
             }
             else
             {

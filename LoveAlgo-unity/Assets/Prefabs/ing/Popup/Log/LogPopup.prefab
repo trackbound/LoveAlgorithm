@@ -194,7 +194,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: -0.012512207}
+  m_AnchoredPosition: {x: 0, y: 0.012512207}
   m_SizeDelta: {x: 73, y: 795.06}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &7975015085843182421
@@ -620,8 +620,8 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 7638741708520152853}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
+  m_AnchorMin: {x: 0.5, y: 0}
+  m_AnchorMax: {x: 0.5, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -842,10 +842,10 @@ RectTransform:
   - {fileID: 224254292103982240}
   m_Father: {fileID: 1381589777637237050}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 1, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 18, y: 0}
+  m_AnchorMin: {x: 1, y: 0.5}
+  m_AnchorMax: {x: 1, y: 0.5}
+  m_AnchoredPosition: {x: -28, y: 10}
+  m_SizeDelta: {x: 7, y: 766}
   m_Pivot: {x: 1, y: 0.5}
 --- !u!222 &8738140792641779897
 CanvasRenderer:
@@ -927,7 +927,7 @@ MonoBehaviour:
   m_Interactable: 1
   m_TargetGraphic: {fileID: 7935839377514110072}
   m_HandleRect: {fileID: 2879452606690509172}
-  m_Direction: 3
+  m_Direction: 2
   m_Value: 0
   m_Size: 1
   m_NumberOfSteps: 6
@@ -947,8 +947,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.UI.ScrollbarEX
   handleVisual: {fileID: 2321817837899214125}
+  trackVisual: {fileID: 412929152621836819}
   handleHoverSprite: {fileID: 21300000, guid: e1f5f67e0b4ad6c40b053d8ab54adee2, type: 3}
-  minHandleSize: 0.1
+  fixHandleSize: 1
+  handleSize: 0.02
 --- !u!1 &6821852366178808570
 GameObject:
   m_ObjectHideFlags: 0
@@ -1099,6 +1101,7 @@ MonoBehaviour:
   colorTargets: []
   normalColors: []
   hoverColors: []
+  selectedColors: []
   useScaleEffect: 0
   hoverScale: 1.05
   pressedScale: 0.95

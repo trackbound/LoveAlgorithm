@@ -30,6 +30,11 @@ namespace LoveAlgo
         int setStatValue = 30;
         int setMoneyValue = 100000;
 
+        // F2 대사 점퍼
+        bool lineJumperOpen;
+        string jumpLineInput = "1";
+        string jumpStatus = "";
+
         void OnGUI()
         {
             var gm = GameManager.Instance;
@@ -39,6 +44,13 @@ namespace LoveAlgo
             if (Event.current.type == EventType.KeyDown && Event.current.keyCode == KeyCode.F1)
             {
                 debugPanelOpen = !debugPanelOpen;
+                Event.current.Use();
+            }
+
+            // F2 대사 점퍼 토글
+            if (Event.current.type == EventType.KeyDown && Event.current.keyCode == KeyCode.F2)
+            {
+                lineJumperOpen = !lineJumperOpen;
                 Event.current.Use();
             }
 
@@ -52,6 +64,9 @@ namespace LoveAlgo
                     DrawDebugPanel();
                 else
                     DrawDebugHint();
+
+                if (lineJumperOpen)
+                    DrawLineJumper();
             }
         }
 
@@ -104,8 +119,107 @@ namespace LoveAlgo
                 richText = true,
                 fontSize = 12
             };
-            GUI.Label(new Rect(10, 10, 280, 20),
-                "<color=yellow>[F1] 디버그 패널</color>", style);
+            GUI.Label(new Rect(10, 10, 350, 20),
+                "<color=yellow>[F1] 디버그 패널  [F2] 대사 점퍼</color>", style);
+        }
+
+        // ─────────────────────────────────
+        // 대사 점퍼 (F2)
+        // ─────────────────────────────────
+
+        void DrawLineJumper()
+        {
+            var sr = ScriptRunner.Instance;
+            if (sr == null) return;
+
+            float panelW = 360f;
+            float panelH = 220f;
+            float x = (Screen.width - panelW) / 2f;
+            float y = 40f;
+
+            GUI.Box(new Rect(x, y, panelW, panelH), "");
+
+            GUILayout.BeginArea(new Rect(x + 10, y + 5, panelW - 20, panelH - 10));
+
+            GUILayout.Label("<b><size=14>대사 점퍼</size></b>  <size=11>[F2] 토글</size>", RichStyle());
+            GUILayout.Space(3);
+
+            // 현재 상태 표시
+            int total = sr.LineCount;
+            int curIdx = sr.CurrentIndex;
+            var curLine = sr.CurrentLine;
+
+            if (total == 0)
+            {
+                GUILayout.Label("<color=red>로드된 스크립트 없음</color>", RichStyle());
+                GUILayout.EndArea();
+                return;
+            }
+
+            string curInfo = curLine != null
+                ? $"[{curLine.Type}] {(string.IsNullOrEmpty(curLine.Speaker) ? "" : curLine.Speaker + ": ")}{Truncate(curLine.Value, 30)}"
+                : "N/A";
+            GUILayout.Label($"현재: <b>{curIdx + 1}</b> / {total}  (CSV:{curLine?.SourceLine ?? 0})", RichStyle());
+            GUILayout.Label($"  {curInfo}", RichStyle());
+
+            GUILayout.Space(5);
+
+            // 입력
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("이동할 라인:", GUILayout.Width(75));
+            jumpLineInput = GUILayout.TextField(jumpLineInput, GUILayout.Width(60));
+            GUILayout.Label($"/ {total}", GUILayout.Width(50));
+
+            if (GUILayout.Button("점프", GUILayout.Width(60)))
+            {
+                if (int.TryParse(jumpLineInput, out int targetLine))
+                {
+                    int idx = targetLine - 1; // 1-based → 0-based
+                    if (idx >= 0 && idx < total)
+                    {
+                        sr.JumpToIndex(idx);
+                        var jumped = sr.GetLine(idx);
+                        jumpStatus = $"→ Line {targetLine} [{jumped?.Type}] {Truncate(jumped?.Value, 20)}";
+                        lineJumperOpen = false; // 점프 후 자동 닫기
+                    }
+                    else
+                    {
+                        jumpStatus = $"<color=red>범위 초과 (1~{total})</color>";
+                    }
+                }
+                else
+                {
+                    jumpStatus = "<color=red>숫자를 입력하세요</color>";
+                }
+            }
+            GUILayout.EndHorizontal();
+
+            // 점프 대상 미리보기
+            if (int.TryParse(jumpLineInput, out int preview))
+            {
+                int previewIdx = preview - 1;
+                var previewLine = sr.GetLine(previewIdx);
+                if (previewLine != null)
+                {
+                    string pid = string.IsNullOrEmpty(previewLine.LineID) ? "" : $"#{previewLine.LineID} ";
+                    string spk = string.IsNullOrEmpty(previewLine.Speaker) ? "" : previewLine.Speaker + ": ";
+                    GUILayout.Label($"<color=#88ff88>▶ {pid}[{previewLine.Type}] {spk}{Truncate(previewLine.Value, 35)}</color>", RichStyle());
+                    GUILayout.Label($"  <color=#aaaaaa>(CSV Line {previewLine.SourceLine})</color>", RichStyle());
+                }
+            }
+
+            GUILayout.Space(3);
+            if (!string.IsNullOrEmpty(jumpStatus))
+                GUILayout.Label(jumpStatus, RichStyle());
+
+            GUILayout.EndArea();
+        }
+
+        static string Truncate(string s, int maxLen)
+        {
+            if (string.IsNullOrEmpty(s)) return "";
+            s = s.Replace("\n", " ");
+            return s.Length > maxLen ? s[..maxLen] + "…" : s;
         }
 
         // ─────────────────────────────────

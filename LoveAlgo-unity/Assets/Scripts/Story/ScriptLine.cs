@@ -44,10 +44,11 @@ namespace LoveAlgo.Story
         public string Value { get; internal set; }        // 데이터
         public NextType NextType { get; internal set; }   // 진행 방식
         public float DelaySeconds { get; internal set; }  // Delay 시 대기 시간
+        public int SourceLine { get; internal set; }      // 원본 CSV 라인 번호 (디버그용)
 
         public ScriptLine() { }
 
-        public ScriptLine(string lineId, LineType type, string speaker, string value, NextType nextType, float delay = 0f)
+        public ScriptLine(string lineId, LineType type, string speaker, string value, NextType nextType, float delay = 0f, int sourceLine = 0)
         {
             LineID = lineId ?? "";
             Type = type;
@@ -55,6 +56,7 @@ namespace LoveAlgo.Story
             Value = value ?? "";
             NextType = nextType;
             DelaySeconds = delay;
+            SourceLine = sourceLine;
         }
 
         /// <summary>

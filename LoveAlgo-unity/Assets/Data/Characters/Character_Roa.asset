@@ -34,5 +34,6 @@ MonoBehaviour:
   themeBGM: {fileID: 8300000, guid: 5628e4489f6cd354497a64c96930339d, type: 3}
   typingSFX: {fileID: 0}
   loveEvents: []
+  UseOverlay: 1
   routeRequiredFlags: []
   routeRequiredLove: 0

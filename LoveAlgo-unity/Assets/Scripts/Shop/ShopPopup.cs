@@ -64,6 +64,25 @@ namespace LoveAlgo.Shop
             EnsureSaleSlotPool();
         }
 
+        void OnEnable()
+        {
+            if (GameState.Instance != null)
+                GameState.Instance.OnChanged += OnGameStateChanged;
+        }
+
+        void OnDisable()
+        {
+            if (GameState.Instance != null)
+                GameState.Instance.OnChanged -= OnGameStateChanged;
+        }
+
+        /// <summary>GameState 변경 시 머니 실시간 갱신</summary>
+        void OnGameStateChanged()
+        {
+            if (!gameObject.activeInHierarchy) return;
+            RefreshMoneyDisplay();
+        }
+
         /// <summary>패널 열릴 때 초기화 (ScheduleUI가 호출)</summary>
         public void Open()
         {

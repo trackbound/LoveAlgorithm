@@ -51,6 +51,9 @@ namespace LoveAlgo.Core
             // ── 빌드 시 Debug.Log 비활성화 (Warning/Error는 유지) ──
 #if !UNITY_EDITOR
             Debug.unityLogger.filterLogType = LogType.Warning;
+
+            // 빌드 변경 시 에디터 잔여 세이브 정리
+            ClearStaleSaves();
 #endif
 
             // DOTween 초기화 - 용량 설정으로 IndexOutOfRangeException 방지
@@ -251,18 +254,45 @@ namespace LoveAlgo.Core
         #region Game Flow
 
         /// <summary>
-        /// 타이틀 화면으로 이동
+        /// 타이틀 화면으로 이동 (페이드 전환 포함)
         /// </summary>
         public void GoToTitle()
         {
-            // Stop 전에 자동저장 (스크립트 위치 보존)
-            AutoSave();
-            ScriptRunner.Instance?.Stop();
+            GoToTitleAsync().Forget();
+        }
 
-            // 장면 정리 (캐릭터, 배경, 오버레이 등)
-            CleanupStage();
+        async UniTaskVoid GoToTitleAsync()
+        {
+            if (isTransitioning) return;
+            isTransitioning = true;
+            try
+            {
+                var ct = this.GetCancellationTokenOnDestroy();
+                var fx = ScreenFX.Instance;
 
-            ChangePhase(GamePhase.Title);
+                // 이미 암전이 아니면 페이드 아웃
+                if (fx != null && !fx.IsFadeBlack)
+                    await fx.FadeOutAsync(0.5f, ct);
+
+                // 자동저장 (스크립트 위치 보존)
+                AutoSave();
+                ScriptRunner.Instance?.Stop();
+
+                // 장면 정리 (캐릭터, 배경, 오버레이 등)
+                CleanupStage();
+
+                ChangePhase(GamePhase.Title);
+
+                await UniTask.Yield(ct);
+
+                // 페이드 인 (타이틀 표시)
+                if (fx != null)
+                    await fx.FadeInAsync(0.5f, ct);
+            }
+            finally
+            {
+                isTransitioning = false;
+            }
         }
 
         /// <summary>
@@ -997,6 +1027,24 @@ namespace LoveAlgo.Core
         void MarkDemoScheduleComplete()
         {
             GameState.Instance?.SetFlag(DemoSingleScheduleCompleteFlag, true);
+        }
+
+        /// <summary>
+        /// 빌드 변경 감지 시 에디터/이전 빌드 잔여 세이브 삭제
+        /// </summary>
+        void ClearStaleSaves()
+        {
+            const string key = "LastClearedBuild";
+            string currentBuild = Application.buildGUID;
+            if (string.IsNullOrEmpty(currentBuild))
+                currentBuild = Application.version;
+
+            string prev = PlayerPrefs.GetString(key, "");
+            if (prev == currentBuild) return;
+
+            SaveManager.DeleteAll();
+            PlayerPrefs.SetString(key, currentBuild);
+            PlayerPrefs.Save();
         }
     }
 }
