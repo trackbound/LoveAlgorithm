@@ -22,8 +22,11 @@ namespace LoveAlgo.Shop
         [Tooltip("슬롯과 팝업 사이 간격 (px)")]
         [SerializeField] float gap = 12f;
 
-        [Tooltip("Viewport 중앙 방향으로 밀어내는 강도 (0=슬롯 옆, 1=Viewport 중앙)")]
-        [SerializeField, Range(0f, 0.5f)] float centerBias = 0.15f;
+        [Tooltip("Viewport 가장자리와 설명카드 사이 최소 여백 (px)")]
+        [SerializeField] float edgePadding = 16f;
+
+        [Tooltip("세로 위치를 중앙으로 살짝 보정하는 강도 (0=슬롯 중심 고정, 1=Viewport 중앙)")]
+        [SerializeField, Range(0f, 0.35f)] float verticalCenterBias = 0.08f;
 
         RectTransform rectTransform;
         Canvas rootCanvas;
@@ -67,11 +70,12 @@ namespace LoveAlgo.Shop
         }
 
         /// <summary>
-        /// 슬롯의 Viewport 내 정규화 좌표(0~1)에 따라 팝업을 중앙 방향으로 배치
+        /// 슬롯 옆으로 설명카드를 배치한다.
         ///
-        /// X: 좌측 슬롯 → 팝업 우측, 우측 슬롯 → 팝업 좌측
-        /// Y: 상단 슬롯 → 팝업 하단, 하단 슬롯 → 팝업 상단
-        /// 중앙 가까울수록 팝업도 슬롯에 가까이 붙음
+        /// 기본 원칙:
+        /// - 좌측 카드면 우측에, 우측 카드면 좌측에 붙인다.
+        /// - 세로축은 슬롯 중심을 기준으로 두되, 화면 중앙 쪽으로만 약하게 보정한다.
+        /// - 화면 밖으로 나가지 않도록 Viewport 안에서 clamp 한다.
         /// </summary>
         void PositionRelativeToSlot(RectTransform slotRect, RectTransform viewportRect)
         {
@@ -86,7 +90,6 @@ namespace LoveAlgo.Shop
             float vpRight  = vpCorners[2].x;
             float vpBottom = vpCorners[0].y;
             float vpTop    = vpCorners[2].y;
-            float vpCenterX = (vpLeft + vpRight) * 0.5f;
             float vpCenterY = (vpBottom + vpTop) * 0.5f;
 
             // 슬롯 크기 및 월드 위치
@@ -96,26 +99,19 @@ namespace LoveAlgo.Shop
             float popupW = rectTransform.rect.width * rectTransform.lossyScale.x;
             float popupH = rectTransform.rect.height * rectTransform.lossyScale.y;
 
-            // 슬롯이 Viewport 내 어디에 있는지 정규화 (0~1)
             float nx = Mathf.InverseLerp(vpLeft, vpRight, slotWorld.x);
-            float ny = Mathf.InverseLerp(vpBottom, vpTop, slotWorld.y);
 
-            // ── X축: 슬롯의 반대쪽으로 배치 + 중앙 방향 bias
+            // X축은 항상 좌우 사이드 배치
             float baseOffsetX = slotW * 0.5f + popupW * 0.5f + gap;
-            float dirX = (nx < 0.5f) ? 1f : -1f;  // 좌측이면 우로, 우측이면 좌로
+            float dirX = nx < 0.5f ? 1f : -1f;
             float posX = slotWorld.x + dirX * baseOffsetX;
-            // 중앙 방향으로 살짝 끌어당김
-            posX = Mathf.Lerp(posX, vpCenterX, centerBias);
 
-            // ── Y축: 슬롯의 반대쪽으로 배치 + 중앙 방향 bias
-            float baseOffsetY = slotH * 0.5f + popupH * 0.5f + gap;
-            float dirY = (ny < 0.5f) ? 1f : -1f;  // 하단이면 위로, 상단이면 아래로
-            float posY = slotWorld.y + dirY * baseOffsetY;
-            posY = Mathf.Lerp(posY, vpCenterY, centerBias);
+            // Y축은 슬롯 중심 기준, 화면 중앙으로만 약하게 보정
+            float posY = Mathf.Lerp(slotWorld.y, vpCenterY, verticalCenterBias);
 
             // ── 화면 밖 보정 (Viewport 범위 내로 clamp)
-            float halfW = popupW * 0.5f;
-            float halfH = popupH * 0.5f;
+            float halfW = popupW * 0.5f + edgePadding;
+            float halfH = popupH * 0.5f + edgePadding;
             posX = Mathf.Clamp(posX, vpLeft + halfW, vpRight - halfW);
             posY = Mathf.Clamp(posY, vpBottom + halfH, vpTop - halfH);
 

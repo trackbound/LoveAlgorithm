@@ -158,7 +158,7 @@ namespace LoveAlgo.Shop
         {
             if (itemDetailPopup == null) return;
             var slotRect = slot.GetComponent<RectTransform>();
-            var vpRect = saleViewport != null ? saleViewport : saleContainer as RectTransform;
+            var vpRect = ResolveSaleViewport();
             itemDetailPopup.Show(slot.Item, slotRect, vpRect);
         }
 
@@ -166,6 +166,25 @@ namespace LoveAlgo.Shop
         {
             if (itemDetailPopup != null)
                 itemDetailPopup.Hide();
+        }
+
+        RectTransform ResolveSaleViewport()
+        {
+            if (saleViewport != null)
+                return saleViewport;
+
+            if (saleContainer == null)
+                return null;
+
+            var scrollRect = saleContainer.GetComponentInParent<ScrollRect>();
+            if (scrollRect != null && scrollRect.viewport != null)
+            {
+                saleViewport = scrollRect.viewport;
+                return saleViewport;
+            }
+
+            saleViewport = saleContainer.parent as RectTransform;
+            return saleViewport;
         }
 
         #endregion

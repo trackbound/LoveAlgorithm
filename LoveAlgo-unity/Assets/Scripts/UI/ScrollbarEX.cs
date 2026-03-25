@@ -23,6 +23,7 @@ namespace LoveAlgo.UI
     {
         [Header("비주얼")]
         [SerializeField] Image handleVisual;
+        [SerializeField] RectTransform trackVisual;
 
         [Header("핸들 호버 스프라이트")]
         [SerializeField] Sprite handleHoverSprite;
@@ -37,6 +38,9 @@ namespace LoveAlgo.UI
         void Awake()
         {
             scrollbar = GetComponent<Scrollbar>();
+            CacheReferences();
+            ApplyLayoutCorrection();
+
             if (handleVisual != null)
                 handleNormalSprite = handleVisual.sprite;
         }
@@ -44,15 +48,30 @@ namespace LoveAlgo.UI
         void OnEnable()
         {
             isHovered = false;
+            ApplyLayoutCorrection();
+
             if (handleVisual != null && handleNormalSprite != null)
                 handleVisual.sprite = handleNormalSprite;
         }
 
         void LateUpdate()
         {
-            if (scrollbar != null && scrollbar.size < minHandleSize)
-                scrollbar.size = minHandleSize;
+            if (scrollbar == null)
+                return;
+
+            float clampedMinSize = Mathf.Clamp01(minHandleSize);
+            if (scrollbar.size < clampedMinSize)
+                scrollbar.size = clampedMinSize;
         }
+
+#if UNITY_EDITOR
+        void OnValidate()
+        {
+            scrollbar = GetComponent<Scrollbar>();
+            CacheReferences();
+            ApplyLayoutCorrection();
+        }
+#endif
 
         public void OnPointerEnter(PointerEventData eventData)
         {
@@ -75,6 +94,57 @@ namespace LoveAlgo.UI
             handleHoverSprite = hover;
             if (handleVisual != null)
                 handleVisual.sprite = isHovered && hover != null ? hover : normal;
+        }
+
+        void CacheReferences()
+        {
+            if (scrollbar == null)
+                scrollbar = GetComponent<Scrollbar>();
+
+            if (handleVisual == null && scrollbar != null && scrollbar.handleRect != null)
+                handleVisual = scrollbar.handleRect.GetComponentInChildren<Image>();
+
+            if (trackVisual == null)
+            {
+                Transform track = transform.Find("TrackVisual");
+                if (track != null)
+                    trackVisual = track as RectTransform;
+            }
+        }
+
+        void ApplyLayoutCorrection()
+        {
+            if (scrollbar == null)
+                return;
+
+            StretchTrackVisual();
+        }
+
+        void StretchTrackVisual()
+        {
+            if (trackVisual == null)
+                return;
+
+            if (IsVertical())
+            {
+                trackVisual.anchorMin = new Vector2(0.5f, 0f);
+                trackVisual.anchorMax = new Vector2(0.5f, 1f);
+                trackVisual.anchoredPosition = Vector2.zero;
+                trackVisual.sizeDelta = new Vector2(trackVisual.sizeDelta.x, 0f);
+            }
+            else
+            {
+                trackVisual.anchorMin = new Vector2(0f, 0.5f);
+                trackVisual.anchorMax = new Vector2(1f, 0.5f);
+                trackVisual.anchoredPosition = Vector2.zero;
+                trackVisual.sizeDelta = new Vector2(0f, trackVisual.sizeDelta.y);
+            }
+        }
+
+        bool IsVertical()
+        {
+            return scrollbar.direction == Scrollbar.Direction.BottomToTop
+                || scrollbar.direction == Scrollbar.Direction.TopToBottom;
         }
     }
 }

@@ -304,16 +304,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dc12b9448d39eba4e928b7d9633d2884, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.Core.SceneBootstrapper
-  targets:
+  activateOnPlay:
   - {fileID: 1748452703}
   - {fileID: 998519875}
   - {fileID: 2047420047}
   - {fileID: 359789906}
-  - {fileID: 1597655944}
+  - {fileID: 0}
   - {fileID: 0}
   - {fileID: 334515019}
   - {fileID: 1355823663}
   - {fileID: 1519500111}
+  deactivateOnPlay: []
 --- !u!4 &491482804
 Transform:
   m_ObjectHideFlags: 0
@@ -727,11 +728,6 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 1907347568025722526, guid: 106fa2e6497638a4da000e22c484a1ef, type: 3}
   m_PrefabInstance: {fileID: 1552118872406778402}
   m_PrefabAsset: {fileID: 0}
---- !u!224 &1153760330 stripped
-RectTransform:
-  m_CorrespondingSourceObject: {fileID: 8756002024625961892, guid: 479fdc0f86ab2024491dff34b29117cd, type: 3}
-  m_PrefabInstance: {fileID: 8973488741572443763}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1194334891
 GameObject:
   m_ObjectHideFlags: 0
@@ -1016,11 +1012,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
---- !u!1 &1597655944 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 6083804458929378118, guid: 479fdc0f86ab2024491dff34b29117cd, type: 3}
-  m_PrefabInstance: {fileID: 8973488741572443763}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1720075395
 GameObject:
   m_ObjectHideFlags: 0
@@ -1031,7 +1022,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1720075396}
   m_Layer: 0
-  m_Name: SubUI
+  m_Name: Sub
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1335,7 +1326,7 @@ PrefabInstance:
     - target: {fileID: 1038034253763835031, guid: cd0982dcf451b4349a0fb2d97430ebe4, type: 3}
       propertyPath: dialogueUITransform
       value: 
-      objectReference: {fileID: 1153760330}
+      objectReference: {fileID: 0}
     - target: {fileID: 1128065468562751995, guid: cd0982dcf451b4349a0fb2d97430ebe4, type: 3}
       propertyPath: m_Pivot.x
       value: 0
@@ -1663,26 +1654,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 1137618677684849008, guid: 479fdc0f86ab2024491dff34b29117cd, type: 3}
-      propertyPath: m_Value
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 2113332447229247646, guid: 479fdc0f86ab2024491dff34b29117cd, type: 3}
-      propertyPath: m_AnchorMax.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2113332447229247646, guid: 479fdc0f86ab2024491dff34b29117cd, type: 3}
-      propertyPath: m_AnchorMax.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5087786359345548806, guid: 479fdc0f86ab2024491dff34b29117cd, type: 3}
-      propertyPath: m_AnchorMax.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5087786359345548806, guid: 479fdc0f86ab2024491dff34b29117cd, type: 3}
-      propertyPath: m_AnchorMax.y
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 5873087667963436472, guid: 479fdc0f86ab2024491dff34b29117cd, type: 3}
       propertyPath: m_Pivot.x
       value: 0
@@ -1766,14 +1737,6 @@ PrefabInstance:
     - target: {fileID: 6369571329407419508, guid: 479fdc0f86ab2024491dff34b29117cd, type: 3}
       propertyPath: m_Name
       value: '[ Main ]'
-      objectReference: {fileID: 0}
-    - target: {fileID: 7418972777243999815, guid: 479fdc0f86ab2024491dff34b29117cd, type: 3}
-      propertyPath: m_SizeDelta.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7611608483647981759, guid: 479fdc0f86ab2024491dff34b29117cd, type: 3}
-      propertyPath: m_Value
-      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

@@ -3,7 +3,7 @@
 ,BG,,BG_BlackCut:Cut,await
 ,FX,,Wait:0.5,await
 ,Text,,어... <wait=1/>됐다.,click
-,Sound,,BGM:Roa,>
+,Sound,,BGM:Roa::Fade:4.0,>
 
 ,Text,로아,"기다렸어, {{Player}}!",click
 ,CG,,CG_Roa_01:Fade:4,click
@@ -76,7 +76,7 @@ DEMO_1,FX,,SceneStart:BG_MyRoom_Bed_Day:EyeClose,await
 ,FX,,DialogueShake:Strong,>
 ,Text,로아,{{Player}}! 일어나라고!,click
 ,FX,,EyeOpen,await
-,Sound,,BGM:Daily1,>
+,Sound,,BGM:Daily1::Fade:4.0,>
 # 자취방_침대_낮
 ,Text,{{Player}},"어, 일어났어...",click
 ,Text,로아,{{Player}}! 일어나라니까!,click
@@ -110,7 +110,7 @@ go_campus,Text,로아,"자, 이제 출발! 첫 수업이니까 같이 힘내자,
 ,Char,,C:Exit,await
 
 # 공대강의실
-,Sound,,BGM:Daily2,>
+,Sound,,BGM:Daily2::Fade:4.0,>
 ,BG,,BG_Engineering_Classroom:Fade:3,await
 DEMO_2,Place,,첫 전공수업 | 공대 강의실,>
 ,Text,,새학기라고는 하지만 학교는 늘 똑같다.,click
@@ -200,7 +200,7 @@ stay_still,Text,,여자애는 이제 내 코앞까지 다가와 있었다.,click
 ,Flow,,Jump:yeun_intro,>
 
 # 합류
-yeun_intro,Sound,,BGM:Yeun,>
+yeun_intro,Sound,,BGM:Yeun:Fade:4.0,>
 ,Char,,C:Enter:Yeun:Surprise,await
 ,Text,하예은,너... {{Player}}?,click
 ,Text,,내 이름을 어떻게 알고 있지?,click
@@ -303,7 +303,7 @@ go_home,Text,{{Player}},지금은 그냥 피곤해. 얼른 집에 가야겠어.\
 ,Char,,C:Exit,await
 
 # 자취방_밤_불켜짐
-,Sound,,BGM:Daily1,>
+,Sound,,BGM:Daily1:Fade:4.0,>
 ,BG,,BG_MyRoom_Interior_Night_LightOn:Fade,await
 ,Place,,새 학기 첫날 밤 | 자취방,>
 ,Text,,"평소에 비해 그렇게 늦은 시간까지 깨어 있는 것도 아닌데, 피곤하다.\n역시 학교 수업 듣는 건 듣기만 해도 피곤한 게 맞다니까.",click
@@ -315,7 +315,7 @@ go_home,Text,{{Player}},지금은 그냥 피곤해. 얼른 집에 가야겠어.\
 ,Text,로아,"잠깐, 잠깐! 나 아직 로딩 중이야!",click
 # 자취방_침대_밤
 ,BG,,BG_MyRoom_Bed_Night:Cross,await
-,Sound,,BGM:Night,>
+,Sound,,BGM:Night:Fade:4.0,>
 ,FX,,Wait:0.5,await
 ,Text,로아,...됐다!,click
 ,Text,{{Player}},이제 진짜 잔다. 내일 봐.,click
@@ -327,7 +327,7 @@ go_home,Text,{{Player}},지금은 그냥 피곤해. 얼른 집에 가야겠어.\
 
 # 2일차
 ,FX,,SceneStart:BG_MyRoom_Bed_Day:EyeClose,await
-,Sound,,BGM:Daily2,>
+,Sound,,BGM:Daily2:Fade:4.0,>
 ,Place,,새 학기 2일차 | 침대 위,>
 ,FX,,Wait:0.5,await
 ,Text,로아,"일어나, {{Player}}! 아침이야!",click
@@ -359,7 +359,7 @@ go_home,Text,{{Player}},지금은 그냥 피곤해. 얼른 집에 가야겠어.\
 ,Flow,,Save,await
 
 # 공대_학생복지실
-,Sound,,BGM:Daily1,>
+,Sound,,BGM:Daily1:Fade:4.0,>
 ,BG,,BG_Engineering_StudentLounge:Fade:2,await
 ,Place,,수업 시작 전 | 공대 학생복지실,>
 ,Text,,"로아의 말이 정말 맞았다.\n나왔을 때는 따뜻한가 싶더니, 공대 근처에 오니 찬바람이 분다.",click
@@ -367,7 +367,7 @@ go_home,Text,{{Player}},지금은 그냥 피곤해. 얼른 집에 가야겠어.\
 ,Text,,그래서 매 학기 초마다 들러 교재를 사는 곳이다.\n다른 애들은 선배에게 교재를 물려받기도 하는 것 같지만...,click
 ,Text,,공부는 새 책으로 해야지. 다들 왜 남이 쓰던 걸 쓰려고 하는거야?,click
 ,Text,,"그건 그렇고, 어제 있었던 수업의 교재를 책꽂이에서 찾아야 했다.\n여기 있을 것 같은데...",click
-,Sound,,BGM:Daeun,>
+,Sound,,BGM:Daeun:Fade:4.0,>
 ,Text,서다은,저기!,click
 ,Text,,"그 때, 누군가가 부르는 소리에 옆을 바라보았다.",click
 ,Char,,C:Enter:Daeun,await
@@ -424,7 +424,7 @@ at_bookstore,Char,,C:Emote:Default,await
 
 # 학생회관 앞_낮
 ,BG,,BG_StudentCenter_Front_Day:Fade:2,await
-,Sound,,BGM:Daily1,>
+,Sound,,BGM:Daily1:Fade:4.0,>
 ,Text,,"전공 수업이 피곤하다면, 교양 수업은 잠이 온다.\n이번에는 전공 수업 시간표를 신경쓰느라 교양 수업은 대강 넣었더니, 진짜 재미없다.",click
 ,Text,,졸기까지 해서인지 어떻게 지나갔는지도 모르겠다.\n게다가 오늘은 동아리 신청을 위해 학생회관까지 들러야 하는 날이다.,click
 ,Text,,"그 때, 로아에게서 메시지가 왔다.",click
@@ -574,7 +574,7 @@ STUDENT,BG,,BG_StudentCenter_Office:Fade,await
 
 # 자취방_밤_불켜짐
 ,Place,,새 학기 2일차 밤 | 자취방,>
-,Sound,,BGM:Roa,>
+,Sound,,BGM:Roa:Fade:4.0,>
 ,BG,,BG_MyRoom_Interior_Night_LightOn:Fade:2,await
 ,Text,,집에 도착한 지 얼마 되지 않아 핸드폰에서 짧은 진동이 울렸다.,click
 ,Char,,C:Enter:Roa:Default:Roa_Mob_1,await
@@ -610,7 +610,7 @@ STUDENT,BG,,BG_StudentCenter_Office:Fade,await
 ,Char,,C:Exit,await
 
 # 편의점_내부
-,Sound,,BGM:일상2,>
+,Sound,,BGM:Daily2:Fade:4.0,>
 ,BG,,BG_ConvenienceStore_Inside:Fade:2,await
 ,Place,,밤 | 집 앞 편의점,>
 ,Text,,학기 초라 그런지 늦은 시간인데도 제법 사람 많은 거리를 지나 편의점에 도착했다.,click
@@ -681,7 +681,7 @@ STUDENT,BG,,BG_StudentCenter_Office:Fade,await
 # 3일차
 # 학생회관_게시판
 ,FX,,SceneStart:BG_StudentCenter_Board:Fade:3,await
-,Sound,,BGM:Daily2,>
+,Sound,,BGM:Daily2:Fade:4.0,>
 ,Place,,새 학기 셋째 날 | 학생회관 게시판,>
 ,FX,,Wait:0.5,await
 ,Text,,어제 밤에 침대에 누워서 잠들기 직전까지 고민한 게 무색하게 전혀 답을 찾지 못했다.,click
@@ -691,7 +691,7 @@ STUDENT,BG,,BG_StudentCenter_Office:Fade,await
 ,Text,,생각해보니 지난번 내가 입부할 때도…\n우리 동아리의 홍보지는 테니스 동아리의 거대한 홍보지에 가려져 있었다.,click
 ,Text,,"홍보지는 다들 엄청나게 화려하기도 했다.\n아니, 다들 동아리에 이렇게까지 시간을 쏟으면 생활은 어떻게 하는거지? 이해가 안 간다.",click
 ,Text,,게시판을 보며 나는 대체 어떻게 해야 할지를 고민하는데 옆에 인기척이 났다.,click
-,Sound,,BGM:Bom,>
+,Sound,,BGM:Bom:Fade:4.0,>
 ,Char,,C:Enter:Bom,await
 ,Text,이봄,"아니, 나 진짜로 모르겠다고…\n여기가 훨씬 복잡하단 말이야…",click
 ,Text,,무의식중에 쳐다보았는데 시선이 아래로 내려간다.\n그 정도로 작은 여자애였다.,click
@@ -789,7 +789,7 @@ BOM,Text,이봄,<emote=BrightSmile/>감사합니다! 진짜 감사해요!,click
 ,Text,,"여자들은 원래 보통 말을 끝까지 안 들어주나?\n동아리 이름은 알려줬지만, 어떻게 나중에 보겠다는 건지도 모르겠고.",click
 ,Text,,"그냥 한 말일 것이긴 하겠지만, 홍보지를 어떻게 만드는 게 좋을지 생각을 다시 하기는 해야겠다.",click
 ,Text,,알고리즘 메이커의 동방으로 가기 위해 계단으로 걸음을 옮기며 핸드폰을 들었다.,click
-,Sound,,BGM:Roa,>
+,Sound,,BGM:Ro:Fade:4.0,>
 ,Char,,C:Enter:Roa:Default:Roa_Mob_1,await
 ,Text,로아,{{Player}}! 홍보지는 붙였어?,click
 ,Text,{{Player}},"아니, 아직. 다른 동아리들 홍보지가 너무 화려해서.",click

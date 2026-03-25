@@ -6,7 +6,7 @@ using DG.Tweening;
 namespace LoveAlgo.Schedule
 {
     /// <summary>
-    /// 스탯 게이지 UI
+    /// 스탯 게이지 UI — 평행사변형 그라데이션 스프라이트를 fillAmount로 클리핑
     /// </summary>
     public class StatGauge : MonoBehaviour
     {
@@ -14,9 +14,6 @@ namespace LoveAlgo.Schedule
         [SerializeField] Image fillImage;
         [SerializeField] TMP_Text valueText;
         [SerializeField] TMP_Text labelText;
-
-        [Header("색상")]
-        [SerializeField] Gradient fillGradient;
 
         [Header("애니메이션")]
         [SerializeField] float animDuration = 0.3f;
@@ -34,14 +31,10 @@ namespace LoveAlgo.Schedule
 
             float ratio = currentValue / maxValue;
 
-            // 게이지 채우기
+            // 게이지 채우기 (fillAmount로 평행사변형 스프라이트 클리핑)
             if (fillImage != null)
             {
                 fillImage.DOFillAmount(ratio, animDuration).SetEase(Ease.OutQuad);
-
-                // 그라데이션 색상
-                if (fillGradient != null)
-                    fillImage.color = fillGradient.Evaluate(ratio);
             }
 
             // 텍스트
@@ -62,9 +55,6 @@ namespace LoveAlgo.Schedule
             if (fillImage != null)
             {
                 fillImage.fillAmount = ratio;
-
-                if (fillGradient != null)
-                    fillImage.color = fillGradient.Evaluate(ratio);
             }
 
             if (valueText != null)

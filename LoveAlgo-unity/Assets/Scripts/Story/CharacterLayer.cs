@@ -189,10 +189,10 @@ namespace LoveAlgo.Story
                 case "exit":
                     // 형식: 슬롯:Exit  — 페이드 (기본)
                     {
-                        string exitingCharacter = slot.CurrentCharacter;
+                        bool shouldHideOverlay = ShouldHideOverlayOnExit(slot);
 
                         // 로아: 글리치 SFX 즉시 + 캐릭터&오버레이 동시 페이드아웃
-                        if (IsOverlayCharacter(exitingCharacter))
+                        if (shouldHideOverlay)
                         {
                             PlayGlitchSFX();
                             await UniTask.WhenAll(
@@ -210,9 +210,9 @@ namespace LoveAlgo.Story
                 case "exitdown":
                     // 형식: 슬롯:ExitDown  — 아래로 슬라이드 + 페이드
                     {
-                        string exitingCharacter = slot.CurrentCharacter;
+                        bool shouldHideOverlay = ShouldHideOverlayOnExit(slot);
 
-                        if (IsOverlayCharacter(exitingCharacter))
+                        if (shouldHideOverlay)
                         {
                             PlayGlitchSFX();
                             await UniTask.WhenAll(
@@ -247,13 +247,21 @@ namespace LoveAlgo.Story
         public async UniTask ExitAllAsync(CancellationToken ct = default)
         {
             var tasks = new List<UniTask>();
+            bool shouldHideOverlay = false;
 
             foreach (var slot in slots.Values)
             {
                 if (slot != null && !slot.IsEmpty)
                 {
+                    shouldHideOverlay |= IsOverlayCharacter(slot.CurrentCharacter);
                     tasks.Add(slot.ExitAsync(ct));
                 }
+            }
+
+            if (shouldHideOverlay)
+            {
+                PlayGlitchSFX();
+                tasks.Add(HideOverlayAsync(ct));
             }
 
             await UniTask.WhenAll(tasks);
@@ -267,9 +275,18 @@ namespace LoveAlgo.Story
         /// </summary>
         public void ClearAll()
         {
+            bool shouldHideOverlay = false;
+
             foreach (var slot in slots.Values)
             {
+                shouldHideOverlay |= slot != null && IsOverlayCharacter(slot.CurrentCharacter);
                 slot?.Clear();
+            }
+
+            if (shouldHideOverlay)
+            {
+                var overlay = StageManager.Instance?.VirtualBG;
+                overlay?.HideImmediate();
             }
 
             AudioManager.Instance?.OnAllCharactersExit();
@@ -409,6 +426,22 @@ namespace LoveAlgo.Story
                 await overlay.HideAsync(ct: ct);
                 Debug.Log("[CharacterLayer] 오버레이 자동 숨김 (로아 퇴장)");
             }
+        }
+
+        bool ShouldHideOverlayOnExit(CharacterSlot slot)
+        {
+            var overlay = StageManager.Instance?.VirtualBG;
+            if (overlay == null || !overlay.IsShowing)
+                return false;
+
+            if (slot == null)
+                return true;
+
+            if (IsOverlayCharacter(slot.CurrentCharacter))
+                return true;
+
+            // 슬롯의 캐릭터명이 비어 있어도 현재 오버레이가 남아 있으면 같이 정리한다.
+            return string.IsNullOrEmpty(slot.CurrentCharacter);
         }
 
         /// <summary>

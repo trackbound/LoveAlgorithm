@@ -136,18 +136,7 @@ namespace LoveAlgo.Story
                 var buttonObj = Instantiate(buttonPrefab, buttonContainer);
                 buttonObj.SetActive(true);
 
-                // 텍스트 설정 (ChildSwap 대응: normal/hover 텍스트 모두 갱신)
-                var buttonEX = buttonObj.GetComponent<ButtonEX>();
-                if (buttonEX != null)
-                {
-                    buttonEX.SetText(option.ButtonText);
-                }
-                else
-                {
-                    var text = buttonObj.GetComponentInChildren<TMP_Text>();
-                    if (text != null)
-                        text.text = option.ButtonText;
-                }
+                SetButtonText(buttonObj, option.ButtonText);
 
                 // 클릭 이벤트
                 int index = i;
@@ -161,6 +150,24 @@ namespace LoveAlgo.Story
                 }
 
                 spawnedButtons.Add(buttonObj);
+            }
+        }
+
+        void SetButtonText(GameObject buttonObj, string text)
+        {
+            if (buttonObj == null) return;
+
+            // ButtonEX의 ChildSwap 텍스트를 먼저 갱신
+            var buttonEX = buttonObj.GetComponent<ButtonEX>();
+            buttonEX?.SetText(text);
+
+            // 프리팹 구조와 무관하게 모든 TMP_Text를 동일 값으로 맞춘다.
+            // 상태별 텍스트가 여러 개인 버튼에서도 문구 불일치를 막는다.
+            var texts = buttonObj.GetComponentsInChildren<TMP_Text>(true);
+            for (int i = 0; i < texts.Length; i++)
+            {
+                if (texts[i] != null)
+                    texts[i].text = text;
             }
         }
 
