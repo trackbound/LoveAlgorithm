@@ -28,8 +28,10 @@ namespace LoveAlgo.UI
         [Header("핸들 호버 스프라이트")]
         [SerializeField] Sprite handleHoverSprite;
 
-        [Header("최소 핸들 크기 (0~1, 클릭 영역 보장)")]
-        [SerializeField, Range(0.02f, 0.5f)] float minHandleSize = 0.1f;
+        [Header("핸들 크기")]
+        [Tooltip("체크 시 핸들 크기를 고정 (ScrollRect 자동 계산 무시)")]
+        [SerializeField] bool fixHandleSize;
+        [SerializeField, Range(0.02f, 0.5f)] float handleSize = 0.1f;
 
         Scrollbar scrollbar;
         Sprite handleNormalSprite;
@@ -59,9 +61,11 @@ namespace LoveAlgo.UI
             if (scrollbar == null)
                 return;
 
-            float clampedMinSize = Mathf.Clamp01(minHandleSize);
-            if (scrollbar.size < clampedMinSize)
-                scrollbar.size = clampedMinSize;
+            float clamped = Mathf.Clamp01(handleSize);
+            if (fixHandleSize)
+                scrollbar.size = clamped;
+            else if (scrollbar.size < clamped)
+                scrollbar.size = clamped;
         }
 
 #if UNITY_EDITOR

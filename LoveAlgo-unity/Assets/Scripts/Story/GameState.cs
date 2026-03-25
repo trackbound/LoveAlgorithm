@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using LoveAlgo.Core;
 
 namespace LoveAlgo.Story
 {
@@ -31,7 +32,10 @@ namespace LoveAlgo.Story
         public string PlayerName => playerName;
         public int Money => money;
 
+        /// <summary>스탯/머니 등 상태 변경 시 발행</summary>
+        public event Action OnChanged;
 
+        void NotifyChanged() => OnChanged?.Invoke();
 
         #region 스탯
 
@@ -52,6 +56,7 @@ namespace LoveAlgo.Story
         {
             SetStat(statName, GetStat(statName) + value);
             Debug.Log($"[GameState] Stat {statName} += {value}");
+            NotifyChanged();
         }
 
         #endregion
@@ -99,7 +104,8 @@ namespace LoveAlgo.Story
         public void AddMoney(int value)
         {
             money = Mathf.Max(0, money + value);
-            Debug.Log($"[GameState] Money += {value} (현재: {money})");
+            Debug.Log($"[GameState] Money += {MoneyFormat.SignedCurrency(value)} (현재: {MoneyFormat.Currency(money)})");
+            NotifyChanged();
         }
 
         #endregion
@@ -204,7 +210,11 @@ namespace LoveAlgo.Story
         #region Save/Load 지원
 
         public void SetPlayerName(string name) => playerName = name;
-        public void SetMoney(int value) => money = value;
+        public void SetMoney(int value)
+        {
+            money = value;
+            NotifyChanged();
+        }
 
         public void SetStat(string statName, int value)
         {
@@ -217,6 +227,7 @@ namespace LoveAlgo.Story
                 case "per": case "perseverance": perseverance = value; break;
                 case "fatigue": fatigue = value; break;
             }
+            NotifyChanged();
         }
 
         public Dictionary<string, int> GetAllLovePoints() => new(lovePoints);

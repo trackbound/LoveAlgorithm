@@ -35,6 +35,9 @@ namespace LoveAlgo.Story
         string currentBGM;
         string currentCharacterBGM;
 
+        /// <summary>이전 BGM 비동기 작업 취소용 (경합 방지)</summary>
+        CancellationTokenSource bgmCts;
+
         /// <summary>
         /// 현재 재생 중인 BGM 이름 (세이브용)
         /// </summary>
@@ -125,6 +128,15 @@ namespace LoveAlgo.Story
 
         #region BGM
 
+        /// <summary>이전 BGM 작업을 취소하고 새 CTS 생성</summary>
+        CancellationToken CancelPreviousBGM()
+        {
+            bgmCts?.Cancel();
+            bgmCts?.Dispose();
+            bgmCts = new CancellationTokenSource();
+            return bgmCts.Token;
+        }
+
         async UniTask HandleBGMAsync(string name, string[] parts, CancellationToken ct)
         {
             // BGM:Stop or BGM:Stop:Fade:1.0
@@ -147,7 +159,8 @@ namespace LoveAlgo.Story
             }
 
             // BGM 페이드는 백그라운드로 처리 — 스크립트 진행을 차단하지 않음
-            PlayBGMAsync(name, crossfadeDuration, ct).Forget();
+            // CancelPreviousBGM()은 PlayBGMAsync 내부에서 호출됨
+            PlayBGMAsync(name, crossfadeDuration).Forget();
         }
 
         public async UniTask PlayBGMAsync(string name, float fadeDuration = -1f, CancellationToken ct = default)
@@ -165,7 +178,8 @@ namespace LoveAlgo.Story
             // -1이면 기본 페이드 (3초)
             if (fadeDuration < 0) fadeDuration = defaultFadeDuration;
 
-            // 기존 BGM 페이드 트윈 정리 (경합 방지)
+            // 이전 BGM 비동기 작업 취소 + 트윈 정리
+            var token = CancelPreviousBGM();
             DOTween.Kill(bgmSource);
 
             // 이전 BGM 클립 참조 보관 (해제용)
@@ -180,19 +194,11 @@ namespace LoveAlgo.Story
             {
                 // 크로스페이드: 현재 곡 페이드아웃 후 새 곡 페이드인
                 targetVolume = bgmSource.volume;
-                try
-                {
-                    await bgmSource.DOFade(0f, fadeDuration).ToUniTask(cancellationToken: ct);
-                }
-                catch (OperationCanceledException) { }
+                await bgmSource.DOFade(0f, fadeDuration).ToUniTask(cancellationToken: token);
 
                 bgmSource.clip = clip;
                 bgmSource.Play();
-                try
-                {
-                    await bgmSource.DOFade(targetVolume, fadeDuration).ToUniTask(cancellationToken: ct);
-                }
-                catch (OperationCanceledException) { }
+                await bgmSource.DOFade(targetVolume, fadeDuration).ToUniTask(cancellationToken: token);
 
                 // 트윈이 중단되어도 목표 볼륨 보장
                 if (bgmSource != null) bgmSource.volume = targetVolume;
@@ -203,11 +209,7 @@ namespace LoveAlgo.Story
                 bgmSource.volume = 0f;
                 bgmSource.clip = clip;
                 bgmSource.Play();
-                try
-                {
-                    await bgmSource.DOFade(targetVolume, fadeDuration).ToUniTask(cancellationToken: ct);
-                }
-                catch (OperationCanceledException) { }
+                await bgmSource.DOFade(targetVolume, fadeDuration).ToUniTask(cancellationToken: token);
 
                 // 트윈이 중단되어도 목표 볼륨 보장
                 if (bgmSource != null) bgmSource.volume = targetVolume;
@@ -230,7 +232,8 @@ namespace LoveAlgo.Story
             // -1이면 기본 페이드 (3초)
             if (fadeDuration < 0) fadeDuration = defaultFadeDuration;
 
-            // 기존 페이드 트윈 정리
+            // 이전 BGM 비동기 작업 취소 + 트윈 정리
+            var token = CancelPreviousBGM();
             DOTween.Kill(bgmSource);
 
             currentBGM = null;
@@ -238,7 +241,7 @@ namespace LoveAlgo.Story
 
             if (fadeDuration > 0)
             {
-                await bgmSource.DOFade(0f, fadeDuration).ToUniTask(cancellationToken: ct);
+                await bgmSource.DOFade(0f, fadeDuration).ToUniTask(cancellationToken: token);
             }
 
             bgmSource.Stop();
@@ -253,6 +256,11 @@ namespace LoveAlgo.Story
 
         public void StopBGMImmediate()
         {
+            // 진행 중인 BGM 비동기 작업 모두 취소
+            bgmCts?.Cancel();
+            bgmCts?.Dispose();
+            bgmCts = null;
+
             DOTween.Kill(bgmSource);
             var clipToUnload = bgmSource.clip;
             bgmSource.Stop();
@@ -403,6 +411,10 @@ namespace LoveAlgo.Story
             // -1이면 기본 페이드 (3초)
             if (fadeDuration < 0) fadeDuration = defaultFadeDuration;
 
+            // 이전 BGM 비동기 작업 취소 + 트윈 정리
+            var token = CancelPreviousBGM();
+            DOTween.Kill(bgmSource);
+
             currentBGM = clip.name;
             bgmSource.loop = true;
 
@@ -411,10 +423,10 @@ namespace LoveAlgo.Story
             if (fadeDuration > 0 && bgmSource.isPlaying)
             {
                 targetVolume = bgmSource.volume;
-                await bgmSource.DOFade(0f, fadeDuration).ToUniTask(cancellationToken: ct);
+                await bgmSource.DOFade(0f, fadeDuration).ToUniTask(cancellationToken: token);
                 bgmSource.clip = clip;
                 bgmSource.Play();
-                await bgmSource.DOFade(targetVolume, fadeDuration).ToUniTask(cancellationToken: ct);
+                await bgmSource.DOFade(targetVolume, fadeDuration).ToUniTask(cancellationToken: token);
             }
             else if (fadeDuration > 0)
             {
@@ -422,7 +434,7 @@ namespace LoveAlgo.Story
                 bgmSource.volume = 0f;
                 bgmSource.clip = clip;
                 bgmSource.Play();
-                await bgmSource.DOFade(targetVolume, fadeDuration).ToUniTask(cancellationToken: ct);
+                await bgmSource.DOFade(targetVolume, fadeDuration).ToUniTask(cancellationToken: token);
             }
             else
             {

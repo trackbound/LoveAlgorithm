@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using LoveAlgo.Core;
 using UnityEngine;
 
 namespace LoveAlgo.Schedule
@@ -174,8 +175,8 @@ namespace LoveAlgo.Schedule
             void Add(ScheduleType t, string name, string desc, int money, int str, int intel, int soc, int per, int fatigue, bool limited = false)
                 => effectMap[t] = new ScheduleEffect(name, desc, money, str, intel, soc, per, fatigue, limited);
 
-            Add(ScheduleType.PartTime_Store, "편의점", "어쩌구 편의점에서 아르바이트를 합니다.\n10,000원의 수익을 획득합니다.", 20000, 0, 0, 0, 1, 5);
-            Add(ScheduleType.PartTime_Loading, "상하차 알바", "상하차를 하면 돈도 벌고 힘도 세지고\n50,000원을 버는데\n밤은 새야할지도 어쩌구 저쩌구 3줄까지 입니다.", 50000, 0, 0, 0, 2, 15, true);
+            Add(ScheduleType.PartTime_Store, "편의점", $"어쩌구 편의점에서 아르바이트를 합니다.\n{MoneyFormat.Currency(10000)}의 수익을 획득합니다.", 20000, 0, 0, 0, 1, 5);
+            Add(ScheduleType.PartTime_Loading, "상하차 알바", $"상하차를 하면 돈도 벌고 힘도 세지고\n{MoneyFormat.Currency(50000)}을 버는데\n밤은 새야할지도 어쩌구 저쩌구 3줄까지 입니다.", 50000, 0, 0, 0, 2, 15, true);
             Add(ScheduleType.Invest, "코인투자", "영차영차\n다같이 외쳐 영차영차", 0, 0, 0, 0, 0, 0);
             Add(ScheduleType.Exercise_A, "운동 A", "(기획 추가 예정)", 0, 3, 0, 0, 0, 0);
             Add(ScheduleType.Exercise_B, "운동 B", "(기획 추가 예정)", 0, 2, 0, 0, 0, 5);

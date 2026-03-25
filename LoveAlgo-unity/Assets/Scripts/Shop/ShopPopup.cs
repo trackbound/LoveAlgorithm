@@ -4,6 +4,7 @@ using Cysharp.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using LoveAlgo.Core;
 using LoveAlgo.Story;
 using LoveAlgo.UI;
 
@@ -122,17 +123,28 @@ namespace LoveAlgo.Shop
 
         #endregion
 
-        #region 클릭 → 장바구니 추가
+        #region 클릭 → 장바구니 토글
 
-        /// <summary>슬롯 클릭 콜백 — 클릭할 때마다 수량 +1</summary>
+        /// <summary>슬롯 클릭 콜백 — 토글: 장바구니에 없으면 추가, 있으면 제거</summary>
         void OnSlotClicked(ShopSaleSlot slot)
         {
             if (slot.Item == null) return;
 
             var id = slot.Item.Id;
-            cart[id] = cart.TryGetValue(id, out int qty) ? qty + 1 : 1;
 
-            slot.SetSelected(true);
+            if (cart.ContainsKey(id))
+            {
+                // 이미 담겨 있으면 제거
+                cart.Remove(id);
+                slot.SetSelected(false);
+            }
+            else
+            {
+                // 새로 담기 (수량 1)
+                cart[id] = 1;
+                slot.SetSelected(true);
+            }
+
             UISoundManager.Instance?.PlayClick();
             RefreshCart();
         }
@@ -236,11 +248,11 @@ namespace LoveAlgo.Shop
             // 합계 갱신
             int total = GetCartTotal();
             if (totalPriceText != null)
-                totalPriceText.text = $"{total:N0}원";
+                totalPriceText.text = MoneyFormat.Currency(total);
 
-            // 구매 버튼 활성/비활성
+            // 구매 버튼 활성/비활성 — 장바구니에 아이템이 있으면 항상 활성
             if (purchaseButton != null)
-                purchaseButton.interactable = cart.Count > 0 && total <= (GameState.Instance?.Money ?? 0);
+                purchaseButton.interactable = cart.Count > 0;
         }
 
         /// <summary>장바구니 합계</summary>
@@ -281,14 +293,6 @@ namespace LoveAlgo.Shop
         {
             if (cart.Count == 0) return;
 
-            int total = GetCartTotal();
-            var gs = GameState.Instance;
-            if (gs == null || gs.Money < total)
-            {
-                PopupManager.Instance?.Toast("구매 불가", "소지금액을 초과하여 구매할 수 없어요!.");
-                return;
-            }
-
             // 확인 팝업: "구매하시겠습니까?"
             bool confirmed = await PopupManager.Instance.ConfirmAsync(
                 "구매하시겠습니까?",
@@ -297,10 +301,12 @@ namespace LoveAlgo.Shop
 
             if (!confirmed) return;
 
-            // 확인 후 소지금 재검증
-            if (gs.Money < total)
+            // 확인 후 소지금 검증
+            int total = GetCartTotal();
+            var gs = GameState.Instance;
+            if (gs == null || gs.Money < total)
             {
-                PopupManager.Instance?.Toast("구매 불가", "소지금액을 초과하여 구매할 수 없어요!");
+                PopupManager.Instance?.Toast("구매 실패", "소지금이 부족합니다!");
                 return;
             }
 
@@ -318,7 +324,7 @@ namespace LoveAlgo.Shop
             RefreshMoneyDisplay();
 
             UISoundManager.Instance?.PlayClick();
-            await (PopupManager.Instance?.AlertAsync("구매가 완료되었습니다!") ?? UniTask.CompletedTask);
+            PopupManager.Instance?.Toast("구매 완료", "구매가 완료되었습니다!");
         }
 
         #endregion
@@ -329,7 +335,7 @@ namespace LoveAlgo.Shop
             if (moneyText != null)
             {
                 var gs = GameState.Instance;
-                moneyText.text = gs != null ? $"{gs.Money:N0}원" : "0원";
+                moneyText.text = gs != null ? MoneyFormat.Currency(gs.Money) : MoneyFormat.Currency(0);
             }
         }
     }

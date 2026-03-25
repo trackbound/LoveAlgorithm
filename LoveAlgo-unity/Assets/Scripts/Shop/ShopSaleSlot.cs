@@ -3,6 +3,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using LoveAlgo.Core;
 
 namespace LoveAlgo.Shop
 {
@@ -20,7 +21,7 @@ namespace LoveAlgo.Shop
     ///   - 호버 → 배경 스프라이트 교체 + 설명 팝업 요청
     ///   - 장바구니에 담긴 상태면 selectedSprite 표시
     /// </summary>
-    public class ShopSaleSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+    public class ShopSaleSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IScrollHandler
     {
         [Header("UI 요소")]
         [SerializeField] Image bgImage;
@@ -61,7 +62,7 @@ namespace LoveAlgo.Shop
             isHovered = false;
 
             if (nameText != null) nameText.text = item.Name;
-            if (priceText != null) priceText.text = $"{item.Price:N0}원";
+            if (priceText != null) priceText.text = MoneyFormat.Currency(item.Price);
 
             if (iconImage != null)
                 iconImage.sprite = item.GetSaleIcon();
@@ -102,17 +103,28 @@ namespace LoveAlgo.Shop
             onHovered?.Invoke(this, false);
         }
 
-        /// <summary>현재 상태에 맞는 배경 스프라이트 적용 (우선순위: hover > selected > normal)</summary>
+        /// <summary>현재 상태에 맞는 배경 스프라이트 적용 (우선순위: selected > hover > normal)</summary>
         void ApplyBgSprite()
         {
             if (bgImage == null) return;
 
-            if (isHovered && hoverSprite != null)
-                bgImage.sprite = hoverSprite;
-            else if (isInCart && selectedSprite != null)
+            if (isInCart && selectedSprite != null)
                 bgImage.sprite = selectedSprite;
+            else if (isHovered && hoverSprite != null)
+                bgImage.sprite = hoverSprite;
             else if (normalSprite != null)
                 bgImage.sprite = normalSprite;
+        }
+
+        /// <summary>스크롤 이벤트를 부모 ScrollRect로 전달 (호버 중에도 스크롤 가능)</summary>
+        ScrollRect parentScrollRect;
+
+        public void OnScroll(PointerEventData eventData)
+        {
+            if (parentScrollRect == null)
+                parentScrollRect = GetComponentInParent<ScrollRect>();
+            if (parentScrollRect != null)
+                parentScrollRect.OnScroll(eventData);
         }
     }
 }

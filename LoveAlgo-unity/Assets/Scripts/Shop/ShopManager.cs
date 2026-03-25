@@ -66,13 +66,13 @@ namespace LoveAlgo.Shop
             int totalCost = item.Price * quantity;
             if (gs.Money < totalCost)
             {
-                Debug.Log($"[ShopManager] 소지금 부족: {gs.Money} < {totalCost}");
+                Debug.Log($"[ShopManager] 소지금 부족: {MoneyFormat.Currency(gs.Money)} < {MoneyFormat.Currency(totalCost)}");
                 return false;
             }
 
             gs.AddMoney(-totalCost);
             AddItem(itemId, quantity);
-            Debug.Log($"[ShopManager] 구매 완료: {item.Name} x{quantity} (-{totalCost:N0}원)");
+            Debug.Log($"[ShopManager] 구매 완료: {item.Name} x{quantity} ({MoneyFormat.SignedCurrency(-totalCost)})");
             return true;
         }
 

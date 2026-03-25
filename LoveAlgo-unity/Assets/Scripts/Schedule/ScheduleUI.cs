@@ -84,6 +84,10 @@ namespace LoveAlgo.Schedule
 
         void Awake()
         {
+            // GameState 변경 시 실시간 갱신 (디버그 도구 등)
+            if (GameState.Instance != null)
+                GameState.Instance.OnChanged += OnGameStateChanged;
+
             // 스케줄 슬롯 콜백 설정
             foreach (var slot in scheduleSlots)
             {
@@ -124,6 +128,14 @@ namespace LoveAlgo.Schedule
             // 기본 탭: 알바
             tabGroup?.Select(0, notify: false);
             SwitchTab(ScheduleCategory.PartTime);
+        }
+
+        /// <summary>GameState 변경 시 스탯/머니 실시간 갱신</summary>
+        void OnGameStateChanged()
+        {
+            if (!gameObject.activeInHierarchy) return;
+            RefreshInfo();
+            RefreshStats();
         }
 
         /// <summary>
@@ -186,7 +198,7 @@ namespace LoveAlgo.Schedule
                 dayText.text = gm != null ? $"{gm.CurrentDay}일차" : "1일차";
 
             if (moneyText != null)
-                moneyText.text = gs != null ? $"{gs.Money:N0}원" : "0원";
+                moneyText.text = gs != null ? MoneyFormat.Currency(gs.Money) : MoneyFormat.Currency(0);
 
             if (remainingActionsText != null)
                 remainingActionsText.text = gm != null ? $"남은 행동: {gm.RemainingActions}" : "남은 행동: 0";
@@ -244,7 +256,7 @@ namespace LoveAlgo.Schedule
             // 투자 조건: 자산 ≥ 30,000원
             if (type == ScheduleType.Invest && (gs == null || gs.Money < 30000))
             {
-                LoveAlgo.UI.PopupManager.Instance?.Toast("자산 부족", "투자는 자산 30,000원 이상일 때 가능합니다.");
+                LoveAlgo.UI.PopupManager.Instance?.Toast("자산 부족", $"투자는 자산 {MoneyFormat.Currency(30000)} 이상일 때 가능합니다.");
                 return;
             }
 
@@ -279,7 +291,7 @@ namespace LoveAlgo.Schedule
             {
                 var gs = GameState.Instance;
                 int currentMoney = gs?.Money ?? 0;
-                return $"자산 {currentMoney:N0}원 / 결과 ±50~100%";
+                return $"자산 {MoneyFormat.Currency(currentMoney)} / 결과 -50% ~ +100%";
             }
 
             var parts = new List<string>();
@@ -289,8 +301,7 @@ namespace LoveAlgo.Schedule
             if (effect.socialChange != 0)       parts.Add($"사교성 {FormatStat(effect.socialChange)}");
             if (effect.perseveranceChange != 0) parts.Add($"끈기 {FormatStat(effect.perseveranceChange)}");
             if (effect.fatigueChange != 0)      parts.Add($"피로 {FormatStat(effect.fatigueChange)}");
-            if (effect.moneyChange > 0)         parts.Add($"+{effect.moneyChange:N0}원");
-            else if (effect.moneyChange < 0)    parts.Add($"{effect.moneyChange:N0}원");
+            if (effect.moneyChange != 0)        parts.Add(MoneyFormat.SignedCurrency(effect.moneyChange));
 
             return string.Join(" / ", parts);
         }
@@ -453,6 +464,9 @@ namespace LoveAlgo.Schedule
 
         void OnDestroy()
         {
+            if (GameState.Instance != null)
+                GameState.Instance.OnChanged -= OnGameStateChanged;
+
             if (canvasGroup != null)
                 canvasGroup.DOKill();
             if (scheduleContent != null)

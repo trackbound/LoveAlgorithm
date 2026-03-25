@@ -85,7 +85,7 @@ namespace LoveAlgo.Core
                 // 돈
                 gameState.SetMoney(data.money);
 
-                Debug.Log($"[QuickPlay] GameState applied: {data.playerName}, Money={data.money}");
+                Debug.Log($"[QuickPlay] GameState applied: {data.playerName}, Money={MoneyFormat.Currency(data.money)}");
             }
 
             // GameManager 적용

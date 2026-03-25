@@ -111,7 +111,7 @@ namespace LoveAlgo
             int money = gs != null ? gs.Money : 0;
 
             GUILayout.Label($"Phase: {phase}  |  Day: {day}  |  Actions: {actions}");
-            GUILayout.Label($"Money: {money:N0}원");
+            GUILayout.Label($"Money: {MoneyFormat.Currency(money)}");
 
             if (gs != null)
             {

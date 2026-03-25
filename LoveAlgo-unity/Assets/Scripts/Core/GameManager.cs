@@ -1,6 +1,5 @@
 using System.Threading;
 using UnityEngine;
-using UnityEngine.InputSystem;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using LoveAlgo.Story;
@@ -70,22 +69,6 @@ namespace LoveAlgo.Core
         {
             ChangePhase(GamePhase.Title);
         }
-
-/*
-        void Update()
-        {
-            // Shift+S: 프롤로그 스킵 → 스케줄 직행 (기획자 테스트용)
-            var kb = Keyboard.current;
-            if (kb != null && kb.leftShiftKey.isPressed && kb.sKey.wasPressedThisFrame)
-            {
-                if (CurrentPhase == GamePhase.Title || CurrentPhase == GamePhase.Prologue
-                    || CurrentPhase == GamePhase.Username)
-                {
-                    SkipToDayLoop();
-                }
-            }
-        }
-*/
         /// <summary>
         /// PlayerPrefs에서 해상도/전체화면 설정 복원
         /// </summary>
@@ -118,10 +101,10 @@ namespace LoveAlgo.Core
 
             Debug.Log($"[GameManager] Phase: {prevPhase} → {newPhase}");
 
-            // 타이틀에서 나갈 때 BGM 페이드아웃 (기본 3초)
+            // 타이틀에서 나갈 때 BGM 즉시 중단 (이후 CSV가 새 BGM 담당)
             if (prevPhase == GamePhase.Title && newPhase != GamePhase.Title)
             {
-                AudioManager.Instance?.StopBGMAsync().Forget();
+                AudioManager.Instance?.StopBGMImmediate();
             }
 
             switch (newPhase)
@@ -197,49 +180,6 @@ namespace LoveAlgo.Core
         }
 
         /// <summary>
-        /// 이벤트 날 진입 (개인/단체 이벤트)
-        /// CSV 스크립트를 실행하고, 스크립트 내에서 히로인 선택 처리
-        /// </summary>
-        void EnterEventDay(DayInfo dayInfo)
-        {
-            Debug.Log($"[GameManager] 이벤트 날 진입: Day {dayInfo.Day} - {dayInfo.EventTag} ({dayInfo.Type})");
-
-            // 이벤트 스크립트 실행
-            string scriptName = dayInfo.EventTag;
-            if (string.IsNullOrEmpty(scriptName))
-            {
-                Debug.LogWarning($"[GameManager] Day {dayInfo.Day}: 이벤트 스크립트 미지정, 다음 날로 넘김");
-                EndDay();
-                return;
-            }
-
-            UIManager.Instance?.ShowOnly(MainUIType.Dialogue);
-            var dialogueUI = UIManager.Instance?.DialogueUI;
-            dialogueUI?.Clear();
-            dialogueUI?.HideImmediate();
-
-            var runner = ScriptRunner.Instance;
-            if (runner != null)
-            {
-                runner.OnScriptEnd -= OnEventDayEnd;
-                runner.OnScriptEnd += OnEventDayEnd;
-                runner.StartScript(scriptName).Forget();
-            }
-        }
-
-        /// <summary>
-        /// 이벤트 날 스크립트 종료 후 → 하루 종료
-        /// </summary>
-        void OnEventDayEnd()
-        {
-            var runner = ScriptRunner.Instance;
-            if (runner != null)
-                runner.OnScriptEnd -= OnEventDayEnd;
-
-            EndDay();
-        }
-
-        /// <summary>
         /// 스케줄 UI 표시
         /// </summary>
         void ShowScheduleUI()
@@ -247,33 +187,6 @@ namespace LoveAlgo.Core
             UIManager.Instance?.ShowOnly(MainUIType.Schedule);
             var scheduleUI = UIManager.Instance?.ScheduleUI;
             scheduleUI?.ShowAsync(OnScheduleSelected).Forget();
-        }
-
-        /// <summary>
-        /// 데이 이벤트 CSV 실행
-        /// </summary>
-        async UniTaskVoid RunDayEventAsync(DayEvent evt, bool showScheduleAfter)
-        {
-            Debug.Log($"[GameManager] 데이 이벤트 실행: {evt.ScriptName}");
-            DayEventTable.MarkFired(evt.ScriptName);
-
-            // 대화 UI로 스크립트 재생
-            UIManager.Instance?.ShowOnly(MainUIType.Dialogue);
-            var dialogueUI = UIManager.Instance?.DialogueUI;
-            dialogueUI?.Clear();
-            dialogueUI?.HideImmediate();
-
-            var runner = ScriptRunner.Instance;
-            if (runner != null)
-            {
-                await runner.StartScript(evt.ScriptName);
-            }
-
-            // 이벤트 종료 후 처리
-            if (showScheduleAfter)
-            {
-                ShowScheduleUI();
-            }
         }
 
         void EnterEnding()
@@ -357,8 +270,8 @@ namespace LoveAlgo.Core
         /// </summary>
         public void StartNewGame()
         {
-            // 이전 BGM 정리 (페이드아웃)
-            Story.AudioManager.Instance?.StopBGMAsync().Forget();
+            // 이전 BGM 즉시 정리
+            Story.AudioManager.Instance?.StopBGMImmediate();
             ScriptRunner.Instance?.Stop();
 
             // 장면 정리
@@ -498,66 +411,11 @@ namespace LoveAlgo.Core
         }
 
         /// <summary>
-        /// Prologue → DayLoop 전환 (로딩 화면 연출)
-        /// </summary>
-        async UniTaskVoid TransitionToDayLoopAsync()
-        {
-            if (isTransitioning)
-            {
-                Debug.LogWarning("[GameManager] TransitionToDayLoopAsync 중복 호출 무시");
-                return;
-            }
-            isTransitioning = true;
-            try
-            {
-                var ct = this.GetCancellationTokenOnDestroy();
-                var fx = ScreenFX.Instance;
-                var loading = LoadingScreen.Instance;
-
-                // 1) 페이드 아웃
-                if (fx != null)
-                    await fx.FadeOutAsync(0.8f, ct);
-
-                await UniTask.Delay(System.TimeSpan.FromSeconds(0.4f), cancellationToken: ct);
-
-                // 2) 로딩 화면 표시
-                if (loading != null)
-                    await loading.ShowAsync(ct);
-
-                if (fx != null)
-                    await fx.FadeInAsync(0.5f, ct);
-
-                // 3) Phase 전환 + 자동저장
-                CleanupStage();
-                ChangePhase(GamePhase.DayLoop);
-                AutoSave();
-
-                // 4) 로딩 유지
-                await UniTask.Delay(1200, cancellationToken: ct);
-
-                // 5) 로딩 가림 → 제거
-                if (fx != null)
-                    await fx.FadeOutAsync(0.5f, ct);
-
-                loading?.HideImmediate();
-                await UniTask.Yield(ct);
-
-                // 6) 페이드 인
-                if (fx != null)
-                    await fx.FadeInAsync(0.8f, ct);
-            }
-            finally
-            {
-                isTransitioning = false;
-            }
-        }
-
-        /// <summary>
         /// 테스트용: 프롤로그 스킵하고 DayLoop 직행
         /// </summary>
         public void SkipToDayLoop()
         {
-            AudioManager.Instance?.StopBGMAsync().Forget();
+            AudioManager.Instance?.StopBGMImmediate();
             ScriptRunner.Instance?.Stop();
             CleanupStage();
 
@@ -625,10 +483,10 @@ namespace LoveAlgo.Core
                     gs.AddMoney(change);
 
                     string resultText = change >= 0
-                        ? $"+{change:N0}원 (수익!)"
-                        : $"{change:N0}원 (손실...)";
+                        ? $"{MoneyFormat.SignedCurrency(change)} (수익!)"
+                        : $"{MoneyFormat.SignedCurrency(change)} (손실...)";
                     PopupManager.Instance?.Toast("투자 결과", resultText, 3f);
-                    Debug.Log($"[GameManager] 투자: {currentMoney:N0} × {multiplier:P0} = {change:N0}");
+                    Debug.Log($"[GameManager] 투자: {MoneyFormat.Currency(currentMoney)} × {multiplier:P0} = {MoneyFormat.SignedCurrency(change)}");
                 }
                 else
                 {
@@ -670,7 +528,7 @@ namespace LoveAlgo.Core
             if (effect.socialChange != 0) parts.Add($"사교 {FormatChange(effect.socialChange)}");
             if (effect.perseveranceChange != 0) parts.Add($"끈기 {FormatChange(effect.perseveranceChange)}");
             if (effect.fatigueChange != 0) parts.Add($"피로 {FormatChange(effect.fatigueChange)}");
-            if (effect.moneyChange != 0) parts.Add($"금액 {FormatChange(effect.moneyChange)}");
+            if (effect.moneyChange != 0) parts.Add($"금액 {MoneyFormat.SignedCurrency(effect.moneyChange)}");
             return parts.Count > 0 ? string.Join(" / ", parts) : "변화 없음";
         }
 
@@ -855,6 +713,9 @@ namespace LoveAlgo.Core
             isLoading = true;
             try
             {
+                // 로드 시작 전 팝업 강제 정리 (CloseModalAsync 실패 시 안전장치)
+                PopupManager.Instance?.CloseAll();
+
                 // 이전 BGM 정리 (페이드아웃 완료 대기)
                 if (Story.AudioManager.Instance != null)
                 {

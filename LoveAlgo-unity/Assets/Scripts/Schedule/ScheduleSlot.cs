@@ -2,6 +2,7 @@ using System;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using LoveAlgo.Core;
 
 namespace LoveAlgo.Schedule
 {
@@ -58,9 +59,9 @@ namespace LoveAlgo.Schedule
             var parts = new System.Collections.Generic.List<string>();
 
             if (effect.moneyChange > 0)
-                parts.Add($"<color=#FFD700>+{effect.moneyChange / 1000}K</color>");
+                parts.Add($"<color=#FFD700>{MoneyFormat.SignedCurrency(effect.moneyChange)}</color>");
             else if (effect.moneyChange < 0)
-                parts.Add($"<color=#FF6B6B>{effect.moneyChange / 1000}K</color>");
+                parts.Add($"<color=#FF6B6B>{MoneyFormat.SignedCurrency(effect.moneyChange)}</color>");
 
             if (effect.strengthChange > 0)
                 parts.Add($"<color=#4CAF50>체력+{effect.strengthChange}</color>");

@@ -6,7 +6,8 @@ using DG.Tweening;
 namespace LoveAlgo.Schedule
 {
     /// <summary>
-    /// 스탯 게이지 UI — 평행사변형 그라데이션 스프라이트를 fillAmount로 클리핑
+    /// 스탯 게이지 UI — 평행사변형 그라데이션 스프라이트를 anchorMax.x로 리사이즈
+    /// fillAmount 대신 너비 조절하여 대각선 끝 형태를 항상 유지
     /// </summary>
     public class StatGauge : MonoBehaviour
     {
@@ -20,6 +21,21 @@ namespace LoveAlgo.Schedule
 
         float currentValue;
         float maxValue = 100f;
+        bool initialized;
+
+        void EnsureInit()
+        {
+            if (initialized || fillImage == null) return;
+            initialized = true;
+
+            // Filled → Simple 모드로 전환 (스프라이트 형태 유지)
+            fillImage.type = Image.Type.Simple;
+
+            // X축 오프셋 정리 (anchorMax.x만으로 너비 제어)
+            var rt = fillImage.rectTransform;
+            rt.offsetMin = new Vector2(0f, rt.offsetMin.y);
+            rt.offsetMax = new Vector2(0f, rt.offsetMax.y);
+        }
 
         /// <summary>
         /// 값 설정
@@ -28,16 +44,22 @@ namespace LoveAlgo.Schedule
         {
             maxValue = max;
             currentValue = Mathf.Clamp(value, 0f, max);
-
             float ratio = currentValue / maxValue;
 
-            // 게이지 채우기 (fillAmount로 평행사변형 스프라이트 클리핑)
+            EnsureInit();
+
             if (fillImage != null)
             {
-                fillImage.DOFillAmount(ratio, animDuration).SetEase(Ease.OutQuad);
+                var rt = fillImage.rectTransform;
+                DOTween.Kill(rt);
+                DOTween.To(
+                    () => rt.anchorMax.x,
+                    x => rt.anchorMax = new Vector2(x, rt.anchorMax.y),
+                    ratio,
+                    animDuration
+                ).SetTarget(rt).SetEase(Ease.OutQuad);
             }
 
-            // 텍스트
             if (valueText != null)
                 valueText.text = $"{Mathf.RoundToInt(currentValue)}";
         }
@@ -49,12 +71,15 @@ namespace LoveAlgo.Schedule
         {
             maxValue = max;
             currentValue = Mathf.Clamp(value, 0f, max);
-
             float ratio = currentValue / maxValue;
+
+            EnsureInit();
 
             if (fillImage != null)
             {
-                fillImage.fillAmount = ratio;
+                var rt = fillImage.rectTransform;
+                DOTween.Kill(rt);
+                rt.anchorMax = new Vector2(ratio, rt.anchorMax.y);
             }
 
             if (valueText != null)

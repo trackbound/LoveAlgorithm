@@ -1,6 +1,7 @@
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using LoveAlgo.Core;
 
 namespace LoveAlgo.Shop
 {
@@ -30,11 +31,20 @@ namespace LoveAlgo.Shop
 
         RectTransform rectTransform;
         Canvas rootCanvas;
+        CanvasGroup canvasGroup;
 
         void Awake()
         {
             rectTransform = GetComponent<RectTransform>();
             rootCanvas = GetComponentInParent<Canvas>();
+
+            // 설명창이 마우스 이벤트를 가로채지 않도록 (슬롯 호버 깜박임 방지)
+            canvasGroup = GetComponent<CanvasGroup>();
+            if (canvasGroup == null)
+                canvasGroup = gameObject.AddComponent<CanvasGroup>();
+            canvasGroup.blocksRaycasts = false;
+            canvasGroup.interactable = false;
+
             gameObject.SetActive(false);
         }
 
@@ -50,7 +60,7 @@ namespace LoveAlgo.Shop
 
             // 텍스트 설정
             if (nameText != null) nameText.text = item.Name;
-            if (priceText != null) priceText.text = $"{item.Price:N0}원";
+            if (priceText != null) priceText.text = MoneyFormat.Currency(item.Price);
             if (descriptionText != null) descriptionText.text = item.Description;
 
             if (iconImage != null)
@@ -70,11 +80,11 @@ namespace LoveAlgo.Shop
         }
 
         /// <summary>
-        /// 슬롯 옆으로 설명카드를 배치한다.
+        /// 슬롯 위치에 따라 설명카드를 배치한다.
         ///
-        /// 기본 원칙:
-        /// - 좌측 카드면 우측에, 우측 카드면 좌측에 붙인다.
-        /// - 세로축은 슬롯 중심을 기준으로 두되, 화면 중앙 쪽으로만 약하게 보정한다.
+        /// 기본 원칙 (기획서 참조):
+        /// - 상단 슬롯이면 아래에, 하단 슬롯이면 위에 표시한다.
+        /// - X축은 슬롯 중심에 정렬하되, Viewport 밖으로 나가지 않도록 clamp 한다.
         /// - 화면 밖으로 나가지 않도록 Viewport 안에서 clamp 한다.
         /// </summary>
         void PositionRelativeToSlot(RectTransform slotRect, RectTransform viewportRect)
@@ -90,24 +100,21 @@ namespace LoveAlgo.Shop
             float vpRight  = vpCorners[2].x;
             float vpBottom = vpCorners[0].y;
             float vpTop    = vpCorners[2].y;
-            float vpCenterY = (vpBottom + vpTop) * 0.5f;
 
             // 슬롯 크기 및 월드 위치
             Vector3 slotWorld = slotRect.position;
-            float slotW = slotRect.rect.width * slotRect.lossyScale.x;
             float slotH = slotRect.rect.height * slotRect.lossyScale.y;
             float popupW = rectTransform.rect.width * rectTransform.lossyScale.x;
             float popupH = rectTransform.rect.height * rectTransform.lossyScale.y;
 
-            float nx = Mathf.InverseLerp(vpLeft, vpRight, slotWorld.x);
+            // Y축: 슬롯이 Viewport 상반부이면 아래에, 하반부이면 위에 표시
+            float ny = Mathf.InverseLerp(vpBottom, vpTop, slotWorld.y);
+            float baseOffsetY = slotH * 0.5f + popupH * 0.5f + gap;
+            float dirY = ny > 0.5f ? -1f : 1f;
+            float posY = slotWorld.y + dirY * baseOffsetY;
 
-            // X축은 항상 좌우 사이드 배치
-            float baseOffsetX = slotW * 0.5f + popupW * 0.5f + gap;
-            float dirX = nx < 0.5f ? 1f : -1f;
-            float posX = slotWorld.x + dirX * baseOffsetX;
-
-            // Y축은 슬롯 중심 기준, 화면 중앙으로만 약하게 보정
-            float posY = Mathf.Lerp(slotWorld.y, vpCenterY, verticalCenterBias);
+            // X축: 슬롯 중심에 정렬
+            float posX = slotWorld.x;
 
             // ── 화면 밖 보정 (Viewport 범위 내로 clamp)
             float halfW = popupW * 0.5f + edgePadding;

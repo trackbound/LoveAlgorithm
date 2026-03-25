@@ -66,6 +66,7 @@ namespace LoveAlgo.UI
 
         public override void Show()
         {
+            KillSequence();
             gameObject.SetActive(true);
             PlayShowAnimation();
         }

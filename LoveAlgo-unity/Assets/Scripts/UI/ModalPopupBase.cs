@@ -45,9 +45,10 @@ namespace LoveAlgo.UI
         /// </summary>
         public virtual UniTask HideAsync()
         {
-            hideCompletionSource = new UniTaskCompletionSource();
+            var tcs = new UniTaskCompletionSource();
+            hideCompletionSource = tcs;
             Hide();
-            return hideCompletionSource.Task;
+            return tcs.Task;
         }
 
         /// <summary>
@@ -135,14 +136,14 @@ namespace LoveAlgo.UI
             {
                 currentSequence.Kill();
                 currentSequence = null;
+
+                // Kill된 Hide 애니메이션의 대기 중인 HideAsync 해제
+                hideCompletionSource?.TrySetResult();
             }
 
             // 스케일 복원 (Kill 후 중간값 방지)
             if (panelRect != null)
                 panelRect.localScale = Vector3.one;
-
-            // Hide 애니메이션이 Kill 되었으면 대기 중인 HideAsync 해제
-            hideCompletionSource?.TrySetResult();
         }
 
         /// <summary>

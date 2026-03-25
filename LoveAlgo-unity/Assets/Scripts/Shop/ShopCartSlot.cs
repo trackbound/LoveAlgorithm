@@ -2,6 +2,7 @@ using System;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using LoveAlgo.Core;
 
 namespace LoveAlgo.Shop
 {
@@ -65,7 +66,7 @@ namespace LoveAlgo.Shop
         void Refresh()
         {
             if (nameText != null) nameText.text = itemData.Name;
-            if (priceText != null) priceText.text = $"{itemData.Price:N0}원";
+            if (priceText != null) priceText.text = MoneyFormat.Currency(itemData.Price);
             if (quantityText != null) quantityText.text = $"{quantity}";
         }
     }

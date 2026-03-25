@@ -18,7 +18,6 @@ namespace LoveAlgo.UI
         [SerializeField] UsernameUI usernameUI;
         [SerializeField] PlaceUI placeUI;
 
-        // 외부 접근용 프로퍼티
         public DialogueUI DialogueUI => dialogueUI;
         public ChoiceUI ChoiceUI => choiceUI;
         public ScheduleUI ScheduleUI => scheduleUI;
@@ -26,81 +25,21 @@ namespace LoveAlgo.UI
         public UsernameUI UsernameUI => usernameUI;
         public PlaceUI PlaceUI => placeUI;
 
-        #region Dialogue UI
-
-        public void ShowDialogue()
+        void SetMainUIActive(MonoBehaviour ui, bool active)
         {
-            dialogueUI?.gameObject.SetActive(true);
+            if (ui != null)
+                ui.gameObject.SetActive(active);
         }
-
-        public void HideDialogue()
-        {
-            dialogueUI?.gameObject.SetActive(false);
-        }
-
-        public bool IsDialogueVisible => dialogueUI != null && dialogueUI.gameObject.activeSelf;
-
-        #endregion
-
-        #region Schedule UI
-
-        public void ShowSchedule()
-        {
-            scheduleUI?.gameObject.SetActive(true);
-        }
-
-        public void HideSchedule()
-        {
-            scheduleUI?.gameObject.SetActive(false);
-        }
-
-        public bool IsScheduleVisible => scheduleUI != null && scheduleUI.gameObject.activeSelf;
-
-        #endregion
-
-        #region Title UI
-
-        public void ShowTitle()
-        {
-            titleUI?.gameObject.SetActive(true);
-        }
-
-        public void HideTitle()
-        {
-            titleUI?.gameObject.SetActive(false);
-        }
-
-        public bool IsTitleVisible => titleUI != null && titleUI.gameObject.activeSelf;
-
-        #endregion
-
-        #region Username UI
-
-        public void ShowUsername()
-        {
-            usernameUI?.gameObject.SetActive(true);
-        }
-
-        public void HideUsername()
-        {
-            usernameUI?.gameObject.SetActive(false);
-        }
-
-        public bool IsUsernameVisible => usernameUI != null && usernameUI.gameObject.activeSelf;
-
-        #endregion
-
-        #region 유틸
 
         /// <summary>
         /// 모든 메인 UI 숨기기
         /// </summary>
         public void HideAll()
         {
-            HideDialogue();
-            HideSchedule();
-            HideTitle();
-            HideUsername();
+            SetMainUIActive(dialogueUI, false);
+            SetMainUIActive(scheduleUI, false);
+            SetMainUIActive(titleUI, false);
+            SetMainUIActive(usernameUI, false);
             placeUI?.HideImmediate();
         }
 
@@ -110,28 +49,25 @@ namespace LoveAlgo.UI
         public void ShowOnly(MainUIType type)
         {
             HideAll();
+
             switch (type)
             {
                 case MainUIType.Dialogue:
-                    ShowDialogue();
+                case MainUIType.Ending:
+                    // 엔딩은 DialogueUI를 재사용한다.
+                    SetMainUIActive(dialogueUI, true);
                     break;
                 case MainUIType.Schedule:
-                    ShowSchedule();
+                    SetMainUIActive(scheduleUI, true);
                     break;
                 case MainUIType.Title:
-                    ShowTitle();
+                    SetMainUIActive(titleUI, true);
                     break;
                 case MainUIType.Username:
-                    ShowUsername();
-                    break;
-                case MainUIType.Ending:
-                    // 엔딩은 DialogueUI를 재사용 (엔딩 스크립트 재생)
-                    ShowDialogue();
+                    SetMainUIActive(usernameUI, true);
                     break;
             }
         }
-
-        #endregion
     }
 
     public enum MainUIType
