@@ -998,6 +998,9 @@ namespace LoveAlgo.Story
             var fx = Core.ScreenFX.Instance;
             var stage = cachedStage;
 
+            // 0. 페이드 전에 자동저장용 스크린샷 미리 캡처 (화면이 보이는 상태)
+            SaveManager.CapturePendingScreenshot();
+
             // 1. 화면 암전 (FadeOut)
             if (fx != null)
                 await fx.FadeOutAsync(fadeDuration, ct);

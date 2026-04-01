@@ -431,7 +431,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 3440567775301875107, guid: cc0e33c3d22262743a7732bf1095e119, type: 3}
       propertyPath: m_Name
-      value: AlertPopup Variant
+      value: OK
       objectReference: {fileID: 0}
     - target: {fileID: 3440567775301875107, guid: cc0e33c3d22262743a7732bf1095e119, type: 3}
       propertyPath: m_IsActive
@@ -548,7 +548,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 133717682575567952, guid: b2874b40e391bbc489c18642ad00d824, type: 3}
       propertyPath: m_Name
-      value: LogPopup
+      value: Log
       objectReference: {fileID: 0}
     - target: {fileID: 133717682575567952, guid: b2874b40e391bbc489c18642ad00d824, type: 3}
       propertyPath: m_IsActive
@@ -781,7 +781,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6875739214189465933, guid: ed2ee026e06103b4ebece5fef88bf92e, type: 3}
       propertyPath: m_Name
-      value: ScheduleResultPopup Variant
+      value: Schedule Result
       objectReference: {fileID: 0}
     - target: {fileID: 6875739214189465933, guid: ed2ee026e06103b4ebece5fef88bf92e, type: 3}
       propertyPath: m_IsActive
@@ -898,7 +898,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5769565265854015570, guid: 1ceeffc8080965a44ae0502dce53ca33, type: 3}
       propertyPath: m_Name
-      value: ConfirmPopup Variant
+      value: YesNo
       objectReference: {fileID: 0}
     - target: {fileID: 5769565265854015570, guid: 1ceeffc8080965a44ae0502dce53ca33, type: 3}
       propertyPath: m_IsActive

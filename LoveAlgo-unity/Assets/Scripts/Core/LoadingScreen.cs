@@ -19,7 +19,7 @@ namespace LoveAlgo.Core
         [Header("설정")]
         [SerializeField] float fadeInDuration = 0.4f;
         [SerializeField] float fadeOutDuration = 0.3f;
-        [SerializeField] float minDisplayTime = 1.0f;
+        [SerializeField] float minDisplayTime = 3.0f;
 
         /// <summary>현재 표시 중인지</summary>
         public bool IsShowing { get; private set; }

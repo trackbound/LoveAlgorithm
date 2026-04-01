@@ -270,12 +270,13 @@ namespace LoveAlgo.Core
                 var ct = this.GetCancellationTokenOnDestroy();
                 var fx = ScreenFX.Instance;
 
-                // 이미 암전이 아니면 페이드 아웃
+                // 자동저장 (페이드 전에 저장 — 화면이 보이는 상태에서 스크린샷 캡처)
+                AutoSave();
+
+                // 페이드 아웃
                 if (fx != null && !fx.IsFadeBlack)
                     await fx.FadeOutAsync(0.5f, ct);
 
-                // 자동저장 (스크립트 위치 보존)
-                AutoSave();
                 ScriptRunner.Instance?.Stop();
 
                 // 장면 정리 (캐릭터, 배경, 오버레이 등)
@@ -476,12 +477,12 @@ namespace LoveAlgo.Core
         {
             var ct = this.GetCancellationTokenOnDestroy();
 
+            // 자동저장 (페이드 전에 저장 — 화면이 보이는 상태에서 스크린샷 캡처)
+            AutoSave();
+
             // 페이드 아웃
             if (ScreenFX.Instance != null)
                 await ScreenFX.Instance.FadeOutAsync(2f, ct);
-
-            // 자동저장
-            AutoSave();
 
             // 데모 종료 안내 (사용자가 확인 후 진행)
             if (UI.PopupManager.Instance != null)
@@ -781,6 +782,17 @@ namespace LoveAlgo.Core
                     // 장면 상태 복원 (배경, 캐릭터, BGM)
                     await RestoreStageState(data);
 
+                    // 안전장치: 저장 시 암전이었으면 페이드 인 (전환 중 저장된 경우)
+                    if (data.IsFadeBlack)
+                    {
+                        var loadFx = ScreenFX.Instance;
+                        if (loadFx != null)
+                        {
+                            loadFx.SetClear();
+                            Debug.Log("[GameManager] 로드 시 IsFadeBlack 해제");
+                        }
+                    }
+
                     var runner = ScriptRunner.Instance;
                     if (runner != null)
                     {
@@ -815,7 +827,7 @@ namespace LoveAlgo.Core
         /// </summary>
         public void AutoSave()
         {
-            Save(SaveManager.AutoSaveSlot, usePendingThumbnail: false);
+            Save(SaveManager.AutoSaveSlot, usePendingThumbnail: true);
             Debug.Log("[GameManager] 자동저장 완료");
         }
 
