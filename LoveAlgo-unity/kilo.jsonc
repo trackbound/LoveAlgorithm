@@ -1,0 +1,7 @@
+{
+  "instructions": [
+    ".kilo/rules/project-context.md",
+    ".kilo/rules/code-conventions.md",
+    ".kilo/rules/unity-cli.md"
+  ]
+}
