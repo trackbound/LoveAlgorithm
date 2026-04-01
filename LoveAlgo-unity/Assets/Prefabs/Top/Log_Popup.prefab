@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 3969518943776814835}
   - component: {fileID: 5149017846702382954}
   m_Layer: 5
-  m_Name: LogPopup
+  m_Name: Log_Popup
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

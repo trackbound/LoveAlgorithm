@@ -161,3 +161,53 @@ public class MyGame : MiniGameBase
 | **DOTween Pro** | 트위닝 애니메이션 |
 | **TextMesh Pro** | UI 텍스트 |
 | **Newtonsoft JSON** | 세이브/로드 직렬화 |
+| **unity-cli** | AI 에이전트 ↔ Unity Editor 연동 |
+
+---
+
+## 🔧 unity-cli (AI Agent ↔ Unity 연동)
+
+프로젝트에 `unity-cli-connector` 패키지가 설치되어 있으며, 터미널에서 `unity-cli` 명령으로 Unity Editor를 직접 제어할 수 있습니다.
+
+### 주요 명령어
+```bash
+# Unity 상태 확인
+unity-cli status
+
+# 컴파일 에러 확인
+unity-cli console --type error
+
+# 임의 C# 코드 실행 (가장 강력한 도구)
+unity-cli exec "return Application.dataPath;"
+unity-cli exec "return EditorSceneManager.GetActiveScene().name;"
+
+# 플레이모드 제어
+unity-cli editor play --wait
+unity-cli editor stop
+
+# 에셋 리프레시 + 리컴파일
+unity-cli editor refresh --compile
+
+# 스크린샷 캡처
+unity-cli screenshot --view scene
+unity-cli screenshot --view game
+
+# 프로파일러 데이터 조회
+unity-cli profiler hierarchy --depth 3
+
+# 메뉴 아이템 실행
+unity-cli menu "File/Save Project"
+
+# 등록된 도구 목록 확인
+unity-cli list
+```
+
+### AI 에이전트 사용 가이드라인
+
+> ⚠️ **Auto Refresh가 비활성화**되어 있습니다. 코드 수정 후 Unity에 자동 반영되지 않습니다.
+
+- **코드 수정 후 반드시**: `unity-cli editor refresh --compile`로 수동 리프레시 + 리컴파일 실행 (여러 파일 수정 시 모든 수정 완료 후 한 번만 실행)
+- **컴파일 확인**: 리프레시 후 `unity-cli console --type error`로 컴파일 에러 점검
+- **런타임 상태 검사**: `unity-cli exec`로 게임 오브젝트 상태, 싱글톤 값, 씬 구조 등 확인
+- **에셋 수정 후**: `unity-cli reserialize <path>`로 YAML 직렬화 정리
+- **stdin 파이프**: 복잡한 코드는 `echo '...' | unity-cli exec`로 셸 이스케이프 회피

@@ -288,7 +288,7 @@ GameObject:
   - component: {fileID: 203796907623836675}
   - component: {fileID: 1436217959247293260}
   m_Layer: 5
-  m_Name: ToastMessage
+  m_Name: ToastMessage_Popup
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

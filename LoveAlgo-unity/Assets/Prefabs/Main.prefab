@@ -314,7 +314,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 7136430851682834103}
   m_HandleRect: {fileID: 6766318018091060527}
   m_Direction: 2
-  m_Value: 1
+  m_Value: 0
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -2412,6 +2412,10 @@ PrefabInstance:
       propertyPath: m_VerticalScrollbar
       value: 
       objectReference: {fileID: 5928788661401836703}
+    - target: {fileID: 7423739191319430678, guid: 4d61d7cf594fd0e45ad32a23c43224c0, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7423739191319430678, guid: 4d61d7cf594fd0e45ad32a23c43224c0, type: 3}
       propertyPath: m_AnchoredPosition.y
       value: 0

@@ -96,7 +96,7 @@ GameObject:
   - component: {fileID: 4010233652460675015}
   - component: {fileID: 6208944182686354050}
   m_Layer: 5
-  m_Name: LogEntry_Narration
+  m_Name: Log_Entry_Narration
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 935272417835014797}
   - component: {fileID: 5600656833965251814}
   m_Layer: 5
-  m_Name: LogEntry_Extra
+  m_Name: Log_Entry_Extra
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
