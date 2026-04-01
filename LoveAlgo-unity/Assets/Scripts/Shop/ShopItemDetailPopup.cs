@@ -26,8 +26,7 @@ namespace LoveAlgo.Shop
         [Tooltip("Viewport 가장자리와 설명카드 사이 최소 여백 (px)")]
         [SerializeField] float edgePadding = 16f;
 
-        [Tooltip("세로 위치를 중앙으로 살짝 보정하는 강도 (0=슬롯 중심 고정, 1=Viewport 중앙)")]
-        [SerializeField, Range(0f, 0.35f)] float verticalCenterBias = 0.08f;
+
 
         RectTransform rectTransform;
         Canvas rootCanvas;
