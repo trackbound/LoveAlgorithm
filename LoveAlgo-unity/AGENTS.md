@@ -46,11 +46,33 @@ Unity 비주얼 노벨. 5히로인 × 30일. CSV 스크립트 엔진.
 | 파일 | 문제 | 줄 수 |
 |------|------|-------|
 | `GameManager.cs` | God Object — Phase + Save + Day + Schedule + Audio 혼재 | ~900 |
-| `ScriptRunner.cs` | 모든 Type 실행을 switch로 직접 처리, OCP 위반 | ~1200 |
 | `SaveManager.cs` | 도메인 복원 + 스크린샷 + 텍스처 가공 혼재 | ~1400 |
-| `PopupManager.cs` | 모달 관리 + Save/Load/Settings UI 로직 혼재 | ~600 |
+
+> ScriptRunner → StoryEngine 리팩토링 완료, PopupManager 리팩토링 완료
 
 분리 방향 → `docs/refactoring-roadmap.md` 참조
+
+## 에셋 레지스트리 (Asset Registry)
+
+에셋 정보는 `asset-registry/` 디렉토리에 자동 생성됨.
+
+| 파일 | 내용 |
+|------|------|
+| `asset-registry.json` | **요약 인덱스** — 먼저 읽고 필요한 상세 파일 참조 |
+| `characters.json` | 캐릭터 스프라이트, 표현, SO, BGM |
+| `audio.json` | BGM 목록, SFX 패턴/수량 |
+| `stage.json` | 배경(장소별), CG, SD |
+| `ui.json` | UI 아트 카테고리, 프리팹 구조 |
+| `data.json` | ScriptableObject, 설정, 아이템 |
+| `scripts.json` | 네임스페이스별 클래스 목록 |
+| `story.json` | 스토리 CSV 파일 |
+
+```bash
+python asset-registry/generate.py   # Assets/ 스캔 → 카테고리별 JSON 재생성
+```
+
+- 명명 규칙 → `asset-registry/naming-conventions.md` 참조
+- `Assets/` 변경 커밋 시 pre-commit hook이 자동 재생성
 
 ## 외부 라이브러리
 

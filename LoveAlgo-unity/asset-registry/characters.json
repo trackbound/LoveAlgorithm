@@ -1,0 +1,93 @@
+{
+  "_generated": "2026-04-03",
+  "_generator": "asset-registry/generate.py",
+  "folder": "Assets/Resources/Characters",
+  "count": 5,
+  "characters": [
+    {
+      "id": "bom",
+      "name": "Bom",
+      "folder": "Assets/Resources/Characters/Bom",
+      "expressions": [
+        "BrightSmile",
+        "Default",
+        "EyeSmile",
+        "Glare",
+        "Happy",
+        "Surprise",
+        "Tearful"
+      ],
+      "expression_count": 7,
+      "data_so": "Assets/Data/Characters/Character_Bom.asset",
+      "bgm": "Assets/Resources/Audio/BGM/Bom.mp3"
+    },
+    {
+      "id": "daeun",
+      "name": "Daeun",
+      "folder": "Assets/Resources/Characters/Daeun",
+      "expressions": [
+        "BrightSmile",
+        "Default",
+        "EyeSmile",
+        "Glare",
+        "Happy",
+        "Surprise",
+        "Tearful"
+      ],
+      "expression_count": 7,
+      "data_so": "Assets/Data/Characters/Character_Daeun.asset",
+      "bgm": "Assets/Resources/Audio/BGM/Daeun.mp3"
+    },
+    {
+      "id": "heewon",
+      "name": "Heewon",
+      "folder": "Assets/Resources/Characters/Heewon",
+      "expressions": [
+        "BrightSmile",
+        "Default",
+        "EyeSmile",
+        "Glare",
+        "Happy",
+        "Surprise",
+        "Tearful"
+      ],
+      "expression_count": 7,
+      "data_so": "Assets/Data/Characters/Character_Heewon.asset",
+      "bgm": "Assets/Resources/Audio/BGM/Heewon.mp3"
+    },
+    {
+      "id": "roa",
+      "name": "Roa",
+      "folder": "Assets/Resources/Characters/Roa",
+      "expressions": [
+        "BrightSmile",
+        "Default",
+        "EyeSmile",
+        "Glare",
+        "Happy",
+        "Surprise",
+        "Tearful"
+      ],
+      "expression_count": 7,
+      "data_so": "Assets/Data/Characters/Character_Roa.asset",
+      "bgm": "Assets/Resources/Audio/BGM/Roa.mp3"
+    },
+    {
+      "id": "yeun",
+      "name": "Yeun",
+      "folder": "Assets/Resources/Characters/Yeun",
+      "expressions": [
+        "BrightSmile",
+        "Default",
+        "EyeSmile",
+        "Glare",
+        "Happy",
+        "Surprise",
+        "Tearful"
+      ],
+      "expression_count": 7,
+      "data_so": "Assets/Data/Characters/Character_Yeun.asset",
+      "bgm": "Assets/Resources/Audio/BGM/Yeun.mp3"
+    }
+  ]
+}

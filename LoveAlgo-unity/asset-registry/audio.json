@@ -1,0 +1,36 @@
+{
+  "_generated": "2026-04-03",
+  "_generator": "asset-registry/generate.py",
+  "bgm": {
+    "folder": "Assets/Resources/Audio/BGM",
+    "count": 9,
+    "files": [
+      "Bom.mp3",
+      "Daeun.mp3",
+      "Daily1.mp3",
+      "Daily2.mp3",
+      "Heewon.mp3",
+      "Night.mp3",
+      "Roa.mp3",
+      "Title.mp3",
+      "Yeun.mp3"
+    ]
+  },
+  "sfx": {
+    "folder": "Assets/Resources/Audio/SFX",
+    "count": 55,
+    "pattern": "{NNN}_{Name}.{wav|mp3|ogg}",
+    "format_counts": {
+      ".wav": 13,
+      ".mp3": 40,
+      ".ogg": 2
+    },
+    "examples": [
+      "001_Pop.wav",
+      "003_Bounce.mp3",
+      "004_Surprise.mp3",
+      "UI_Hover.ogg",
+      "vn_type.wav"
+    ]
+  }
+}

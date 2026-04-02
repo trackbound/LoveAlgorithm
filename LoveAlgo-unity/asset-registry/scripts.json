@@ -1,0 +1,172 @@
+{
+  "_generated": "2026-04-03",
+  "_generator": "asset-registry/generate.py",
+  "folder": "Assets/Scripts",
+  "namespaces": {
+    "Core": {
+      "count": 21,
+      "files": [
+        "AffinityCalculator",
+        "DayEventTable",
+        "DayLoopController",
+        "GameBalanceSO",
+        "GameConstants",
+        "GameFlowController",
+        "GameManager",
+        "GamePhase",
+        "GameTimeline",
+        "HeroinePointTracker",
+        "LoadingScreen",
+        "MoneyFormat",
+        "NameValidator",
+        "QuickPlayLoader",
+        "SceneBootstrapper",
+        "ScreenFX",
+        "SessionController",
+        "SingletonMonoBehaviour",
+        "StageManager",
+        "StageRig",
+        "StoryInputHandler"
+      ]
+    },
+    "Data": {
+      "count": 0,
+      "files": []
+    },
+    "Editor": {
+      "count": 0,
+      "files": []
+    },
+    "MiniGame": {
+      "count": 4,
+      "files": [
+        "CherryBlossomGame",
+        "JoggingGame",
+        "MiniGameBase",
+        "MiniGameLauncher"
+      ]
+    },
+    "Phone": {
+      "count": 7,
+      "files": [
+        "ChatBubble",
+        "MessengerData",
+        "MessengerManager",
+        "PhoneChatRoom",
+        "PhoneChatSlot",
+        "PhoneFriendSlot",
+        "PhonePanel"
+      ]
+    },
+    "Schedule": {
+      "count": 6,
+      "files": [
+        "ScheduleDataSO",
+        "ScheduleHelpPanel",
+        "ScheduleSlot",
+        "ScheduleType",
+        "ScheduleUI",
+        "StatGauge"
+      ]
+    },
+    "Shop": {
+      "count": 10,
+      "files": [
+        "GiftPopup",
+        "ItemCatalogSO",
+        "ItemData",
+        "ItemDatabase",
+        "ItemEffectSystem",
+        "ShopCartSlot",
+        "ShopItemDetailPopup",
+        "ShopManager",
+        "ShopPopup",
+        "ShopSaleSlot"
+      ]
+    },
+    "Story": {
+      "count": 46,
+      "files": [
+        "AudioManager",
+        "AudioSettings",
+        "BGLineExecutor",
+        "BackgroundLayer",
+        "CGLayer",
+        "CGLineExecutor",
+        "CharLineExecutor",
+        "CharacterData",
+        "CharacterDatabase",
+        "CharacterLayer",
+        "CharacterSlot",
+        "ChoiceLineExecutor",
+        "ChoiceUI",
+        "CsvUtility",
+        "DayEndMacroExecutor",
+        "DayStartMacroExecutor",
+        "DialogueUI",
+        "ExecutionDependencies",
+        "FXLineExecutor",
+        "GameState",
+        "ILineExecutor",
+        "IfFlowCommand",
+        "JumpFlowCommand",
+        "LineHandlerRegistry",
+        "LoadingSceneFlowCommand",
+        "MiniGameFlowCommand",
+        "MonologueDim",
+        "OverlayLineExecutor",
+        "PlaceLineExecutor",
+        "SDCutsceneLayer",
+        "SDLineExecutor",
+        "SaveDataModels",
+        "SaveDataSerializer",
+        "SaveManager",
+        "SaveSlotManager",
+        "SaveThumbnailManager",
+        "SceneEndMacroExecutor",
+        "SceneStartMacroExecutor",
+        "ScriptEngine",
+        "ScriptLine",
+        "ScriptParser",
+        "ScriptRunner",
+        "SetupMacroExecutor",
+        "SoundLineExecutor",
+        "TextLineExecutor",
+        "VirtualBGOverlay"
+      ]
+    },
+    "UI": {
+      "count": 28,
+      "files": [
+        "AlertPopup",
+        "ButtonEX",
+        "ConfirmPopup",
+        "ExtraPopup",
+        "HoverButton",
+        "LogCharacterEntry",
+        "LogEntryBase",
+        "LogEntryUI",
+        "LogExtraEntry",
+        "LogHeaderUI",
+        "LogNarrationEntry",
+        "LogPopup",
+        "LogUserEntry",
+        "ModalPopupBase",
+        "PetalParticleUI",
+        "PlaceUI",
+        "PopupManager",
+        "SaveLoadPopup",
+        "SaveLoadSlot",
+        "ScrollbarEX",
+        "SettingsPopup",
+        "TabGroup",
+        "TitleUI",
+        "ToastPopup",
+        "ToggleButton",
+        "UIManager",
+        "UISoundManager",
+        "UsernameUI"
+      ]
+    }
+  }
+}

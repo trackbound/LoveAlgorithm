@@ -1,0 +1,49 @@
+{
+  "_generated": "2026-04-03",
+  "_generator": "asset-registry/generate.py",
+  "items": {
+    "art_folder": "Assets/Art/Item",
+    "icon_folder": "Assets/Art/Item/Icon",
+    "art_count": 19,
+    "icon_count": 19,
+    "data_so": "Assets/Resources/Data/ItemCatalog.asset"
+  },
+  "character_data": {
+    "folder": "Assets/Data/Characters",
+    "count": 5,
+    "files": [
+      "Character_Bom.asset",
+      "Character_Daeun.asset",
+      "Character_Heewon.asset",
+      "Character_Roa.asset",
+      "Character_Yeun.asset"
+    ]
+  },
+  "settings": {
+    "folder": "Assets/Data",
+    "files": [
+      "AudioSettings.asset",
+      "CharacterDatabase.asset"
+    ]
+  },
+  "json_files": {
+    "folder": "Assets/Data",
+    "files": [
+      "characters_emotes.json",
+      "characters_emotes.schema.json"
+    ]
+  },
+  "runtime_data": {
+    "folder": "Assets/Resources/Data",
+    "files": [
+      "BannedWords.txt",
+      "GameBalance.asset",
+      "ItemCatalog.asset",
+      "ScheduleData.asset"
+    ]
+  },
+  "reference_docs": {
+    "game_data": "docs/reference/game-data.md",
+    "csv_commands": "docs/reference/csv-script-commands.md"
+  }
+}

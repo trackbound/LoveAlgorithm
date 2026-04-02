@@ -1,0 +1,11 @@
+{
+  "_generated": "2026-04-03",
+  "_generator": "asset-registry/generate.py",
+  "folder": "Assets/Resources/Story",
+  "count": 1,
+  "files": [
+    "Prologue.csv"
+  ],
+  "pattern": "Day{N}_{Session}.csv, Event{N}.csv, Ending_{Character}.csv",
+  "dsl_reference": "docs/reference/csv-script-commands.md"
+}

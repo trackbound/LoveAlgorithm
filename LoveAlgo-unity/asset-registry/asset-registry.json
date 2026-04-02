@@ -1,0 +1,90 @@
+{
+  "_generated": "2026-04-03",
+  "_generator": "asset-registry/generate.py",
+  "_description": "AI 에이전트용 에셋 요약 인덱스. 상세는 각 카테고리 JSON 참조. 수동 편집 금지.",
+  "naming_conventions": {
+    "characters": "{Name}/{Expression}.png",
+    "backgrounds": "BG_{Location}_{Detail}_{Time}.png",
+    "cg": "CG_{Character}_{NN}.png",
+    "sd": "SD_{Character}_{NN}.png",
+    "bgm": "{Character|Ambient}.mp3",
+    "sfx": "{NNN}_{Name}.{wav|mp3|ogg}",
+    "items": "{english_lowercase}.png",
+    "csv_story": "Day{N}_{Session}.csv, Event{N}.csv, Ending_{Character}.csv"
+  },
+  "summary": {
+    "characters": {
+      "count": 5,
+      "names": [
+        "Bom",
+        "Daeun",
+        "Heewon",
+        "Roa",
+        "Yeun"
+      ],
+      "details": "characters.json"
+    },
+    "audio": {
+      "bgm_count": 9,
+      "sfx_count": 55,
+      "details": "audio.json"
+    },
+    "stage": {
+      "bg_count": 24,
+      "cg_count": 2,
+      "sd_count": 3,
+      "details": "stage.json"
+    },
+    "story": {
+      "csv_count": 1,
+      "dsl_reference": "docs/reference/csv-script-commands.md",
+      "details": "story.json"
+    },
+    "items": {
+      "count": 19,
+      "details": "data.json"
+    },
+    "ui": {
+      "art_categories": [
+        "Done",
+        "Log",
+        "Phone",
+        "Sample",
+        "Schedule",
+        "Shop"
+      ],
+      "prefab_categories": [
+        "Dialogue",
+        "Log",
+        "Menu",
+        "Phone",
+        "Scene",
+        "Schedule",
+        "Shop",
+        "Stage",
+        "UI",
+        "_root"
+      ],
+      "details": "ui.json"
+    },
+    "data": {
+      "character_so_count": 5,
+      "details": "data.json"
+    },
+    "scripts": {
+      "namespaces": {
+        "Core": 21,
+        "Data": 0,
+        "Editor": 0,
+        "MiniGame": 4,
+        "Phone": 7,
+        "Schedule": 6,
+        "Shop": 10,
+        "Story": 46,
+        "UI": 28
+      },
+      "total": 122,
+      "details": "scripts.json"
+    }
+  }
+}
