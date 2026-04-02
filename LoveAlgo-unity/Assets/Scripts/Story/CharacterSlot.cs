@@ -50,11 +50,11 @@ namespace LoveAlgo.Story
         [SerializeField] RectTransform imageContainer;  // 이미지들의 부모 (스케일/오프셋 적용용)
 
         [Header("설정")]
-        [SerializeField] float fadeDuration = 0.35f;
-        [SerializeField] float exitDuration = 0.25f;
-        [SerializeField] float emoteFadeDuration = 0.15f;
-        [SerializeField] float enterOffset = 60f;        // 등장 시 슬라이드 거리
-        [SerializeField] float exitSlideDistance = 30f;  // 퇴장 시 슬라이드 거리
+        [SerializeField] float fadeDuration = 0.4f;
+        [SerializeField] float exitDuration = 0.3f;
+        [SerializeField] float emoteFadeDuration = 0.2f;
+        [SerializeField] float enterOffset = 40f;        // 등장 시 슬라이드 거리
+        [SerializeField] float exitSlideDistance = 40f;  // 퇴장 시 슬라이드 거리
 
         [Header("캐릭터 DB")]
         [SerializeField] CharacterDatabase characterDatabase;
@@ -138,9 +138,9 @@ namespace LoveAlgo.Story
 
             var sequence = DOTween.Sequence();
             if (rectTransform != null)
-                _ = sequence.Join(rectTransform.DOAnchorPos(originalPosition, fadeDuration).SetEase(Ease.OutQuart));
+                _ = sequence.Join(rectTransform.DOAnchorPos(originalPosition, fadeDuration).SetEase(Ease.OutBack, 1.05f));
             if (slotCanvasGroup != null)
-                _ = sequence.Join(slotCanvasGroup.DOFade(1f, fadeDuration).SetEase(Ease.OutCubic));
+                _ = sequence.Join(slotCanvasGroup.DOFade(1f, fadeDuration * 0.7f).SetEase(Ease.OutCubic));
 
             await sequence.ToUniTask(cancellationToken: ct);
 
@@ -229,7 +229,7 @@ namespace LoveAlgo.Story
             string exitingCharacter = currentCharacter;
 
             if (slotCanvasGroup != null)
-                await slotCanvasGroup.DOFade(0f, exitDuration).SetEase(Ease.InQuad).ToUniTask(cancellationToken: ct);
+                await slotCanvasGroup.DOFade(0f, exitDuration).SetEase(Ease.InCubic).ToUniTask(cancellationToken: ct);
             else
                 SetSlotAlpha(0f);
 
@@ -474,8 +474,8 @@ namespace LoveAlgo.Story
             if (target == null) return;
 
             var saved = target.anchoredPosition;
-            await target.DOShakeAnchorPos(duration, strength, vibrato: 20, randomness: 90f)
-                .SetEase(Ease.OutQuad)
+            await target.DOShakeAnchorPos(duration, strength, vibrato: 14, randomness: 60f)
+                .SetEase(Ease.OutCubic)
                 .ToUniTask(cancellationToken: ct);
             target.anchoredPosition = saved;
         }
@@ -491,7 +491,7 @@ namespace LoveAlgo.Story
             var saved = target.anchoredPosition;
             var seq = DOTween.Sequence();
             _ = seq.Append(target.DOAnchorPosY(saved.y + height, duration * 0.4f).SetEase(Ease.OutQuad));
-            _ = seq.Append(target.DOAnchorPosY(saved.y, duration * 0.6f).SetEase(Ease.InQuad));
+            _ = seq.Append(target.DOAnchorPosY(saved.y, duration * 0.6f).SetEase(Ease.OutBounce));
             await seq.ToUniTask(cancellationToken: ct);
             target.anchoredPosition = saved;
         }

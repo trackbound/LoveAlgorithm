@@ -34,7 +34,7 @@ namespace LoveAlgo.Core
         [SerializeField] RectTransform dialogueUITransform;
 
         [Header("설정")]
-        [SerializeField] float defaultFadeDuration = 0.5f;
+        [SerializeField] float defaultFadeDuration = 0.6f;
         [SerializeField] float defaultFlashDuration = 0.1f;
 
         [Header("Shake 설정")]
@@ -261,7 +261,7 @@ namespace LoveAlgo.Core
             }
 
             fadeOverlay.raycastTarget = true;
-            await fadeOverlay.DOFade(1f, duration).SetEase(Ease.InQuad).ToUniTask(cancellationToken: ct);
+            await fadeOverlay.DOFade(1f, duration).SetEase(Ease.InOutSine).ToUniTask(cancellationToken: ct);
         }
 
         /// <summary>
@@ -275,7 +275,7 @@ namespace LoveAlgo.Core
                 return;
             }
 
-            await fadeOverlay.DOFade(0f, duration).SetEase(Ease.OutCubic).ToUniTask(cancellationToken: ct);
+            await fadeOverlay.DOFade(0f, duration).SetEase(Ease.OutSine).ToUniTask(cancellationToken: ct);
             fadeOverlay.raycastTarget = false;
         }
 
@@ -332,7 +332,7 @@ namespace LoveAlgo.Core
 
             // 즉시 나타났다가 페이드아웃
             SetOverlayAlpha(overlay, 1f);
-            await overlay.DOFade(0f, duration).ToUniTask(cancellationToken: ct);
+            await overlay.DOFade(0f, duration).SetEase(Ease.OutQuad).ToUniTask(cancellationToken: ct);
 
             // 원래 색상 복원
             if (flashOverlay == null)

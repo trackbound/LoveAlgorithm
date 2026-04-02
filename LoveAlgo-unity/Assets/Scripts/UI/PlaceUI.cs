@@ -31,12 +31,14 @@ namespace LoveAlgo.UI
         [SerializeField] GameObject eventLine;     // 이벤트 줄 오브젝트 (1줄 모드 시 비활성화)
 
         [Header("애니메이션 설정")]
-        [SerializeField] float enterDuration = 0.4f;    // 페이드인 시간
+        [SerializeField] float enterDuration = 0.45f;    // 등장 시간
         [SerializeField] float exitDuration = 0.35f;    // 페이드아웃 시간
         [SerializeField] float defaultHoldDuration = 2f; // 기본 유지 시간
+        [SerializeField] float slideOffset = 20f;        // 슬라이드 거리 (px)
 
         Sequence currentSequence;
         UniTaskCompletionSource<bool> awaitSource;
+        Vector2 bannerOriginalPos;
 
         /// <summary>
         /// 현재 배너가 표시 중인지
@@ -122,8 +124,15 @@ namespace LoveAlgo.UI
 
             currentSequence = DOTween.Sequence();
 
-            // 1. 등장 (페이드인 — From(0f)로 시작값 보장)
-            _ = currentSequence.Append(
+            // 1. 등장 (위에서 슬라이드 + 페이드인)
+            if (bannerRect != null)
+            {
+                bannerRect.anchoredPosition = bannerOriginalPos + new Vector2(0, slideOffset);
+                _ = currentSequence.Join(
+                    bannerRect.DOAnchorPos(bannerOriginalPos, enterDuration)
+                        .SetEase(Ease.OutCubic));
+            }
+            _ = currentSequence.Join(
                 canvasGroup.DOFade(1f, enterDuration)
                     .From(0f)
                     .SetEase(Ease.OutCubic));
@@ -131,14 +140,21 @@ namespace LoveAlgo.UI
             // 2. 유지
             _ = currentSequence.AppendInterval(holdDuration);
 
-            // 3. 퇴장 (페이드아웃)
+            // 3. 퇴장 (위로 슬라이드 + 페이드아웃)
             _ = currentSequence.Append(
                 canvasGroup.DOFade(0f, exitDuration)
                     .SetEase(Ease.InCubic));
+            if (bannerRect != null)
+            {
+                _ = currentSequence.Join(
+                    bannerRect.DOAnchorPos(bannerOriginalPos + new Vector2(0, slideOffset), exitDuration)
+                        .SetEase(Ease.InCubic));
+            }
 
             _ = currentSequence.OnComplete(() =>
             {
                 IsShowing = false;
+                if (bannerRect != null) bannerRect.anchoredPosition = bannerOriginalPos;
                 gameObject.SetActive(false);
                 awaitSource?.TrySetResult(true);
             });

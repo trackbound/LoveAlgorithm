@@ -57,9 +57,10 @@ namespace LoveAlgo.Story
         CancellationTokenSource dotsAnimCts;
 
         [Header("대사창 애니메이션")]
-        [SerializeField] float fadeDuration = 0.25f;       // Show/Hide 페이드 속도
+        [SerializeField] float fadeDuration = 0.3f;        // Show/Hide 페이드 속도
         [SerializeField] float slideDuration = 0.25f;      // 버튼 슬라이드 속도
         [SerializeField] float slideDistance = 200f;       // 슬라이드 거리 (px)
+        [SerializeField] float showSlideOffset = 15f;      // Show/Hide 시 수직 슬라이드 거리 (px)
 
         Tweener showHideTween;     // 현재 fade 애니메이션
         Sequence slideSequence;    // 슬라이드 시퀀스
@@ -605,15 +606,24 @@ namespace LoveAlgo.Story
             KillAnimations();
             needsFadeIn = false;
 
-            // 슬라이드 위치 복원
-            if (rectTransform != null)
-                rectTransform.anchoredPosition = new Vector2(rectTransform.anchoredPosition.x, originalY);
-
             canvasGroup.interactable = true;
             canvasGroup.blocksRaycasts = true;
-            showHideTween = canvasGroup.DOFade(1f, fadeDuration)
-                .SetEase(Ease.OutCubic)
-                .SetUpdate(true);
+
+            // 슬라이드 + 페이드 동시 등장
+            if (rectTransform != null)
+            {
+                rectTransform.anchoredPosition = new Vector2(rectTransform.anchoredPosition.x, originalY - showSlideOffset);
+                slideSequence = DOTween.Sequence();
+                _ = slideSequence.Join(rectTransform.DOAnchorPosY(originalY, fadeDuration).SetEase(Ease.OutCubic));
+                _ = slideSequence.Join(canvasGroup.DOFade(1f, fadeDuration).SetEase(Ease.OutCubic));
+                slideSequence.SetUpdate(true);
+            }
+            else
+            {
+                showHideTween = canvasGroup.DOFade(1f, fadeDuration)
+                    .SetEase(Ease.OutCubic)
+                    .SetUpdate(true);
+            }
         }
 
         /// <summary>
@@ -628,14 +638,32 @@ namespace LoveAlgo.Story
 
             KillAnimations();
 
-            showHideTween = canvasGroup.DOFade(0f, fadeDuration)
-                .SetEase(Ease.InCubic)
-                .SetUpdate(true)
-                .OnComplete(() =>
+            // 슬라이드 + 페이드 동시 퇴장
+            if (rectTransform != null)
+            {
+                slideSequence = DOTween.Sequence();
+                _ = slideSequence.Join(rectTransform.DOAnchorPosY(originalY - showSlideOffset, fadeDuration).SetEase(Ease.InCubic));
+                _ = slideSequence.Join(canvasGroup.DOFade(0f, fadeDuration).SetEase(Ease.InCubic));
+                slideSequence.SetUpdate(true);
+                _ = slideSequence.OnComplete(() =>
                 {
                     canvasGroup.interactable = false;
                     canvasGroup.blocksRaycasts = false;
+                    if (rectTransform != null)
+                        rectTransform.anchoredPosition = new Vector2(rectTransform.anchoredPosition.x, originalY);
                 });
+            }
+            else
+            {
+                showHideTween = canvasGroup.DOFade(0f, fadeDuration)
+                    .SetEase(Ease.InCubic)
+                    .SetUpdate(true)
+                    .OnComplete(() =>
+                    {
+                        canvasGroup.interactable = false;
+                        canvasGroup.blocksRaycasts = false;
+                    });
+            }
         }
 
         /// <summary>
