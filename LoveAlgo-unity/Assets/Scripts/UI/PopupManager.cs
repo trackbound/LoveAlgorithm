@@ -12,20 +12,6 @@ namespace LoveAlgo.UI
 {
     public enum PopupLayer { Modal, Top }
 
-    public enum ConfirmPopupType
-    {
-        Default,
-        Schedule,
-        ScheduleResult,
-    }
-
-    [System.Serializable]
-    public struct ConfirmPopupEntry
-    {
-        public ConfirmPopupType type;
-        public ConfirmPopup popup;
-    }
-
     /// <summary>
     /// 팝업 매니저 - 레이어 기반 팝업 관리
     /// </summary>
@@ -36,7 +22,7 @@ namespace LoveAlgo.UI
             public bool LayerModalActive;
             public bool LayerTopActive;
             public bool DimmerActive;
-            public bool[] ConfirmStates;
+            public Dictionary<string, bool> ConfirmStates;
             public bool AlertActive;
             public bool ToastActive;
             public bool LogActive;
@@ -45,12 +31,14 @@ namespace LoveAlgo.UI
         [Header("레이어")]
         [SerializeField] Transform layerModal;
         [SerializeField] Transform layerTop;
-        [SerializeField] GameObject dimmer;  // 배경 어둡게 (선택)
-        [SerializeField] CanvasGroup dimmerCanvasGroup;  // 딤 페이드용
+        [SerializeField] GameObject dimmer;
+        [SerializeField] CanvasGroup dimmerCanvasGroup;
         [SerializeField] float dimmerFadeDuration = 0.2f;
 
-        [Header("Top 팝업 (인스턴스 바인딩)")]
-        [SerializeField] ConfirmPopupEntry[] confirmPopups;
+        [Header("Top 팝업 — Confirm 프리팹 (이름으로 조회)")]
+        [SerializeField] List<ConfirmPopup> confirmPrefabs;
+
+        [Header("Top 팝업 — 기타")]
         [SerializeField] AlertPopup alertPopup;
         [SerializeField] ToastPopup toastPopup;
         [SerializeField] LogPopup logPopup;
@@ -61,27 +49,16 @@ namespace LoveAlgo.UI
         // Modal 캐시 (Type → Instance)
         readonly Dictionary<Type, GameObject> modalCache = new();
 
-        // Confirm 팝업 빠른 조회용
-        readonly Dictionary<ConfirmPopupType, ConfirmPopup> confirmMap = new();
+        // Confirm 캐시 (프리팹 이름 → 인스턴스)
+        readonly Dictionary<string, ConfirmPopup> confirmCache = new();
 
         // 현재 열린 Modal
         GameObject currentModal;
 
         protected override void OnSingletonAwake()
         {
-            BuildConfirmMap();
+            PreWarmConfirms();
             InitPopups();
-        }
-
-        void BuildConfirmMap()
-        {
-            confirmMap.Clear();
-            if (confirmPopups == null) return;
-            foreach (var entry in confirmPopups)
-            {
-                if (entry.popup != null)
-                    confirmMap[entry.type] = entry.popup;
-            }
         }
 
         protected override void OnDestroy()
@@ -105,7 +82,7 @@ namespace LoveAlgo.UI
         void HandleEscapeKey()
         {
             // 1. Top 팝업 우선 (Confirm variants, Alert, Log)
-            foreach (var kv in confirmMap)
+            foreach (var kv in confirmCache)
             {
                 if (kv.Value != null && kv.Value.IsVisible)
                 {
@@ -156,8 +133,8 @@ namespace LoveAlgo.UI
 
         void InitPopups()
         {
-            // Top 팝업들 초기 비활성화
-            foreach (var kv in confirmMap)
+            // Confirm 캐시 인스턴스 초기 비활성화
+            foreach (var kv in confirmCache)
             {
                 if (kv.Value != null) kv.Value.gameObject.SetActive(false);
             }
@@ -178,6 +155,27 @@ namespace LoveAlgo.UI
 
             // Modal 프리팩 사전 생성 (Lazy 대신 즉시 캐싱 → 첫 클릭 렉 방지)
             PreWarmModals();
+        }
+
+        /// <summary>
+        /// Confirm 프리팹을 미리 생성하여 캐시 (이름 → 인스턴스)
+        /// </summary>
+        void PreWarmConfirms()
+        {
+            confirmCache.Clear();
+            if (confirmPrefabs == null) return;
+            foreach (var prefab in confirmPrefabs)
+            {
+                if (prefab == null) continue;
+                string key = prefab.gameObject.name;
+                if (confirmCache.ContainsKey(key)) continue;
+
+                var instance = Instantiate(prefab, layerTop);
+                instance.gameObject.SetActive(false);
+                confirmCache[key] = instance;
+
+                UISoundManager.Instance?.BindButtonsInTransform(instance.transform);
+            }
         }
 
         /// <summary>
@@ -209,7 +207,7 @@ namespace LoveAlgo.UI
         void OnDimmerClicked()
         {
             // Top 팝업이 열려있으면 디머 클릭 무시 (alert, confirm 등)
-            foreach (var kv in confirmMap)
+            foreach (var kv in confirmCache)
             {
                 if (kv.Value != null && kv.Value.IsVisible) return;
             }
@@ -223,32 +221,51 @@ namespace LoveAlgo.UI
 
         #region Top 팝업 (즉시 사용)
 
-        ConfirmPopup GetConfirm(ConfirmPopupType type)
+        /// <summary>
+        /// 이름으로 Confirm 프리팹 인스턴스 조회. 없으면 null.
+        /// </summary>
+        ConfirmPopup GetConfirm(string name)
         {
-            confirmMap.TryGetValue(type, out var popup);
+            confirmCache.TryGetValue(name, out var popup);
             return popup;
         }
 
         /// <summary>
-        /// 확인 팝업 (예/아니오) - Async 버전
+        /// 첫 번째 Confirm 프리팹 (기본값)
         /// </summary>
-        public UniTask<bool> ConfirmAsync(string message, string confirmText = null, string cancelText = null)
+        ConfirmPopup GetDefaultConfirm()
         {
-            return ConfirmAsync(ConfirmPopupType.Default, message, sub: null, confirmText: confirmText, cancelText: cancelText);
+            if (confirmPrefabs != null && confirmPrefabs.Count > 0)
+                return GetConfirm(confirmPrefabs[0].gameObject.name);
+            return null;
         }
 
         /// <summary>
-        /// 타입 지정 확인 팝업 - Async 버전
+        /// 확인 팝업 (예/아니오) - 기본 프리팹 사용
         /// </summary>
-        public UniTask<bool> ConfirmAsync(ConfirmPopupType type, string message, string sub = null, string confirmText = null, string cancelText = null)
+        public UniTask<bool> ConfirmAsync(string message, string confirmText = null, string cancelText = null)
         {
-            var popup = GetConfirm(type);
+            var popup = GetDefaultConfirm();
             if (popup == null)
             {
-                Debug.LogWarning($"[PopupManager] {type} confirmPopup이 바인딩되지 않음");
+                Debug.LogWarning("[PopupManager] 기본 confirmPopup 프리팹이 없음");
                 return UniTask.FromResult(false);
             }
-            return popup.ShowAsync(message, sub: sub, confirmText: confirmText, cancelText: cancelText);
+            return popup.ShowAsync(message, confirmText, cancelText);
+        }
+
+        /// <summary>
+        /// 이름 지정 확인 팝업 — 프리팹 이름으로 조회
+        /// </summary>
+        public UniTask<bool> ConfirmAsync(string prefabName, ConfirmPopupData data)
+        {
+            var popup = GetConfirm(prefabName);
+            if (popup == null)
+            {
+                Debug.LogWarning($"[PopupManager] Confirm 프리팹 없음: {prefabName}");
+                return UniTask.FromResult(false);
+            }
+            return popup.ShowAsync(data);
         }
 
         /// <summary>
@@ -256,22 +273,14 @@ namespace LoveAlgo.UI
         /// </summary>
         public void Confirm(string message, Action onConfirm, Action onCancel)
         {
-            var popup = GetConfirm(ConfirmPopupType.Default);
+            var popup = GetDefaultConfirm();
             if (popup == null)
             {
-                Debug.LogWarning("[PopupManager] confirmPopup이 바인딩되지 않음");
+                Debug.LogWarning("[PopupManager] 기본 confirmPopup 프리팹이 없음");
                 onCancel?.Invoke();
                 return;
             }
             popup.Show(message, onConfirm, onCancel);
-        }
-
-        /// <summary>
-        /// 스케줄 확인 팝업 (메시지 + 효과 텍스트)
-        /// </summary>
-        public UniTask<bool> ScheduleConfirmAsync(string message, string effect)
-        {
-            return ConfirmAsync(ConfirmPopupType.Schedule, message, sub: effect);
         }
 
         /// <summary>
@@ -395,7 +404,7 @@ namespace LoveAlgo.UI
         /// </summary>
         void DismissActiveConfirmPopups()
         {
-            foreach (var kv in confirmMap)
+            foreach (var kv in confirmCache)
             {
                 if (kv.Value != null && kv.Value.IsVisible)
                     kv.Value.Hide();
@@ -524,13 +533,15 @@ namespace LoveAlgo.UI
         /// </summary>
         public ThumbnailPopupState HideForThumbnailCapture()
         {
-            // Confirm 팝업 상태 저장
-            var confirmStates = new bool[confirmPopups != null ? confirmPopups.Length : 0];
-            for (int i = 0; i < confirmStates.Length; i++)
+            // Confirm 캐시 상태 저장
+            var confirmStates = new Dictionary<string, bool>();
+            foreach (var kv in confirmCache)
             {
-                var p = confirmPopups[i].popup;
-                confirmStates[i] = p != null && p.gameObject.activeSelf;
-                if (p != null) p.gameObject.SetActive(false);
+                if (kv.Value != null)
+                {
+                    confirmStates[kv.Key] = kv.Value.gameObject.activeSelf;
+                    kv.Value.gameObject.SetActive(false);
+                }
             }
 
             var state = new ThumbnailPopupState
@@ -563,12 +574,12 @@ namespace LoveAlgo.UI
             if (layerTop != null) layerTop.gameObject.SetActive(state.LayerTopActive);
             if (dimmer != null) dimmer.SetActive(state.DimmerActive);
 
-            if (state.ConfirmStates != null && confirmPopups != null)
+            if (state.ConfirmStates != null)
             {
-                for (int i = 0; i < state.ConfirmStates.Length && i < confirmPopups.Length; i++)
+                foreach (var kv in state.ConfirmStates)
                 {
-                    if (confirmPopups[i].popup != null)
-                        confirmPopups[i].popup.gameObject.SetActive(state.ConfirmStates[i]);
+                    if (confirmCache.TryGetValue(kv.Key, out var popup) && popup != null)
+                        popup.gameObject.SetActive(kv.Value);
                 }
             }
             if (alertPopup != null) alertPopup.gameObject.SetActive(state.AlertActive);
@@ -594,7 +605,7 @@ namespace LoveAlgo.UI
             get
             {
                 if (currentModal != null) return true;
-                foreach (var kv in confirmMap)
+                foreach (var kv in confirmCache)
                 {
                     if (kv.Value != null && kv.Value.IsVisible) return true;
                 }

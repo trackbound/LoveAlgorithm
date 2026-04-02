@@ -1,0 +1,284 @@
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using Cysharp.Threading.Tasks;
+using UnityEngine;
+using LoveAlgo.Core;
+using LoveAlgo.UI;
+using LoveAlgo.Story.StoryEngine.Handlers;
+using LoveAlgo.Story.StoryEngine.Flow;
+
+namespace LoveAlgo.Story.StoryEngine
+{
+    /// <summary>
+    /// 스크립트 실행 엔진 — 라인 디스패치 + 실행 루프만 담당
+    /// </summary>
+    public class ScriptEngine
+    {
+        readonly Func<List<ScriptLine>> _getLines;
+        readonly Func<Dictionary<string, int>> _getLineIndex;
+        readonly Func<int> _getCurrentIndex;
+        readonly Action<int> _setCurrentIndex;
+        readonly Func<bool> _getAutoMode;
+        readonly Action<bool> _setAutoMode;
+        readonly Action<bool> _onAutoModeChanged;
+        readonly Action<string> _onLogEntry;
+        readonly Func<bool> _getWaitingForClick;
+        readonly Action<bool> _setWaitingForClick;
+        readonly Func<bool> _getClickReceived;
+        readonly Action<bool> _setClickReceived;
+
+        TextLineExecutor _textExecutor;
+        ChoiceLineExecutor _choiceExecutor;
+        bool _needsPreTextBeat;
+
+        public ScriptEngine(
+            Func<List<ScriptLine>> getLines,
+            Func<Dictionary<string, int>> getLineIndex,
+            Func<int> getCurrentIndex,
+            Action<int> setCurrentIndex,
+            Func<bool> getAutoMode,
+            Action<bool> setAutoMode,
+            Action<bool> onAutoModeChanged,
+            Func<bool> getWaitingForClick,
+            Action<bool> setWaitingForClick,
+            Func<bool> getClickReceived,
+            Action<bool> setClickReceived,
+            Action<string> onLogEntry = null)
+        {
+            _getLines = getLines;
+            _getLineIndex = getLineIndex;
+            _getCurrentIndex = getCurrentIndex;
+            _setCurrentIndex = setCurrentIndex;
+            _getAutoMode = getAutoMode;
+            _setAutoMode = setAutoMode;
+            _onAutoModeChanged = onAutoModeChanged;
+            _getWaitingForClick = getWaitingForClick;
+            _setWaitingForClick = setWaitingForClick;
+            _getClickReceived = getClickReceived;
+            _setClickReceived = setClickReceived;
+            _onLogEntry = onLogEntry;
+
+            _textExecutor = new TextLineExecutor();
+            _choiceExecutor = new ChoiceLineExecutor(
+                CollectOptions, getLineIndex, getCurrentIndex, setCurrentIndex,
+                getAutoMode, setAutoMode, onAutoModeChanged);
+        }
+
+        /// <summary>
+        /// 라인 실행 — 레지스트리에서 해당 타입의 실행기를 찾아 위임
+        /// </summary>
+        public async UniTask<bool> ExecuteLineAsync(ScriptLine line, CancellationToken ct)
+        {
+            if (line.Type == LineType.Option)
+                return true;
+
+            if (line.Type == LineType.Text)
+                _textExecutor.MarkPreTextBeat();
+
+            if (line.Type == LineType.Choice)
+                return await _choiceExecutor.ExecuteAsync(line, ct);
+
+            if (LineHandlerRegistry.TryGet(line.Type, out var executor))
+                return await executor.ExecuteAsync(line, ct);
+
+            Debug.LogWarning($"[ScriptEngine] 알 수 없는 LineType: {line.Type}");
+            return true;
+        }
+
+        /// <summary>
+        /// Next 처리
+        /// </summary>
+        public async UniTask HandleNextAsync(ScriptLine line, CancellationToken ct)
+        {
+            if (line.Type == LineType.Choice)
+                return;
+
+            switch (line.NextType)
+            {
+                case NextType.Immediate:
+                    break;
+                case NextType.Click:
+                    await WaitForClickAsync(ct);
+                    break;
+                case NextType.Await:
+                    if (line.Type == LineType.Place)
+                    {
+                        var placeUI = UIManager.Instance?.PlaceUI;
+                        if (placeUI != null && placeUI.IsShowing)
+                            await UniTask.WaitUntil(() => !placeUI.IsShowing, cancellationToken: ct);
+                    }
+                    break;
+                case NextType.Delay:
+                    await UniTask.Delay(TimeSpan.FromSeconds(line.DelaySeconds), cancellationToken: ct);
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// 시각 연출 후 대사 시작 전 호흡 플래그 설정
+        /// </summary>
+        public void MarkPreTextBeatIfNeeded(ScriptLine line)
+        {
+            switch (line.Type)
+            {
+                case LineType.Char:
+                case LineType.BG:
+                case LineType.CG:
+                case LineType.SD:
+                case LineType.Overlay:
+                case LineType.FX:
+                case LineType.Place:
+                    _textExecutor.MarkPreTextBeat();
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// 클릭 대기 (Auto 모드 시 딜레이 후 자동 진행)
+        /// </summary>
+        async UniTask WaitForClickAsync(CancellationToken ct)
+        {
+            var dialogueUI = ExecutionDependencies.DialogueUI;
+            int textLen = dialogueUI?.LastDisplayedTextLength ?? 0;
+            float autoDelayBase = 1.5f;
+            float autoDelayPerCharacter = 0.05f;
+            float autoDelayMin = 1.0f;
+            float autoDelayMax = 5.0f;
+
+            _setWaitingForClick(true);
+            _setClickReceived(false);
+
+            if (_getAutoMode())
+            {
+                float dynamicDelay = autoDelayBase + (textLen * autoDelayPerCharacter);
+                dynamicDelay = Mathf.Clamp(dynamicDelay, autoDelayMin, autoDelayMax);
+
+                var delayTask = UniTask.Delay(TimeSpan.FromSeconds(dynamicDelay), cancellationToken: ct);
+                var clickTask = UniTask.WaitUntil(() => _getClickReceived(), cancellationToken: ct);
+                await UniTask.WhenAny(delayTask, clickTask);
+
+                var popupMgr = PopupManager.Instance;
+                if (popupMgr != null && popupMgr.IsAnyPopupOpen)
+                    await UniTask.WaitUntil(() => !popupMgr.IsAnyPopupOpen, cancellationToken: ct);
+            }
+            else
+            {
+                await UniTask.WaitUntil(() => _getClickReceived(), cancellationToken: ct);
+            }
+
+            _setWaitingForClick(false);
+        }
+
+        /// <summary>
+        /// Option 라인 수집
+        /// </summary>
+        List<ScriptLine> CollectOptions()
+        {
+            var options = new List<ScriptLine>();
+            var lines = _getLines();
+            int i = _getCurrentIndex() + 1;
+
+            while (i < lines.Count && lines[i].Type == LineType.Option)
+            {
+                options.Add(lines[i]);
+                i++;
+            }
+
+            _setCurrentIndex(i - 1);
+            return options;
+        }
+
+        /// <summary>
+        /// 되감기를 위한 이전 Text 인덱스 찾기
+        /// </summary>
+        public int FindPreviousTextIndex(int fromIndex, int textCount)
+        {
+            var lines = _getLines();
+            int foundCount = 0;
+            int resultIndex = fromIndex;
+
+            for (int i = fromIndex; i >= 0; i--)
+            {
+                if (lines[i].Type == LineType.Text)
+                {
+                    foundCount++;
+                    if (foundCount >= textCount)
+                    {
+                        resultIndex = i;
+                        break;
+                    }
+                    resultIndex = i;
+                }
+            }
+
+            return resultIndex;
+        }
+
+        /// <summary>
+        /// 연출 시작점 찾기
+        /// </summary>
+        public int FindDirectionStartIndex(int textIndex)
+        {
+            var lines = _getLines();
+            int startIndex = textIndex;
+
+            for (int i = textIndex - 1; i >= 0; i--)
+            {
+                var type = lines[i].Type;
+                if (type == LineType.BG || type == LineType.Char ||
+                    type == LineType.Sound || type == LineType.FX)
+                {
+                    startIndex = i;
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            return startIndex;
+        }
+
+        /// <summary>
+        /// 로드 시 로그 복원
+        /// </summary>
+        public void RebuildLogFromPreviousLines(int targetIndex)
+        {
+            var dialogueUI = ExecutionDependencies.DialogueUI;
+            var lines = _getLines();
+            if (dialogueUI == null || lines == null) return;
+
+            int startIdx = 0;
+            for (int i = targetIndex - 1; i >= 0; i--)
+            {
+                var line = lines[i];
+                if (line.Type == LineType.FX && line.Value != null)
+                {
+                    string val = line.Value;
+                    if (val.StartsWith("SceneStart", System.StringComparison.OrdinalIgnoreCase) ||
+                        val.StartsWith("SceneEnd", System.StringComparison.OrdinalIgnoreCase))
+                    {
+                        startIdx = i + 1;
+                        break;
+                    }
+                }
+                if (line.Type == LineType.Flow && line.Value != null &&
+                    line.Value.Equals("LoadingScene", System.StringComparison.OrdinalIgnoreCase))
+                {
+                    startIdx = i + 1;
+                    break;
+                }
+            }
+
+            for (int i = startIdx; i < targetIndex; i++)
+            {
+                var line = lines[i];
+                if (line.Type == LineType.Text && !string.IsNullOrEmpty(line.Value))
+                    dialogueUI.AddLogEntry(line.Speaker, line.Value);
+            }
+
+            Debug.Log($"[ScriptEngine] 로그 복원: {startIdx}~{targetIndex - 1} 구간, {dialogueUI.DialogueLog.Count}개 항목");
+        }
+    }
+}

@@ -273,9 +273,9 @@ namespace LoveAlgo.Schedule
             string effectText = BuildEffectText(type, effect);
 
             // 기획서: dim + 확인 팝업
-            var confirmed = await LoveAlgo.UI.PopupManager.Instance.ScheduleConfirmAsync(
-                message,
-                effectText
+            var confirmed = await LoveAlgo.UI.PopupManager.Instance.ConfirmAsync(
+                "Schedule",
+                new LoveAlgo.UI.ConfirmPopupData { mainText = message, sub1 = effectText }
             );
 
             if (confirmed)

@@ -2,18 +2,42 @@ using System;
 using Cysharp.Threading.Tasks;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 namespace LoveAlgo.UI
 {
     /// <summary>
-    /// 확인 팝업 (확인/취소)
+    /// 확인 팝업에 전달할 텍스트 데이터.
+    /// 사용하지 않는 필드는 null로 두면 해당 TMP_Text가 자동 비활성화됨.
+    /// </summary>
+    public struct ConfirmPopupData
+    {
+        public string mainText;
+        public string sub1;
+        public string sub2;
+        public string sub3;
+        public string sub4;
+        public string confirmText;
+        public string cancelText;
+    }
+
+    /// <summary>
+    /// 확인 팝업 (확인/취소).
+    /// 프리팹 이름으로 PopupManager에서 조회되며, 최대 5개 텍스트 슬롯을 지원한다.
     /// </summary>
     public class ConfirmPopup : MonoBehaviour
     {
-        [Header("UI 바인딩")]
-        [SerializeField] TMP_Text messageText;
-        [SerializeField] TMP_Text subText;  // 선택적 (스케줄 효과 등)
+        [Header("텍스트 슬롯")]
+        [FormerlySerializedAs("messageText")]
+        [SerializeField] TMP_Text mainTextField;
+        [FormerlySerializedAs("subText")]
+        [SerializeField] TMP_Text sub1Text;
+        [SerializeField] TMP_Text sub2Text;
+        [SerializeField] TMP_Text sub3Text;
+        [SerializeField] TMP_Text sub4Text;
+
+        [Header("버튼")]
         [SerializeField] Button confirmButton;
         [SerializeField] Button cancelButton;
         [SerializeField] TMP_Text confirmButtonText;
@@ -34,17 +58,28 @@ namespace LoveAlgo.UI
         }
 
         /// <summary>
-        /// 팝업 표시 및 결과 대기 (Async)
+        /// 팝업 표시 및 결과 대기 (데이터 구조체 버전)
         /// </summary>
-        public UniTask<bool> ShowAsync(string message, string sub = null,
-            string confirmText = null, string cancelText = null)
+        public UniTask<bool> ShowAsync(ConfirmPopupData data)
         {
-            // 이전 작업 취소 (결과 콜백 발생하지 않음)
             tcs?.TrySetCanceled();
             tcs = new UniTaskCompletionSource<bool>();
 
-            ShowInternal(message, sub, confirmText, cancelText);
+            ShowInternal(data);
             return tcs.Task;
+        }
+
+        /// <summary>
+        /// 팝업 표시 및 결과 대기 (간편 버전)
+        /// </summary>
+        public UniTask<bool> ShowAsync(string message, string confirmText = null, string cancelText = null)
+        {
+            return ShowAsync(new ConfirmPopupData
+            {
+                mainText = message,
+                confirmText = confirmText,
+                cancelText = cancelText,
+            });
         }
 
         /// <summary>
@@ -52,13 +87,11 @@ namespace LoveAlgo.UI
         /// </summary>
         public void Show(string message, Action onConfirm, Action onCancel = null)
         {
-            // 이전 작업 취소 (이전 콜백이 실행되지 않도록)
             tcs?.TrySetCanceled();
             tcs = new UniTaskCompletionSource<bool>();
 
-            ShowInternal(message, null, null, null);
+            ShowInternal(new ConfirmPopupData { mainText = message });
 
-            // 콜백 처리
             tcs.Task.ContinueWith(result =>
             {
                 if (result) onConfirm?.Invoke();
@@ -66,27 +99,30 @@ namespace LoveAlgo.UI
             });
         }
 
-        void ShowInternal(string message, string sub, string confirmText, string cancelText)
+        void ShowInternal(ConfirmPopupData data)
         {
-            // Dimmer 표시
             PopupManager.Instance?.ShowTopDimmer(true);
-            
-            // UI 설정
-            if (messageText != null) messageText.text = message;
-            
-            // 서브텍스트 (없으면 숨김)
-            if (subText != null)
-            {
-                subText.gameObject.SetActive(!string.IsNullOrEmpty(sub));
-                subText.text = sub ?? "";
-            }
-            
-            if (confirmButtonText != null) 
-                confirmButtonText.text = confirmText ?? defaultConfirmText;
-            if (cancelButtonText != null) 
-                cancelButtonText.text = cancelText ?? defaultCancelText;
+
+            SetSlot(mainTextField, data.mainText);
+            SetSlot(sub1Text, data.sub1);
+            SetSlot(sub2Text, data.sub2);
+            SetSlot(sub3Text, data.sub3);
+            SetSlot(sub4Text, data.sub4);
+
+            if (confirmButtonText != null)
+                confirmButtonText.text = data.confirmText ?? defaultConfirmText;
+            if (cancelButtonText != null)
+                cancelButtonText.text = data.cancelText ?? defaultCancelText;
 
             gameObject.SetActive(true);
+        }
+
+        static void SetSlot(TMP_Text field, string value)
+        {
+            if (field == null) return;
+            bool hasValue = !string.IsNullOrEmpty(value);
+            field.gameObject.SetActive(hasValue);
+            field.text = hasValue ? value : "";
         }
 
         void OnConfirm()
@@ -105,7 +141,6 @@ namespace LoveAlgo.UI
         {
             gameObject.SetActive(false);
             PopupManager.Instance?.ShowTopDimmer(false);
-            // 외부에서 Hide() 호출 시에도 대기 중인 UniTask를 완료 (cancel 아닌 false 반환)
             tcs?.TrySetResult(false);
         }
 

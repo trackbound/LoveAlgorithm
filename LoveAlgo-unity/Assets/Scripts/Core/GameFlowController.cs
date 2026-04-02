@@ -1,0 +1,377 @@
+using System.Threading;
+using UnityEngine;
+using Cysharp.Threading.Tasks;
+using LoveAlgo.Story;
+using LoveAlgo.UI;
+using LoveAlgo.Schedule;
+
+namespace LoveAlgo.Core
+{
+    /// <summary>
+    /// 게임 Phase 전환 전담 컨트롤러
+    /// Title → Username → Prologue → DayLoop → Ending 흐름 관리
+    /// </summary>
+    public class GameFlowController
+    {
+        readonly GameManager _gm;
+
+        /// <summary>비동기 전환 진행 중 재진입 방지 플래그</summary>
+        bool _isTransitioning;
+
+        public GameFlowController(GameManager gm)
+        {
+            _gm = gm;
+        }
+
+        #region Phase Entry
+
+        /// <summary>
+        /// 게임 상태 전환
+        /// </summary>
+        public void ChangePhase(GamePhase newPhase)
+        {
+            if (_gm.CurrentPhase == newPhase && newPhase != GamePhase.DayLoop && newPhase != GamePhase.Title)
+            {
+                Debug.LogWarning($"[GameManager] ChangePhase 중복 호출 무시: {newPhase}");
+                return;
+            }
+
+            var prevPhase = _gm.CurrentPhase;
+            _gm.SetCurrentPhase(newPhase);
+
+            Debug.Log($"[GameManager] Phase: {prevPhase} → {newPhase}");
+
+            // 타이틀에서 나갈 때 BGM 즉시 중단 (이후 CSV가 새 BGM 담당)
+            if (prevPhase == GamePhase.Title && newPhase != GamePhase.Title)
+            {
+                AudioManager.Instance?.StopBGMImmediate();
+            }
+
+            switch (newPhase)
+            {
+                case GamePhase.Title:
+                    EnterTitle();
+                    break;
+                case GamePhase.Username:
+                    EnterUsername();
+                    break;
+                case GamePhase.Prologue:
+                    EnterPrologue();
+                    break;
+                case GamePhase.DayLoop:
+                    EnterDayLoop();
+                    break;
+                case GamePhase.Ending:
+                    EnterEnding();
+                    break;
+            }
+        }
+
+        void EnterTitle()
+        {
+            UIManager.Instance?.ShowOnly(MainUIType.Title);
+            UIManager.Instance?.TitleUI?.PlayTitleBGM();
+        }
+
+        void EnterUsername()
+        {
+            UIManager.Instance?.ShowOnly(MainUIType.Username);
+        }
+
+        void EnterPrologue()
+        {
+            UIManager.Instance?.ShowOnly(MainUIType.Dialogue);
+
+            // 대화창을 숨김 상태로 시작 (첨 대사 시점에 자동 표시)
+            var dialogueUI = UIManager.Instance?.DialogueUI;
+            dialogueUI?.Clear();
+            dialogueUI?.HideImmediate();
+
+            // 프롤로그 스크립트 실행
+            var runner = ScriptRunner.Instance;
+            if (runner != null)
+            {
+                runner.OnScriptEnd -= OnPrologueEnd;
+                runner.OnScriptEnd += OnPrologueEnd;
+            }
+        }
+
+        void EnterDayLoop()
+        {
+            if (_gm.ShouldReturnToDemoEnd())
+            {
+                OnContentEnd();
+                return;
+            }
+
+            var dayInfo = GameTimeline.GetDayInfo(_gm.CurrentDay);
+
+            // ── 고백 이벤트 (Day 30) ──
+            if (dayInfo?.Type == DayType.Confession)
+            {
+                ChangePhase(GamePhase.Ending);
+                return;
+            }
+
+            // 이벤트 날 / 아침 컷씬 / 메신저 메시지는 데모에서 스킵 → 바로 스케줄 UI
+            ShowScheduleUI();
+        }
+
+        /// <summary>
+        /// 스케줄 UI 표시
+        /// </summary>
+        void ShowScheduleUI()
+        {
+            UIManager.Instance?.ShowOnly(MainUIType.Schedule);
+            var scheduleUI = UIManager.Instance?.ScheduleUI;
+            scheduleUI?.ShowAsync(_gm.OnScheduleSelected).Forget();
+        }
+
+        void EnterEnding()
+        {
+            string endingHeroine = _gm.DetermineEndingHeroine();
+            string scriptName;
+
+            if (string.IsNullOrEmpty(endingHeroine))
+            {
+                scriptName = "Ending_Normal";
+            }
+            else
+            {
+                // 해피/새드 분기: 포인트가 임계치 이상이면 해피
+                string suffix = _gm.IsHappyEnding(endingHeroine) ? "Happy" : "Sad";
+                scriptName = $"Ending_{endingHeroine}_{suffix}";
+            }
+
+            Debug.Log($"[GameManager] Ending started: {scriptName}");
+
+            // 대화 UI로 엔딩 스크립트 재생
+            UIManager.Instance?.ShowOnly(MainUIType.Dialogue);
+            var dialogueUI = UIManager.Instance?.DialogueUI;
+            dialogueUI?.Clear();
+            dialogueUI?.HideImmediate();
+
+            var runner = ScriptRunner.Instance;
+            if (runner != null)
+            {
+                runner.OnScriptEnd -= OnEndingEnd;
+                runner.OnScriptEnd += OnEndingEnd;
+                runner.StartScript(scriptName).Forget();
+            }
+        }
+
+        /// <summary>
+        /// 프롤로그 종료 → DayLoop 진입
+        /// </summary>
+        public void OnPrologueEnd()
+        {
+            var runner = ScriptRunner.Instance;
+            if (runner != null)
+            {
+                runner.OnScriptEnd -= OnPrologueEnd;
+            }
+
+            EnterDayLoopSimpleAsync().Forget();
+        }
+
+        /// <summary>
+        /// 엔딩 스크립트 종료 후 타이틀 복귀
+        /// </summary>
+        void OnEndingEnd()
+        {
+            var runner = ScriptRunner.Instance;
+            if (runner != null)
+            {
+                runner.OnScriptEnd -= OnEndingEnd;
+            }
+
+            OnContentEnd();
+        }
+
+        #endregion
+
+        #region Async Transitions
+
+        /// <summary>
+        /// 타이틀 화면으로 이동 (페이드 전환 포함)
+        /// </summary>
+        public void GoToTitle()
+        {
+            GoToTitleAsync().Forget();
+        }
+
+        async UniTaskVoid GoToTitleAsync()
+        {
+            if (_isTransitioning) return;
+            _isTransitioning = true;
+            try
+            {
+                var ct = _gm.GetCancellationTokenOnDestroy();
+                var fx = ScreenFX.Instance;
+
+                // 자동저장 (페이드 전에 저장 — 화면이 보이는 상태에서 스크린샷 캡처)
+                _gm.AutoSave();
+
+                // 페이드 아웃
+                if (fx != null && !fx.IsFadeBlack)
+                    await fx.FadeOutAsync(0.5f, ct);
+
+                ScriptRunner.Instance?.Stop();
+
+                // 장면 정리 (캐릭터, 배경, 오버레이 등)
+                _gm.CleanupStage();
+
+                ChangePhase(GamePhase.Title);
+
+                await UniTask.Yield(ct);
+
+                // 페이드 인 (타이틀 표시)
+                if (fx != null)
+                    await fx.FadeInAsync(0.5f, ct);
+            }
+            finally
+            {
+                _isTransitioning = false;
+            }
+        }
+
+        /// <summary>
+        /// 이름 입력 완료 (UsernameUI에서 호출)
+        /// </summary>
+        public void OnNameConfirmed(string playerName)
+        {
+            _gm.SetPlayerName(playerName);
+
+            // GameState에도 동기화 (DialogueUI 변수 치환용)
+            if (GameState.Instance != null)
+            {
+                GameState.Instance.SetPlayerName(playerName);
+            }
+
+            Debug.Log($"[GameManager] 플레이어 이름: {playerName}");
+            TransitionToPrologueAsync().Forget();
+        }
+
+        /// <summary>
+        /// Username → Prologue 전환 (로딩 화면 + 페이드)
+        /// </summary>
+        async UniTaskVoid TransitionToPrologueAsync()
+        {
+            if (_isTransitioning)
+            {
+                Debug.LogWarning("[GameManager] TransitionToPrologueAsync 중복 호출 무시");
+                return;
+            }
+            _isTransitioning = true;
+            try
+            {
+                var ct = _gm.GetCancellationTokenOnDestroy();
+                var fx = ScreenFX.Instance;
+                var loading = LoadingScreen.Instance;
+
+                // 1) 여유 있게 페이드 아웃
+                if (fx != null)
+                    await fx.FadeOutAsync(0.8f, ct);
+                else
+                    await UniTask.Yield(ct);
+
+                // 2) 암전 상태에서 잠시 머무름 (호흡)
+                await UniTask.Delay(System.TimeSpan.FromSeconds(0.4f), cancellationToken: ct);
+
+                // 3) 로딩 화면 표시 (암전 위에)
+                if (loading != null)
+                    await loading.ShowAsync(ct);
+
+                // 4) 페이드 해제 (로딩 화면이 부드럽게 드러남)
+                if (fx != null)
+                    await fx.FadeInAsync(0.6f, ct);
+
+                // 5) UI 전환 + 프롤로그 UI 준비 (로딩 화면 뒤에서)
+                ChangePhase(GamePhase.Prologue);
+
+                // 6) 로딩 화면 충분히 보여줌
+                await UniTask.Delay(System.TimeSpan.FromSeconds(1.5f), cancellationToken: ct);
+
+                // 7) 부드럽게 페이드 아웃 (로딩 화면 위에 암전)
+                if (fx != null)
+                    await fx.FadeOutAsync(0.6f, ct);
+
+                // 8) 로딩 화면 제거 (암전 상태라 안 보임)
+                loading?.HideImmediate();
+
+                // 9) 인게임 페이드 인
+                if (fx != null)
+                    await fx.FadeInAsync(0.8f, ct);
+
+                // 10) 프롤로그 스크립트 실행 (전환 완료 후 시작)
+                ScriptRunner.Instance?.StartScript(_gm.PrologueScript).Forget();
+            }
+            finally
+            {
+                _isTransitioning = false;
+            }
+        }
+
+        /// <summary>
+        /// 프롤로그 → DayLoop 단순 전환 (데모용: 로딩 화면 없이 페이드만)
+        /// </summary>
+        async UniTaskVoid EnterDayLoopSimpleAsync()
+        {
+            if (_isTransitioning) return;
+            _isTransitioning = true;
+            try
+            {
+                var ct = _gm.GetCancellationTokenOnDestroy();
+                var fx = ScreenFX.Instance;
+
+                if (fx != null)
+                    await fx.FadeOutAsync(0.5f, ct);
+
+                _gm.CleanupStage();
+                ChangePhase(GamePhase.DayLoop);
+                _gm.AutoSave();
+
+                await UniTask.Yield(ct);
+
+                if (fx != null)
+                    await fx.FadeInAsync(0.5f, ct);
+            }
+            finally
+            {
+                _isTransitioning = false;
+            }
+        }
+
+        /// <summary>
+        /// 콘텐츠(데모) 분량 종료 시 호출
+        /// 페이드아웃 → 저장 팝업 → 타이틀 복귀
+        /// </summary>
+        public void OnContentEnd()
+        {
+            ShowEndOfContentAsync().Forget();
+        }
+
+        async UniTaskVoid ShowEndOfContentAsync()
+        {
+            var ct = _gm.GetCancellationTokenOnDestroy();
+
+            // 자동저장 (페이드 전에 저장 — 화면이 보이는 상태에서 스크린샷 캡처)
+            _gm.AutoSave();
+
+            // 페이드 아웃
+            if (ScreenFX.Instance != null)
+                await ScreenFX.Instance.FadeOutAsync(2f, ct);
+
+            // 데모 종료 안내 (사용자가 확인 후 진행)
+            if (UI.PopupManager.Instance != null)
+                await UI.PopupManager.Instance.AlertAsync("데모 버전 플레이가 종료되었습니다.\n자동 저장되었습니다.");
+            else
+                await UniTask.Delay(3000, cancellationToken: ct);
+
+            // 타이틀로 복귀
+            GoToTitle();
+        }
+
+        #endregion
+    }
+}
