@@ -604,14 +604,17 @@ namespace LoveAlgo.Story
             if (canvasGroup == null) { gameObject.SetActive(true); needsFadeIn = false; return; }
 
             KillAnimations();
+
+            // 슬라이드는 Hide→Show 전환 시에만 (매 대사줄에서 반복하지 않음)
+            bool doSlide = needsFadeIn;
             needsFadeIn = false;
 
             canvasGroup.interactable = true;
             canvasGroup.blocksRaycasts = true;
 
-            // 슬라이드 + 페이드 동시 등장
-            if (rectTransform != null)
+            if (doSlide && rectTransform != null)
             {
+                // 숨김 상태에서 처음 등장: 슬라이드 + 페이드
                 rectTransform.anchoredPosition = new Vector2(rectTransform.anchoredPosition.x, originalY - showSlideOffset);
                 slideSequence = DOTween.Sequence();
                 _ = slideSequence.Join(rectTransform.DOAnchorPosY(originalY, fadeDuration).SetEase(Ease.OutCubic));
@@ -620,6 +623,9 @@ namespace LoveAlgo.Story
             }
             else
             {
+                // 이미 보이는 상태: 페이드만 (위치 유지)
+                if (rectTransform != null)
+                    rectTransform.anchoredPosition = new Vector2(rectTransform.anchoredPosition.x, originalY);
                 showHideTween = canvasGroup.DOFade(1f, fadeDuration)
                     .SetEase(Ease.OutCubic)
                     .SetUpdate(true);

@@ -14,8 +14,8 @@ namespace LoveAlgo.UI
         [SerializeField] protected RectTransform panelRect;
         [SerializeField] protected CanvasGroup canvasGroup;
         [SerializeField] protected float showDuration = 0.35f;
-        [SerializeField] protected float hideDuration = 0.22f;
-        [SerializeField] protected float slideOffset = 280f;
+        [SerializeField] protected float hideDuration = 0.28f;
+        [SerializeField] protected float slideOffset = 200f;
 
         protected Vector2 originalPosition;
         Sequence currentSequence;
@@ -68,14 +68,14 @@ namespace LoveAlgo.UI
 
             var seq = DOTween.Sequence();
 
-            // 페이드 인: 초반에 빠르게 불투명
-            seq.Append(canvasGroup.DOFade(1f, showDuration * 0.5f).SetEase(Ease.OutQuad));
+            // 페이드 인: 초반 60%에 빠르게 불투명
+            seq.Append(canvasGroup.DOFade(1f, showDuration * 0.6f).SetEase(Ease.OutCubic));
 
-            // 슬라이드: OutQuart — 빠르게 감속하며 부드럽게 착지 (튕김 없음)
-            seq.Join(panelRect.DOAnchorPos(originalPosition, showDuration).SetEase(Ease.OutQuart));
+            // 슬라이드: OutCubic — 부드럽게 감속하며 착지
+            seq.Join(panelRect.DOAnchorPos(originalPosition, showDuration).SetEase(Ease.OutCubic));
 
             // 스케일: 0.97 → 1.0
-            seq.Join(panelRect.DOScale(1f, showDuration).SetEase(Ease.OutQuart));
+            seq.Join(panelRect.DOScale(1f, showDuration).SetEase(Ease.OutCubic));
 
             // 애니메이션 완료 후 인터랙션 활성화
             seq.OnComplete(() =>
@@ -107,17 +107,17 @@ namespace LoveAlgo.UI
 
             var seq = DOTween.Sequence();
 
-            // 슬라이드 아웃: 가속하며 우측으로 완전히 밀려남
+            // 슬라이드 아웃: 가속하며 우측으로 밀려남
             seq.Append(panelRect.DOAnchorPos(
                 originalPosition + new Vector2(slideOffset, 0),
-                hideDuration).SetEase(Ease.InQuart));
+                hideDuration).SetEase(Ease.InCubic));
 
             // 스케일 다운: 살짝 줄어들며
-            seq.Join(panelRect.DOScale(0.97f, hideDuration).SetEase(Ease.InQuad));
+            seq.Join(panelRect.DOScale(0.97f, hideDuration).SetEase(Ease.InCubic));
 
-            // 페이드 아웃: 마지막 20%에서만 — 슬라이드 끝무렵에 사라짐
-            seq.Insert(hideDuration * 0.8f,
-                canvasGroup.DOFade(0f, hideDuration * 0.2f).SetEase(Ease.InQuad));
+            // 페이드 아웃: 마지막 30%에서만
+            seq.Insert(hideDuration * 0.7f,
+                canvasGroup.DOFade(0f, hideDuration * 0.3f).SetEase(Ease.InQuad));
 
             seq.SetUpdate(true);
             seq.OnComplete(() =>
