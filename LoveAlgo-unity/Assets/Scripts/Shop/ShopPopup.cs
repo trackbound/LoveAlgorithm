@@ -29,6 +29,9 @@ namespace LoveAlgo.Shop
         [SerializeField] Button purchaseButton;
         [SerializeField] Button backButton;
 
+        [Header("카테고리 필터")]
+        [SerializeField] TabGroup categoryTabs;
+
         [Header("호버 설명 팝업")]
         [SerializeField] ShopItemDetailPopup itemDetailPopup;
         [Tooltip("Detail 팝업 위치 계산 기준 (그리드 ScrollRect의 Viewport)")]
@@ -53,6 +56,12 @@ namespace LoveAlgo.Shop
         /// <summary>itemId → 슬롯 역참조 (토글 해제 시 사용)</summary>
         readonly Dictionary<string, ShopSaleSlot> slotMap = new();
 
+        /// <summary>현재 카테고리 필터 (null = 전체)</summary>
+        ItemCategory? activeFilter;
+
+        /// <summary>탭 인덱스 → 카테고리 매핑 (0=전체, 1=소모품, 2=세션버프)</summary>
+        static readonly ItemCategory?[] TabCategories = { null, ItemCategory.Consumable, ItemCategory.SessionBuff };
+
         void Awake()
         {
             if (purchaseButton != null)
@@ -60,6 +69,9 @@ namespace LoveAlgo.Shop
 
             if (backButton != null)
                 backButton.onClick.AddListener(OnBackClick);
+
+            if (categoryTabs != null)
+                categoryTabs.OnTabChanged += OnCategoryTabChanged;
 
             EnsureSaleSlotPool();
         }
@@ -87,6 +99,8 @@ namespace LoveAlgo.Shop
         public void Open()
         {
             cart.Clear();
+            activeFilter = null;
+            categoryTabs?.Select(0, notify: false);
             PopulateSaleList();
             RefreshCart();
             RefreshMoneyDisplay();
@@ -98,16 +112,32 @@ namespace LoveAlgo.Shop
             OnBackRequested?.Invoke();
         }
 
+        /// <summary>카테고리 탭 변경 콜백</summary>
+        void OnCategoryTabChanged(int index)
+        {
+            activeFilter = (index >= 0 && index < TabCategories.Length) ? TabCategories[index] : null;
+            PopulateSaleList();
+        }
+
         #region 판매 목록 (그리드)
 
-        /// <summary>판매 목록 생성 (GridLayoutGroup으로 배치)</summary>
+        /// <summary>판매 목록 생성 (카테고리 필터 적용)</summary>
         void PopulateSaleList()
         {
             slotMap.Clear();
 
             if (saleSlotPrefab == null || saleContainer == null) return;
 
-            var items = ItemDatabase.GetAll();
+            var allItems = ItemDatabase.GetAll();
+
+            // 카테고리 필터 적용
+            var items = new List<ItemData>();
+            foreach (var item in allItems)
+            {
+                if (activeFilter == null || item.Category == activeFilter.Value)
+                    items.Add(item);
+            }
+
             EnsureSaleSlotPool(items.Count);
 
             for (int i = 0; i < activeSaleSlots.Count; i++)
@@ -122,6 +152,10 @@ namespace LoveAlgo.Shop
                 var item = items[i];
                 slot.Setup(item, OnSlotClicked, OnSlotHovered);
                 slotMap[item.Id] = slot;
+
+                // 장바구니에 이미 담긴 아이템이면 선택 상태 복원
+                if (cart.ContainsKey(item.Id))
+                    slot.SetSelected(true);
             }
         }
 
@@ -320,19 +354,11 @@ namespace LoveAlgo.Shop
 
             if (!confirmed) return;
 
-            // 확인 후 소지금 검증
-            int total = GetCartTotal();
-            var gs = GameState.Instance;
-            if (gs == null || gs.Money < total)
+            // 일괄 구매 (원자적 트랜잭션)
+            if (!ShopManager.BuyBatch(cart))
             {
                 PopupManager.Instance?.Toast("구매 실패", "소지금이 부족합니다!");
                 return;
-            }
-
-            // 구매 실행 — ShopManager.Buy()에 소지금 차감 위임
-            foreach (var kv in cart)
-            {
-                ShopManager.Buy(kv.Key, kv.Value);
             }
 
             // 상태 초기화

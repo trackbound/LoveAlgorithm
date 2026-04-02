@@ -17,7 +17,7 @@ MonoBehaviour:
     effect:
       displayName: "\uD3B8\uC758\uC810"
       description: "\uC5B4\uCA4C\uAD6C \uD3B8\uC758\uC810\uC5D0\uC11C \uC544\uB974\uBC14\uC774\uD2B8\uB97C
-        \uD569\uB2C8\uB2E4.\n10,000\uC6D0\uC758 \uC218\uC775\uC744 \uD68D\uB4DD\uD569\uB2C8\uB2E4."
+        \uD569\uB2C8\uB2E4.\n\u20A910,000\uC758 \uC218\uC775\uC744 \uD68D\uB4DD\uD569\uB2C8\uB2E4."
       moneyChange: 20000
       strengthChange: 0
       intelligenceChange: 0
@@ -29,7 +29,7 @@ MonoBehaviour:
     effect:
       displayName: "\uC0C1\uD558\uCC28 \uC54C\uBC14"
       description: "\uC0C1\uD558\uCC28\uB97C \uD558\uBA74 \uB3C8\uB3C4 \uBC8C\uACE0
-        \uD798\uB3C4 \uC138\uC9C0\uACE0\n50,000\uC6D0\uC744 \uBC84\uB294\uB370\n\uBC24\uC740
+        \uD798\uB3C4 \uC138\uC9C0\uACE0\n\u20A950,000\uC744 \uBC84\uB294\uB370\n\uBC24\uC740
         \uC0C8\uC57C\uD560\uC9C0\uB3C4 \uC5B4\uCA4C\uAD6C \uC800\uCA4C\uAD6C 3\uC904\uAE4C\uC9C0
         \uC785\uB2C8\uB2E4."
       moneyChange: 50000
@@ -38,7 +38,7 @@ MonoBehaviour:
       socialChange: 0
       perseveranceChange: 2
       fatigueChange: 15
-      isLimited: 1
+      isLimited: 0
   - type: 2
     effect:
       displayName: "\uCF54\uC778\uD22C\uC790"
@@ -52,8 +52,9 @@ MonoBehaviour:
       isLimited: 0
   - type: 3
     effect:
-      displayName: "\uC6B4\uB3D9 A"
-      description: "(\uAE30\uD68D \uCD94\uAC00 \uC608\uC815)"
+      displayName: "\uD5EC\uC2A4\uC7A5"
+      description: "\uD559\uAD50 \uADFC\uCC98 \uD5EC\uC2A4\uC7A5\uC5D0\uC11C \uC6B4\uB3D9\uD569\uB2C8\uB2E4.\n\uCCB4\uB825\uC774
+        \uD06C\uAC8C \uC624\uB985\uB2C8\uB2E4."
       moneyChange: 0
       strengthChange: 3
       intelligenceChange: 0
@@ -63,8 +64,10 @@ MonoBehaviour:
       isLimited: 0
   - type: 4
     effect:
-      displayName: "\uC6B4\uB3D9 B"
-      description: "(\uAE30\uD68D \uCD94\uAC00 \uC608\uC815)"
+      displayName: "\uB7EC\uB2DD"
+      description: "\uB3D9\uB124 \uACF5\uC6D0\uC5D0\uC11C \uB2EC\uB9AC\uAE30\uB97C
+        \uD569\uB2C8\uB2E4.\n\uCCB4\uB825\uACFC \uB048\uAE30\uAC00 \uC624\uB974\uC9C0\uB9CC
+        \uD53C\uB85C\uB3C4 \uC313\uC785\uB2C8\uB2E4."
       moneyChange: 0
       strengthChange: 2
       intelligenceChange: 0
@@ -74,8 +77,9 @@ MonoBehaviour:
       isLimited: 0
   - type: 5
     effect:
-      displayName: "\uC6B4\uB3D9 C"
-      description: "(\uAE30\uD68D \uCD94\uAC00 \uC608\uC815)"
+      displayName: "\uC2A4\uD2B8\uB808\uCE6D"
+      description: "\uAC00\uBCCD\uAC8C \uC2A4\uD2B8\uB808\uCE6D\uC744 \uD569\uB2C8\uB2E4.\n\uCCB4\uB825\uACFC
+        \uB048\uAE30\uAC00 \uC870\uAE08 \uC624\uB985\uB2C8\uB2E4."
       moneyChange: 0
       strengthChange: 1
       intelligenceChange: 0
@@ -85,8 +89,9 @@ MonoBehaviour:
       isLimited: 0
   - type: 6
     effect:
-      displayName: "\uACF5\uBD80 D"
-      description: "(\uAE30\uD68D \uCD94\uAC00 \uC608\uC815)"
+      displayName: "\uB3C5\uC11C\uC2E4"
+      description: "\uB3C5\uC11C\uC2E4\uC5D0\uC11C \uC9D1\uC911\uD574\uC11C \uACF5\uBD80\uD569\uB2C8\uB2E4.\n\uC9C0\uC131\uC774
+        \uD06C\uAC8C \uC624\uB974\uC9C0\uB9CC \uD53C\uB85C\uB3C4 \uC313\uC785\uB2C8\uB2E4."
       moneyChange: 0
       strengthChange: 0
       intelligenceChange: 3
@@ -96,8 +101,9 @@ MonoBehaviour:
       isLimited: 0
   - type: 7
     effect:
-      displayName: "\uACF5\uBD80 E"
-      description: "(\uAE30\uD68D \uCD94\uAC00 \uC608\uC815)"
+      displayName: "\uC778\uAC15"
+      description: "\uC9D1\uC5D0\uC11C \uC778\uD130\uB137 \uAC15\uC758\uB97C \uB4E3\uC2B5\uB2C8\uB2E4.\n\uC9C0\uC131\uC774
+        \uC801\uB2F9\uD788 \uC624\uB985\uB2C8\uB2E4."
       moneyChange: 0
       strengthChange: 0
       intelligenceChange: 2
@@ -107,8 +113,9 @@ MonoBehaviour:
       isLimited: 0
   - type: 8
     effect:
-      displayName: "\uACF5\uBD80 F"
-      description: "(\uAE30\uD68D \uCD94\uAC00 \uC608\uC815)"
+      displayName: "\uC2A4\uD130\uB514 \uCE74\uD398"
+      description: "\uCE5C\uAD6C\uB4E4\uACFC \uCE74\uD398\uC5D0\uC11C \uACF5\uBD80\uD569\uB2C8\uB2E4.\n\uC9C0\uC131\uACFC
+        \uC0AC\uAD50\uC131\uC774 \uC870\uAE08 \uC624\uB985\uB2C8\uB2E4."
       moneyChange: 0
       strengthChange: 0
       intelligenceChange: 1

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using TMPro;
@@ -55,7 +56,6 @@ namespace LoveAlgo.Schedule
 
         [Header("하단 버튼 (행동 소비 없음)")]
         [SerializeField] Button shopButton;
-        [SerializeField] Button giftButton;
         [SerializeField] Button phoneButton;
         [SerializeField] GameObject phoneNewBadge;
         [SerializeField] Button helpButton;
@@ -63,13 +63,17 @@ namespace LoveAlgo.Schedule
         [Header("헬프 패널")]
         [SerializeField] ScheduleHelpPanel helpPanel;
 
+        [Header("세션 버프 표시")]
+        [SerializeField] GameObject buffIndicator;
+        [SerializeField] TMP_Text buffText;
+
         [Header("크로스페이드 패널")]
         [SerializeField] CanvasGroup scheduleContent;
         [SerializeField] CanvasGroup shopContent;
         [SerializeField] Shop.ShopPopup shopPanel;
 
         /// <summary>오늘 상하차를 이미 했는지 (하루 1회 제한)</summary>
-        bool usedLoadingToday;
+        public bool UsedLoadingToday { get; set; }
 
         /// <summary>현재 상점 패널이 활성화 상태인지</summary>
         bool isShopVisible;
@@ -94,11 +98,9 @@ namespace LoveAlgo.Schedule
             if (tabGroup != null)
                 tabGroup.OnTabChanged += OnTabChanged;
 
-            // 상점/선물/폰 버튼 (행동 소비 없음)
+            // 상점/폰 버튼 (행동 소비 없음)
             if (shopButton != null)
                 shopButton.onClick.AddListener(OnShopClick);
-            if (giftButton != null)
-                giftButton.onClick.AddListener(OnGiftClick);
             if (phoneButton != null)
                 phoneButton.onClick.AddListener(OnPhoneClick);
             if (helpButton != null)
@@ -149,7 +151,7 @@ namespace LoveAlgo.Schedule
         /// <summary>
         /// UI 표시 (항상 스케줄 패널로 시작)
         /// </summary>
-        public async UniTask ShowAsync(Action<ScheduleType> onSelected)
+        public async UniTask ShowAsync(Action<ScheduleType> onSelected, CancellationToken ct = default)
         {
             onScheduleSelected = onSelected;
 
@@ -170,19 +172,21 @@ namespace LoveAlgo.Schedule
             canvasGroup.blocksRaycasts = true;
 
             canvasGroup.DOKill();
-            await canvasGroup.DOFade(1f, showDuration).SetEase(Ease.OutQuad).ToUniTask();
+            await canvasGroup.DOFade(1f, showDuration).SetEase(Ease.OutQuad)
+                .ToUniTask(cancellationToken: ct);
         }
 
         /// <summary>
         /// UI 숨기기
         /// </summary>
-        public async UniTask HideAsync()
+        public async UniTask HideAsync(CancellationToken ct = default)
         {
             canvasGroup.interactable = false;
             canvasGroup.blocksRaycasts = false;
 
             canvasGroup.DOKill();
-            await canvasGroup.DOFade(0f, hideDuration).SetEase(Ease.OutQuad).ToUniTask();
+            await canvasGroup.DOFade(0f, hideDuration).SetEase(Ease.OutQuad)
+                .ToUniTask(cancellationToken: ct);
             gameObject.SetActive(false);
         }
 
@@ -191,7 +195,7 @@ namespace LoveAlgo.Schedule
         /// </summary>
         public void ResetDailyLimits()
         {
-            usedLoadingToday = false;
+            UsedLoadingToday = false;
         }
 
         /// <summary>
@@ -214,6 +218,22 @@ namespace LoveAlgo.Schedule
             // 폰 새 메시지 뱃지
             if (phoneNewBadge != null)
                 phoneNewBadge.SetActive(Phone.MessengerManager.GetTotalUnreadCount() > 0);
+
+            // 세션 버프 표시
+            RefreshBuffIndicator();
+        }
+
+        /// <summary>활성 세션 버프 인디케이터 갱신</summary>
+        void RefreshBuffIndicator()
+        {
+            var (stat, bonus) = Shop.ItemEffectSystem.PeekSessionBuff();
+            bool hasBuff = stat != null && bonus > 0;
+
+            if (buffIndicator != null)
+                buffIndicator.SetActive(hasBuff);
+
+            if (buffText != null)
+                buffText.text = hasBuff ? $"{stat} +{bonus}" : "";
         }
 
         /// <summary>
@@ -252,10 +272,11 @@ namespace LoveAlgo.Schedule
 
         async UniTaskVoid OnScheduleClickAsync(ScheduleType type)
         {
+            var ct = destroyCancellationToken;
             var gs = GameState.Instance;
 
             // 상하차 하루 1회 제한
-            if (type == ScheduleType.PartTime_Loading && usedLoadingToday)
+            if (type == ScheduleType.PartTime_Loading && UsedLoadingToday)
             {
                 LoveAlgo.UI.PopupManager.Instance?.Toast("제한", "상하차는 하루에 1번만 가능합니다.");
                 return;
@@ -284,9 +305,9 @@ namespace LoveAlgo.Schedule
 
                 // 상하차 사용 기록 (콜백 성공 후)
                 if (type == ScheduleType.PartTime_Loading)
-                    usedLoadingToday = true;
+                    UsedLoadingToday = true;
 
-                await HideAsync();
+                await HideAsync(ct);
             }
         }
 
@@ -371,6 +392,7 @@ namespace LoveAlgo.Schedule
         /// <summary>스케줄 → 상점 크로스페이드</summary>
         async UniTaskVoid CrossFadeToShopAsync()
         {
+            var ct = destroyCancellationToken;
             isCrossFading = true;
 
             // 상점 데이터 초기화
@@ -395,7 +417,7 @@ namespace LoveAlgo.Schedule
             }
             seq.SetUpdate(true);
 
-            await seq.ToUniTask();
+            await seq.ToUniTask(cancellationToken: ct);
 
             // 스케줄 패널 비활성화
             SetPanelVisible(scheduleContent, false);
@@ -407,6 +429,7 @@ namespace LoveAlgo.Schedule
         /// <summary>상점 → 스케줄 크로스페이드</summary>
         async UniTaskVoid CrossFadeToScheduleAsync()
         {
+            var ct = destroyCancellationToken;
             isCrossFading = true;
 
             // 구매 후 정보 갱신
@@ -432,7 +455,7 @@ namespace LoveAlgo.Schedule
             }
             seq.SetUpdate(true);
 
-            await seq.ToUniTask();
+            await seq.ToUniTask(cancellationToken: ct);
 
             // 상점 패널 비활성화
             SetPanelVisible(shopContent, false);
@@ -449,17 +472,6 @@ namespace LoveAlgo.Schedule
             cg.interactable = visible;
             cg.blocksRaycasts = visible;
             cg.gameObject.SetActive(visible);
-        }
-
-        /// <summary>선물 주기 (행동 소비 없음)</summary>
-        void OnGiftClick()
-        {
-            if (Shop.ShopManager.IsInventoryEmpty())
-            {
-                LoveAlgo.UI.PopupManager.Instance?.Toast("인벤토리 비어있음", "선물할 아이템이 없습니다.\n상점에서 먼저 구매해주세요.");
-                return;
-            }
-            LoveAlgo.UI.PopupManager.Instance?.ShowModal<Shop.GiftPopup>();
         }
 
         /// <summary>폰 열기 (행동 소비 없음)</summary>

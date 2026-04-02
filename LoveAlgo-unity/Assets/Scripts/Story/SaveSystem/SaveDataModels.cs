@@ -63,6 +63,9 @@ namespace LoveAlgo.Story.SaveSystem
 
         // 선택지 이력 (로그 복원용)
         public List<string> ChoiceHistory = new();
+
+        // 스케줄 상태
+        public bool UsedLoadingToday;
     }
 
     /// <summary>

@@ -68,22 +68,22 @@
       "details": "ui.json"
     },
     "data": {
-      "character_so_count": 5,
+      "character_so_count": 0,
       "details": "data.json"
     },
     "scripts": {
       "namespaces": {
         "Core": 21,
         "Data": 0,
-        "Editor": 0,
+        "Editor": 2,
         "MiniGame": 4,
         "Phone": 7,
         "Schedule": 6,
-        "Shop": 10,
+        "Shop": 9,
         "Story": 46,
         "UI": 28
       },
-      "total": 122,
+      "total": 123,
       "details": "scripts.json"
     }
   }

@@ -13,242 +13,16 @@ MonoBehaviour:
   m_Name: ItemCatalog
   m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.Shop.ItemCatalogSO
   items:
-  - Id: gift_yeun_towel
-    Name: "\uC2A4\uD3EC\uCE20 \uD0C0\uC6D4"
-    Description: "\uD558\uC608\uC740\uC774 \uC88B\uC544\uD560 \uC2A4\uD3EC\uCE20\uC6A9
-      \uD0C0\uC6D4.\n\"\uC6B4\uB3D9\uD560 \uB54C \uC4F8\uAC8C!\""
-    Price: 8000
-    Category: 0
-    TargetHeroine: Yeun
-    EffectValue: 0
-    IconPath: Items/turtleman
-    IconSprite: {fileID: 21300000, guid: 47c869cdb65cc03439b4d72bbc133492, type: 3}
-    DetailSprite: {fileID: 21300000, guid: bf35b338066507c49aad1ba11ae51e83, type: 3}
-    Tier: 1
-    Availability: 0
-    EffectStat: 
-    DuplicateTag: 
-  - Id: gift_yeun_shoes
-    Name: "\uB7EC\uB2DD\uD654"
-    Description: "\uAC00\uBCCD\uACE0 \uD2BC\uD2BC\uD55C \uB7EC\uB2DD\uD654.\n\"\uC640
-      \uC774\uAC70 \uC9C4\uC9DC \uC88B\uB2E4!\""
-    Price: 45000
-    Category: 0
-    TargetHeroine: Yeun
-    EffectValue: 0
-    IconPath: Items/ankle support
-    IconSprite: {fileID: 21300000, guid: 1c3eaf839b97e89449521fef91f65069, type: 3}
-    DetailSprite: {fileID: 21300000, guid: 9a76b52553f12294e8bcabfaa88a9418, type: 3}
-    Tier: 3
-    Availability: 1
-    EffectStat: 
-    DuplicateTag: 
-  - Id: gift_yeun_watch
-    Name: "\uC2A4\uD3EC\uCE20 \uC2DC\uACC4"
-    Description: "\uBC29\uC218 \uAE30\uB2A5\uC774 \uC788\uB294 \uC2A4\uD3EC\uCE20
-      \uC2DC\uACC4.\n\"\uB9E4\uC77C \uCC28\uACE0 \uB2E4\uB2D0\uAC8C!\""
-    Price: 85000
-    Category: 0
-    TargetHeroine: Yeun
-    EffectValue: 0
-    IconPath: Items/dining ticket
-    IconSprite: {fileID: 21300000, guid: d7f4bba847fbe1e418d26c84d8731e81, type: 3}
-    DetailSprite: {fileID: 21300000, guid: 10267623d1feb6449b3c827a94d118fa, type: 3}
-    Tier: 4
-    Availability: 2
-    EffectStat: 
-    DuplicateTag: 
-  - Id: gift_daeun_pen
-    Name: "\uACE0\uAE09 \uBCFC\uD39C"
-    Description: "\uC11C\uB2E4\uC740\uC774 \uC88B\uC544\uD560 \uB9CC\uB144\uD544.\n\"...\uAD1C\uCC2E\uC740
-      \uC120\uBB3C\uC774\uB124.\""
-    Price: 10000
-    Category: 0
-    TargetHeroine: Daeun
-    EffectValue: 0
-    IconPath: Items/3clolor pen
-    IconSprite: {fileID: 21300000, guid: 1b6161e347405ca42acb328bde795844, type: 3}
-    DetailSprite: {fileID: 21300000, guid: 9d65bc952763fb84290851191e380021, type: 3}
-    Tier: 1
-    Availability: 0
-    EffectStat: 
-    DuplicateTag: 
-  - Id: gift_daeun_book
-    Name: "\uC804\uACF5 \uC11C\uC801"
-    Description: "\uD76C\uADC0\uD55C \uC804\uACF5 \uC6D0\uC11C.\n\"\uC774\uAC70...
-      \uAD6C\uD558\uAE30 \uC5B4\uB824\uC6B4 \uAC74\uB370.\""
-    Price: 35000
-    Category: 0
-    TargetHeroine: Daeun
-    EffectValue: 0
-    IconPath: Items/plant
-    IconSprite: {fileID: 21300000, guid: 2b634a0c26f43b246a0ca2ecc1882473, type: 3}
-    DetailSprite: {fileID: 21300000, guid: 6f85d1196d089de4095b6bd04e92a2d9, type: 3}
-    Tier: 2
-    Availability: 1
-    EffectStat: 
-    DuplicateTag: 
-  - Id: gift_daeun_tablet
-    Name: "\uD0DC\uBE14\uB9BF \uD39C"
-    Description: "\uACE0\uAE09 \uB514\uC9C0\uD138 \uD544\uAE30 \uD39C.\n\"\uD544\uAE30\uAC10\uC774
-      \uC815\uB9D0 \uC88B\uC544.\""
-    Price: 80000
-    Category: 0
-    TargetHeroine: Daeun
-    EffectValue: 0
-    IconPath: Items/monitor
-    IconSprite: {fileID: 21300000, guid: 9ede58f5132385046b1aa9ebffec48ba, type: 3}
-    DetailSprite: {fileID: 21300000, guid: 4070b9e7659864b42b60c01a0669a060, type: 3}
-    Tier: 4
-    Availability: 2
-    EffectStat: 
-    DuplicateTag: 
-  - Id: gift_bom_sticker
-    Name: "\uC2A4\uD2F0\uCEE4 \uD329"
-    Description: "\uC774\uBD04\uC774 \uC88B\uC544\uD560 \uCE90\uB9AD\uD130 \uC2A4\uD2F0\uCEE4.\n\"\uC774\uAC70
-      \uC9C4\uC9DC \uADC0\uC5EC\uC6CC~!\""
-    Price: 5000
-    Category: 0
-    TargetHeroine: Bom
-    EffectValue: 0
-    IconPath: Items/rabbit_keyring
-    IconSprite: {fileID: 21300000, guid: a97fe05c811558f4395c235090d57a68, type: 3}
-    DetailSprite: {fileID: 21300000, guid: 7147083afd684a94bb7c100e256d06bd, type: 3}
-    Tier: 1
-    Availability: 0
-    EffectStat: 
-    DuplicateTag: 
-  - Id: gift_bom_acc
-    Name: "\uD5E4\uC5B4 \uC561\uC138\uC11C\uB9AC"
-    Description: "\uD2B8\uB80C\uB514\uD55C \uBA38\uB9AC\uD540 \uC138\uD2B8.\n\"\uC624\uB298\uBD80\uD130
-      \uBC14\uB85C \uD574\uBCFC\uB798!\""
-    Price: 25000
-    Category: 0
-    TargetHeroine: Bom
-    EffectValue: 0
-    IconPath: Items/hairband
-    IconSprite: {fileID: 21300000, guid: 11372bbe9b77240429aff54fcb88fa4c, type: 3}
-    DetailSprite: {fileID: 21300000, guid: 5d47d0bec17b99648918172ef3aa8d02, type: 3}
-    Tier: 2
-    Availability: 1
-    EffectStat: 
-    DuplicateTag: 
-  - Id: gift_bom_bag
-    Name: "\uBBF8\uB2C8 \uD06C\uB85C\uC2A4\uBC31"
-    Description: "\uBD04\uC774 \uC2A4\uD0C0\uC77C\uC5D0 \uB531 \uB9DE\uB294 \uAC00\uBC29.\n\"\uB300\uBC15...
-      \uC774\uAC70 \uC644\uC804 \uB0B4 \uC2A4\uD0C0\uC77C!\""
-    Price: 65000
-    Category: 0
-    TargetHeroine: Bom
-    EffectValue: 0
-    IconPath: Items/handcream
-    IconSprite: {fileID: 21300000, guid: 5550b6d25bdab56488c1f0f7ee6476cc, type: 3}
-    DetailSprite: {fileID: 21300000, guid: f55bcde1a7dd47f438066d8a2387820d, type: 3}
-    Tier: 3
-    Availability: 2
-    EffectStat: 
-    DuplicateTag: 
-  - Id: gift_heewon_novel
-    Name: "\uBB38\uACE0\uBCF8 \uC18C\uC124"
-    Description: "\uB3C4\uD76C\uC6D0\uC774 \uC88B\uC544\uD560 \uC18C\uC124\uCC45.\n\"...\uC77D\uC5B4\uBCFC\uAC8C.\""
-    Price: 8000
-    Category: 0
-    TargetHeroine: Heewon
-    EffectValue: 0
-    IconPath: Items/popup ticket
-    IconSprite: {fileID: 21300000, guid: 01d056178b5985246944c8369819502f, type: 3}
-    DetailSprite: {fileID: 21300000, guid: c05e3f883fc98d54c829ba59bd570dd8, type: 3}
-    Tier: 1
-    Availability: 0
-    EffectStat: 
-    DuplicateTag: 
-  - Id: gift_heewon_tea
-    Name: "\uD504\uB9AC\uBBF8\uC5C4 \uD2F0 \uC138\uD2B8"
-    Description: "\uD76C\uADC0\uD55C \uBE14\uB80C\uB529 \uCC28 \uC138\uD2B8.\n\"...\uD5A5\uC774
-      \uC88B\uC544.\""
-    Price: 40000
-    Category: 0
-    TargetHeroine: Heewon
-    EffectValue: 0
-    IconPath: Items/empire diamond
-    IconSprite: {fileID: 21300000, guid: 0ceb0e34a2b51a147a9bf898ab445b5b, type: 3}
-    DetailSprite: {fileID: 21300000, guid: bfe78e29ad6ddcc47b5917d7c9e21e46, type: 3}
-    Tier: 3
-    Availability: 1
-    EffectStat: 
-    DuplicateTag: 
-  - Id: gift_heewon_music
-    Name: "\uD55C\uC815\uD310 LP"
-    Description: "\uD074\uB798\uC2DD \uD55C\uC815\uD310 \uB808\uCF54\uB4DC.\n\"\uC774\uAC78...
-      \uC5B4\uB5BB\uAC8C \uAD6C\uD55C \uAC70\uC57C?\""
-    Price: 90000
-    Category: 0
-    TargetHeroine: Heewon
-    EffectValue: 0
-    IconPath: Items/CD_tropical glow
-    IconSprite: {fileID: 21300000, guid: 0062a9eb12a1cec4dadbf8b109953936, type: 3}
-    DetailSprite: {fileID: 21300000, guid: a81d03dc697f4fe40b05259ab709604b, type: 3}
-    Tier: 4
-    Availability: 2
-    EffectStat: 
-    DuplicateTag: 
-  - Id: gift_roa_light
-    Name: "LED \uC870\uBA85"
-    Description: "\uB85C\uC544\uAC00 \uC88B\uC544\uD560 \uBC29\uC1A1\uC6A9 \uC870\uBA85.\n\"\uBC29\uC1A1
-      \uD004\uB9AC\uD2F0 \uC5C5! \uACE0\uB9C8\uC6CC!\""
-    Price: 10000
-    Category: 0
-    TargetHeroine: Roa
-    EffectValue: 0
-    IconPath: Items/lamp
-    IconSprite: {fileID: 21300000, guid: 20af9d87746eb044b858970d08b148cd, type: 3}
-    DetailSprite: {fileID: 21300000, guid: b2fd9d7634ef4e943a1e91cfa7b2bfe0, type: 3}
-    Tier: 1
-    Availability: 0
-    EffectStat: 
-    DuplicateTag: 
-  - Id: gift_roa_mic
-    Name: "\uCF58\uB374\uC11C \uB9C8\uC774\uD06C"
-    Description: "\uBC29\uC1A1\uC6A9 \uACE0\uAE09 \uB9C8\uC774\uD06C.\n\"\uC18C\uB9AC
-      \uC9C4\uC9DC \uAE68\uB057\uD558\uB2E4!\""
-    Price: 50000
-    Category: 0
-    TargetHeroine: Roa
-    EffectValue: 0
-    IconPath: Items/headphone
-    IconSprite: {fileID: 21300000, guid: 6f49dca1e2091954bbef4b1ab954c80b, type: 3}
-    DetailSprite: {fileID: 21300000, guid: 22201d587fccf9844930b1243a77634a, type: 3}
-    Tier: 3
-    Availability: 1
-    EffectStat: 
-    DuplicateTag: 
-  - Id: gift_roa_cam
-    Name: "\uC6F9\uCEA0 \uD504\uB85C"
-    Description: "4K \uBC29\uC1A1\uC6A9 \uC6F9\uCEA0.\n\"\uC774\uAC70\uBA74 \uD654\uC9C8
-      \uBBF8\uCCE4\uB2E4!\""
-    Price: 95000
-    Category: 0
-    TargetHeroine: Roa
-    EffectValue: 0
-    IconPath: Items/monitor
-    IconSprite: {fileID: 21300000, guid: 9ede58f5132385046b1aa9ebffec48ba, type: 3}
-    DetailSprite: {fileID: 21300000, guid: 4070b9e7659864b42b60c01a0669a060, type: 3}
-    Tier: 4
-    Availability: 2
-    EffectStat: 
-    DuplicateTag: 
   - Id: consume_energy_drink
     Name: "\uC5D0\uB108\uC9C0 \uC74C\uB8CC"
     Description: "\uC878\uB9B4 \uB54C \uB9C8\uC2DC\uBA74 \uC88B\uC740 \uC5D0\uB108\uC9C0
       \uC74C\uB8CC.\n\uD53C\uB85C\uAC00 \uC870\uAE08 \uC904\uC5B4\uB4E0\uB2E4."
     Price: 3000
-    Category: 1
-    TargetHeroine: 
+    Category: 0
     EffectValue: 5
     IconPath: Items/energybar
-    IconSprite: {fileID: 21300000, guid: b9055c8284325a841a48ee9317053e84, type: 3}
-    DetailSprite: {fileID: 21300000, guid: 28d07092c0637194a992027d4ce7edf6, type: 3}
-    Tier: 0
+    IconSprite: {fileID: 0}
+    DetailSprite: {fileID: 0}
     Availability: 0
     EffectStat: 
     DuplicateTag: 
@@ -257,13 +31,11 @@ MonoBehaviour:
     Description: "\uAC04\uD3B8\uD558\uAC8C \uBA39\uC744 \uC218 \uC788\uB294 \uC5D0\uB108\uC9C0\uBC14.\n\uD53C\uB85C\uB97C
       \uC801\uB2F9\uD788 \uC904\uC5EC\uC900\uB2E4."
     Price: 5000
-    Category: 1
-    TargetHeroine: 
+    Category: 0
     EffectValue: 6
     IconPath: Items/energybar
-    IconSprite: {fileID: 21300000, guid: b9055c8284325a841a48ee9317053e84, type: 3}
-    DetailSprite: {fileID: 21300000, guid: 28d07092c0637194a992027d4ce7edf6, type: 3}
-    Tier: 0
+    IconSprite: {fileID: 0}
+    DetailSprite: {fileID: 0}
     Availability: 0
     EffectStat: 
     DuplicateTag: 
@@ -272,13 +44,11 @@ MonoBehaviour:
     Description: "\uBE44\uD0C0\uBBFC\uC774 \uD48D\uBD80\uD55C \uAC74\uAC15 \uC74C\uB8CC.\n\uD53C\uB85C
       \uD68C\uBCF5\uC5D0 \uD6A8\uACFC\uC801\uC774\uB2E4."
     Price: 8000
-    Category: 1
-    TargetHeroine: 
+    Category: 0
     EffectValue: 8
     IconPath: Items/vitamin
-    IconSprite: {fileID: 21300000, guid: 9d2870f1949e2e2438f5b6639f7790b6, type: 3}
-    DetailSprite: {fileID: 21300000, guid: 8e86990581cb18e4fbfb4172c33f517b, type: 3}
-    Tier: 0
+    IconSprite: {fileID: 0}
+    DetailSprite: {fileID: 0}
     Availability: 0
     EffectStat: 
     DuplicateTag: 
@@ -287,13 +57,11 @@ MonoBehaviour:
     Description: "\uACE0\uD568\uB7C9 \uC544\uB974\uAE30\uB2CC \uC824\uB9AC.\n\uD53C\uB85C\uAC00
       \uD06C\uAC8C \uC904\uC5B4\uB4E0\uB2E4."
     Price: 15000
-    Category: 1
-    TargetHeroine: 
+    Category: 0
     EffectValue: 12
     IconPath: Items/jelly
-    IconSprite: {fileID: 21300000, guid: 33810709768f7ae4da34dd3c4c73234c, type: 3}
-    DetailSprite: {fileID: 21300000, guid: db214b113ce968a4785d7d1bd559fed1, type: 3}
-    Tier: 0
+    IconSprite: {fileID: 0}
+    DetailSprite: {fileID: 0}
     Availability: 0
     EffectStat: 
     DuplicateTag: 
@@ -302,13 +70,11 @@ MonoBehaviour:
     Description: "\uC544\uB85C\uB9C8 \uBB34\uB4DC\uB4F1. \uC740\uC740\uD55C \uD5A5\uC73C\uB85C\n\uD53C\uB85C\uB97C
       \uD655\uC2E4\uD788 \uD480\uC5B4\uC900\uB2E4."
     Price: 25000
-    Category: 1
-    TargetHeroine: 
+    Category: 0
     EffectValue: 15
     IconPath: Items/lamp
-    IconSprite: {fileID: 21300000, guid: 20af9d87746eb044b858970d08b148cd, type: 3}
-    DetailSprite: {fileID: 21300000, guid: b2fd9d7634ef4e943a1e91cfa7b2bfe0, type: 3}
-    Tier: 0
+    IconSprite: {fileID: 0}
+    DetailSprite: {fileID: 0}
     Availability: 0
     EffectStat: 
     DuplicateTag: 
@@ -318,13 +84,11 @@ MonoBehaviour:
       \uCD08\uCF54\uBC14.\n\uC790\uC720\uD589\uB3D9 1\uD68C \uCCB4\uB825 \uD6A8\uACFC
       +2"
     Price: 8000
-    Category: 2
-    TargetHeroine: 
+    Category: 1
     EffectValue: 2
     IconPath: Items/marron bread
-    IconSprite: {fileID: 21300000, guid: db92c6976e16ace408ecfdcca01f87cd, type: 3}
-    DetailSprite: {fileID: 21300000, guid: 57254459eac04fa49b050787d69074bd, type: 3}
-    Tier: 0
+    IconSprite: {fileID: 0}
+    DetailSprite: {fileID: 0}
     Availability: 0
     EffectStat: Str
     DuplicateTag: buff_str
@@ -334,13 +98,11 @@ MonoBehaviour:
       \uD6A8\uACFC\uB3C4 \uC88B\uB2E4.\n\uC790\uC720\uD589\uB3D9 1\uD68C \uCCB4\uB825
       \uD6A8\uACFC +3"
     Price: 12000
-    Category: 2
-    TargetHeroine: 
+    Category: 1
     EffectValue: 3
     IconPath: Items/marron bread
-    IconSprite: {fileID: 21300000, guid: db92c6976e16ace408ecfdcca01f87cd, type: 3}
-    DetailSprite: {fileID: 21300000, guid: 57254459eac04fa49b050787d69074bd, type: 3}
-    Tier: 0
+    IconSprite: {fileID: 0}
+    DetailSprite: {fileID: 0}
     Availability: 0
     EffectStat: Str
     DuplicateTag: buff_str
@@ -350,13 +112,11 @@ MonoBehaviour:
       \uC624\uB978\uB2E4.\n\uC790\uC720\uD589\uB3D9 1\uD68C \uC9C0\uC131 \uD6A8\uACFC
       +1"
     Price: 3000
-    Category: 2
-    TargetHeroine: 
+    Category: 1
     EffectValue: 1
     IconPath: Items/popup ticket
-    IconSprite: {fileID: 21300000, guid: 01d056178b5985246944c8369819502f, type: 3}
-    DetailSprite: {fileID: 21300000, guid: c05e3f883fc98d54c829ba59bd570dd8, type: 3}
-    Tier: 0
+    IconSprite: {fileID: 0}
+    DetailSprite: {fileID: 0}
     Availability: 0
     EffectStat: Int
     DuplicateTag: buff_int
@@ -365,13 +125,11 @@ MonoBehaviour:
     Description: "\uC0C9\uAE54\uBCC4 \uD544\uAE30\uAC00 \uAC00\uB2A5\uD55C \uBCFC\uD39C.\n\uC790\uC720\uD589\uB3D9
       1\uD68C \uC9C0\uC131 \uD6A8\uACFC +1"
     Price: 3000
-    Category: 2
-    TargetHeroine: 
+    Category: 1
     EffectValue: 1
     IconPath: Items/3clolor pen
-    IconSprite: {fileID: 21300000, guid: 1b6161e347405ca42acb328bde795844, type: 3}
-    DetailSprite: {fileID: 21300000, guid: 9d65bc952763fb84290851191e380021, type: 3}
-    Tier: 0
+    IconSprite: {fileID: 0}
+    DetailSprite: {fileID: 0}
     Availability: 0
     EffectStat: Int
     DuplicateTag: buff_int
@@ -381,13 +139,11 @@ MonoBehaviour:
       \uB531\uC774\uB2E4.\n\uC790\uC720\uD589\uB3D9 1\uD68C \uC9C0\uC131 \uD6A8\uACFC
       +1"
     Price: 4000
-    Category: 2
-    TargetHeroine: 
+    Category: 1
     EffectValue: 1
     IconPath: 
     IconSprite: {fileID: 0}
     DetailSprite: {fileID: 0}
-    Tier: 0
     Availability: 0
     EffectStat: Int
     DuplicateTag: buff_int
@@ -396,13 +152,11 @@ MonoBehaviour:
     Description: "5\uC0C9 \uD615\uAD11\uD39C \uC138\uD2B8. \uC911\uC694\uD55C \uAC74
       \uD45C\uC2DC!\n\uC790\uC720\uD589\uB3D9 1\uD68C \uC9C0\uC131 \uD6A8\uACFC +2"
     Price: 6000
-    Category: 2
-    TargetHeroine: 
+    Category: 1
     EffectValue: 2
     IconPath: Items/3clolor pen
-    IconSprite: {fileID: 21300000, guid: 1b6161e347405ca42acb328bde795844, type: 3}
-    DetailSprite: {fileID: 21300000, guid: 9d65bc952763fb84290851191e380021, type: 3}
-    Tier: 0
+    IconSprite: {fileID: 0}
+    DetailSprite: {fileID: 0}
     Availability: 0
     EffectStat: Int
     DuplicateTag: buff_int
@@ -411,13 +165,11 @@ MonoBehaviour:
     Description: "0.3mm \uC815\uBC00 \uC0E4\uD504. \uD544\uAE30\uAC10\uC774 \uC88B\uB2E4.\n\uC790\uC720\uD589\uB3D9
       1\uD68C \uC9C0\uC131 \uD6A8\uACFC +1"
     Price: 5000
-    Category: 2
-    TargetHeroine: 
+    Category: 1
     EffectValue: 1
     IconPath: Items/3clolor pen
-    IconSprite: {fileID: 21300000, guid: 1b6161e347405ca42acb328bde795844, type: 3}
-    DetailSprite: {fileID: 21300000, guid: 9d65bc952763fb84290851191e380021, type: 3}
-    Tier: 0
+    IconSprite: {fileID: 0}
+    DetailSprite: {fileID: 0}
     Availability: 0
     EffectStat: Int
     DuplicateTag: buff_int
@@ -426,13 +178,11 @@ MonoBehaviour:
     Description: "\uCCAD\uCD95 \uAE30\uACC4\uC2DD \uD0A4\uBCF4\uB4DC. \uD0C0\uAC74\uAC10
       \uCD5C\uACE0.\n\uC790\uC720\uD589\uB3D9 1\uD68C \uC9C0\uC131 \uD6A8\uACFC +2"
     Price: 35000
-    Category: 2
-    TargetHeroine: 
+    Category: 1
     EffectValue: 2
     IconPath: 
     IconSprite: {fileID: 0}
     DetailSprite: {fileID: 0}
-    Tier: 0
     Availability: 0
     EffectStat: Int
     DuplicateTag: buff_int
@@ -441,13 +191,11 @@ MonoBehaviour:
     Description: "\uC778\uCCB4\uACF5\uD559 \uAC8C\uC774\uBC0D \uB9C8\uC6B0\uC2A4.\n\uC790\uC720\uD589\uB3D9
       1\uD68C \uC9C0\uC131 \uD6A8\uACFC +1"
     Price: 25000
-    Category: 2
-    TargetHeroine: 
+    Category: 1
     EffectValue: 1
     IconPath: 
     IconSprite: {fileID: 0}
     DetailSprite: {fileID: 0}
-    Tier: 0
     Availability: 0
     EffectStat: Int
     DuplicateTag: buff_int
@@ -456,13 +204,11 @@ MonoBehaviour:
     Description: "\uC190\uBAA9\uC774 \uD3B8\uD55C \uBC84\uD2F0\uCEEC \uB9C8\uC6B0\uC2A4.\n\uC790\uC720\uD589\uB3D9
       1\uD68C \uB048\uAE30 \uD6A8\uACFC +1"
     Price: 20000
-    Category: 2
-    TargetHeroine: 
+    Category: 1
     EffectValue: 1
     IconPath: 
     IconSprite: {fileID: 0}
     DetailSprite: {fileID: 0}
-    Tier: 0
     Availability: 0
     EffectStat: Per
     DuplicateTag: buff_per

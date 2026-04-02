@@ -4,6 +4,7 @@ using System.IO;
 using UnityEngine;
 using Newtonsoft.Json;
 using LoveAlgo.Core;
+using LoveAlgo.UI;
 
 namespace LoveAlgo.Story.SaveSystem
 {
@@ -167,6 +168,11 @@ namespace LoveAlgo.Story.SaveSystem
 
             // 선택지 이력 복원
             GameState.Instance.SetChoiceHistory(data.ChoiceHistory);
+
+            // 스케줄 상태 복원
+            var scheduleUI = UIManager.Instance?.ScheduleUI;
+            if (scheduleUI != null)
+                scheduleUI.UsedLoadingToday = data.UsedLoadingToday;
         }
 
         /// <summary>
@@ -216,6 +222,11 @@ namespace LoveAlgo.Story.SaveSystem
             // 선택지 이력 저장
             if (GameState.Instance != null)
                 data.ChoiceHistory = GameState.Instance.GetChoiceHistory();
+
+            // 스케줄 상태 저장
+            var scheduleUI = UIManager.Instance?.ScheduleUI;
+            if (scheduleUI != null)
+                data.UsedLoadingToday = scheduleUI.UsedLoadingToday;
 
             // 장면 상태 저장 (배경, 캐릭터, BGM)
             CaptureStageState(data);

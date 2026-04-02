@@ -9,10 +9,9 @@ namespace LoveAlgo.Shop
     /// 아이템 효과 시스템 (정적 유틸리티)
     /// 
     /// 기획서 기반 핵심 메커니즘:
-    ///   1. 선물 계층 → 포인트 계산 (2차/3차 이벤트 시점별)
-    ///   2. 동일날 중복 사용 패널티 (같은 태그 2회차부터 50%)
-    ///   3. 세션 버프 (자유행동 1회 동안 스탯 보정)
-    ///   4. 아이템 해금 시점 판정
+    ///   1. 동일날 중복 사용 패널티 (같은 태그 2회차부터 50%)
+    ///   2. 세션 버프 (자유행동 1회 동안 스탯 보정)
+    ///   3. 아이템 해금 시점 판정
     /// </summary>
     public static class ItemEffectSystem
     {
@@ -42,34 +41,6 @@ namespace LoveAlgo.Shop
             activeBuffValue = 0;
             hasActiveBuff = false;
         }
-
-        #region 선물 포인트 계산
-
-        /// <summary>
-        /// 선물 계층 기반 포인트 계산 (기획서 4.2)
-        /// 
-        /// | 계층   | 2차(Event2 이전) | 3차(Event3 이후) |
-        /// |--------|-----------------|-----------------|
-        /// | 저가   | +1              | +2              |
-        /// | 중급   | +2              | +3              |
-        /// | 고급   | +3              | +4              |
-        /// | 최고급 | +3              | +5              |
-        /// </summary>
-        /// <param name="tier">아이템 선물 계층</param>
-        /// <param name="isEvent3OrLater">3차 이벤트(StoryArc.FreeTime5) 이후 여부</param>
-        public static int GetGiftPoints(GiftTier tier, bool isEvent3OrLater)
-        {
-            return tier switch
-            {
-                GiftTier.Low     => isEvent3OrLater ? 2 : 1,
-                GiftTier.Mid     => isEvent3OrLater ? 3 : 2,
-                GiftTier.High    => isEvent3OrLater ? 4 : 3,
-                GiftTier.Premium => isEvent3OrLater ? 5 : 3,
-                _ => 0
-            };
-        }
-
-        #endregion
 
         #region 동일날 중복 패널티
 

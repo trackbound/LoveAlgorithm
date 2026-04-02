@@ -21,6 +21,10 @@ namespace LoveAlgo.Shop
             if (initialized) return;
             initialized = true;
 
+            // 아이콘 폴백 스프라이트 로드
+            if (ItemData.FallbackIcon == null)
+                ItemData.FallbackIcon = Resources.Load<Sprite>("Items/fallback");
+
             // SO 로드 시도
             var catalog = Resources.Load<ItemCatalogSO>("Data/ItemCatalog");
             if (catalog != null && catalog.Items.Count > 0)
@@ -77,14 +81,6 @@ namespace LoveAlgo.Shop
             return items.Values.Where(i => i.Availability <= maxPhase);
         }
 
-        /// <summary>특정 히로인의 선물 목록</summary>
-        public static IEnumerable<ItemData> GetGiftsForHeroine(string heroineId)
-        {
-            EnsureInit();
-            return items.Values.Where(i =>
-                i.Category == ItemCategory.Gift && i.TargetHeroine == heroineId);
-        }
-
         /// <summary>구매 가능 여부 (소지금 확인)</summary>
         public static bool CanAfford(string itemId, int currentMoney)
         {
@@ -98,26 +94,6 @@ namespace LoveAlgo.Shop
         {
             var defaultItems = new[]
             {
-                // ── 히로인 선물 — 하예은 ──
-                new ItemData("gift_yeun_towel", "스포츠 타월", "하예은이 좋아할 스포츠용 타월.\n\"운동할 때 쓸게!\"", 8000, ItemCategory.Gift, "Yeun", iconPath: "Items/turtleman", tier: GiftTier.Low),
-                new ItemData("gift_yeun_shoes", "러닝화", "가볍고 튼튼한 러닝화.\n\"와 이거 진짜 좋다!\"", 45000, ItemCategory.Gift, "Yeun", iconPath: "Items/ankle support", tier: GiftTier.High, availability: ItemAvailability.AfterEvent2Start),
-                new ItemData("gift_yeun_watch", "스포츠 시계", "방수 기능이 있는 스포츠 시계.\n\"매일 차고 다닐게!\"", 85000, ItemCategory.Gift, "Yeun", iconPath: "Items/dining ticket", tier: GiftTier.Premium, availability: ItemAvailability.AfterEvent3Start),
-                // ── 히로인 선물 — 서다은 ──
-                new ItemData("gift_daeun_pen", "고급 볼펜", "서다은이 좋아할 만년필.\n\"...괜찮은 선물이네.\"", 10000, ItemCategory.Gift, "Daeun", iconPath: "Items/3clolor pen", tier: GiftTier.Low),
-                new ItemData("gift_daeun_book", "전공 서적", "희귀한 전공 원서.\n\"이거... 구하기 어려운 건데.\"", 35000, ItemCategory.Gift, "Daeun", iconPath: "Items/plant", tier: GiftTier.Mid, availability: ItemAvailability.AfterEvent2Start),
-                new ItemData("gift_daeun_tablet", "태블릿 펜", "고급 디지털 필기 펜.\n\"필기감이 정말 좋아.\"", 80000, ItemCategory.Gift, "Daeun", iconPath: "Items/monitor", tier: GiftTier.Premium, availability: ItemAvailability.AfterEvent3Start),
-                // ── 히로인 선물 — 이봄 ──
-                new ItemData("gift_bom_sticker", "스티커 팩", "이봄이 좋아할 캐릭터 스티커.\n\"이거 진짜 귀여워~!\"", 5000, ItemCategory.Gift, "Bom", iconPath: "Items/rabbit_keyring", tier: GiftTier.Low),
-                new ItemData("gift_bom_acc", "헤어 액세서리", "트렌디한 머리핀 세트.\n\"오늘부터 바로 해볼래!\"", 25000, ItemCategory.Gift, "Bom", iconPath: "Items/hairband", tier: GiftTier.Mid, availability: ItemAvailability.AfterEvent2Start),
-                new ItemData("gift_bom_bag", "미니 크로스백", "봄이 스타일에 딱 맞는 가방.\n\"대박... 이거 완전 내 스타일!\"", 65000, ItemCategory.Gift, "Bom", iconPath: "Items/handcream", tier: GiftTier.High, availability: ItemAvailability.AfterEvent3Start),
-                // ── 히로인 선물 — 도희원 ──
-                new ItemData("gift_heewon_novel", "문고본 소설", "도희원이 좋아할 소설책.\n\"...읽어볼게.\"", 8000, ItemCategory.Gift, "Heewon", iconPath: "Items/popup ticket", tier: GiftTier.Low),
-                new ItemData("gift_heewon_tea", "프리미엄 티 세트", "희귀한 블렌딩 차 세트.\n\"...향이 좋아.\"", 40000, ItemCategory.Gift, "Heewon", iconPath: "Items/empire diamond", tier: GiftTier.High, availability: ItemAvailability.AfterEvent2Start),
-                new ItemData("gift_heewon_music", "한정판 LP", "클래식 한정판 레코드.\n\"이걸... 어떻게 구한 거야?\"", 90000, ItemCategory.Gift, "Heewon", iconPath: "Items/CD_tropical glow", tier: GiftTier.Premium, availability: ItemAvailability.AfterEvent3Start),
-                // ── 히로인 선물 — 로아 ──
-                new ItemData("gift_roa_light", "LED 조명", "로아가 좋아할 방송용 조명.\n\"방송 퀄리티 업! 고마워!\"", 10000, ItemCategory.Gift, "Roa", iconPath: "Items/lamp", tier: GiftTier.Low),
-                new ItemData("gift_roa_mic", "콘덴서 마이크", "방송용 고급 마이크.\n\"소리 진짜 깨끗하다!\"", 50000, ItemCategory.Gift, "Roa", iconPath: "Items/headphone", tier: GiftTier.High, availability: ItemAvailability.AfterEvent2Start),
-                new ItemData("gift_roa_cam", "웹캠 프로", "4K 방송용 웹캠.\n\"이거면 화질 미쳤다!\"", 95000, ItemCategory.Gift, "Roa", iconPath: "Items/monitor", tier: GiftTier.Premium, availability: ItemAvailability.AfterEvent3Start),
                 // ── 피로 회복 소모품 ──
                 new ItemData("consume_energy_drink", "에너지 음료", "졸릴 때 마시면 좋은 에너지 음료.\n피로가 조금 줄어든다.", 3000, ItemCategory.Consumable, effectValue: 5, iconPath: "Items/energybar"),
                 new ItemData("consume_energy_bar", "에너지바", "간편하게 먹을 수 있는 에너지바.\n피로를 적당히 줄여준다.", 5000, ItemCategory.Consumable, effectValue: 6, iconPath: "Items/energybar"),

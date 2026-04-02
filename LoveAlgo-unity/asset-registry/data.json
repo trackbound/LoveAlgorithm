@@ -10,33 +10,23 @@
   },
   "character_data": {
     "folder": "Assets/Data/Characters",
-    "count": 5,
-    "files": [
-      "Character_Bom.asset",
-      "Character_Daeun.asset",
-      "Character_Heewon.asset",
-      "Character_Roa.asset",
-      "Character_Yeun.asset"
-    ]
+    "count": 0,
+    "files": []
   },
   "settings": {
     "folder": "Assets/Data",
-    "files": [
-      "AudioSettings.asset",
-      "CharacterDatabase.asset"
-    ]
+    "files": []
   },
   "json_files": {
     "folder": "Assets/Data",
-    "files": [
-      "characters_emotes.json",
-      "characters_emotes.schema.json"
-    ]
+    "files": []
   },
   "runtime_data": {
     "folder": "Assets/Resources/Data",
     "files": [
+      "AudioSettings.asset",
       "BannedWords.txt",
+      "CharacterDatabase.asset",
       "GameBalance.asset",
       "ItemCatalog.asset",
       "ScheduleData.asset"

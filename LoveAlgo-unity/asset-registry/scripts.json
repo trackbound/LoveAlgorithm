@@ -34,8 +34,11 @@
       "files": []
     },
     "Editor": {
-      "count": 0,
-      "files": []
+      "count": 2,
+      "files": [
+        "DataSOGenerator",
+        "DebugRemoteWindow"
+      ]
     },
     "MiniGame": {
       "count": 4,
@@ -70,9 +73,8 @@
       ]
     },
     "Shop": {
-      "count": 10,
+      "count": 9,
       "files": [
-        "GiftPopup",
         "ItemCatalogSO",
         "ItemData",
         "ItemDatabase",
