@@ -10,6 +10,23 @@ namespace LoveAlgo.Story
     [CreateAssetMenu(fileName = "CharacterDatabase", menuName = "LoveAlgo/Character Database")]
     public class CharacterDatabase : ScriptableObject
     {
+        static CharacterDatabase _instance;
+
+        /// <summary>Resources/Data/CharacterDatabase 자동 로드 싱글톤</summary>
+        public static CharacterDatabase Instance
+        {
+            get
+            {
+                if (_instance == null)
+                {
+                    _instance = Resources.Load<CharacterDatabase>("Data/CharacterDatabase");
+                    if (_instance == null)
+                        Debug.LogError("[CharacterDatabase] Resources/Data/CharacterDatabase.asset 을 찾을 수 없습니다");
+                }
+                return _instance;
+            }
+        }
+
         [Header("캐릭터 목록")]
         public List<CharacterData> characters = new();
 

@@ -48,12 +48,11 @@ namespace LoveAlgo.Story
         [Header("선택적 바인딩")]
         [SerializeField] GameObject nameBox;        // 없으면 nameText만 사용
         [SerializeField] CanvasGroup canvasGroup;   // 없으면 SetActive로 제어
-        [SerializeField] CharacterDatabase characterDatabase;  // 캐릭터 색상용
 
         [Header("독백 Dots 애니메이션")]
         [SerializeField] Image monologueDotsImage;  // 독백 시 이름 대신 표시할 Image
         [SerializeField] float dotsFrameRate = 0.15f;  // 프레임 간격 (초)
-        Sprite[] monologueDotSprites;  // Resources에서 로드
+        [SerializeField] Sprite[] monologueDotSprites;  // 프리팫에 바인딩
         CancellationTokenSource dotsAnimCts;
 
         [Header("대사창 애니메이션")]
@@ -125,7 +124,6 @@ namespace LoveAlgo.Story
 
             HideNextIndicator();
             SetupButtons();
-            LoadMonologueDotSprites();
             if (showButtonObject != null) showButtonObject.SetActive(false);
 
             // 저장된 텍스트 속도 복원
@@ -441,11 +439,7 @@ namespace LoveAlgo.Story
                         nameText.text = hasName ? speaker : "";
                         nameText.gameObject.SetActive(hasName);
                         
-                        // CharacterDatabase에서 색상 가져오기
-                        if (hasName && characterDatabase != null)
-                        {
-                            nameText.color = Color.white;
-                        }
+                        nameText.color = Color.white;
                     }
                 }
             }
@@ -456,12 +450,7 @@ namespace LoveAlgo.Story
                 {
                     nameText.text = hasName ? speaker : "";
                     nameText.gameObject.SetActive(hasName);
-                    
-                    // CharacterDatabase에서 색상 가져오기
-                    if (hasName && characterDatabase != null)
-                    {
-                        nameText.color = Color.white;
-                    }
+                    nameText.color = Color.white;
                 }
             }
 
@@ -478,23 +467,6 @@ namespace LoveAlgo.Story
         /// Dots 애니메이션이 재생 중인지
         /// </summary>
         public bool IsDotsAnimating => dotsAnimCts != null && !dotsAnimCts.IsCancellationRequested;
-
-        /// <summary>
-        /// 독백 dots 스프라이트 로드
-        /// </summary>
-        void LoadMonologueDotSprites()
-        {
-            monologueDotSprites = Resources.LoadAll<Sprite>("UI/MonologueDots");
-            if (monologueDotSprites == null || monologueDotSprites.Length == 0)
-            {
-                Debug.LogWarning("[DialogueUI] 독백 dots 스프라이트를 찾을 수 없습니다: Resources/UI/MonologueDots");
-            }
-            else
-            {
-                // 이름순 정렬 (00, 01, 02...)
-                System.Array.Sort(monologueDotSprites, (a, b) => string.Compare(a.name, b.name, StringComparison.Ordinal));
-            }
-        }
 
         /// <summary>
         /// Dots 애니메이션 시작
@@ -997,9 +969,9 @@ namespace LoveAlgo.Story
         {
             // Speaker 이름을 CharacterId로 변환 (썸네일 로드용)
             string charId = null;
-            if (!string.IsNullOrEmpty(speaker) && characterDatabase != null)
+            if (!string.IsNullOrEmpty(speaker) && CharacterDatabase.Instance != null)
             {
-                charId = characterDatabase.SpeakerToCharacterId(speaker);
+                charId = CharacterDatabase.Instance.SpeakerToCharacterId(speaker);
             }
 
             dialogueLog.Add(new DialogueLogEntry

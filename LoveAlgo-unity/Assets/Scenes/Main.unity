@@ -7319,6 +7319,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: ActionPanel
       objectReference: {fileID: 0}
+    - target: {fileID: 1187392415568998985, guid: 479fdc0f86ab2024491dff34b29117cd, type: 3}
+      propertyPath: m_Name
+      value: Dialogue
+      objectReference: {fileID: 0}
+    - target: {fileID: 1187392415568998985, guid: 479fdc0f86ab2024491dff34b29117cd, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 1465661650831503005, guid: 479fdc0f86ab2024491dff34b29117cd, type: 3}
       propertyPath: m_Name
       value: TabPartTime
@@ -7361,7 +7369,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1858686694971313027, guid: 479fdc0f86ab2024491dff34b29117cd, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 0.000061035156
+      value: -0.000061035156
       objectReference: {fileID: 0}
     - target: {fileID: 1895493926802306024, guid: 479fdc0f86ab2024491dff34b29117cd, type: 3}
       propertyPath: m_Name
@@ -7477,7 +7485,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3415555562570857592, guid: 479fdc0f86ab2024491dff34b29117cd, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -0.000061035156
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3678516963677566700, guid: 479fdc0f86ab2024491dff34b29117cd, type: 3}
       propertyPath: m_Name
@@ -7489,11 +7497,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4001663048560744870, guid: 479fdc0f86ab2024491dff34b29117cd, type: 3}
       propertyPath: m_Name
-      value: dialogue show button
+      value: DialogueShow Button
       objectReference: {fileID: 0}
     - target: {fileID: 4062766084615684515, guid: 479fdc0f86ab2024491dff34b29117cd, type: 3}
       propertyPath: m_Name
       value: PromptText
+      objectReference: {fileID: 0}
+    - target: {fileID: 4232166205840542613, guid: 479fdc0f86ab2024491dff34b29117cd, type: 3}
+      propertyPath: m_Name
+      value: choice panel
+      objectReference: {fileID: 0}
+    - target: {fileID: 4232166205840542613, guid: 479fdc0f86ab2024491dff34b29117cd, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4273728177174438198, guid: 479fdc0f86ab2024491dff34b29117cd, type: 3}
       propertyPath: m_Name
@@ -7503,6 +7519,30 @@ PrefabInstance:
       propertyPath: m_Name
       value: DescText
       objectReference: {fileID: 0}
+    - target: {fileID: 4318588601887091360, guid: 479fdc0f86ab2024491dff34b29117cd, type: 3}
+      propertyPath: monologueDotSprites.Array.size
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 4318588601887091360, guid: 479fdc0f86ab2024491dff34b29117cd, type: 3}
+      propertyPath: 'monologueDotSprites.Array.data[0]'
+      value: 
+      objectReference: {fileID: 21300000, guid: 03a5dc05c07aaa642ab43a4fae649f2d, type: 3}
+    - target: {fileID: 4318588601887091360, guid: 479fdc0f86ab2024491dff34b29117cd, type: 3}
+      propertyPath: 'monologueDotSprites.Array.data[1]'
+      value: 
+      objectReference: {fileID: 21300000, guid: 5535a5c202bdbd5478cfc2d87d2f64ee, type: 3}
+    - target: {fileID: 4318588601887091360, guid: 479fdc0f86ab2024491dff34b29117cd, type: 3}
+      propertyPath: 'monologueDotSprites.Array.data[2]'
+      value: 
+      objectReference: {fileID: 21300000, guid: 728cde7d74022474bbae1faf9265cd08, type: 3}
+    - target: {fileID: 4318588601887091360, guid: 479fdc0f86ab2024491dff34b29117cd, type: 3}
+      propertyPath: 'monologueDotSprites.Array.data[3]'
+      value: 
+      objectReference: {fileID: 21300000, guid: b226c13fab532fa45bc327da35d74bbe, type: 3}
+    - target: {fileID: 4318588601887091360, guid: 479fdc0f86ab2024491dff34b29117cd, type: 3}
+      propertyPath: 'monologueDotSprites.Array.data[4]'
+      value: 
+      objectReference: {fileID: 21300000, guid: 5002cc5d84b54a8418781ce071f3e493, type: 3}
     - target: {fileID: 4335093890430888217, guid: 479fdc0f86ab2024491dff34b29117cd, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -7901,7 +7941,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 9041190451547868003, guid: 479fdc0f86ab2024491dff34b29117cd, type: 3}
       propertyPath: m_Name
-      value: Info bar
+      value: place Info bar
+      objectReference: {fileID: 0}
+    - target: {fileID: 9041190451547868003, guid: 479fdc0f86ab2024491dff34b29117cd, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 9216531081794827055, guid: 479fdc0f86ab2024491dff34b29117cd, type: 3}
       propertyPath: m_Name

@@ -56,8 +56,7 @@ namespace LoveAlgo.Story
         [SerializeField] float enterOffset = 40f;        // 등장 시 슬라이드 거리
         [SerializeField] float exitSlideDistance = 40f;  // 퇴장 시 슬라이드 거리
 
-        [Header("캐릭터 DB")]
-        [SerializeField] CharacterDatabase characterDatabase;
+
 
         string currentCharacter;
         string currentEmote;
@@ -426,6 +425,7 @@ namespace LoveAlgo.Story
             float pivotY = 0f;
 
             // CharacterDatabase에서 데이터 가져오기
+            var characterDatabase = CharacterDatabase.Instance;
             if (characterDatabase != null)
             {
                 var charData = characterDatabase.GetCharacterById(characterName);

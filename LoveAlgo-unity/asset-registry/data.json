@@ -4,8 +4,8 @@
   "items": {
     "art_folder": "Assets/Art/Item",
     "icon_folder": "Assets/Art/Item/Icon",
-    "art_count": 19,
-    "icon_count": 19,
+    "art_count": 0,
+    "icon_count": 0,
     "data_so": "Assets/Resources/Data/ItemCatalog.asset"
   },
   "character_data": {

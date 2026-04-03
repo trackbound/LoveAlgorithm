@@ -19,8 +19,7 @@ namespace LoveAlgo.Story
         [SerializeField] CharacterSlot slotC;
         [SerializeField] CharacterSlot slotR;
 
-        [Header("데이터베이스")]
-        [SerializeField] CharacterDatabase characterDatabase;
+
 
         [Header("레이어 가시성")]
         [SerializeField] CanvasGroup layerCanvasGroup;  // 레이어 전체 페이드용
@@ -336,9 +335,10 @@ namespace LoveAlgo.Story
         string SpeakerToCharacterId(string speaker)
         {
             // CharacterDatabase에서 매핑 조회
-            if (characterDatabase != null)
+            var charDb = CharacterDatabase.Instance;
+            if (charDb != null)
             {
-                string id = characterDatabase.SpeakerToCharacterId(speaker);
+                string id = charDb.SpeakerToCharacterId(speaker);
                 if (!string.IsNullOrEmpty(id))
                     return id;
             }
@@ -393,6 +393,7 @@ namespace LoveAlgo.Story
         bool IsOverlayCharacter(string characterName)
         {
             if (string.IsNullOrEmpty(characterName)) return false;
+            var characterDatabase = CharacterDatabase.Instance;
             if (characterDatabase != null)
             {
                 var data = characterDatabase.GetCharacterById(characterName);

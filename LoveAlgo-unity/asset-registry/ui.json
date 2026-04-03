@@ -4,53 +4,42 @@
   "art": {
     "folder": "Assets/Art/UI",
     "categories": {
-      "Done": {
-        "file_count": 92,
+      "Popup": {
+        "file_count": 24,
         "subfolders": [
           "Common",
-          "Config",
-          "Dialogue",
-          "Extra",
-          "SaveLoad",
+          "Log",
+          "Modal"
+        ]
+      },
+      "Scene": {
+        "file_count": 28,
+        "subfolders": [
           "Title",
           "Username"
         ]
       },
-      "Log": {
-        "file_count": 16
-      },
-      "Phone": {
-        "file_count": 54,
+      "Simulate": {
+        "file_count": 42,
         "subfolders": [
-          "ChatBubble",
-          "ChatList",
-          "ChatRoom",
-          "FriendList",
-          "PhoneButton",
-          "ProfilePopup"
+          "Schedule",
+          "Shop"
         ]
       },
-      "Sample": {
-        "file_count": 7
+      "Stage": {
+        "file_count": 8
       },
-      "Schedule": {
-        "file_count": 27
-      },
-      "Shop": {
-        "file_count": 15
+      "Story": {
+        "file_count": 27,
+        "subfolders": [
+          "MonologueDots"
+        ]
       }
     }
   },
   "prefabs": {
     "folder": "Assets/Prefabs",
     "categories": {
-      "Dialogue": [
-        "Choice",
-        "ChoiceButton",
-        "Dialogue",
-        "InfoBar",
-        "ShowBtn"
-      ],
       "Log": [
         "Log",
         "Log_Bubble_Extra",
@@ -103,6 +92,13 @@
         "MonologueDim",
         "SD",
         "VirtualBG"
+      ],
+      "Story": [
+        "Choice Button",
+        "Choice",
+        "Dialogue",
+        "DialogueShow Button",
+        "PlaceInfo Bar"
       ],
       "UI": [
         "Popup/Confirm",

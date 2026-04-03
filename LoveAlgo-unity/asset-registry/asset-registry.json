@@ -41,20 +41,18 @@
       "details": "story.json"
     },
     "items": {
-      "count": 19,
+      "count": 0,
       "details": "data.json"
     },
     "ui": {
       "art_categories": [
-        "Done",
-        "Log",
-        "Phone",
-        "Sample",
-        "Schedule",
-        "Shop"
+        "Popup",
+        "Scene",
+        "Simulate",
+        "Stage",
+        "Story"
       ],
       "prefab_categories": [
-        "Dialogue",
         "Log",
         "Menu",
         "Phone",
@@ -62,6 +60,7 @@
         "Schedule",
         "Shop",
         "Stage",
+        "Story",
         "UI",
         "_root"
       ],
@@ -74,8 +73,7 @@
     "scripts": {
       "namespaces": {
         "Core": 21,
-        "Data": 0,
-        "Editor": 3,
+        "Editor": 4,
         "MiniGame": 4,
         "Phone": 7,
         "Schedule": 6,
@@ -83,7 +81,7 @@
         "Story": 47,
         "UI": 28
       },
-      "total": 125,
+      "total": 126,
       "details": "scripts.json"
     }
   }

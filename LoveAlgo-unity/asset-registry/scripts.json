@@ -29,16 +29,13 @@
         "StoryInputHandler"
       ]
     },
-    "Data": {
-      "count": 0,
-      "files": []
-    },
     "Editor": {
-      "count": 3,
+      "count": 4,
       "files": [
         "ConsoleLogCopier",
         "DataSOGenerator",
-        "DebugRemoteWindow"
+        "DebugRemoteWindow",
+        "FolderReorganizer"
       ]
     },
     "MiniGame": {
