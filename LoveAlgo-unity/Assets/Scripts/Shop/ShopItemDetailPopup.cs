@@ -82,9 +82,9 @@ namespace LoveAlgo.Shop
         /// 슬롯 위치에 따라 설명카드를 배치한다.
         ///
         /// 기본 원칙 (기획서 참조):
-        /// - 상단 슬롯이면 아래에, 하단 슬롯이면 위에 표시한다.
-        /// - X축은 슬롯 중심에 정렬하되, Viewport 밖으로 나가지 않도록 clamp 한다.
-        /// - 화면 밖으로 나가지 않도록 Viewport 안에서 clamp 한다.
+        /// - X축: 슬롯이 Viewport 좌반부이면 오른쪽에, 우반부이면 왼쪽에 표시
+        /// - Y축: 슬롯 중심에 정렬하되, Viewport 밖으로 나가지 않도록 clamp
+        /// - 좌/우에 공간이 없으면 상/하 fallback
         /// </summary>
         void PositionRelativeToSlot(RectTransform slotRect, RectTransform viewportRect)
         {
@@ -100,26 +100,55 @@ namespace LoveAlgo.Shop
             float vpBottom = vpCorners[0].y;
             float vpTop    = vpCorners[2].y;
 
-            // 슬롯 크기 및 월드 위치
+            // 슬롯/팝업 크기 (월드 스케일 반영)
             Vector3 slotWorld = slotRect.position;
+            float slotW = slotRect.rect.width  * slotRect.lossyScale.x;
             float slotH = slotRect.rect.height * slotRect.lossyScale.y;
-            float popupW = rectTransform.rect.width * rectTransform.lossyScale.x;
+            float popupW = rectTransform.rect.width  * rectTransform.lossyScale.x;
             float popupH = rectTransform.rect.height * rectTransform.lossyScale.y;
 
-            // Y축: 슬롯이 Viewport 상반부이면 아래에, 하반부이면 위에 표시
-            float ny = Mathf.InverseLerp(vpBottom, vpTop, slotWorld.y);
-            float baseOffsetY = slotH * 0.5f + popupH * 0.5f + gap;
-            float dirY = ny > 0.5f ? -1f : 1f;
-            float posY = slotWorld.y + dirY * baseOffsetY;
+            float halfPopupW = popupW * 0.5f;
+            float halfPopupH = popupH * 0.5f;
 
-            // X축: 슬롯 중심에 정렬
-            float posX = slotWorld.x;
+            float posX, posY;
 
-            // ── 화면 밖 보정 (Viewport 범위 내로 clamp)
-            float halfW = popupW * 0.5f + edgePadding;
-            float halfH = popupH * 0.5f + edgePadding;
-            posX = Mathf.Clamp(posX, vpLeft + halfW, vpRight - halfW);
-            posY = Mathf.Clamp(posY, vpBottom + halfH, vpTop - halfH);
+            // ── X축: 좌/우 배치 판단 ──────────────────
+            float nx = Mathf.InverseLerp(vpLeft, vpRight, slotWorld.x);
+            float offsetX = slotW * 0.5f + halfPopupW + gap;
+
+            // 좌측 → 오른쪽에 배치, 우측 → 왼쪽에 배치
+            float rightX = slotWorld.x + offsetX;
+            float leftX  = slotWorld.x - offsetX;
+
+            bool fitsRight = (rightX + halfPopupW + edgePadding) <= vpRight;
+            bool fitsLeft  = (leftX  - halfPopupW - edgePadding) >= vpLeft;
+
+            if (nx <= 0.5f && fitsRight)
+                posX = rightX;
+            else if (nx > 0.5f && fitsLeft)
+                posX = leftX;
+            else if (fitsRight)
+                posX = rightX;
+            else if (fitsLeft)
+                posX = leftX;
+            else
+            {
+                // 좌/우 모두 불가 → 슬롯 중심 정렬 + 상/하 fallback
+                posX = slotWorld.x;
+                posX = Mathf.Clamp(posX, vpLeft + halfPopupW + edgePadding, vpRight - halfPopupW - edgePadding);
+
+                float ny = Mathf.InverseLerp(vpBottom, vpTop, slotWorld.y);
+                float offsetY = slotH * 0.5f + halfPopupH + gap;
+                posY = slotWorld.y + (ny > 0.5f ? -offsetY : offsetY);
+                posY = Mathf.Clamp(posY, vpBottom + halfPopupH + edgePadding, vpTop - halfPopupH - edgePadding);
+
+                rectTransform.position = new Vector3(posX, posY, slotWorld.z);
+                return;
+            }
+
+            // ── Y축: 슬롯 중심 정렬 + clamp ─────────
+            posY = slotWorld.y;
+            posY = Mathf.Clamp(posY, vpBottom + halfPopupH + edgePadding, vpTop - halfPopupH - edgePadding);
 
             rectTransform.position = new Vector3(posX, posY, slotWorld.z);
         }

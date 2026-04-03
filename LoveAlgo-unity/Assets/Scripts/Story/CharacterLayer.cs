@@ -359,7 +359,7 @@ namespace LoveAlgo.Story
         }
 
         /// <summary>
-        /// 표정 변경 (인라인 태그용)
+        /// 표정 변경 (인라인 태그용) — 오버레이 캐릭터면 오버레이도 자동 전환
         /// </summary>
         public void ChangeEmote(string slotStr, string emote)
         {
@@ -368,8 +368,25 @@ namespace LoveAlgo.Story
                 var slot = GetSlot(pos);
                 if (slot != null && !slot.IsEmpty)
                 {
-                    slot.EmoteAsync(emote).Forget();
+                    ChangeEmoteWithOverlayAsync(slot, emote).Forget();
                 }
+            }
+        }
+
+        async UniTaskVoid ChangeEmoteWithOverlayAsync(CharacterSlot slot, string emote)
+        {
+            string overlay = ResolveAutoOverlay(slot.CurrentCharacter, emote);
+
+            if (!string.IsNullOrEmpty(overlay))
+            {
+                await UniTask.WhenAll(
+                    slot.EmoteAsync(emote),
+                    SwitchOverlayAsync(overlay, default)
+                );
+            }
+            else
+            {
+                await slot.EmoteAsync(emote);
             }
         }
 

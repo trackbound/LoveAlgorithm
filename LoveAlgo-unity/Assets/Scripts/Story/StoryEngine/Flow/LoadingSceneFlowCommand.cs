@@ -6,7 +6,7 @@ using LoveAlgo.Core;
 namespace LoveAlgo.Story.StoryEngine.Flow
 {
     /// <summary>
-    /// LoadingScene 명령 — 자동저장 + 로딩화면 표시
+    /// LoadingScene 명령 — 로딩화면 표시 (자동저장 없음 — Save는 CSV에서 별도 배치)
     /// CSV: Flow,,LoadingScene[:표시시간],await
     /// </summary>
     public static class LoadingSceneFlowCommand
@@ -15,8 +15,6 @@ namespace LoveAlgo.Story.StoryEngine.Flow
         {
             float displayTime = parts.Length > 1 && float.TryParse(parts[1], out float dt) ? dt : 2.0f;
             Debug.Log($"[Flow] LoadingScene (표시={displayTime}s)");
-
-            GameManager.Instance?.AutoSave();
 
             var loading = LoadingScreen.Instance;
             if (loading != null)

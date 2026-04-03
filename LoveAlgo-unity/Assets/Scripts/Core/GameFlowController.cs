@@ -209,9 +209,6 @@ namespace LoveAlgo.Core
                 var ct = _gm.GetCancellationTokenOnDestroy();
                 var fx = ScreenFX.Instance;
 
-                // 자동저장 (페이드 전에 저장 — 화면이 보이는 상태에서 스크린샷 캡처)
-                _gm.AutoSave();
-
                 // 페이드 아웃
                 if (fx != null && !fx.IsFadeBlack)
                     await fx.FadeOutAsync(0.5f, ct);
@@ -326,7 +323,7 @@ namespace LoveAlgo.Core
 
                 _gm.CleanupStage();
                 ChangePhase(GamePhase.DayLoop);
-                _gm.AutoSave();
+                await _gm.AutoSaveAsync();
 
                 await UniTask.Yield(ct);
 
@@ -352,20 +349,19 @@ namespace LoveAlgo.Core
         {
             var ct = _gm.GetCancellationTokenOnDestroy();
 
-            // 자동저장 (페이드 전에 저장 — 화면이 보이는 상태에서 스크린샷 캡처)
-            _gm.AutoSave();
+            // 자동저장 (화면이 보이는 상태에서 스크린샷 캡처)
+            await _gm.AutoSaveAsync();
 
-            // 페이드 아웃
-            if (ScreenFX.Instance != null)
-                await ScreenFX.Instance.FadeOutAsync(2f, ct);
-
-            // 데모 종료 안내 (사용자가 확인 후 진행)
+            // 데모 종료 안내 (페이드 전 — ScreenFX가 PopupManager 위 레이어라 페이드 후엔 안 보임)
             if (UI.PopupManager.Instance != null)
                 await UI.PopupManager.Instance.AlertAsync("데모 버전 플레이가 종료되었습니다.\n자동 저장되었습니다.");
             else
                 await UniTask.Delay(3000, cancellationToken: ct);
 
-            // 타이틀로 복귀
+            // 페이드 아웃 → 타이틀 복귀
+            if (ScreenFX.Instance != null)
+                await ScreenFX.Instance.FadeOutAsync(0.5f, ct);
+
             GoToTitle();
         }
 

@@ -46,7 +46,8 @@ namespace LoveAlgo.Story.StoryEngine.Macros
             if (fx != null)
                 await fx.FadeInAsync(0.3f, ct);
 
-            GameManager.Instance?.AutoSave();
+            if (GameManager.Instance != null)
+                await GameManager.Instance.AutoSaveAsync();
 
             float elapsed = Time.time - startTime;
             float remaining = totalDuration - elapsed;

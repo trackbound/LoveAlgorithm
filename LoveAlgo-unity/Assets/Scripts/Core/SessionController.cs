@@ -176,10 +176,11 @@ namespace LoveAlgo.Core
         }
 
         /// <summary>
-        /// 자동저장 (슬롯 0)
+        /// 자동저장 (슬롯 0) — 비동기: UI 숨김 → 1프레임 대기 → 스크린샷 → 저장
         /// </summary>
-        public void AutoSave()
+        public async UniTask AutoSaveAsync()
         {
+            await SaveThumbnailManager.CapturePendingScreenshotAsync();
             Save(SaveManager.AutoSaveSlot, usePendingThumbnail: true);
             Debug.Log("[GameManager] 자동저장 완료");
         }

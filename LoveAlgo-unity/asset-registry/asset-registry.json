@@ -50,12 +50,12 @@
         "Log",
         "Menu",
         "Phone",
+        "Popup",
         "Scene",
         "Schedule",
         "Shop",
         "Stage",
         "Story",
-        "UI",
         "_root"
       ],
       "details": "ui.json"
@@ -67,15 +67,16 @@
     "scripts": {
       "namespaces": {
         "Core": 21,
+        "Debug": 1,
         "Editor": 4,
         "MiniGame": 4,
         "Phone": 7,
         "Schedule": 6,
-        "Shop": 9,
+        "Shop": 10,
         "Story": 46,
-        "UI": 28
+        "UI": 29
       },
-      "total": 125,
+      "total": 128,
       "details": "scripts.json"
     }
   }

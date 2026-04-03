@@ -17,6 +17,7 @@ namespace LoveAlgo.UI
         [SerializeField] TitleUI titleUI;
         [SerializeField] UsernameUI usernameUI;
         [SerializeField] PlaceUI placeUI;
+        [SerializeField] QuickMenuUI quickMenuUI;
 
         public DialogueUI DialogueUI => dialogueUI;
         public ChoiceUI ChoiceUI => choiceUI;
@@ -40,6 +41,7 @@ namespace LoveAlgo.UI
             SetMainUIActive(scheduleUI, false);
             SetMainUIActive(titleUI, false);
             SetMainUIActive(usernameUI, false);
+            SetMainUIActive(quickMenuUI, false);
             placeUI?.HideImmediate();
         }
 
@@ -59,6 +61,7 @@ namespace LoveAlgo.UI
                     break;
                 case MainUIType.Schedule:
                     SetMainUIActive(scheduleUI, true);
+                    SetMainUIActive(quickMenuUI, true);
                     break;
                 case MainUIType.Title:
                     SetMainUIActive(titleUI, true);

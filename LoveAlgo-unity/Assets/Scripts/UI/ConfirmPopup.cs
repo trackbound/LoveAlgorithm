@@ -44,8 +44,8 @@ namespace LoveAlgo.UI
         [SerializeField] TMP_Text cancelButtonText;
 
         [Header("설정")]
-        [SerializeField] string defaultConfirmText = "확인";
-        [SerializeField] string defaultCancelText = "취소";
+        [SerializeField] string defaultConfirmText = "예";
+        [SerializeField] string defaultCancelText = "아니요";
 
         UniTaskCompletionSource<bool> tcs;
 

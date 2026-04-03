@@ -88,7 +88,7 @@ namespace LoveAlgo.Core
             if (effect.perseveranceChange != 0) parts.Add($"끈기 {FormatChange(effect.perseveranceChange)}");
             if (effect.fatigueChange != 0) parts.Add($"피로 {FormatChange(effect.fatigueChange)}");
             if (effect.moneyChange != 0) parts.Add($"금액 {MoneyFormat.SignedCurrency(effect.moneyChange)}");
-            return parts.Count > 0 ? string.Join(" / ", parts) : "변화 없음";
+            return parts.Count > 0 ? string.Join("\n", parts) : "변화 없음";
         }
 
         string FormatChange(int value) => value > 0 ? $"+{value}" : value.ToString();
@@ -195,7 +195,7 @@ namespace LoveAlgo.Core
                     return;
                 }
 
-                _gm.AutoSave();
+                await _gm.AutoSaveAsync();
 
                 await UniTask.Delay(700, cancellationToken: ct);
 

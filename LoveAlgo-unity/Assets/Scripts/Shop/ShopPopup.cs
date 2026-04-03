@@ -27,7 +27,6 @@ namespace LoveAlgo.Shop
         [SerializeField] Transform cartContainer;
         [SerializeField] TMP_Text totalPriceText;
         [SerializeField] Button purchaseButton;
-        [SerializeField] Button backButton;
 
         [Header("카테고리 필터")]
         [SerializeField] TabGroup categoryTabs;
@@ -40,9 +39,6 @@ namespace LoveAlgo.Shop
         [Header("프리팹")]
         [SerializeField] ShopSaleSlot saleSlotPrefab;
         [SerializeField] ShopCartSlot cartSlotPrefab;
-
-        /// <summary>뒤로가기 콜백 (ScheduleUI가 등록)</summary>
-        public event Action OnBackRequested;
 
         /// <summary>장바구니: itemId → 수량</summary>
         readonly Dictionary<string, int> cart = new();
@@ -60,15 +56,12 @@ namespace LoveAlgo.Shop
         ItemCategory? activeFilter;
 
         /// <summary>탭 인덱스 → 카테고리 매핑 (0=전체, 1=소모품, 2=세션버프)</summary>
-        static readonly ItemCategory?[] TabCategories = { null, ItemCategory.Consumable, ItemCategory.SessionBuff };
+        static readonly ItemCategory?[] TabCategories = { null, ItemCategory.Gift, ItemCategory.Consumable, ItemCategory.SessionBuff };
 
         void Awake()
         {
             if (purchaseButton != null)
                 purchaseButton.onClick.AddListener(OnPurchaseClick);
-
-            if (backButton != null)
-                backButton.onClick.AddListener(OnBackClick);
 
             if (categoryTabs != null)
                 categoryTabs.OnTabChanged += OnCategoryTabChanged;
@@ -105,11 +98,6 @@ namespace LoveAlgo.Shop
             RefreshCart();
             RefreshMoneyDisplay();
             HideItemDetail();
-        }
-
-        void OnBackClick()
-        {
-            OnBackRequested?.Invoke();
         }
 
         /// <summary>카테고리 탭 변경 콜백</summary>

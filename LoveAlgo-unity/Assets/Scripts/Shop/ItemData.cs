@@ -8,6 +8,7 @@ namespace LoveAlgo.Shop
     /// </summary>
     public enum ItemCategory
     {
+        Gift,           // 선물 — 히로인 호감도 상승
         Consumable,     // 소모품 — 피로 회복 등
         SessionBuff     // 세션 버프 — 자유행동 1회 동안 스탯 일시 보정
     }
@@ -93,7 +94,14 @@ namespace LoveAlgo.Shop
         /// null이면 아이템 ID를 태그로 사용
         /// </summary>
         public string DuplicateTag;
+        /// <summary>선물 대상 히로인 ID (Gift 전용: "Roa", "Daeun", "Yeeun", "Heewon", "Bom")</summary>
+        public string TargetHeroine;
 
+        /// <summary>2차 이벤트 호감도 보너스 (Gift 전용)</summary>
+        public int LoveEffect2;
+
+        /// <summary>3차 이벤트 호감도 보너스 (Gift 전용)</summary>
+        public int LoveEffect3;
         /// <summary>SO 직렬화용 기본 생성자</summary>
         public ItemData() { }
 
@@ -101,7 +109,8 @@ namespace LoveAlgo.Shop
             ItemCategory category,
             int effectValue = 0, string iconPath = null,
             ItemAvailability availability = ItemAvailability.Always,
-            string effectStat = null, string duplicateTag = null)
+            string effectStat = null, string duplicateTag = null,
+            string targetHeroine = null, int loveEffect2 = 0, int loveEffect3 = 0)
         {
             Id = id;
             Name = name;
@@ -113,6 +122,9 @@ namespace LoveAlgo.Shop
             Availability = availability;
             EffectStat = effectStat;
             DuplicateTag = duplicateTag;
+            TargetHeroine = targetHeroine;
+            LoveEffect2 = loveEffect2;
+            LoveEffect3 = loveEffect3;
         }
 
         /// <summary>중복 추적에 사용할 태그</summary>

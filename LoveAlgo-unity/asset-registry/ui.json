@@ -20,8 +20,9 @@
         ]
       },
       "Simulate": {
-        "file_count": 44,
+        "file_count": 63,
         "subfolders": [
+          "QuickMenu",
           "Schedule",
           "Shop"
         ]
@@ -68,6 +69,10 @@
         "Phone_Player",
         "Phone_Stat"
       ],
+      "Popup": [
+        "Confirm",
+        "Schedule"
+      ],
       "Scene": [
         "Title",
         "Username"
@@ -100,15 +105,11 @@
         "DialogueShow Button",
         "PlaceInfo Bar"
       ],
-      "UI": [
-        "Popup/Confirm",
-        "Popup/Schedule"
-      ],
       "_root": [
-        "Main",
         "Popup",
         "Screen Effect",
-        "Stage"
+        "Stage",
+        "UI"
       ]
     }
   },

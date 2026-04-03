@@ -106,9 +106,10 @@ namespace LoveAlgo.Schedule
             if (helpButton != null)
                 helpButton.onClick.AddListener(() => helpPanel?.Open());
 
-            // 상점 뒤로가기 콜백
-            if (shopPanel != null)
-                shopPanel.OnBackRequested += OnShopBack;
+            // 퀵메뉴 돌아가기 (QuickMenu는 ScheduleUI의 형제 — 부모(Simulate)에서 검색)
+            var quickMenu = transform.parent?.GetComponentInChildren<LoveAlgo.UI.QuickMenuUI>(true);
+            if (quickMenu != null)
+                quickMenu.OnBackRequested += OnBackPressed;
 
             // 초기 상태
             if (canvasGroup != null)
@@ -296,7 +297,7 @@ namespace LoveAlgo.Schedule
             // 기획서: dim + 확인 팝업
             var confirmed = await LoveAlgo.UI.PopupManager.Instance.ConfirmAsync(
                 "Schedule",
-                new LoveAlgo.UI.ConfirmPopupData { mainText = message, sub1 = effectText }
+                new LoveAlgo.UI.ConfirmPopupData { mainText = message, sub1 = effectText, sub2 = effect.description }
             );
 
             if (confirmed)
@@ -380,6 +381,38 @@ namespace LoveAlgo.Schedule
         public void OpenShop()
         {
             OnShopClick();
+        }
+
+        /// <summary>퀵메뉴 돌아가기: 상점이면 스케줄 복귀, 스케줄이면 스토리 진행 확인</summary>
+        void OnBackPressed()
+        {
+            if (isCrossFading) return;
+
+            if (isShopVisible)
+            {
+                // 상점 → 스케줄 복귀
+                CrossFadeToScheduleAsync().Forget();
+            }
+            else
+            {
+                // 스케줄 → 스토리 진행 확인
+                OnBackToStoryAsync().Forget();
+            }
+        }
+
+        async UniTaskVoid OnBackToStoryAsync()
+        {
+            bool confirmed = await LoveAlgo.UI.PopupManager.Instance.ConfirmAsync(
+                "스토리를 진행하시겠습니까?");
+            if (!confirmed) return;
+
+            var gm = GameManager.Instance;
+            if (gm == null) return;
+
+            // 남은 행동 소진 → EndDay
+            gm.RemainingActions = 0;
+            await HideAsync(destroyCancellationToken);
+            gm.OnScheduleCompleted();
         }
 
         /// <summary>상점에서 뒤로가기 — 크로스페이드로 스케줄 패널 복귀</summary>
@@ -491,8 +524,9 @@ namespace LoveAlgo.Schedule
             if (shopContent != null)
                 shopContent.DOKill();
 
-            if (shopPanel != null)
-                shopPanel.OnBackRequested -= OnShopBack;
+            var quickMenu = transform.parent?.GetComponentInChildren<LoveAlgo.UI.QuickMenuUI>(true);
+            if (quickMenu != null)
+                quickMenu.OnBackRequested -= OnBackPressed;
         }
     }
 }

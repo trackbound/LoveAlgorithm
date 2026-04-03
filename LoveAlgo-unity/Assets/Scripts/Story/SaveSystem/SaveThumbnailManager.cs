@@ -298,14 +298,17 @@ namespace LoveAlgo.Story.SaveSystem
 
             if (sourceAspect > targetAspect)
             {
-                cropWidth = Mathf.RoundToInt(contentRect.height * targetAspect);
+                cropWidth = Mathf.Max(1, Mathf.RoundToInt(contentRect.height * targetAspect));
                 cropX = contentRect.x + (contentRect.width - cropWidth) / 2;
             }
             else if (sourceAspect < targetAspect)
             {
-                cropHeight = Mathf.RoundToInt(contentRect.width / targetAspect);
+                cropHeight = Mathf.Max(1, Mathf.RoundToInt(contentRect.width / targetAspect));
                 cropY = contentRect.y + (contentRect.height - cropHeight) / 2;
             }
+
+            cropWidth = Mathf.Max(1, cropWidth);
+            cropHeight = Mathf.Max(1, cropHeight);
 
             var cropped = new Texture2D(cropWidth, cropHeight, TextureFormat.RGB24, false);
             cropped.SetPixels(source.GetPixels(cropX, cropY, cropWidth, cropHeight));

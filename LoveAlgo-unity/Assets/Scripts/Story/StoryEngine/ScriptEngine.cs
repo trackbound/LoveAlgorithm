@@ -120,7 +120,8 @@ namespace LoveAlgo.Story.StoryEngine
                     return true;
 
                 case "Save":
-                    LoveAlgo.Core.GameManager.Instance?.AutoSave();
+                    if (LoveAlgo.Core.GameManager.Instance != null)
+                        await LoveAlgo.Core.GameManager.Instance.AutoSaveAsync();
                     return true;
 
                 case "Schedule":
