@@ -35,7 +35,7 @@
         "ConsoleLogCopier",
         "DataSOGenerator",
         "DebugRemoteWindow",
-        "FolderReorganizer"
+        "TMPFontCleaner"
       ]
     },
     "MiniGame": {
@@ -85,7 +85,7 @@
       ]
     },
     "Story": {
-      "count": 47,
+      "count": 46,
       "files": [
         "AudioManager",
         "AudioSettings",
@@ -94,7 +94,6 @@
         "CGLayer",
         "CGLineExecutor",
         "CharLineExecutor",
-        "CharacterData",
         "CharacterDatabase",
         "CharacterLayer",
         "CharacterSlot",

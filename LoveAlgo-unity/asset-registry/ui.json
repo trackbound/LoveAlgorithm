@@ -20,7 +20,7 @@
         ]
       },
       "Simulate": {
-        "file_count": 42,
+        "file_count": 44,
         "subfolders": [
           "Schedule",
           "Shop"
@@ -107,7 +107,7 @@
       "_root": [
         "Main",
         "Popup",
-        "ScreenFX",
+        "Screen Effect",
         "Stage"
       ]
     }

@@ -5,7 +5,7 @@ using UnityEngine;
 namespace LoveAlgo.Story
 {
     /// <summary>
-    /// 캐릭터 데이터베이스 - 전체 캐릭터 컬렉션
+    /// 캐릭터 데이터베이스 - 전체 캐릭터 + 매핑 통합 관리
     /// </summary>
     [CreateAssetMenu(fileName = "CharacterDatabase", menuName = "LoveAlgo/Character Database")]
     public class CharacterDatabase : ScriptableObject
@@ -28,112 +28,194 @@ namespace LoveAlgo.Story
         }
 
         [Header("캐릭터 목록")]
-        public List<CharacterData> characters = new();
+        public List<CharacterEntry> characters = new();
 
-        [Header("매핑 설정")]
-        [Tooltip("Speaker 이름 → CharacterID 매핑 (한글 이름 → 영문 ID)")]
-        public List<SpeakerMapping> speakerMappings = new();
+        [Header("표정 별칭 (한글 → 영문)")]
+        [Tooltip("한글 표정명을 영문 파일명으로 변환. 아트팀이 새 표정 추가 시 여기에 항목 추가")]
+        public List<EmoteAlias> emoteAliases = new();
+
+        Dictionary<string, string> _emoteAliasCache;
 
         /// <summary>
-        /// CharacterID로 캐릭터 데이터 가져오기
+        /// 표정 이름 변환 (한글 → 영문). 매칭 없으면 원본 그대로 반환.
         /// </summary>
-        public CharacterData GetCharacterById(string characterId)
+        public string ResolveEmoteName(string input)
         {
-            return characters.Find(c => 
+            if (string.IsNullOrEmpty(input)) return input;
+
+            if (_emoteAliasCache == null)
+            {
+                _emoteAliasCache = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                foreach (var alias in emoteAliases)
+                {
+                    if (!string.IsNullOrEmpty(alias.alias) && !string.IsNullOrEmpty(alias.emoteName))
+                        _emoteAliasCache[alias.alias] = alias.emoteName;
+                }
+            }
+
+            return _emoteAliasCache.TryGetValue(input, out var resolved) ? resolved : input;
+        }
+
+        /// <summary>CharacterID로 캐릭터 데이터 가져오기</summary>
+        public CharacterEntry GetCharacterById(string characterId)
+        {
+            return characters.Find(c =>
                 c.characterId.Equals(characterId, StringComparison.OrdinalIgnoreCase));
         }
 
-        /// <summary>
-        /// 표시 이름으로 캐릭터 데이터 가져오기
-        /// </summary>
-        public CharacterData GetCharacterByDisplayName(string displayName)
+        /// <summary>표시 이름으로 캐릭터 데이터 가져오기</summary>
+        public CharacterEntry GetCharacterByDisplayName(string displayName)
         {
-            return characters.Find(c => 
+            return characters.Find(c =>
                 c.displayName.Equals(displayName, StringComparison.OrdinalIgnoreCase));
         }
 
-        /// <summary>
-        /// Speaker 이름으로 CharacterID 변환
-        /// </summary>
+        /// <summary>Speaker 이름으로 CharacterID 변환 (displayName + speakerAliases 조회)</summary>
         public string SpeakerToCharacterId(string speaker)
         {
-            // 매핑 테이블에서 찾기
-            var mapping = speakerMappings.Find(m => 
-                m.speakerName.Equals(speaker, StringComparison.OrdinalIgnoreCase));
-            
-            if (mapping != null)
-                return mapping.characterId;
+            foreach (var c in characters)
+            {
+                if (c.displayName.Equals(speaker, StringComparison.OrdinalIgnoreCase))
+                    return c.characterId;
 
-            // 캐릭터 displayName에서 찾기
-            var character = GetCharacterByDisplayName(speaker);
-            if (character != null)
-                return character.characterId;
+                if (c.speakerAliases != null)
+                {
+                    foreach (var alias in c.speakerAliases)
+                    {
+                        if (alias.Equals(speaker, StringComparison.OrdinalIgnoreCase))
+                            return c.characterId;
+                    }
+                }
+            }
 
             return null;
         }
 
-        /// <summary>
-        /// CharacterID로 표시 이름 변환
-        /// </summary>
+        /// <summary>CharacterID로 표시 이름 변환</summary>
         public string CharacterIdToDisplayName(string characterId)
         {
             var character = GetCharacterById(characterId);
             return character?.displayName ?? characterId;
         }
 
-        /// <summary>
-        /// 모든 캐릭터 ID 목록
-        /// </summary>
-        public List<string> GetAllCharacterIds()
-        {
-            var ids = new List<string>();
-            foreach (var c in characters)
-            {
-                if (!string.IsNullOrEmpty(c.characterId))
-                    ids.Add(c.characterId);
-            }
-            return ids;
-        }
-
-        /// <summary>
-        /// 모든 표시 이름 목록
-        /// </summary>
-        public List<string> GetAllDisplayNames()
-        {
-            var names = new List<string>();
-            foreach (var c in characters)
-            {
-                if (!string.IsNullOrEmpty(c.displayName))
-                    names.Add(c.displayName);
-            }
-            return names;
-        }
-
-        /// <summary>
-        /// 캐릭터의 표정 스프라이트 가져오기 (Resources에서 동적 로드)
-        /// </summary>
+        /// <summary>캐릭터의 표정 스프라이트 가져오기</summary>
         public Sprite GetCharacterSprite(string characterId, string emoteName = "Default")
         {
             var character = GetCharacterById(characterId);
-            return character?.LoadEmoteSprite(emoteName);
-        }
+            if (character == null) return null;
 
-        /// <summary>
-        /// 캐릭터의 이름 색상 가져오기
-        /// </summary>
-        // 이름 색상 기능 삭제됨
+            emoteName = ResolveEmoteName(emoteName);
+
+            string path = $"Characters/Char_{characterId}_{emoteName}";
+            var sprite = Resources.Load<Sprite>(path);
+
+            if (sprite == null && emoteName != EmoteNames.Default)
+            {
+                path = $"Characters/Char_{characterId}_{EmoteNames.Default}";
+                sprite = Resources.Load<Sprite>(path);
+            }
+
+            return sprite;
+        }
     }
 
     /// <summary>
-    /// Speaker → CharacterID 매핑
+    /// 캐릭터 항목 — CharacterDatabase 내 인라인 데이터
     /// </summary>
     [Serializable]
-    public class SpeakerMapping
+    public class CharacterEntry
     {
-        [Tooltip("CSV에서 사용하는 Speaker 이름")]
-        public string speakerName;
-        
-        [Tooltip("대응하는 CharacterID")]
-        public string characterId;
+        [Tooltip("캐릭터 고유 ID (영문)")]
+        public string characterId = "";
+
+        [Tooltip("표시 이름 (한글, UI)")]
+        public string displayName = "";
+
+        [Tooltip("CSV Speaker 별칭 (닉네임 등 displayName 외 추가 이름)")]
+        public List<string> speakerAliases = new();
+
+        [Header("스프라이트 트랜스폼")]
+        [Tooltip("스케일 배율 (1 = 기본)")]
+        public float spriteScale = 1f;
+
+        [Tooltip("X 오프셋")]
+        public float offsetX = 0f;
+
+        [Tooltip("Y 오프셋")]
+        public float offsetY = 0f;
+
+        [Tooltip("피벗 Y (0=하단, 0.5=중앙, 1=상단)")]
+        [Range(0f, 1f)]
+        public float pivotY = 0f;
+
+        [Header("오버레이 (가상 캐릭터)")]
+        [Tooltip("오버레이 프리픽스 (예: Roa_Mob). 비어있으면 오버레이 미사용")]
+        public string overlayPrefix = "";
+
+        [Tooltip("긍정 무드 표정 목록 (예: BrightSmile, EyeSmile, Happy)")]
+        public List<string> positiveEmotes = new();
+
+        [Tooltip("부정 무드 표정 목록 (예: Glare, Tearful)")]
+        public List<string> negativeEmotes = new();
+
+        /// <summary>오버레이 사용 캐릭터인지 여부</summary>
+        public bool UseOverlay => !string.IsNullOrEmpty(overlayPrefix);
+
+        /// <summary>
+        /// 표정에 맞는 오버레이 이름 반환 (예: "Roa_Mob_Positive").
+        /// overlayPrefix가 비어있으면 null.
+        /// </summary>
+        public string GetOverlayName(string emote)
+        {
+            if (!UseOverlay) return null;
+
+            if (!string.IsNullOrEmpty(emote))
+            {
+                foreach (var e in positiveEmotes)
+                {
+                    if (e.Equals(emote, StringComparison.OrdinalIgnoreCase))
+                        return $"{overlayPrefix}_Positive";
+                }
+                foreach (var e in negativeEmotes)
+                {
+                    if (e.Equals(emote, StringComparison.OrdinalIgnoreCase))
+                        return $"{overlayPrefix}_Negative";
+                }
+            }
+
+            return $"{overlayPrefix}_Default";
+        }
+
+        public void GetTransform(out float scale, out float oX, out float oY, out float pY)
+        {
+            scale = spriteScale;
+            oX = offsetX;
+            oY = offsetY;
+            pY = pivotY;
+        }
+    }
+
+    [Serializable]
+    public class EmoteAlias
+    {
+        [Tooltip("CSV/인라인 태그에서 사용하는 별칭 (예: 깜짝)")]
+        public string alias;
+
+        [Tooltip("실제 파일명 (예: Surprise)")]
+        public string emoteName;
+    }
+
+    /// <summary>
+    /// 공통 표정 이름 상수 (참고용 — 실제 매핑은 CharacterDatabase.emoteAliases)
+    /// </summary>
+    public static class EmoteNames
+    {
+        public const string Default = "Default";
+        public const string Happy = "Happy";
+        public const string Laugh = "Laugh";
+        public const string Smile = "Smile";
+        public const string Sad = "Sad";
+        public const string Shy = "Shy";
+        public const string Surprised = "Surprised";
     }
 }

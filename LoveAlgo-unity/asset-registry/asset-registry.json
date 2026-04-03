@@ -14,14 +14,8 @@
   },
   "summary": {
     "characters": {
-      "count": 5,
-      "names": [
-        "Bom",
-        "Daeun",
-        "Heewon",
-        "Roa",
-        "Yeun"
-      ],
+      "count": 0,
+      "names": [],
       "details": "characters.json"
     },
     "audio": {
@@ -78,10 +72,10 @@
         "Phone": 7,
         "Schedule": 6,
         "Shop": 9,
-        "Story": 47,
+        "Story": 46,
         "UI": 28
       },
-      "total": 126,
+      "total": 125,
       "details": "scripts.json"
     }
   }

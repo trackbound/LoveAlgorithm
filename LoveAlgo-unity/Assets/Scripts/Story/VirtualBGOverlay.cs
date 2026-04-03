@@ -14,14 +14,14 @@ namespace LoveAlgo.Story
     [Serializable]
     public struct OverlayEntry
     {
-        [Tooltip("CSV에서 사용할 이름 (예: Roa_Theme)")]
+        [Tooltip("오버레이 이름 (예: Roa_Mob_Default, Roa_Mob_Positive, Roa_Mob_Negative)")]
         public string name;
         public Sprite sprite;
     }
 
     /// <summary>
     /// 가상 배경 오버레이 - 배경 위에 옅은 보조 배경 표시
-    /// 로아의 가상공간 테마 배경에 사용 (고정 3장, 직접 바인딩)
+    /// 로아의 가상공간 테마 배경에 사용. 표정에 따라 자동 전환됨 (CharacterLayer → GetOverlayName)
     /// </summary>
     public class VirtualBGOverlay : MonoBehaviour
     {
@@ -201,49 +201,67 @@ namespace LoveAlgo.Story
         }
 
         /// <summary>
-        /// 오버레이 별칭 매핑 (번호 → 이름, 이름 → 번호 양방향)
-        /// Inspector에는 어느 이름으로 등록해도 양쪽 모두 매칭됨
+        /// 오버레이 전환 (표정 변경 시 사용).
+        /// 같은 오버레이면 no-op. 다르면 크로스페이드.
         /// </summary>
-        static readonly Dictionary<string, string> OverlayAliases = new(System.StringComparer.OrdinalIgnoreCase)
+        public async UniTask SwitchAsync(string overlayName, float duration = 0.25f, CancellationToken ct = default)
         {
-            { "Roa_Mob_1", "Roa_Mob_Default" },
-            { "Roa_Mob_2", "Roa_Mob_Negative" },
-            { "Roa_Mob_3", "Roa_Mob_Positive" },
-            { "Roa_PC_1",  "Roa_PC_Default" },
-            { "Roa_PC_2",  "Roa_PC_Negative" },
-            { "Roa_PC_3",  "Roa_PC_Positive" },
-            // 역방향
-            { "Roa_Mob_Default",  "Roa_Mob_1" },
-            { "Roa_Mob_Negative", "Roa_Mob_2" },
-            { "Roa_Mob_Positive", "Roa_Mob_3" },
-            { "Roa_PC_Default",   "Roa_PC_1" },
-            { "Roa_PC_Negative",  "Roa_PC_2" },
-            { "Roa_PC_Positive",  "Roa_PC_3" },
-        };
+            if (string.IsNullOrEmpty(overlayName)) return;
+
+            // 같은 오버레이 — 전환 불필요
+            if (isShowing && string.Equals(currentOverlay, overlayName, StringComparison.OrdinalIgnoreCase))
+                return;
+
+            var sprite = FindSprite(overlayName);
+            if (sprite == null) return;
+
+            if (!isShowing)
+            {
+                // 오버레이가 아직 표시되지 않은 상태 — 일반 ShowAsync로 처리
+                await ShowAsync(overlayName, duration, defaultAlpha, ct);
+                return;
+            }
+
+            // 크로스페이드: 페이드아웃 → 스프라이트 교체 → 페이드인
+            float halfDuration = duration * 0.5f;
+
+            if (halfDuration > 0f)
+            {
+                await canvasGroup.DOFade(0f, halfDuration)
+                    .SetEase(Ease.InQuad)
+                    .ToUniTask(cancellationToken: ct);
+            }
+            else
+            {
+                canvasGroup.alpha = 0f;
+            }
+
+            overlayImage.sprite = sprite;
+            currentOverlay = overlayName;
+
+            if (halfDuration > 0f)
+            {
+                await canvasGroup.DOFade(defaultAlpha, halfDuration)
+                    .SetEase(Ease.OutQuad)
+                    .ToUniTask(cancellationToken: ct);
+            }
+            else
+            {
+                canvasGroup.alpha = defaultAlpha;
+            }
+        }
 
         /// <summary>
-        /// 이름으로 스프라이트 찾기 (Inspector 바인딩에서)
-        /// 번호(Roa_Mob_1)와 이름(Roa_Mob_Default) 모두 지원
+        /// 이름으로 스프라이트 찾기 (Inspector 바인딩에서 정확 매칭)
         /// </summary>
         Sprite FindSprite(string name)
         {
             if (overlayEntries == null) return null;
 
-            // 1차: 정확히 일치
             foreach (var entry in overlayEntries)
             {
-                if (string.Equals(entry.name, name, System.StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(entry.name, name, StringComparison.OrdinalIgnoreCase))
                     return entry.sprite;
-            }
-
-            // 2차: 별칭으로 재시도
-            if (OverlayAliases.TryGetValue(name, out string alias))
-            {
-                foreach (var entry in overlayEntries)
-                {
-                    if (string.Equals(entry.name, alias, System.StringComparison.OrdinalIgnoreCase))
-                        return entry.sprite;
-                }
             }
 
             Debug.LogWarning($"[VirtualBGOverlay] 등록되지 않은 오버레이: {name} (Inspector에서 overlayEntries에 추가하세요)");

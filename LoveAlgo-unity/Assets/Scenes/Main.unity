@@ -1663,15 +1663,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1128065468562751995, guid: cd0982dcf451b4349a0fb2d97430ebe4, type: 3}
       propertyPath: m_LocalRotation.x
-      value: -0
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1128065468562751995, guid: cd0982dcf451b4349a0fb2d97430ebe4, type: 3}
       propertyPath: m_LocalRotation.y
-      value: -0
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1128065468562751995, guid: cd0982dcf451b4349a0fb2d97430ebe4, type: 3}
       propertyPath: m_LocalRotation.z
-      value: -0
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1128065468562751995, guid: cd0982dcf451b4349a0fb2d97430ebe4, type: 3}
       propertyPath: m_AnchoredPosition.x
@@ -1715,7 +1715,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7869694884519881630, guid: cd0982dcf451b4349a0fb2d97430ebe4, type: 3}
       propertyPath: m_Name
-      value: ScreenFX
+      value: Screen Effect
       objectReference: {fileID: 0}
     - target: {fileID: 7869694884519881630, guid: cd0982dcf451b4349a0fb2d97430ebe4, type: 3}
       propertyPath: m_IsActive
@@ -5190,15 +5190,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2558495852732557378, guid: 3b7f71f981a5ce8499a57bcc5ff5e23d, type: 3}
       propertyPath: m_LocalRotation.x
-      value: -0
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2558495852732557378, guid: 3b7f71f981a5ce8499a57bcc5ff5e23d, type: 3}
       propertyPath: m_LocalRotation.y
-      value: -0
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2558495852732557378, guid: 3b7f71f981a5ce8499a57bcc5ff5e23d, type: 3}
       propertyPath: m_LocalRotation.z
-      value: -0
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2558495852732557378, guid: 3b7f71f981a5ce8499a57bcc5ff5e23d, type: 3}
       propertyPath: m_AnchoredPosition.x
@@ -7369,7 +7369,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1858686694971313027, guid: 479fdc0f86ab2024491dff34b29117cd, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -0.000061035156
+      value: 0.000061035156
       objectReference: {fileID: 0}
     - target: {fileID: 1895493926802306024, guid: 479fdc0f86ab2024491dff34b29117cd, type: 3}
       propertyPath: m_Name
@@ -7425,7 +7425,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2371058861598903975, guid: 479fdc0f86ab2024491dff34b29117cd, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 169.2
+      value: 27
       objectReference: {fileID: 0}
     - target: {fileID: 2463543997638670817, guid: 479fdc0f86ab2024491dff34b29117cd, type: 3}
       propertyPath: m_Name
@@ -7485,7 +7485,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3415555562570857592, guid: 479fdc0f86ab2024491dff34b29117cd, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 0
+      value: 0.000061035156
       objectReference: {fileID: 0}
     - target: {fileID: 3678516963677566700, guid: 479fdc0f86ab2024491dff34b29117cd, type: 3}
       propertyPath: m_Name
@@ -7543,6 +7543,10 @@ PrefabInstance:
       propertyPath: 'monologueDotSprites.Array.data[4]'
       value: 
       objectReference: {fileID: 21300000, guid: 5002cc5d84b54a8418781ce071f3e493, type: 3}
+    - target: {fileID: 4332338400739913519, guid: 479fdc0f86ab2024491dff34b29117cd, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -78.799805
+      objectReference: {fileID: 0}
     - target: {fileID: 4335093890430888217, guid: 479fdc0f86ab2024491dff34b29117cd, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -7625,7 +7629,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5627956476005242721, guid: 479fdc0f86ab2024491dff34b29117cd, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 168.6
+      value: 26.399994
       objectReference: {fileID: 0}
     - target: {fileID: 5719856023943545869, guid: 479fdc0f86ab2024491dff34b29117cd, type: 3}
       propertyPath: m_Name

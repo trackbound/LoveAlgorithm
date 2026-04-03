@@ -120,6 +120,10 @@ namespace LoveAlgo.Story
                         string emote = parts.Length >= 4 ? parts[3] : "Default";
                         string overlay = parts.Length >= 5 ? parts[4] : null;
 
+                        // 오버레이 자동 결정 (CSV에 명시적 overlay가 없으면)
+                        if (string.IsNullOrEmpty(overlay))
+                            overlay = ResolveAutoOverlay(character, emote);
+
                         // 로아: 글리치 SFX 즉시 + 캐릭터&오버레이 동시 페이드
                         if (IsOverlayCharacter(character))
                             PlayGlitchSFX();
@@ -146,6 +150,9 @@ namespace LoveAlgo.Story
                         string emote = parts.Length >= 4 ? parts[3] : "Default";
                         string overlay = parts.Length >= 5 ? parts[4] : null;
 
+                        if (string.IsNullOrEmpty(overlay))
+                            overlay = ResolveAutoOverlay(character, emote);
+
                         if (IsOverlayCharacter(character))
                             PlayGlitchSFX();
 
@@ -170,12 +177,16 @@ namespace LoveAlgo.Story
                         string emote = parts[2];
                         string overlay = parts.Length >= 4 ? parts[3] : null;
 
+                        // 오버레이 자동 전환 (CSV에 명시적 overlay가 없으면 현재 슬롯 캐릭터 기준)
+                        if (string.IsNullOrEmpty(overlay))
+                            overlay = ResolveAutoOverlay(slot.CurrentCharacter, emote);
+
                         // 표정 + 오버레이 동시 전환
                         if (!string.IsNullOrEmpty(overlay))
                         {
                             await UniTask.WhenAll(
                                 slot.EmoteAsync(emote, ct),
-                                ShowOverlayAsync(overlay, ct)
+                                SwitchOverlayAsync(overlay, ct)
                             );
                         }
                         else
@@ -399,8 +410,19 @@ namespace LoveAlgo.Story
                 var data = characterDatabase.GetCharacterById(characterName);
                 return data != null && data.UseOverlay;
             }
-            // DB 없으면 기존 하드코드 폴백
-            return characterName.Equals("Roa", StringComparison.OrdinalIgnoreCase);
+            return false;
+        }
+
+        /// <summary>
+        /// 표정에 따른 오버레이 이름 자동 결정. 오버레이 캐릭터가 아니면 null.
+        /// </summary>
+        string ResolveAutoOverlay(string characterId, string emote)
+        {
+            if (string.IsNullOrEmpty(characterId)) return null;
+            var characterDatabase = CharacterDatabase.Instance;
+            if (characterDatabase == null) return null;
+            var data = characterDatabase.GetCharacterById(characterId);
+            return data?.GetOverlayName(emote);
         }
 
         /// <summary>
@@ -426,6 +448,18 @@ namespace LoveAlgo.Story
             {
                 await overlay.HideAsync(ct: ct);
                 Debug.Log("[CharacterLayer] 오버레이 자동 숨김 (로아 퇴장)");
+            }
+        }
+
+        /// <summary>
+        /// 오버레이 전환 (VirtualBGOverlay.SwitchAsync 연동 — 표정 변경 시)
+        /// </summary>
+        async UniTask SwitchOverlayAsync(string overlayName, CancellationToken ct)
+        {
+            var overlay = StageManager.Instance?.VirtualBG;
+            if (overlay != null)
+            {
+                await overlay.SwitchAsync(overlayName, ct: ct);
             }
         }
 

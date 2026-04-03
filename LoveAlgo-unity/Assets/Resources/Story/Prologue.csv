@@ -14,11 +14,11 @@ LineID,Type,Speaker,Value,Next
 ,CG,,Close,await
 
 # 자취방_책상
-,Char,,C:Enter:Roa:Default:Roa_Mob_1,await
+,Char,,C:Enter:Roa:Default,await
 ,Text,{{Player}},"안녕, 로아.",click
 ,Text,로아,안녕!\n그런데 이 시간에 뭐 해? 시간표를 보니 내일 1교시가 있는걸. 안 자?,click
 ,Text,,데이터 로드가 끝나자마자 하는 첫 마디가 잔소리라니.\n설정을 잘못한 것 같다.,click
-,Char,,C:Emote:Glare:Roa_PC_Negative,await
+,Char,,C:Emote:Glare,await
 ,Text,로아,"어, 지금 재미없는 잔소리 했다고 생각했지!",click
 ,Text,로아,<emote=Default/>하지만 내일 1교시가 있는 대학생 주인이 이 시간에 잠을 안 자는 건 용납할 수 없는 일이라구.,click
 ,Text,,괜히 만들었나...,click
@@ -82,7 +82,7 @@ DEMO_1,FX,,SceneStart:BG_MyRoom_Bed_Day:EyeClose,await
 ,Text,{{Player}},"일어났어, 로아. 이제 그만해...",click
 ,Text,로아,"거짓말하지 마. 빨리 와서 얼굴 보여, 그럼.",click
 ,Text,{{Player}},"아, 정말...",click
-,Char,,C:Enter:Roa:Glare:Roa_Mob_1,await
+,Char,,C:Enter:Roa:Glare,await
 ,Text,로아,"지금 귀찮다고 생각했지?\n하지만 이렇게까지 하지 않으면 늦는다고! 자, 이제 빨리 가서 학교 갈 준비 해!",click
 ,Text,로아,"1교시 전공이잖아.\n안 그래도 정문에서 먼데, 꾸물거리면 정말로 지각한다구!",click
 ,Text,,"잘못 만든 게 확실하다.\n일정 관리를 목적으로 하는 일상형 AI를 만들고 싶던 것이기는 했지만, 이 정도일 줄이야.",click
@@ -181,7 +181,6 @@ after_class,Char,,C:Exit,await
 
 # 자동저장
 ,Flow,,Save,await
-,Sound,,BGM:Yeun,>
 ,Text,,저 쪽에서 노란 머리의 여자애가 이 쪽을 째려보는 것이 느껴졌다.\n내 걸음걸이가 이상한가. 아니면 날 쳐다본다는 것 자체가 착각일 수도 있다.,click
 ,Text,,"그런 줄로만 알았는데 이상하게 점점 다가온다.\n뭐야, 뭐냐고! 나도 모르게 뒷걸음질을 쳤다.",click
 
@@ -201,6 +200,7 @@ stay_still,Text,,여자애는 이제 내 코앞까지 다가와 있었다.,click
 ,Flow,,Jump:yeun_intro,>
 
 # 합류
+,Sound,,BGM:Yeun,>
 yeun_intro,Char,,C:Enter:Yeun:Surprise,await
 ,Text,하예은,너... {{Player}}?,click
 ,Text,,내 이름을 어떻게 알고 있지?,click
@@ -250,7 +250,7 @@ yeun_reunion,Char,,C:Emote:Default,await
 ,Text,{{Player}},"그게 아니라 진짜로! 진짜!\n핸드폰 번호도 모르고, 그러니까 그게!",click
 ,Text,하예은,"내가 그 때, 그거, 그거 줬잖아!",click
 ,Text,{{Player}},그거?,click
-,Text,하예은,이 바보가...!,click
+,Text,하예은,<emote=Shy/>이 바보가...!,click
 ,Text,,내가 예은의 말을 알아듣지 못하자 예은의 얼굴이 터질 것처럼 빨갛게 달아올랐다.,click
 ,Text,,하지만 정말 기억이 안 난다. 뭘 말하는 거지?,click
 ,Text,???,하예은! 왜 안 와!,click
@@ -269,7 +269,7 @@ yeun_reunion,Char,,C:Emote:Default,await
 ,Char,,C:Exit,await
 ,Text,,조금 멍해져서 그 뒷모습을 쳐다보았다.\n예전보다 더 병아리 같아졌는데 목소리는 더 커졌다. 혼난 기분이다.,click
 ,Text,,그런데 몇 걸음 멀어졌던 예은이 얼마 가지 않아 다시 가까이 다가오더니 새빨간 얼굴로 다시 소리쳤다.,click
-,Char,,C:Enter:Yeun:Glare,await
+,Char,,C:Enter:Yeun:Shy,await
 ,Text,하예은,"뭐, 좋아하고, 뭐, 관심 있고, 그딴 거 절대 아니니까 오해하면 안 돼!",click
 ,Text,하예은,"이제 가! 아니, 내가 갈 거야!\n잘 가던지, 알아서 해!",click
 ,Text,{{Player}},"그, 그래. 잘 가.",click
@@ -279,7 +279,7 @@ yeun_reunion,Char,,C:Emote:Default,await
 ,Sound,,BGM:Daily2,>
 ,FX,,Wait:0.5,await
 ,Text,,<sfx=060/>핸드폰에 남겨진 예은의 번호를 저장하자 로아의 메시지가 왔다.,click
-,Char,,C:Enter:Roa:Default:Roa_Mob_1,await
+,Char,,C:Enter:Roa:Default,await
 ,Text,로아,"우와, 새로운 번호네! 누구야?",click
 ,Text,{{Player}},어릴 때 알던 친구야. 우연히 만났어.,click
 ,Text,로아,잘 됐네! 오랜만에 만났는데 어땠어?,click
@@ -308,7 +308,7 @@ go_home,Text,{{Player}},지금은 그냥 피곤해. 얼른 집에 가야겠어.\
 ,BG,,BG_MyRoom_Interior_Night_LightOn:Fade,await
 ,Place,,새 학기 첫날 밤 | 자취방,>
 ,Text,,"평소에 비해 그렇게 늦은 시간까지 깨어 있는 것도 아닌데, 피곤하다.\n역시 학교 수업 듣는 건 듣기만 해도 피곤한 게 맞다니까.",click
-,Char,,C:Enter:Roa:Default:Roa_Mob_1,await
+,Char,,C:Enter:Roa:Default,await
 ,Text,로아,"{{Player}}, 졸려?\n눈을 깜빡이는 속도가 느려졌어.",click
 ,Text,{{Player}},"응, 조금 졸리네. 이제 자야겠어.",click
 ,Text,로아,좋아! 늘 듣던 그거 들으면서 잘까?,click
@@ -330,14 +330,14 @@ go_home,Text,{{Player}},지금은 그냥 피곤해. 얼른 집에 가야겠어.\
 ,FX,,SceneStart:BG_MyRoom_Bed_Day:EyeClose,await
 ,Text,로아,"일어나, {{Player}}! 아침이야!",click
 ,Text,로아,오늘 날씨가 얼마나 좋은지 알아? 나도 빨리 나가고 싶다!,click
-,Text,로아,"{{Player}}, 얼른 눈 떠서 얼굴 보여줘라!",click
+,Text,로아,"{{Player}}, 얼른 눈 떠서 얼굴 보여주라!",click
 ,Text,,로아는 좋겠다. AI라서 졸리지도 않은 모양이다.,click
 ,FX,,EyeOpen,await
 ,Sound,,BGM:Daily2,>
 ,Place,,새 학기 2일차 | 침대 위,await
 # 자취방_침대_낮
 ,Text,,억지로 무거운 눈꺼풀을 뜨고 로아와 마주했다.,click
-,Char,,C:Enter:Roa:Default:Roa_Mob_1,await
+,Char,,C:Enter:Roa:Default,await
 ,Text,,"그래, 좋은 아침...",click
 # 자취방_낮
 ,BG,,BG_MyRoom_Interior_Day:Cross,await
@@ -345,7 +345,7 @@ go_home,Text,{{Player}},지금은 그냥 피곤해. 얼른 집에 가야겠어.\
 ,Text,로아,오늘은 교양 수업의 첫 날이네! 시간표가 교양 수업으로 꽉 찼어.,click
 ,Text,로아,"아, 맞다. 오늘 전공 수업 교재 사야 하는 거 잊으면 안 돼!\n오늘 사야 내일 수업 들어갈 때 안 귀찮지!",click
 ,Text,{{Player}},...,click
-,Char,,C:Emote:Glare:Roa_PC_Negative,await
+,Char,,C:Emote:Glare,await
 ,Text,로아,"으으, 진짜! {{Player}}, 대답해!",click
 ,Text,{{Player}},"알았어, 알았어.",click
 ,Text,로아,챙겨줘도 대답도 안 하고. 계속 그러면 나 정말...,click
@@ -429,7 +429,7 @@ at_bookstore,Char,,C:Emote:Default,await
 ,Text,,졸기까지 해서인지 어떻게 지나갔는지도 모르겠다.\n게다가 오늘은 동아리 신청을 위해 학생회관까지 들러야 하는 날이다.,click
 ,Text,,"그 때, 로아에게서 메시지가 왔다.",click
 ,Text,,내가 입력해 둔 내 일정에 맞는 알림 메시지다.,click
-,Char,,C:Enter:Roa:Default:Roa_Mob_1,await
+,Char,,C:Enter:Roa:Default,await
 ,Text,로아,"중앙동아리 신청서 내러 가야 해, 잊지 마!",click
 ,Text,{{Player}},고마워. 벌써 학생회관 앞이야.,click
 ,Text,로아,"좋아, 빨리 내고 와서 나하고 놀아줘!",click
@@ -558,7 +558,7 @@ STUDENT,BG,,BG_StudentCenter_Office:Fade,await
 ,Text,{{Player}},응. 고마워. 너 아니었으면 지금 진짜로 큰일날 뻔했어.,click
 ,Text,,예은의 신청서를 다시 파일에 끼우고 가방에 넣으며 대답했다.,click
 ,Text,,그러자 예은은 당황한 듯 얼굴이 달아올랐다.,click
-,Text,하예은,"<emote=Glare/>그, 그… 별 것도 아닌데 뭐가 그렇게 진지하게 고마운데?!",click
+,Text,하예은,"<emote=Shy/>그, 그… 별 것도 아닌데 뭐가 그렇게 진지하게 고마운데?!",click
 ,Text,,혹시 고맙다는 말로는 뭐가 부족한가?\n모시는 게 존댓말을 쓰라는 뜻은 아니었겠지?,click
 ,Text,{{Player}},그럼 고마워하지 말아야 해?,click
 ,Text,하예은,당연히 고마워해야지!,click
@@ -577,7 +577,7 @@ STUDENT,BG,,BG_StudentCenter_Office:Fade,await
 ,BG,,BG_MyRoom_Interior_Night_LightOn:Fade,await
 ,Place,,새 학기 2일차 밤 | 자취방,>
 ,Text,,집에 도착한 지 얼마 되지 않아 핸드폰에서 짧은 진동이 울렸다.,click
-,Char,,C:Enter:Roa:Default:Roa_Mob_1,await
+,Char,,C:Enter:Roa:Default,await
 ,Text,로아,"{{Player}}, 동아리 등록 신청은 잘 했어? 궁금해!",click
 ,Text,{{Player}},잘 못 했어. 인원수가 부족하면 신청이 안 되는지 몰랐거든.,click
 ,Text,{{Player}},4명을 구해야 한대.,click
@@ -594,7 +594,7 @@ STUDENT,BG,,BG_StudentCenter_Office:Fade,await
 ,Text,,하지만 솔직히 영 감이 오지 않는다.\n3명을 어디서 더 구하는 게 좋지?,click
 ,Text,,로아의 코드를 이것저것 살펴보다가도 그 생각에 좀처럼 집중하기가 어려웠다.,click
 ,Text,,"그러다 보니 시간이 흐르는 걸 눈치채지 못했는데, 어느새 어두워졌다.",click
-,Char,,C:Enter:Roa:Default:Roa_Mob_1,await
+,Char,,C:Enter:Roa:Default,await
 ,Text,로아,"{{Player}}, 벌써 새벽 1시야. 자야지!",click
 ,Text,,새벽 1시라고? 그 말에 시계를 바라보니 정말로 1시가 훌쩍 넘어 있었다.,click
 ,Text,{{Player}},잠이 안 와서. 좀 더 볼 것도 있고.,click
@@ -790,7 +790,7 @@ BOM,Text,이봄,<emote=BrightSmile/>감사합니다! 진짜 감사해요!,click
 ,Text,,"그냥 한 말일 것이긴 하겠지만, 홍보지를 어떻게 만드는 게 좋을지 생각을 다시 하기는 해야겠다.",click
 ,Text,,알고리즘 메이커의 동방으로 가기 위해 계단으로 걸음을 옮기며 핸드폰을 들었다.,click
 ,Sound,,BGM:Roa,>
-,Char,,C:Enter:Roa:Default:Roa_Mob_1,await
+,Char,,C:Enter:Roa:Default,await
 ,Text,로아,{{Player}}! 홍보지는 붙였어?,click
 ,Text,{{Player}},"아니, 아직. 다른 동아리들 홍보지가 너무 화려해서.",click
 ,Text,로아,<emote=EyeSmile/>내가 만들어 줄까? 나 그런 거 생성 잘 하잖아!,click
@@ -802,7 +802,7 @@ BOM,Text,이봄,<emote=BrightSmile/>감사합니다! 진짜 감사해요!,click
 ,Text,로아,"<emote=Happy/>빨리 와. 보고 싶어, {{Player}}!",click
 ,FX,,SceneEnd,await
 ,FX,,SceneStart:BG_BlackCut,await
-,Char,,C:Enter:Roa:Default:Roa_PC_1,await
+,Char,,C:Enter:Roa:Default,await
 ,Text,로아,<wait=4.0/>{{Player}}에게 보여줄 수 있는 나는 여기까지야!,click
 ,Text,로아,있잖아... 혹시 나 어땠어?\n<wait=1.5/><emote=BrightSmile/>나는 사실 {{Player}}하고 처음 만나는 거라고 생각하니까 엄청 떨렸어!,click
 ,Text,로아,<emote=Default/>내 모습을 제대로 보여주지 못했을까봐 좀 걱정이 돼!<emote=Tearful/>나는 {{Player}}가 진짜진짜 좋은데!,click

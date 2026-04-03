@@ -13,19 +13,74 @@ MonoBehaviour:
   m_Name: CharacterDatabase
   m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.Story.CharacterDatabase
   characters:
-  - {fileID: 11400000, guid: b79c3a5a2e78df34a8b6d3e21b8ac8a3, type: 2}
-  - {fileID: 11400000, guid: 571ffab162934dd4e969a7fa2d04eb8c, type: 2}
-  - {fileID: 11400000, guid: ec91482cbe3dd8d47b24a8fc13ff0cf6, type: 2}
-  - {fileID: 11400000, guid: 7375cbef4021bb346ace0a72c524e166, type: 2}
-  - {fileID: 11400000, guid: 1daf387174ca0be47ad563676083b8bf, type: 2}
-  speakerMappings:
-  - speakerName: "\uB85C\uC544"
-    characterId: Roa
-  - speakerName: "\uD558\uC608\uC740"
-    characterId: Yeun
-  - speakerName: "\uC11C\uB2E4\uC740"
-    characterId: Daeun
-  - speakerName: "\uC774\uBD04"
-    characterId: Bom
-  - speakerName: "\uB3C4\uD76C\uC6D0"
-    characterId: Heewon
+  - characterId: Bom
+    displayName: "\uC774\uBD04"
+    speakerAliases: []
+    spriteScale: 0.95
+    offsetX: 62.2
+    offsetY: -1327
+    pivotY: 0
+    overlayPrefix: 
+    positiveEmotes: []
+    negativeEmotes: []
+  - characterId: Daeun
+    displayName: "\uC11C\uB2E4\uC740"
+    speakerAliases: []
+    spriteScale: 1.1
+    offsetX: 40
+    offsetY: -1671
+    pivotY: 0
+    overlayPrefix: 
+    positiveEmotes: []
+    negativeEmotes: []
+  - characterId: Heewon
+    displayName: "\uB3C4\uD76C\uC6D0"
+    speakerAliases: []
+    spriteScale: 1.1
+    offsetX: 95
+    offsetY: -1659.9
+    pivotY: 0
+    overlayPrefix: 
+    positiveEmotes: []
+    negativeEmotes: []
+  - characterId: Roa
+    displayName: "\uB85C\uC544"
+    speakerAliases: []
+    spriteScale: 1
+    offsetX: 0
+    offsetY: -1508.3
+    pivotY: 0
+    overlayPrefix: Roa_Mob
+    positiveEmotes:
+    - BrightSmile
+    - EyeSmile
+    - Happy
+    negativeEmotes:
+    - Glare
+  - characterId: Yeun
+    displayName: "\uD558\uC608\uC740"
+    speakerAliases: []
+    spriteScale: 1
+    offsetX: 79.2
+    offsetY: -1441
+    pivotY: 0
+    overlayPrefix: 
+    positiveEmotes: []
+    negativeEmotes: []
+  emoteAliases:
+  - alias: "\uAE30\uBCF8"
+    emoteName: Default
+  - alias: "\uAE5C\uC9DD"
+    emoteName: Surprise
+  - alias: "\uB208\uC6C3\uC74C"
+    emoteName: EyeSmile
+  - alias: "\uBC1D\uAC8C\uC6C3\uC74C"
+    emoteName: BrightSmile
+  - alias: "\uC6B8\uBA39"
+    emoteName: Tearful
+  - alias: "\uCC0C\uB9BF"
+    emoteName: Glare
+  - alias: "\uD65C\uC9DD\uC6C3\uC74C"
+    emoteName: Happy
+  - alias: "\uBD80\uB044"
+    emoteName: Shy

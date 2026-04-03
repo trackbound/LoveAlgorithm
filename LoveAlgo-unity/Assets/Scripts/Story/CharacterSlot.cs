@@ -322,11 +322,16 @@ namespace LoveAlgo.Story
 
         /// <summary>
         /// 스프라이트 로드 (캐시 지원, Default 폴백)
-        /// 경로: Characters/{character}/{emote}
+        /// 경로: Characters/Char_{character}_{emote}
         /// </summary>
         Sprite LoadSprite(string character, string emote)
         {
-            string path = $"Characters/{character}/{emote}";
+            // 한글 표정명 → 영문 변환
+            var db = CharacterDatabase.Instance;
+            if (db != null)
+                emote = db.ResolveEmoteName(emote);
+
+            string path = $"Characters/Char_{character}_{emote}";
 
             if (spriteCache.TryGetValue(path, out var cached))
             {
@@ -339,7 +344,7 @@ namespace LoveAlgo.Story
             // Default로 폴백
             if (sprite == null && emote != "Default")
             {
-                string fallback = $"Characters/{character}/Default";
+                string fallback = $"Characters/Char_{character}_Default";
                 if (spriteCache.TryGetValue(fallback, out cached))
                 {
                     TouchCache(fallback);
