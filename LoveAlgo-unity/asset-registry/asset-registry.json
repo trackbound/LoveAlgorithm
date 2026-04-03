@@ -75,15 +75,15 @@
       "namespaces": {
         "Core": 21,
         "Data": 0,
-        "Editor": 2,
+        "Editor": 3,
         "MiniGame": 4,
         "Phone": 7,
         "Schedule": 6,
         "Shop": 9,
-        "Story": 46,
+        "Story": 47,
         "UI": 28
       },
-      "total": 123,
+      "total": 125,
       "details": "scripts.json"
     }
   }

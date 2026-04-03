@@ -269,39 +269,36 @@ namespace LoveAlgo.Core
                 var fx = ScreenFX.Instance;
                 var loading = LoadingScreen.Instance;
 
-                // 1) 여유 있게 페이드 아웃
+                // 1) 페이드 아웃
                 if (fx != null)
-                    await fx.FadeOutAsync(0.8f, ct);
+                    await fx.FadeOutAsync(0.6f, ct);
                 else
                     await UniTask.Yield(ct);
 
-                // 2) 암전 상태에서 잠시 머무름 (호흡)
-                await UniTask.Delay(System.TimeSpan.FromSeconds(0.4f), cancellationToken: ct);
-
-                // 3) 로딩 화면 표시 (암전 위에)
+                // 2) 로딩 화면 표시 (암전 위에)
                 if (loading != null)
                     await loading.ShowAsync(ct);
 
-                // 4) 페이드 해제 (로딩 화면이 부드럽게 드러남)
+                // 3) 페이드 해제 (로딩 화면이 부드럽게 드러남)
                 if (fx != null)
-                    await fx.FadeInAsync(0.6f, ct);
+                    await fx.FadeInAsync(0.5f, ct);
 
-                // 5) UI 전환 + 프롤로그 UI 준비 (로딩 화면 뒤에서)
+                // 4) UI 전환 + 프롤로그 UI 준비 (로딩 화면 뒤에서)
                 ChangePhase(GamePhase.Prologue);
 
-                // 6) 로딩 화면 충분히 보여줌
-                await UniTask.Delay(System.TimeSpan.FromSeconds(1.5f), cancellationToken: ct);
+                // 5) 로딩 화면 표시 유지
+                await UniTask.Delay(System.TimeSpan.FromSeconds(0.8f), cancellationToken: ct);
 
-                // 7) 부드럽게 페이드 아웃 (로딩 화면 위에 암전)
+                // 6) 페이드 아웃 (로딩 화면 위에 암전)
                 if (fx != null)
-                    await fx.FadeOutAsync(0.6f, ct);
+                    await fx.FadeOutAsync(0.5f, ct);
 
-                // 8) 로딩 화면 제거 (암전 상태라 안 보임)
+                // 7) 로딩 화면 제거 (암전 상태라 안 보임)
                 loading?.HideImmediate();
 
-                // 9) 인게임 페이드 인
+                // 8) 인게임 페이드 인
                 if (fx != null)
-                    await fx.FadeInAsync(0.8f, ct);
+                    await fx.FadeInAsync(0.6f, ct);
 
                 // 10) 프롤로그 스크립트 실행 (전환 완료 후 시작)
                 ScriptRunner.Instance?.StartScript(_gm.PrologueScript).Forget();

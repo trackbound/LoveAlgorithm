@@ -34,8 +34,9 @@
       "files": []
     },
     "Editor": {
-      "count": 2,
+      "count": 3,
       "files": [
+        "ConsoleLogCopier",
         "DataSOGenerator",
         "DebugRemoteWindow"
       ]
@@ -87,7 +88,7 @@
       ]
     },
     "Story": {
-      "count": 46,
+      "count": 47,
       "files": [
         "AudioManager",
         "AudioSettings",
@@ -127,6 +128,7 @@
         "SaveThumbnailManager",
         "SceneEndMacroExecutor",
         "SceneStartMacroExecutor",
+        "ScheduleFlowCommand",
         "ScriptEngine",
         "ScriptLine",
         "ScriptParser",

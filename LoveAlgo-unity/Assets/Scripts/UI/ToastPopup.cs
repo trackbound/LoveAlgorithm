@@ -65,8 +65,8 @@ namespace LoveAlgo.UI
                 {
                     rectTransform.anchoredPosition = originalPos + new Vector2(0, -slideOffset);
                     var seq = DOTween.Sequence();
-                    seq.Join(canvasGroup.DOFade(1f, fadeInDuration).SetEase(Ease.OutCubic));
-                    seq.Join(rectTransform.DOAnchorPos(originalPos, fadeInDuration).SetEase(Ease.OutCubic));
+                    _ = seq.Join(canvasGroup.DOFade(1f, fadeInDuration).SetEase(Ease.OutCubic));
+                    _ = seq.Join(rectTransform.DOAnchorPos(originalPos, fadeInDuration).SetEase(Ease.OutCubic));
                     await seq.ToUniTask(cancellationToken: ct);
                 }
                 else
@@ -86,8 +86,8 @@ namespace LoveAlgo.UI
                 if (rectTransform != null)
                 {
                     var seq = DOTween.Sequence();
-                    seq.Join(canvasGroup.DOFade(0f, fadeOutDuration).SetEase(Ease.InCubic));
-                    seq.Join(rectTransform.DOAnchorPosY(originalPos.y + slideOffset, fadeOutDuration).SetEase(Ease.InCubic));
+                    _ = seq.Join(canvasGroup.DOFade(0f, fadeOutDuration).SetEase(Ease.InCubic));
+                    _ = seq.Join(rectTransform.DOAnchorPosY(originalPos.y + slideOffset, fadeOutDuration).SetEase(Ease.InCubic));
                     await seq.ToUniTask(cancellationToken: ct);
                     rectTransform.anchoredPosition = originalPos;
                 }

@@ -30,7 +30,7 @@ namespace LoveAlgo.Story
         [SerializeField] AudioSettings audioSettings;
 
         [Header("설정")]
-        [SerializeField] float defaultFadeDuration = 3.0f;
+        [SerializeField] float defaultFadeDuration = 4.0f;
 
         string currentBGM;
         string currentCharacterBGM;

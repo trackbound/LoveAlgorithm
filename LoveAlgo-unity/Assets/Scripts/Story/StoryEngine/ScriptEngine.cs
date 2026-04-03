@@ -27,6 +27,7 @@ namespace LoveAlgo.Story.StoryEngine
         readonly Action<bool> _setWaitingForClick;
         readonly Func<bool> _getClickReceived;
         readonly Action<bool> _setClickReceived;
+        readonly Func<float> _getAutoDelayBase;
 
         TextLineExecutor _textExecutor;
         ChoiceLineExecutor _choiceExecutor;
@@ -44,6 +45,7 @@ namespace LoveAlgo.Story.StoryEngine
             Action<bool> setWaitingForClick,
             Func<bool> getClickReceived,
             Action<bool> setClickReceived,
+            Func<float> getAutoDelayBase = null,
             Action<string> onLogEntry = null)
         {
             _getLines = getLines;
@@ -57,6 +59,7 @@ namespace LoveAlgo.Story.StoryEngine
             _setWaitingForClick = setWaitingForClick;
             _getClickReceived = getClickReceived;
             _setClickReceived = setClickReceived;
+            _getAutoDelayBase = getAutoDelayBase ?? (() => 1.5f);
             _onLogEntry = onLogEntry;
 
             _textExecutor = new TextLineExecutor();
@@ -79,11 +82,55 @@ namespace LoveAlgo.Story.StoryEngine
             if (line.Type == LineType.Choice)
                 return await _choiceExecutor.ExecuteAsync(line, ct);
 
+            if (line.Type == LineType.Flow)
+                return await ExecuteFlowAsync(line, ct);
+
             if (LineHandlerRegistry.TryGet(line.Type, out var executor))
                 return await executor.ExecuteAsync(line, ct);
 
             Debug.LogWarning($"[ScriptEngine] 알 수 없는 LineType: {line.Type}");
             return true;
+        }
+
+        async UniTask<bool> ExecuteFlowAsync(ScriptLine line, CancellationToken ct)
+        {
+            var parts = line.Value.Split(':');
+            var command = parts[0];
+            var lineIndex = _getLineIndex();
+            int curIdx = _getCurrentIndex();
+
+            switch (command)
+            {
+                case "Jump":
+                    Flow.JumpFlowCommand.Execute(parts, lineIndex, ref curIdx);
+                    _setCurrentIndex(curIdx);
+                    return true;
+
+                case "If":
+                    Flow.IfFlowCommand.Execute(line.Value, lineIndex, ref curIdx);
+                    _setCurrentIndex(curIdx);
+                    return true;
+
+                case "LoadingScene":
+                    await Flow.LoadingSceneFlowCommand.ExecuteAsync(parts, ct);
+                    return true;
+
+                case "MiniGame":
+                    await Flow.MiniGameFlowCommand.ExecuteAsync(parts, ct);
+                    return true;
+
+                case "Save":
+                    LoveAlgo.Core.GameManager.Instance?.AutoSave();
+                    return true;
+
+                case "Schedule":
+                    await Flow.ScheduleFlowCommand.ExecuteAsync(ct);
+                    return true;
+
+                default:
+                    Debug.LogWarning($"[Flow] 알 수 없는 Flow 명령: {command}");
+                    return true;
+            }
         }
 
         /// <summary>
@@ -141,7 +188,7 @@ namespace LoveAlgo.Story.StoryEngine
         {
             var dialogueUI = ExecutionDependencies.DialogueUI;
             int textLen = dialogueUI?.LastDisplayedTextLength ?? 0;
-            float autoDelayBase = 1.5f;
+            float autoDelayBase = _getAutoDelayBase();
             float autoDelayPerCharacter = 0.05f;
             float autoDelayMin = 1.0f;
             float autoDelayMax = 5.0f;

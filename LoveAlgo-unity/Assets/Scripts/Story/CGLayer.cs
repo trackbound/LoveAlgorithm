@@ -81,6 +81,10 @@ namespace LoveAlgo.Story
             {
                 showDuration = parsedDuration;
             }
+            else if (parts.Length >= 2 && float.TryParse(parts[1], out float parsedDuration2))
+            {
+                showDuration = parsedDuration2;
+            }
 
             await ShowAsync(cgName, showDuration, ct);
         }

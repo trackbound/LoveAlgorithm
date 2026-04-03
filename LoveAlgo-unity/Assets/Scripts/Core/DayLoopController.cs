@@ -18,6 +18,9 @@ namespace LoveAlgo.Core
         /// <summary>비동기 전환 진행 중 재진입 방지 플래그</summary>
         bool _isTransitioning;
 
+        /// <summary>인라인 스케줄 완료 시그널 (Flow,,Schedule,await 용)</summary>
+        UniTaskCompletionSource _inlineScheduleTcs;
+
         public DayLoopController(GameManager gm)
         {
             _gm = gm;
@@ -97,6 +100,15 @@ namespace LoveAlgo.Core
         {
             _gm.RemainingActions--;
 
+            // 인라인 모드: 1회 선택 후 스토리로 복귀
+            if (_inlineScheduleTcs != null)
+            {
+                var tcs = _inlineScheduleTcs;
+                _inlineScheduleTcs = null;
+                tcs.TrySetResult();
+                return;
+            }
+
             if (_gm.ShouldEndDemoAfterSchedule())
             {
                 _gm.MarkDemoScheduleComplete();
@@ -113,6 +125,22 @@ namespace LoveAlgo.Core
                 UIManager.Instance?.ShowOnly(MainUIType.Schedule);
                 var scheduleUI = UIManager.Instance?.ScheduleUI;
                 scheduleUI?.ShowAsync(OnScheduleSelected).Forget();
+            }
+        }
+
+        /// <summary>
+        /// 인라인 스케줄 — 1회 선택 완료까지 대기 (Flow,,Schedule,await 용)
+        /// </summary>
+        public async UniTask WaitForInlineScheduleAsync(CancellationToken ct)
+        {
+            _inlineScheduleTcs = new UniTaskCompletionSource();
+
+            var scheduleUI = UIManager.Instance?.ScheduleUI;
+            scheduleUI?.ShowAsync(OnScheduleSelected).Forget();
+
+            using (ct.Register(() => _inlineScheduleTcs?.TrySetCanceled()))
+            {
+                await _inlineScheduleTcs.Task;
             }
         }
 
@@ -146,13 +174,13 @@ namespace LoveAlgo.Core
                 var loading = LoadingScreen.Instance;
 
                 if (fx != null)
-                    await fx.FadeOutAsync(0.8f, ct);
+                    await fx.FadeOutAsync(0.6f, ct);
 
                 if (loading != null)
                     await loading.ShowAsync(ct);
 
                 if (fx != null)
-                    await fx.FadeInAsync(0.5f, ct);
+                    await fx.FadeInAsync(0.4f, ct);
 
                 _gm.CurrentDay++;
                 _gm.RemainingActions = GameConstants.ActionsPerDay;
@@ -169,7 +197,7 @@ namespace LoveAlgo.Core
 
                 _gm.AutoSave();
 
-                await UniTask.Delay(1200, cancellationToken: ct);
+                await UniTask.Delay(700, cancellationToken: ct);
 
                 if (fx != null)
                     await fx.FadeOutAsync(0.5f, ct);
@@ -180,7 +208,7 @@ namespace LoveAlgo.Core
                 await UniTask.Yield(ct);
 
                 if (fx != null)
-                    await fx.FadeInAsync(0.8f, ct);
+                    await fx.FadeInAsync(0.6f, ct);
             }
             finally
             {

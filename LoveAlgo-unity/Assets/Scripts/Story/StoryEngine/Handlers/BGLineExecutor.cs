@@ -48,7 +48,7 @@ namespace LoveAlgo.Story.StoryEngine.Handlers
                 var screenFX = ScreenFX.Instance;
                 var dialogueUI = ExecutionDependencies.DialogueUI;
 
-                float duration = 2.0f;
+                float duration = 3.0f;
                 if (parts.Length >= 3 && float.TryParse(parts[2], out float d))
                     duration = d;
                 float halfDuration = duration * 0.5f;

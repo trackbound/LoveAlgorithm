@@ -68,7 +68,8 @@ namespace LoveAlgo.Story
                 () => waitingForClick,
                 v => waitingForClick = v,
                 () => clickReceived,
-                v => clickReceived = v);
+                v => clickReceived = v,
+                () => autoDelayBase);
 
             LineHandlerRegistry.Register(new TextLineExecutor());
             LineHandlerRegistry.Register(new CharLineExecutor());
