@@ -32,12 +32,14 @@ namespace LoveAlgo.UI
             KillSequence();
             gameObject.SetActive(true);
             PlayShowAnimation();
+            UISoundManager.Instance?.PlayPopupOpen();
         }
 
         public virtual void Hide()
         {
             KillSequence();
             PlayHideAnimation();
+            UISoundManager.Instance?.PlayPopupClose();
         }
 
         /// <summary>

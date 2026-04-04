@@ -162,7 +162,7 @@ namespace LoveAlgo.DevTools
 
             // ── 빠른 설정 프리셋 ──
             GUILayout.Label("<b>프리셋</b>", section);
-            if (GUILayout.Button("부자 모드 (100만원)"))
+            if (GUILayout.Button("100만원 추가"))
                 gs.AddMoney(1000000 - gs.Money);
             if (GUILayout.Button("올스탯 MAX"))
             {
@@ -278,7 +278,7 @@ namespace LoveAlgo.DevTools
             foreach (var (label, lineId) in JumpPoints)
             {
                 if (GUILayout.Button(label))
-                    JumpAsync(lineId).Forget();
+                    JumpAsync(lineId);
             }
             GUI.enabled = true;
 
@@ -289,7 +289,7 @@ namespace LoveAlgo.DevTools
             GUILayout.Label("<b>리셋</b>", section);
             GUILayout.Space(4);
 
-            if (GUILayout.Button("GameState 초기화"))
+            if (GUILayout.Button("전체 초기화"))
             {
                 if (gs != null && gm != null)
                 {
@@ -310,7 +310,7 @@ namespace LoveAlgo.DevTools
         //  점프 실행
         // ══════════════════════════════════════════════
 
-        async UniTaskVoid JumpAsync(string lineId)
+        void JumpAsync(string lineId)
         {
             var gm = GameManager.Instance;
             if (gm == null || isJumping) return;
@@ -352,7 +352,7 @@ namespace LoveAlgo.DevTools
                         runner.OnScriptEnd -= flow.OnPrologueEnd;
                         runner.OnScriptEnd += flow.OnPrologueEnd;
                     }
-                    await runner.StartScriptFrom(gm.PrologueScript, lineId, 0);
+                    runner.StartScriptFrom(gm.PrologueScript, lineId, 0).Forget();
                 }
             }
             finally

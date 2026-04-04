@@ -1,9 +1,9 @@
 {
-  "_generated": "2026-04-03",
+  "_generated": "2026-04-04",
   "_generator": "asset-registry/generate.py",
   "backgrounds": {
     "folder": "Assets/Resources/Backgrounds",
-    "count": 24,
+    "count": 25,
     "pattern": "BG_{Location}_{Detail}_{Time}.png",
     "by_location": {
       "BlackCut": 1,
@@ -12,7 +12,8 @@
       "ConvenienceStore": 2,
       "Engineering": 6,
       "MyRoom": 6,
-      "StudentCenter": 5
+      "StudentCenter": 5,
+      "Title": 1
     }
   },
   "cg": {

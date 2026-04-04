@@ -127,14 +127,18 @@ namespace LoveAlgo.UI
 
         void OnConfirm()
         {
-            tcs?.TrySetResult(true);
+            var pending = tcs;
+            tcs = null;
             Hide();
+            pending?.TrySetResult(true);
         }
 
         void OnCancel()
         {
-            tcs?.TrySetResult(false);
+            var pending = tcs;
+            tcs = null;
             Hide();
+            pending?.TrySetResult(false);
         }
 
         public void Hide()
@@ -142,6 +146,7 @@ namespace LoveAlgo.UI
             gameObject.SetActive(false);
             PopupManager.Instance?.ShowTopDimmer(false);
             tcs?.TrySetResult(false);
+            tcs = null;
         }
 
         void OnDestroy()

@@ -148,6 +148,12 @@ namespace LoveAlgo.Core
             {
                 stageCamera = stageCanvas.worldCamera;
             }
+
+            // 카메라 셰이크 시 배경 가장자리 노출 방지 — 기본 파란색 대신 검정
+            if (stageCamera != null && stageCamera.backgroundColor != Color.black)
+            {
+                stageCamera.backgroundColor = Color.black;
+            }
         }
 
         /// <summary>

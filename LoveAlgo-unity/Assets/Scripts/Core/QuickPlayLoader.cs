@@ -13,7 +13,9 @@ namespace LoveAlgo.Core
     {
         [Header("Quick Play 설정")]
         [Tooltip("Quick Play 기능 활성화 (에디터 전용)")]
+        #pragma warning disable CS0414
         [SerializeField] bool enableQuickPlay = true;
+        #pragma warning restore CS0414
 
         void Awake()
         {

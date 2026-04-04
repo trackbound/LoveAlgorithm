@@ -175,22 +175,22 @@ namespace LoveAlgo.UI
             UpdateResolutionUI();
 
             // 마스터 볼륨
-            masterSlider?.SetValueWithoutNotify(PlayerPrefs.GetFloat("MasterVolume", 0.8f));
+            masterSlider?.SetValueWithoutNotify(PlayerPrefs.GetFloat("MasterVolume", GameConstants.DefaultMasterVolume));
 
             // 메인 볼륨
-            bgmSlider?.SetValueWithoutNotify(PlayerPrefs.GetFloat("BGMVolume", 0.4f));
-            sfxSlider?.SetValueWithoutNotify(PlayerPrefs.GetFloat("SFXVolume", 0.4f));
+            bgmSlider?.SetValueWithoutNotify(PlayerPrefs.GetFloat("BGMVolume", GameConstants.DefaultBGMVolume));
+            sfxSlider?.SetValueWithoutNotify(PlayerPrefs.GetFloat("SFXVolume", GameConstants.DefaultSFXVolume));
 
             // 캐릭터별 음성
-            voiceYeunSlider?.SetValueWithoutNotify(PlayerPrefs.GetFloat("Voice_Yeun", 0.4f));
-            voiceDaeunSlider?.SetValueWithoutNotify(PlayerPrefs.GetFloat("Voice_Daeun", 0.4f));
-            voiceBomSlider?.SetValueWithoutNotify(PlayerPrefs.GetFloat("Voice_Bom", 0.4f));
-            voiceHeewonSlider?.SetValueWithoutNotify(PlayerPrefs.GetFloat("Voice_Heewon", 0.4f));
-            voiceRoaSlider?.SetValueWithoutNotify(PlayerPrefs.GetFloat("Voice_Roa", 0.4f));
+            voiceYeunSlider?.SetValueWithoutNotify(PlayerPrefs.GetFloat("Voice_Yeun", GameConstants.DefaultVoiceVolume));
+            voiceDaeunSlider?.SetValueWithoutNotify(PlayerPrefs.GetFloat("Voice_Daeun", GameConstants.DefaultVoiceVolume));
+            voiceBomSlider?.SetValueWithoutNotify(PlayerPrefs.GetFloat("Voice_Bom", GameConstants.DefaultVoiceVolume));
+            voiceHeewonSlider?.SetValueWithoutNotify(PlayerPrefs.GetFloat("Voice_Heewon", GameConstants.DefaultVoiceVolume));
+            voiceRoaSlider?.SetValueWithoutNotify(PlayerPrefs.GetFloat("Voice_Roa", GameConstants.DefaultVoiceVolume));
 
             // 속도
-            textSpeedSlider?.SetValueWithoutNotify(PlayerPrefs.GetFloat("TextSpeed", 0.7f));
-            autoSpeedSlider?.SetValueWithoutNotify(PlayerPrefs.GetFloat("AutoSpeed", 0.4f));
+            textSpeedSlider?.SetValueWithoutNotify(PlayerPrefs.GetFloat("TextSpeed", GameConstants.DefaultTextSpeed));
+            autoSpeedSlider?.SetValueWithoutNotify(PlayerPrefs.GetFloat("AutoSpeed", GameConstants.DefaultAutoSpeed));
         }
 
         void SaveSettings()
@@ -198,22 +198,22 @@ namespace LoveAlgo.UI
             // 해상도 관련 값(Fullscreen/ResolutionIndex)은 해상도 전용 Apply 버튼에서 저장합니다.
 
             // 마스터 볼륨
-            PlayerPrefs.SetFloat("MasterVolume", masterSlider?.value ?? 0.8f);
+            PlayerPrefs.SetFloat("MasterVolume", masterSlider?.value ?? GameConstants.DefaultMasterVolume);
 
             // 메인 볼륨
-            PlayerPrefs.SetFloat("BGMVolume", bgmSlider?.value ?? 0.4f);
-            PlayerPrefs.SetFloat("SFXVolume", sfxSlider?.value ?? 0.4f);
+            PlayerPrefs.SetFloat("BGMVolume", bgmSlider?.value ?? GameConstants.DefaultBGMVolume);
+            PlayerPrefs.SetFloat("SFXVolume", sfxSlider?.value ?? GameConstants.DefaultSFXVolume);
 
             // 캐릭터별 음성 (런타임 딕셔너리 + PlayerPrefs 동기화)
-            PlayerPrefs.SetFloat("Voice_Yeun", voiceYeunSlider?.value ?? 0.4f);
-            PlayerPrefs.SetFloat("Voice_Daeun", voiceDaeunSlider?.value ?? 0.4f);
-            PlayerPrefs.SetFloat("Voice_Bom", voiceBomSlider?.value ?? 0.4f);
-            PlayerPrefs.SetFloat("Voice_Heewon", voiceHeewonSlider?.value ?? 0.4f);
-            PlayerPrefs.SetFloat("Voice_Roa", voiceRoaSlider?.value ?? 0.4f);
+            PlayerPrefs.SetFloat("Voice_Yeun", voiceYeunSlider?.value ?? GameConstants.DefaultVoiceVolume);
+            PlayerPrefs.SetFloat("Voice_Daeun", voiceDaeunSlider?.value ?? GameConstants.DefaultVoiceVolume);
+            PlayerPrefs.SetFloat("Voice_Bom", voiceBomSlider?.value ?? GameConstants.DefaultVoiceVolume);
+            PlayerPrefs.SetFloat("Voice_Heewon", voiceHeewonSlider?.value ?? GameConstants.DefaultVoiceVolume);
+            PlayerPrefs.SetFloat("Voice_Roa", voiceRoaSlider?.value ?? GameConstants.DefaultVoiceVolume);
 
             // 속도
-            PlayerPrefs.SetFloat("TextSpeed", textSpeedSlider?.value ?? 0.7f);
-            PlayerPrefs.SetFloat("AutoSpeed", autoSpeedSlider?.value ?? 0.4f);
+            PlayerPrefs.SetFloat("TextSpeed", textSpeedSlider?.value ?? GameConstants.DefaultTextSpeed);
+            PlayerPrefs.SetFloat("AutoSpeed", autoSpeedSlider?.value ?? GameConstants.DefaultAutoSpeed);
 
             PlayerPrefs.Save();
         }
@@ -364,35 +364,31 @@ namespace LoveAlgo.UI
 
         void ApplyResetValues()
         {
-            // 슬라이더만 기본값으로 초기화 — 해상도 영역은 건드리지 않음
-            const float defaultMaster = 0.8f;
-            const float defaultVolume = 0.4f;
-            const float defaultSpeed  = 0.7f;
+            // 슬라이더만 기본값으로 초기화 — 해상도/전체화면은 건드리지 않음
+            masterSlider?.SetValueWithoutNotify(GameConstants.DefaultMasterVolume);
+            bgmSlider?.SetValueWithoutNotify(GameConstants.DefaultBGMVolume);
+            sfxSlider?.SetValueWithoutNotify(GameConstants.DefaultSFXVolume);
 
-            masterSlider?.SetValueWithoutNotify(defaultMaster);
-            bgmSlider?.SetValueWithoutNotify(defaultVolume);
-            sfxSlider?.SetValueWithoutNotify(defaultVolume);
+            voiceYeunSlider?.SetValueWithoutNotify(GameConstants.DefaultVoiceVolume);
+            voiceDaeunSlider?.SetValueWithoutNotify(GameConstants.DefaultVoiceVolume);
+            voiceBomSlider?.SetValueWithoutNotify(GameConstants.DefaultVoiceVolume);
+            voiceHeewonSlider?.SetValueWithoutNotify(GameConstants.DefaultVoiceVolume);
+            voiceRoaSlider?.SetValueWithoutNotify(GameConstants.DefaultVoiceVolume);
 
-            voiceYeunSlider?.SetValueWithoutNotify(defaultVolume);
-            voiceDaeunSlider?.SetValueWithoutNotify(defaultVolume);
-            voiceBomSlider?.SetValueWithoutNotify(defaultVolume);
-            voiceHeewonSlider?.SetValueWithoutNotify(defaultVolume);
-            voiceRoaSlider?.SetValueWithoutNotify(defaultVolume);
+            textSpeedSlider?.SetValueWithoutNotify(GameConstants.DefaultTextSpeed);
+            autoSpeedSlider?.SetValueWithoutNotify(GameConstants.DefaultAutoSpeed);
 
-            textSpeedSlider?.SetValueWithoutNotify(defaultSpeed);
-            autoSpeedSlider?.SetValueWithoutNotify(defaultSpeed);
-
-            // 실시간 오디오 반영 (슬라이더 피드백)
-            AudioManager.Instance?.SetMasterVolume(defaultMaster);
-            AudioManager.Instance?.SetBGMVolume(defaultVolume);
-            AudioManager.Instance?.SetSFXVolume(defaultVolume);
-            AudioManager.Instance?.SetCharacterVoiceVolume("Yeun", defaultVolume);
-            AudioManager.Instance?.SetCharacterVoiceVolume("Daeun", defaultVolume);
-            AudioManager.Instance?.SetCharacterVoiceVolume("Bom", defaultVolume);
-            AudioManager.Instance?.SetCharacterVoiceVolume("Heewon", defaultVolume);
-            AudioManager.Instance?.SetCharacterVoiceVolume("Roa", defaultVolume);
-            UIManager.Instance?.DialogueUI?.SetTextSpeed(defaultSpeed);
-            ScriptRunner.Instance?.SetAutoDelay(defaultSpeed);
+            // 실시간 반영
+            AudioManager.Instance?.SetMasterVolume(GameConstants.DefaultMasterVolume);
+            AudioManager.Instance?.SetBGMVolume(GameConstants.DefaultBGMVolume);
+            AudioManager.Instance?.SetSFXVolume(GameConstants.DefaultSFXVolume);
+            AudioManager.Instance?.SetCharacterVoiceVolume("Yeun", GameConstants.DefaultVoiceVolume);
+            AudioManager.Instance?.SetCharacterVoiceVolume("Daeun", GameConstants.DefaultVoiceVolume);
+            AudioManager.Instance?.SetCharacterVoiceVolume("Bom", GameConstants.DefaultVoiceVolume);
+            AudioManager.Instance?.SetCharacterVoiceVolume("Heewon", GameConstants.DefaultVoiceVolume);
+            AudioManager.Instance?.SetCharacterVoiceVolume("Roa", GameConstants.DefaultVoiceVolume);
+            UIManager.Instance?.DialogueUI?.SetTextSpeed(GameConstants.DefaultTextSpeed);
+            ScriptRunner.Instance?.SetAutoDelay(GameConstants.DefaultAutoSpeed);
 
             isDirty = true;
             PopupManager.Instance?.Toast("초기화", "기본값으로 변경되었습니다.\n적용 버튼을 눌러 저장하세요.");
@@ -447,16 +443,16 @@ namespace LoveAlgo.UI
         {
             snapshot = new SettingsSnapshot
             {
-                masterVolume = PlayerPrefs.GetFloat("MasterVolume", 0.8f),
-                bgmVolume   = PlayerPrefs.GetFloat("BGMVolume", 0.4f),
-                sfxVolume   = PlayerPrefs.GetFloat("SFXVolume", 0.4f),
-                voiceYeun   = PlayerPrefs.GetFloat("Voice_Yeun", 0.4f),
-                voiceDaeun  = PlayerPrefs.GetFloat("Voice_Daeun", 0.4f),
-                voiceBom    = PlayerPrefs.GetFloat("Voice_Bom", 0.4f),
-                voiceHeewon = PlayerPrefs.GetFloat("Voice_Heewon", 0.4f),
-                voiceRoa    = PlayerPrefs.GetFloat("Voice_Roa", 0.4f),
-                textSpeed   = PlayerPrefs.GetFloat("TextSpeed", 0.7f),
-                autoSpeed   = PlayerPrefs.GetFloat("AutoSpeed", 0.4f),
+                masterVolume = PlayerPrefs.GetFloat("MasterVolume", GameConstants.DefaultMasterVolume),
+                bgmVolume   = PlayerPrefs.GetFloat("BGMVolume", GameConstants.DefaultBGMVolume),
+                sfxVolume   = PlayerPrefs.GetFloat("SFXVolume", GameConstants.DefaultSFXVolume),
+                voiceYeun   = PlayerPrefs.GetFloat("Voice_Yeun", GameConstants.DefaultVoiceVolume),
+                voiceDaeun  = PlayerPrefs.GetFloat("Voice_Daeun", GameConstants.DefaultVoiceVolume),
+                voiceBom    = PlayerPrefs.GetFloat("Voice_Bom", GameConstants.DefaultVoiceVolume),
+                voiceHeewon = PlayerPrefs.GetFloat("Voice_Heewon", GameConstants.DefaultVoiceVolume),
+                voiceRoa    = PlayerPrefs.GetFloat("Voice_Roa", GameConstants.DefaultVoiceVolume),
+                textSpeed   = PlayerPrefs.GetFloat("TextSpeed", GameConstants.DefaultTextSpeed),
+                autoSpeed   = PlayerPrefs.GetFloat("AutoSpeed", GameConstants.DefaultAutoSpeed),
             };
         }
 

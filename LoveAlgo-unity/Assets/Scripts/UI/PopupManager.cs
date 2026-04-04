@@ -458,6 +458,7 @@ namespace LoveAlgo.UI
             ShowModal<SaveLoadPopup>()?.ShowSave(slot =>
             {
                 GameManager.Instance?.Save(slot);
+                UISoundManager.Instance?.PlaySaveComplete();
                 Toast("저장 완료", $"슬롯 {slot}에 저장했습니다.");
             });
         }
@@ -467,6 +468,7 @@ namespace LoveAlgo.UI
             ShowModal<SaveLoadPopup>()?.ShowLoad(slot => 
             {
                 GameManager.Instance?.LoadGame(slot);
+                UISoundManager.Instance?.PlayLoadComplete();
                 Toast("로드 완료", $"슬롯 {slot}에서 불러왔습니다.");
             });
         }

@@ -1,5 +1,5 @@
 {
-  "_generated": "2026-04-03",
+  "_generated": "2026-04-04",
   "_generator": "asset-registry/generate.py",
   "bgm": {
     "folder": "Assets/Resources/Audio/BGM",
@@ -18,19 +18,19 @@
   },
   "sfx": {
     "folder": "Assets/Resources/Audio/SFX",
-    "count": 55,
+    "count": 8,
     "pattern": "{NNN}_{Name}.{wav|mp3|ogg}",
     "format_counts": {
-      ".wav": 13,
-      ".mp3": 40,
-      ".ogg": 2
+      ".wav": 3,
+      ".mp3": 2,
+      ".ogg": 3
     },
     "examples": [
-      "001_Pop.wav",
-      "003_Bounce.mp3",
-      "004_Surprise.mp3",
-      "UI_Hover.ogg",
-      "vn_type.wav"
+      "ChoiceHover.wav",
+      "ChoiceSelect.mp3",
+      "Click.mp3",
+      "ui_hover.ogg",
+      "ui_hover_soft.wav"
     ]
   }
 }

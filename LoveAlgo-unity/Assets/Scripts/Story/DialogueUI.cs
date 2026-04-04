@@ -127,7 +127,7 @@ namespace LoveAlgo.Story
             if (showButtonObject != null) showButtonObject.SetActive(false);
 
             // 저장된 텍스트 속도 복원
-            float savedSpeed = PlayerPrefs.GetFloat("TextSpeed", 0.7f);
+            float savedSpeed = PlayerPrefs.GetFloat("TextSpeed", GameConstants.DefaultTextSpeed);
             SetTextSpeed(savedSpeed);
         }
 

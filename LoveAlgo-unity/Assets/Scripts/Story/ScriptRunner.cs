@@ -40,14 +40,15 @@ namespace LoveAlgo.Story
 
         public void SetAutoDelay(float normalized)
         {
-            autoDelayBase = Mathf.Lerp(4.0f, 0.5f, normalized);
+            // 0=느림(6초 기본 딜레이), 1=빠름(0.3초) — 슬라이더 전 구간에서 차이 체감
+            autoDelayBase = Mathf.Lerp(6.0f, 0.3f, normalized);
         }
 
         public string CurrentScriptName => currentScriptName;
 
         protected override void OnSingletonAwake()
         {
-            float savedAutoSpeed = PlayerPrefs.GetFloat("AutoSpeed", 0.4f);
+            float savedAutoSpeed = PlayerPrefs.GetFloat("AutoSpeed", GameConstants.DefaultAutoSpeed);
             SetAutoDelay(savedAutoSpeed);
 
             if (scriptAsset != null)

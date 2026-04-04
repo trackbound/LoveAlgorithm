@@ -163,6 +163,14 @@ namespace LoveAlgo
         /// <summary>기본 해상도 인덱스 (1920×1080)</summary>
         public const int DefaultResolutionIndex = 4;
 
+        // ── 설정 기본값 ──
+        public const float DefaultMasterVolume = 0.8f;
+        public const float DefaultBGMVolume    = 0.5f;
+        public const float DefaultSFXVolume    = 0.5f;
+        public const float DefaultVoiceVolume  = 0.5f;
+        public const float DefaultTextSpeed    = 0.7f;   // 0=느림, 1=빠름 (슬라이더 정규화 값)
+        public const float DefaultAutoSpeed    = 0.5f;   // 0=느림, 1=빠름 (슬라이더 정규화 값)
+
         // ── 게임플레이 (SO에서 로드, 폴백 있음) ──
 
         static int _actionsPerDay;

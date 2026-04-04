@@ -112,20 +112,20 @@ namespace LoveAlgo.Core
             if (_gm.ShouldEndDemoAfterSchedule())
             {
                 _gm.MarkDemoScheduleComplete();
-                _gm.OnContentEnd();
-                return;
             }
 
             if (_gm.RemainingActions <= 0)
             {
+                // 데모 모드: 행동 리셋하여 스케줄 테스트 지속 (뒤로가기로만 종료)
+                if (_gm.ShouldReturnToDemoEnd())
+                {
+                    _gm.RemainingActions = GameConstants.ActionsPerDay;
+                    return;
+                }
+
                 EndDay();
             }
-            else
-            {
-                UIManager.Instance?.ShowOnly(MainUIType.Schedule);
-                var scheduleUI = UIManager.Instance?.ScheduleUI;
-                scheduleUI?.ShowAsync(OnScheduleSelected).Forget();
-            }
+            // remaining > 0: 스케줄 UI가 이미 열려있으므로 재표시 불필요
         }
 
         /// <summary>

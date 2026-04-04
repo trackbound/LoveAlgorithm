@@ -84,6 +84,9 @@ namespace LoveAlgo.Schedule
         /// <summary>현재 활성 탭</summary>
         ScheduleCategory activeTab;
 
+        /// <summary>스케줄 확인 팝업 처리 중 (중복 클릭 방지)</summary>
+        bool isProcessingSchedule;
+
         Action<ScheduleType> onScheduleSelected;
 
         void Awake()
@@ -273,47 +276,77 @@ namespace LoveAlgo.Schedule
 
         async UniTaskVoid OnScheduleClickAsync(ScheduleType type)
         {
-            var ct = destroyCancellationToken;
-            var gs = GameState.Instance;
+            if (isProcessingSchedule) return;
+            isProcessingSchedule = true;
 
-            // 상하차 하루 1회 제한
-            if (type == ScheduleType.PartTime_Loading && UsedLoadingToday)
+            try
             {
-                LoveAlgo.UI.PopupManager.Instance?.Toast("제한", "상하차는 하루에 1번만 가능합니다.");
-                return;
+                var ct = destroyCancellationToken;
+                var gs = GameState.Instance;
+
+                // 상하차 하루 1회 제한
+                if (type == ScheduleType.PartTime_Loading && UsedLoadingToday)
+                {
+                    LoveAlgo.UI.PopupManager.Instance?.Toast("제한", "상하차는 하루에 1번만 가능합니다.");
+                    return;
+                }
+
+                // 투자 조건: 자산 ≥ 30,000원
+                if (type == ScheduleType.Invest && (gs == null || gs.Money < 30000))
+                {
+                    LoveAlgo.UI.PopupManager.Instance?.Toast("자산 부족", $"투자는 자산 {MoneyFormat.Currency(30000)} 이상일 때 가능합니다.");
+                    return;
+                }
+
+                var effect = ScheduleTable.Get(type);
+                string statName = GetPrimaryStatName(effect);
+                string message = $"{statName} 스탯이 증가합니다.\n{effect.displayName}을 진행하시겠습니까?";
+                string effectText = BuildEffectText(type, effect);
+
+                // 기획서: dim + 확인 팝업
+                var confirmed = await LoveAlgo.UI.PopupManager.Instance.ConfirmAsync(
+                    "Schedule",
+                    new LoveAlgo.UI.ConfirmPopupData { mainText = message, sub1 = effectText }
+                );
+
+                if (confirmed)
+                {
+                    // 상하차 사용 기록
+                    if (type == ScheduleType.PartTime_Loading)
+                        UsedLoadingToday = true;
+
+                    // 스탯 적용 (DayLoopController에서 행동 소모 + EndDay 자동 처리)
+                    onScheduleSelected?.Invoke(type);
+
+                    // 남은 행동이 0이면 인터랙션 비활성 (EndDay 전환 대기, UI는 페이드로 가려짐)
+                    var gm = GameManager.Instance;
+                    if (gm != null && gm.RemainingActions <= 0)
+                    {
+                        canvasGroup.interactable = false;
+                        canvasGroup.blocksRaycasts = false;
+                    }
+                }
             }
-
-            // 투자 조건: 자산 ≥ 30,000원
-            if (type == ScheduleType.Invest && (gs == null || gs.Money < 30000))
+            finally
             {
-                LoveAlgo.UI.PopupManager.Instance?.Toast("자산 부족", $"투자는 자산 {MoneyFormat.Currency(30000)} 이상일 때 가능합니다.");
-                return;
-            }
-
-            var effect = ScheduleTable.Get(type);
-            string message = $"{effect.displayName}을(를) 진행하시겠습니까?";
-            string effectText = BuildEffectText(type, effect);
-
-            // 기획서: dim + 확인 팝업
-            var confirmed = await LoveAlgo.UI.PopupManager.Instance.ConfirmAsync(
-                "Schedule",
-                new LoveAlgo.UI.ConfirmPopupData { mainText = message, sub1 = effectText, sub2 = effect.description }
-            );
-
-            if (confirmed)
-            {
-                onScheduleSelected?.Invoke(type);
-
-                // 상하차 사용 기록 (콜백 성공 후)
-                if (type == ScheduleType.PartTime_Loading)
-                    UsedLoadingToday = true;
-
-                await HideAsync(ct);
+                isProcessingSchedule = false;
             }
         }
 
         /// <summary>
-        /// 효과 텍스트 생성 (기획서: 팝업에 스탯/효과 표시)
+        /// 주요 스탯 이름 (팝업 메인 텍스트용)
+        /// </summary>
+        string GetPrimaryStatName(ScheduleEffect effect)
+        {
+            if (effect.strengthChange > 0)     return "체력";
+            if (effect.intelligenceChange > 0) return "지성";
+            if (effect.socialChange > 0)       return "사교성";
+            if (effect.perseveranceChange > 0) return "끈기";
+            return effect.displayName;
+        }
+
+        /// <summary>
+        /// 효과 텍스트 생성 (간략: 스탯명 + 변화량만)
         /// </summary>
         string BuildEffectText(ScheduleType type, ScheduleEffect effect)
         {
@@ -330,8 +363,6 @@ namespace LoveAlgo.Schedule
             if (effect.intelligenceChange != 0) parts.Add($"지성 {FormatStat(effect.intelligenceChange)}");
             if (effect.socialChange != 0)       parts.Add($"사교성 {FormatStat(effect.socialChange)}");
             if (effect.perseveranceChange != 0) parts.Add($"끈기 {FormatStat(effect.perseveranceChange)}");
-            if (effect.fatigueChange != 0)      parts.Add($"피로 {FormatStat(effect.fatigueChange)}");
-            if (effect.moneyChange != 0)        parts.Add(MoneyFormat.SignedCurrency(effect.moneyChange));
 
             return string.Join(" / ", parts);
         }
@@ -402,12 +433,24 @@ namespace LoveAlgo.Schedule
 
         async UniTaskVoid OnBackToStoryAsync()
         {
-            bool confirmed = await LoveAlgo.UI.PopupManager.Instance.ConfirmAsync(
-                "스토리를 진행하시겠습니까?");
-            if (!confirmed) return;
-
             var gm = GameManager.Instance;
             if (gm == null) return;
+
+            // 데모 종료 조건: 확인 후 타이틀로
+            if (gm.ShouldReturnToDemoEnd())
+            {
+                bool confirmed = await LoveAlgo.UI.PopupManager.Instance.ConfirmAsync(
+                    "데모 플레이가 종료되었습니다.\n타이틀로 돌아가시겠습니까?");
+                if (!confirmed) return;
+
+                await HideAsync(destroyCancellationToken);
+                gm.OnContentEnd();
+                return;
+            }
+
+            bool proceed = await LoveAlgo.UI.PopupManager.Instance.ConfirmAsync(
+                "스토리를 진행하시겠습니까?");
+            if (!proceed) return;
 
             // 남은 행동 소진 → EndDay
             gm.RemainingActions = 0;

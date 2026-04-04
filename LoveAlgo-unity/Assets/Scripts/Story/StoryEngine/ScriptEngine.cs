@@ -190,9 +190,9 @@ namespace LoveAlgo.Story.StoryEngine
             var dialogueUI = ExecutionDependencies.DialogueUI;
             int textLen = dialogueUI?.LastDisplayedTextLength ?? 0;
             float autoDelayBase = _getAutoDelayBase();
-            float autoDelayPerCharacter = 0.05f;
-            float autoDelayMin = 1.0f;
-            float autoDelayMax = 5.0f;
+            float autoDelayPerCharacter = 0.03f;
+            float autoDelayMin = 0.5f;
+            float autoDelayMax = 8.0f;
 
             _setWaitingForClick(true);
             _setClickReceived(false);
@@ -289,7 +289,7 @@ namespace LoveAlgo.Story.StoryEngine
         }
 
         /// <summary>
-        /// 로드 시 로그 복원
+        /// 로드/점프 시 로그 + 오디오 상태 복원
         /// </summary>
         public void RebuildLogFromPreviousLines(int targetIndex)
         {
@@ -319,6 +319,35 @@ namespace LoveAlgo.Story.StoryEngine
                 }
             }
 
+            // ── BGM 상태 복원: 점프 지점 이전의 마지막 Sound:BGM 명령을 찾아 재생 ──
+            string lastBGM = null;
+            for (int i = targetIndex - 1; i >= startIdx; i--)
+            {
+                var line = lines[i];
+                if (line.Type == LineType.Sound && line.Value != null &&
+                    line.Value.StartsWith("BGM:", System.StringComparison.OrdinalIgnoreCase))
+                {
+                    var parts = line.Value.Split(':');
+                    if (parts.Length >= 2 &&
+                        !parts[1].Equals("Stop", System.StringComparison.OrdinalIgnoreCase))
+                    {
+                        lastBGM = parts[1];
+                    }
+                    break; // 가장 최근 BGM 명령만 필요
+                }
+            }
+
+            if (lastBGM != null)
+            {
+                var audio = ExecutionDependencies.Audio;
+                if (audio != null && audio.CurrentBGM != lastBGM)
+                {
+                    audio.PlayBGMAsync(lastBGM, 0.5f).Forget();
+                    Debug.Log($"[ScriptEngine] BGM 복원: {lastBGM}");
+                }
+            }
+
+            // ── 대사 로그 복원 ──
             for (int i = startIdx; i < targetIndex; i++)
             {
                 var line = lines[i];
@@ -326,7 +355,7 @@ namespace LoveAlgo.Story.StoryEngine
                     dialogueUI.AddLogEntry(line.Speaker, line.Value);
             }
 
-            Debug.Log($"[ScriptEngine] 로그 복원: {startIdx}~{targetIndex - 1} 구간, {dialogueUI.DialogueLog.Count}개 항목");
+            Debug.Log($"[ScriptEngine] 로그 복원: {startIdx}~{targetIndex - 1} 구간, {dialogueUI.DialogueLog.Count}개 항목, BGM: {lastBGM ?? "없음"}");
         }
     }
 }

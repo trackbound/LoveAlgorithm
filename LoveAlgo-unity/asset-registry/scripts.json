@@ -1,5 +1,5 @@
 {
-  "_generated": "2026-04-03",
+  "_generated": "2026-04-04",
   "_generator": "asset-registry/generate.py",
   "folder": "Assets/Scripts",
   "namespaces": {
@@ -36,12 +36,13 @@
       ]
     },
     "Editor": {
-      "count": 4,
+      "count": 5,
       "files": [
         "ConsoleLogCopier",
-        "DataSOGenerator",
         "DebugRemoteWindow",
-        "TMPFontCleaner"
+        "TMPFontCleaner",
+        "UISoundTestWindow",
+        "WindowsBuildTool"
       ]
     },
     "MiniGame": {

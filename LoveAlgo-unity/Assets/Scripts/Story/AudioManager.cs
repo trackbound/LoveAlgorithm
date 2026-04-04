@@ -193,7 +193,7 @@ namespace LoveAlgo.Story
             if (fadeDuration > 0 && bgmSource.isPlaying)
             {
                 // 크로스페이드: 짧은 페이드아웃 → 페이드인 (청각적으로 자연스럽게)
-                targetVolume = bgmSource.volume;
+                // targetVolume은 항상 1f — 볼륨 제어는 AudioMixer에서 담당
                 float fadeOutTime = fadeDuration * 0.4f;  // 아웃은 빠르게
                 float fadeInTime = fadeDuration;           // 인은 풀 duration
 
@@ -434,7 +434,7 @@ namespace LoveAlgo.Story
             if (fadeDuration > 0 && bgmSource.isPlaying)
             {
                 // 크로스페이드: 짧은 페이드아웃 → 페이드인
-                targetVolume = bgmSource.volume;
+                // targetVolume은 항상 1f — 볼륨 제어는 AudioMixer에서 담당
                 float fadeOutTime = fadeDuration * 0.4f;
                 float fadeInTime = fadeDuration;
 
@@ -609,9 +609,10 @@ namespace LoveAlgo.Story
         /// </summary>
         void LoadMixerVolumes()
         {
-            SetMasterVolume(PlayerPrefs.GetFloat("MasterVolume", 0.8f));
-            SetBGMVolume(PlayerPrefs.GetFloat("BGMVolume", 0.4f));
-            SetSFXVolume(PlayerPrefs.GetFloat("SFXVolume", 0.4f));
+            SetMasterVolume(PlayerPrefs.GetFloat("MasterVolume", GameConstants.DefaultMasterVolume));
+            SetBGMVolume(PlayerPrefs.GetFloat("BGMVolume", GameConstants.DefaultBGMVolume));
+            SetSFXVolume(PlayerPrefs.GetFloat("SFXVolume", GameConstants.DefaultSFXVolume));
+            SetVoiceVolume(PlayerPrefs.GetFloat("VoiceVolume", GameConstants.DefaultVoiceVolume));
         }
 
         void LoadCharacterVoiceVolumes()
@@ -619,7 +620,7 @@ namespace LoveAlgo.Story
             string[] characters = { "Yeun", "Daeun", "Bom", "Heewon", "Roa" };
             foreach (var c in characters)
             {
-                characterVoiceVolumes[c] = PlayerPrefs.GetFloat($"Voice_{c}", 0.4f);
+                characterVoiceVolumes[c] = PlayerPrefs.GetFloat($"Voice_{c}", GameConstants.DefaultVoiceVolume);
             }
         }
 

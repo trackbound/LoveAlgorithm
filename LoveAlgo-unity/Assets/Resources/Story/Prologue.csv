@@ -696,12 +696,12 @@ DBG_BOM,FX,,SceneStart:BG_StudentCenter_Board,await
 ,Text,,"홍보지는 다들 엄청나게 화려하기도 했다.\n아니, 다들 동아리에 이렇게까지 시간을 쏟으면 생활은 어떻게 하는거지? 이해가 안 간다.",click
 ,Text,,게시판을 보며 나는 대체 어떻게 해야 할지를 고민하는데 옆에 인기척이 났다.,click
 ,Sound,,BGM:Bom,>
-,Char,,C:Enter:Bom,await
+,Char,,C:Enter:Bom:Tearful,await
 ,Text,이봄,"아니, 나 진짜로 모르겠다고…\n여기가 훨씬 복잡하단 말이야…",click
 ,Text,,무의식중에 쳐다보았는데 시선이 아래로 내려간다.\n그 정도로 작은 여자애였다.,click
 ,Text,,게시판에 붙은 수제인형 동아리의 홍보지를 바라보며 누군가와 통화하고 있었다.,click
 ,Text,,딱 봐도 그런 동아리 들어가게 생겼다.\n저런 동아리는 이런 애들만 있나. 대수롭지 않게 다시 홍보지를 살펴보고 있었다.,click
-,Text,이봄,"<emote=Tearful/>저기, 그! 진짜 죄송한데 여기가… 어디에요?",click
+,Text,이봄,"저기, 그! 진짜 죄송한데 여기가… 어디에요?",click
 ,Text,{{Player}},예?,click
 ,Text,,"그랬는데 갑자기 말을 걸어 약간 당황했는데,\n이미 여자애는 거의 울기 직전이었다.",click
 ,Text,,그에 내가 더 당황했다.,click

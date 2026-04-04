@@ -207,6 +207,7 @@ namespace LoveAlgo.Story
             flags.Clear();
             choiceHistory.Clear();
             Shop.ShopManager.Reset();
+            NotifyChanged();
         }
 
         #endregion

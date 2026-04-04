@@ -1,5 +1,5 @@
 {
-  "_generated": "2026-04-03",
+  "_generated": "2026-04-04",
   "_generator": "asset-registry/generate.py",
   "_description": "AI 에이전트용 에셋 요약 인덱스. 상세는 각 카테고리 JSON 참조. 수동 편집 금지.",
   "naming_conventions": {
@@ -20,11 +20,11 @@
     },
     "audio": {
       "bgm_count": 9,
-      "sfx_count": 55,
+      "sfx_count": 8,
       "details": "audio.json"
     },
     "stage": {
-      "bg_count": 24,
+      "bg_count": 25,
       "cg_count": 2,
       "sd_count": 3,
       "details": "stage.json"
@@ -68,7 +68,7 @@
       "namespaces": {
         "Core": 21,
         "Debug": 1,
-        "Editor": 4,
+        "Editor": 5,
         "MiniGame": 4,
         "Phone": 7,
         "Schedule": 6,
@@ -76,7 +76,7 @@
         "Story": 46,
         "UI": 29
       },
-      "total": 128,
+      "total": 129,
       "details": "scripts.json"
     }
   }

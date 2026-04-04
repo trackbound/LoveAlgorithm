@@ -130,6 +130,8 @@ namespace LoveAlgo.Story
         /// </summary>
         void CreateButtons(List<OptionData> options)
         {
+            var soundMgr = LoveAlgo.UI.UISoundManager.Instance;
+
             for (int i = 0; i < options.Count; i++)
             {
                 var option = options[i];
@@ -143,10 +145,22 @@ namespace LoveAlgo.Story
                 var button = buttonObj.GetComponent<Button>();
                 if (button != null)
                 {
+                    // 기본 UI 클릭/호버 사운드에서 제외
+                    soundMgr?.ExcludeButton(button);
+
                     button.onClick.AddListener(() => {
-                        LoveAlgo.UI.UISoundManager.Instance?.PlayChoiceSelect();
+                        soundMgr?.PlayChoiceSelect();
                         OnButtonClicked(index);
                     });
+
+                    // 선택지 전용 호버 사운드
+                    var trigger = buttonObj.GetComponent<UnityEngine.EventSystems.EventTrigger>();
+                    if (trigger == null)
+                        trigger = buttonObj.AddComponent<UnityEngine.EventSystems.EventTrigger>();
+                    var hoverEntry = new UnityEngine.EventSystems.EventTrigger.Entry
+                        { eventID = UnityEngine.EventSystems.EventTriggerType.PointerEnter };
+                    hoverEntry.callback.AddListener(_ => soundMgr?.PlayChoiceHover());
+                    trigger.triggers.Add(hoverEntry);
                 }
 
                 spawnedButtons.Add(buttonObj);
@@ -266,6 +280,7 @@ namespace LoveAlgo.Story
                 if (btn != null) Destroy(btn);
             }
             spawnedButtons.Clear();
+            LoveAlgo.UI.UISoundManager.Instance?.ClearExcludedButtons();
         }
 
         void OnDestroy()

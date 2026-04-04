@@ -20,6 +20,11 @@ namespace LoveAlgo.UI
         [SerializeField] AudioClip dialogueNextClip;
         [SerializeField] AudioClip choiceSelectClip;
         [SerializeField] AudioClip choiceAppearClip;
+        [SerializeField] AudioClip choiceHoverClip;
+        [SerializeField] AudioClip popupOpenClip;
+        [SerializeField] AudioClip popupCloseClip;
+        [SerializeField] AudioClip saveCompleteClip;
+        [SerializeField] AudioClip loadCompleteClip;
         [Tooltip("볼륨 슬라이더 프리뷰 전용 사운드 (미할당 시 clickClip 사용)")]
         [SerializeField] AudioClip volumePreviewClip;
 
@@ -52,6 +57,10 @@ namespace LoveAlgo.UI
         /// </summary>
         AudioSource typingSource;
         HashSet<Button> registeredButtons = new HashSet<Button>();
+        /// <summary>
+        /// 기본 클릭/호버 사운드에서 제외할 버튼 (선택지 등 전용 사운드 사용)
+        /// </summary>
+        HashSet<Button> excludedButtons = new HashSet<Button>();
         float lastTypingPlayTime = -999f;
         float volumePreviewScheduledTime = -1f;  // 디바운스 예약 시각 (-1 = 예약 없음)
 
@@ -99,6 +108,7 @@ namespace LoveAlgo.UI
         {
             if (hoverClip != null) audioSource.PlayOneShot(hoverClip, 0f);
             if (clickClip != null) audioSource.PlayOneShot(clickClip, 0f);
+            if (typingClip != null) typingSource.PlayOneShot(typingClip, 0f);
         }
 
         #region 버튼 자동 바인딩
@@ -126,8 +136,8 @@ namespace LoveAlgo.UI
 
             registeredButtons.Add(button);
 
-            // 클릭 사운드
-            button.onClick.AddListener(() => PlayClick());
+            // 클릭 사운드 — 제외 목록에 있으면 재생하지 않음
+            button.onClick.AddListener(() => { if (!excludedButtons.Contains(button)) PlayClick(); });
 
             // 호버 사운드 (EventTrigger 사용)
             var trigger = button.GetComponent<EventTrigger>();
@@ -142,7 +152,7 @@ namespace LoveAlgo.UI
             {
                 if (entry.eventID == EventTriggerType.PointerEnter)
                 {
-                    entry.callback.AddListener(_ => PlayHover());
+                    entry.callback.AddListener(_ => { if (!excludedButtons.Contains(button)) PlayHover(); });
                     hasEnterEvent = true;
                     break;
                 }
@@ -151,9 +161,25 @@ namespace LoveAlgo.UI
             if (!hasEnterEvent)
             {
                 var enterEntry = new EventTrigger.Entry { eventID = EventTriggerType.PointerEnter };
-                enterEntry.callback.AddListener(_ => PlayHover());
+                enterEntry.callback.AddListener(_ => { if (!excludedButtons.Contains(button)) PlayHover(); });
                 trigger.triggers.Add(enterEntry);
             }
+        }
+
+        /// <summary>
+        /// 기본 클릭/호버 사운드에서 제외 (선택지 등 전용 사운드 사용 버튼용)
+        /// </summary>
+        public void ExcludeButton(Button button)
+        {
+            if (button != null) excludedButtons.Add(button);
+        }
+
+        /// <summary>
+        /// 제외 목록 초기화 (선택지 UI 닫힐 때 호출)
+        /// </summary>
+        public void ClearExcludedButtons()
+        {
+            excludedButtons.Clear();
         }
 
         /// <summary>
@@ -197,6 +223,9 @@ namespace LoveAlgo.UI
             if (typingClip == null || typingSource == null) return;
             if (Time.unscaledTime - lastTypingPlayTime < typingMinInterval) return;
             lastTypingPlayTime = Time.unscaledTime;
+
+            // 안전장치: mute/비활성 상태 복구
+            if (typingSource.mute) typingSource.mute = false;
 
             typingSource.clip = typingClip;
             typingSource.pitch = Random.Range(minTypingPitch, maxTypingPitch);
@@ -245,11 +274,51 @@ namespace LoveAlgo.UI
         }
 
         /// <summary>
+        /// 선택지 호버 사운드 재생 (전용 클립, 없으면 기본 호버)
+        /// </summary>
+        public void PlayChoiceHover()
+        {
+            PlayClip(choiceHoverClip != null ? choiceHoverClip : hoverClip, hoverVolume);
+        }
+
+        /// <summary>
         /// 선택지 등장 사운드 재생
         /// </summary>
         public void PlayChoiceAppear()
         {
             PlayClip(choiceAppearClip, clickVolume);
+        }
+
+        /// <summary>
+        /// 팝업 열기 사운드 재생
+        /// </summary>
+        public void PlayPopupOpen()
+        {
+            PlayClip(popupOpenClip, clickVolume);
+        }
+
+        /// <summary>
+        /// 팝업 닫기 사운드 재생
+        /// </summary>
+        public void PlayPopupClose()
+        {
+            PlayClip(popupCloseClip, hoverVolume);
+        }
+
+        /// <summary>
+        /// 세이브 완료 사운드 재생
+        /// </summary>
+        public void PlaySaveComplete()
+        {
+            PlayClip(saveCompleteClip, clickVolume);
+        }
+
+        /// <summary>
+        /// 로드 완료 사운드 재생
+        /// </summary>
+        public void PlayLoadComplete()
+        {
+            PlayClip(loadCompleteClip, clickVolume);
         }
 
         void PlayClip(AudioClip clip, float volume)

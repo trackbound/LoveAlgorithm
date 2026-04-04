@@ -122,6 +122,13 @@ namespace LoveAlgo.Core
         /// </summary>
         void ShowScheduleUI()
         {
+            // 배경이 없으면 기본 배경 설정 (디버그 점프 등으로 배경이 클리어된 경우)
+            var bg = StageManager.Instance?.Background;
+            if (bg != null && string.IsNullOrEmpty(bg.CurrentBackground))
+            {
+                bg.ChangeBackgroundAsync("BG_Title", Story.BGTransition.Cut, 0f).Forget();
+            }
+
             UIManager.Instance?.ShowOnly(MainUIType.Schedule);
             var scheduleUI = UIManager.Instance?.ScheduleUI;
             scheduleUI?.ShowAsync(_gm.OnScheduleSelected).Forget();
