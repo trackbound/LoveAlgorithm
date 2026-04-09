@@ -1,5 +1,5 @@
 {
-  "_generated": "2026-04-04",
+  "_generated": "2026-04-09",
   "_generator": "asset-registry/generate.py",
   "art": {
     "folder": "Assets/Art/UI",
@@ -106,7 +106,6 @@
         "PlaceInfo Bar"
       ],
       "_root": [
-        "Popup",
         "Screen Effect",
         "Stage",
         "UI"

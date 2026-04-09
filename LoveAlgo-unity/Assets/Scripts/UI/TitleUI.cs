@@ -250,7 +250,7 @@ namespace LoveAlgo.UI
                 {
                     // 자동저장 데이터 있음 → 확인 후 로드
                     bool confirmed = await PopupManager.Instance.ConfirmAsync(
-                        "자동 저장 부분부터 시작할까요?", "예", "아니오");
+                        "이 부분부터 시작할까요?", "예", "아니오");
                     if (!confirmed) return;
 
                     GameManager.Instance?.LoadGame(SaveManager.AutoSaveSlot);

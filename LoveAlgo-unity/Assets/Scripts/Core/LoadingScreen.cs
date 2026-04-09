@@ -8,6 +8,7 @@ namespace LoveAlgo.Core
 {
     /// <summary>
     /// 로딩 화면 (날짜 전환 / 자동저장 시 캐릭터 일러스트 표시)
+    /// 2레이어 구조: 검은 배경(blackOverlay) + 캐릭터 일러스트(characterImage)
     /// Canvas_ScreenFX 위에 배치, ScreenFX FadeOverlay 위 레이어
     /// </summary>
     public class LoadingScreen : SingletonMonoBehaviour<LoadingScreen>
@@ -15,6 +16,7 @@ namespace LoveAlgo.Core
         [Header("바인딩")]
         [SerializeField] CanvasGroup canvasGroup;
         [SerializeField] Image characterImage;
+        [SerializeField] Image blackOverlay;
 
         [Header("설정")]
         [SerializeField] float fadeInDuration = 0.4f;
@@ -23,6 +25,12 @@ namespace LoveAlgo.Core
 
         /// <summary>현재 표시 중인지</summary>
         public bool IsShowing { get; private set; }
+
+        /// <summary>페이드인 소요 시간 (외부 참조용)</summary>
+        public float FadeInDuration => fadeInDuration;
+
+        /// <summary>최소 표시 시간 (외부 참조용)</summary>
+        public float MinDisplayTime => minDisplayTime;
 
         /// <summary>
         /// Resources/UI/Loading/ 폴더의 로딩 이미지 목록
@@ -52,10 +60,27 @@ namespace LoveAlgo.Core
                 canvasGroup.alpha = 0f;
                 canvasGroup.gameObject.SetActive(false);
             }
+            EnsureBlackOverlay();
+        }
+
+        /// <summary>blackOverlay가 없으면 자동 생성 (프리팹에 미바인딩 시 폴백)</summary>
+        void EnsureBlackOverlay()
+        {
+            if (blackOverlay != null) return;
+            var go = new GameObject("BlackOverlay", typeof(RectTransform), typeof(Image));
+            go.transform.SetParent(transform, false);
+            go.transform.SetAsFirstSibling();
+            var rt = go.GetComponent<RectTransform>();
+            rt.anchorMin = Vector2.zero;
+            rt.anchorMax = Vector2.one;
+            rt.offsetMin = rt.offsetMax = Vector2.zero;
+            blackOverlay = go.GetComponent<Image>();
+            blackOverlay.color = Color.black;
+            blackOverlay.raycastTarget = true;
         }
 
         /// <summary>
-        /// 로딩 화면 표시 (랜덤 캐릭터 이미지)
+        /// 로딩 화면 표시 (검은 배경 즉시 + 일러스트 페이드인)
         /// </summary>
         public async UniTask ShowAsync(CancellationToken ct = default)
         {
@@ -66,6 +91,7 @@ namespace LoveAlgo.Core
             }
 
             IsShowing = true;
+            EnsureBlackOverlay();
 
             // 랜덤 이미지 선택 (직전과 겹치지 않게)
             int index;
@@ -86,10 +112,15 @@ namespace LoveAlgo.Core
                 Debug.LogWarning($"[LoadingScreen] 이미지 로드 실패: {LoadingImagePaths[index]}");
             }
 
-            // 페이드인
+            // 검은 배경 즉시 표시, 일러스트 투명 상태로 시작
+            blackOverlay.color = Color.black;
+            characterImage.color = new Color(1f, 1f, 1f, 0f);
+
             canvasGroup.gameObject.SetActive(true);
-            canvasGroup.alpha = 0f;
-            await canvasGroup.DOFade(1f, fadeInDuration)
+            canvasGroup.alpha = 1f;
+
+            // 일러스트만 페이드인
+            await characterImage.DOFade(1f, fadeInDuration)
                 .SetEase(Ease.OutQuad)
                 .SetUpdate(true)
                 .ToUniTask(cancellationToken: ct);
@@ -98,12 +129,30 @@ namespace LoveAlgo.Core
         }
 
         /// <summary>
-        /// 로딩 화면 숨기기
+        /// 일러스트만 페이드아웃 (검은 배경은 유지 — 화면 노출 방지)
+        /// </summary>
+        public async UniTask HideIllustrationAsync(CancellationToken ct = default)
+        {
+            if (characterImage == null || !IsShowing) return;
+
+            DOTween.Kill(characterImage);
+            await characterImage.DOFade(0f, fadeOutDuration)
+                .SetEase(Ease.InQuad)
+                .SetUpdate(true)
+                .ToUniTask(cancellationToken: ct);
+
+            Debug.Log("[LoadingScreen] 일러스트 숨김 (검은 배경 유지)");
+        }
+
+        /// <summary>
+        /// 로딩 화면 전체 숨기기 (일러스트 + 검은 배경 모두 페이드아웃)
+        /// DayLoopController 등 ScreenFX로 감싸는 호출자용
         /// </summary>
         public async UniTask HideAsync(CancellationToken ct = default)
         {
             if (canvasGroup == null || !IsShowing) return;
 
+            DOTween.Kill(characterImage);
             await canvasGroup.DOFade(0f, fadeOutDuration)
                 .SetEase(Ease.InQuad)
                 .SetUpdate(true)
@@ -140,6 +189,8 @@ namespace LoveAlgo.Core
         {
             if (canvasGroup == null) return;
             DOTween.Kill(canvasGroup);
+            DOTween.Kill(characterImage);
+            characterImage.color = new Color(1f, 1f, 1f, 0f);
             canvasGroup.alpha = 0f;
             canvasGroup.gameObject.SetActive(false);
             IsShowing = false;

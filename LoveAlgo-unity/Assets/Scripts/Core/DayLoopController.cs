@@ -58,16 +58,27 @@ namespace LoveAlgo.Core
                     gs.AddStat("Fatigue", effect.fatigueChange);
                     gs.AddMoney(effect.moneyChange);
 
-                    var (buffStat, buffBonus) = Shop.ItemEffectSystem.ConsumeSessionBuff();
+                    var (buffStat, buffBonus, subStat, subValue) = Shop.ItemEffectSystem.ConsumeSessionBuff();
                     if (buffStat != null && buffBonus > 0)
                     {
                         gs.AddStat(buffStat, buffBonus);
                         Debug.Log($"[GameManager] 세션 버프 적용: {buffStat} +{buffBonus}");
                     }
+                    // 보조 효과 (무릎담요: 피로-2, 노트북 거치대: 지성+1 등)
+                    if (subStat != null && subValue != 0)
+                    {
+                        gs.AddStat(subStat, subValue);
+                        Debug.Log($"[GameManager] 세션 보조 버프 적용: {subStat} {subValue:+#;-#;0}");
+                    }
 
                     string feedback = BuildScheduleFeedback(effect);
                     if (buffStat != null && buffBonus > 0)
-                        feedback += $"\n<color=#FFD700>버프: {buffStat} +{buffBonus}</color>";
+                    {
+                        string buffText = $"버프: {buffStat} +{buffBonus}";
+                        if (subStat != null && subValue != 0)
+                            buffText += $", {subStat} {subValue:+#;-#;0}";
+                        feedback += $"\n<color=#FFD700>{buffText}</color>";
+                    }
                     PopupManager.Instance?.Toast(effect.displayName, feedback, 2.5f);
                 }
             }
@@ -93,6 +104,9 @@ namespace LoveAlgo.Core
 
         string FormatChange(int value) => value > 0 ? $"+{value}" : value.ToString();
 
+        /// <summary>인라인 스케줄 진행 중인지 (Flow,,Schedule,await)</summary>
+        public bool IsInlineSchedule => _inlineScheduleTcs != null;
+
         /// <summary>
         /// 스케줄 수행 완료 (행동 소모 처리)
         /// </summary>
@@ -100,14 +114,9 @@ namespace LoveAlgo.Core
         {
             _gm.RemainingActions--;
 
-            // 인라인 모드: 1회 선택 후 스토리로 복귀
+            // 인라인 모드: 결과 토스트만 표시, 뒤로가기로 스토리 복귀
             if (_inlineScheduleTcs != null)
-            {
-                var tcs = _inlineScheduleTcs;
-                _inlineScheduleTcs = null;
-                tcs.TrySetResult();
                 return;
-            }
 
             if (_gm.ShouldEndDemoAfterSchedule())
             {
@@ -129,7 +138,18 @@ namespace LoveAlgo.Core
         }
 
         /// <summary>
-        /// 인라인 스케줄 — 1회 선택 완료까지 대기 (Flow,,Schedule,await 용)
+        /// 인라인 스케줄 완료 시그널 (퀵메뉴 뒤로가기에서 호출)
+        /// </summary>
+        public void CompleteInlineSchedule()
+        {
+            if (_inlineScheduleTcs == null) return;
+            var tcs = _inlineScheduleTcs;
+            _inlineScheduleTcs = null;
+            tcs.TrySetResult();
+        }
+
+        /// <summary>
+        /// 인라인 스케줄 — 뒤로가기까지 대기 (Flow,,Schedule,await 용)
         /// </summary>
         public async UniTask WaitForInlineScheduleAsync(CancellationToken ct)
         {
@@ -207,8 +227,9 @@ namespace LoveAlgo.Core
 
                 await UniTask.Yield(ct);
 
+                // 로딩 화면 후 부드러운 등장 (배경/UI 모두 3초 페이드)
                 if (fx != null)
-                    await fx.FadeInAsync(0.6f, ct);
+                    await fx.FadeInAsync(3.0f, ct);
             }
             finally
             {

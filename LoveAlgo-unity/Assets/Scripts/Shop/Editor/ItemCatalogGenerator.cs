@@ -40,130 +40,130 @@ public static class ItemCatalogGenerator
         var items = new System.Collections.Generic.List<ItemData>();
 
         // ═══════════════════════════════════════════
-        //  선물 — 하예은
+        //  선물 — 하예은 (No.1, 6, 11)
         // ═══════════════════════════════════════════
         items.Add(MakeGift("gift_ankle_guard", "발목 보호대",
-            "운동할 때 필수인 발목 보호대.\n예은이가 좋아할 것 같다.", 30000, "Yeeun", 2, 3));
-        items.Add(MakeGift("gift_meal_coupon", "쌈밥 식사권",
-            "동네 맛집 쌈밥 식사권.\n예은이랑 같이 가면 좋겠다.", 25000, "Yeeun", 2, 3));
-        items.Add(MakeGift("gift_game_chip", "게임칩",
-            "인기 게임의 칩 세트.\n예은이가 관심 있어할지도.", 30000, "Yeeun", 2, 3));
+            "발목을 보호해 주는 보호대", 30000, "Yeeun", 2, 3, "1_gift_ankle_guard"));
+        items.Add(MakeGift("gift_meal_coupon", "[한식명인 최명자의 쌈밥명가] 식사권",
+            "유명한 쌈밥 맛집의 식사권", 25000, "Yeeun", 2, 3, "6_gift_meal_coupon"));
+        items.Add(MakeGift("gift_game_chip", "<점프점프 거북맨> 게임 칩",
+            "예은과 어릴 때 함께 플레이했던 게임 칩", 30000, "Yeeun", 2, 3, "11_gift_game_chip"));
 
         // ═══════════════════════════════════════════
-        //  선물 — 서다은
+        //  선물 — 서다은 (No.2, 7, 12)
         // ═══════════════════════════════════════════
-        items.Add(MakeGift("gift_album", "앨범",
-            "좋아하는 아티스트의 앨범.\n다은이가 좋아할 것 같다.", 30000, "Daeun", 2, 3));
-        items.Add(MakeGift("gift_bread", "밤식빵",
-            "밤이 가득 든 식빵.\n다은이의 취향 저격.", 8000, "Daeun", 1, 2));
-        items.Add(MakeGift("gift_concert_ticket", "콘서트 티켓",
-            "인기 가수의 콘서트 티켓.\n다은이가 정말 좋아할 거다.", 100000, "Daeun", 3, 5));
+        items.Add(MakeGift("gift_album", "<트로피컬 글로우> 앨범",
+            "세계적 인기 밴드 <트로피컬 글로우> 앨범", 30000, "Daeun", 2, 3, "2_gift_album"));
+        items.Add(MakeGift("gift_bread", "알밤달밤 밤식빵",
+            "학교 근처 유명 베이커리 [밤밤밤]의 밤식빵", 8000, "Daeun", 1, 2, "7_gift_bread"));
+        items.Add(MakeGift("gift_concert_ticket", "<트로피컬 글로우> 내한 콘서트 티켓",
+            "<트로피컬 글로우> 내한 콘서트 티켓", 100000, "Daeun", 3, 5, "12_gift_concert_ticket"));
 
         // ═══════════════════════════════════════════
-        //  선물 — 이봄
+        //  선물 — 이봄 (No.3, 8, 13)
         // ═══════════════════════════════════════════
-        items.Add(MakeGift("gift_rabbit_keyring", "토끼 키링",
-            "귀여운 토끼 열쇠고리.\n봄이가 좋아할 것 같다.", 20000, "Bom", 2, 3));
-        items.Add(MakeGift("gift_strawberry_milk", "딸기우유",
-            "딸기맛 우유.\n봄이의 최애 음료.", 3000, "Bom", 1, 2));
-        items.Add(MakeGift("gift_popup_ticket", "팝업스토어 티켓",
-            "인기 팝업스토어 입장권.\n봄이랑 같이 가면 좋겠다.", 60000, "Bom", 3, 4));
+        items.Add(MakeGift("gift_rabbit_keyring", "토끼 인형 키링",
+            "미니 토끼 인형 키링", 20000, "Bom", 2, 3, "3_gift_rabbit_keyring"));
+        items.Add(MakeGift("gift_strawberry_milk", "[내 맘에 딸기가득] 딸기우유",
+            "귀여운 패키지의 딸기우유", 3000, "Bom", 1, 2, "8_gift_strawberry_milk"));
+        items.Add(MakeGift("gift_popup_ticket", "<러블리톡> 팝업스토어 입장 확정 티켓",
+            "<러블리톡> 팝업스토어 입장 확정 티켓", 60000, "Bom", 3, 4, "13_gift_popup_ticket"));
 
         // ═══════════════════════════════════════════
-        //  선물 — 도희원
+        //  선물 — 도희원 (No.4, 9, 14)
         // ═══════════════════════════════════════════
-        items.Add(MakeGift("gift_soju", "한정판 소주",
-            "한정판 프리미엄 소주.\n희원이가 좋아할 것 같다.", 40000, "Heewon", 3, 4));
-        items.Add(MakeGift("gift_diamond", "다이아몬드",
-            "작지만 빛나는 다이아몬드.\n희원이가 정말 좋아할 거다.", 120000, "Heewon", 3, 5));
+        items.Add(MakeGift("gift_soju", "한정판 소주 <여름, 레몬, 밤>",
+            "소주 브랜드에서 새로 나온 과일 소주", 40000, "Heewon", 3, 4, "4_gift_soju"));
+        items.Add(MakeGift("gift_diamond", "엠파이어 다이아몬드",
+            "고급 위스키", 120000, "Heewon", 3, 5, "9_gift_diamond"));
         items.Add(MakeGift("gift_ribbon", "리본 머리끈",
-            "예쁜 리본 모양 머리끈.\n희원이한테 어울릴 것 같다.", 35000, "Heewon", 2, 3));
+            "흰색 실크 리본 머리끈", 35000, "Heewon", 2, 3, "14_gift_ribbon"));
 
         // ═══════════════════════════════════════════
-        //  선물 — 로아
+        //  선물 — 로아 (No.5, 10, 15)
         // ═══════════════════════════════════════════
-        items.Add(MakeGift("gift_blue_shirt", "하늘색 티셔츠",
-            "하늘색 포인트 티셔츠.\n로아가 좋아할 것 같다.", 40000, "Roa", 3, 4));
+        items.Add(MakeGift("gift_blue_shirt", "하늘색 반팔 티셔츠",
+            "검은색이 아닌 옷", 40000, "Roa", 3, 4, "5_gift_blue_shirt"));
         items.Add(MakeGift("gift_monitor", "QHD 모니터",
-            "고해상도 QHD 모니터.\n로아가 정말 좋아할 거다.", 120000, "Roa", 3, 5));
-        items.Add(MakeGift("gift_headset", "헤드셋",
-            "고급 게이밍 헤드셋.\n로아가 정말 좋아할 거다.", 90000, "Roa", 3, 5));
+            "화질이 매우 좋은 모니터", 120000, "Roa", 3, 5, "10_gift_monitor"));
+        items.Add(MakeGift("gift_headset", "생동감이 느껴지는 헤드셋",
+            "로아의 목소리를 더 잘 들을 수 있는 노이즈 캔슬링 헤드셋", 90000, "Roa", 3, 5, "15_gift_headset"));
 
         // ═══════════════════════════════════════════
-        //  피로 회복 소모품
+        //  피로 회복 소모품 (No.16, 17, 18, 34, 41)
         // ═══════════════════════════════════════════
         items.Add(MakeConsumable("consume_energy_drink", "에너지 음료",
-            "졸릴 때 마시면 좋은 에너지 음료.\n피로가 조금 줄어든다.", 3000, 5));
-        items.Add(MakeConsumable("consume_energy_bar", "에너지바",
-            "간편하게 먹을 수 있는 에너지바.\n피로를 적당히 줄여준다.", 5000, 6));
+            "고카페인 각성 음료", 3000, 5, "16_consume_energy_drink"));
         items.Add(MakeConsumable("consume_vitamin", "종합비타민",
-            "종합비타민 한 알로 컨디션 UP.\n피로 회복에 효과적이다.", 12000, 8));
+            "힘이 나는 피로 회복 비타민", 12000, 8, "17_consume_vitamin"));
         items.Add(MakeConsumable("consume_arginine", "아르기닌",
-            "고함량 아르기닌 보충제.\n피로가 크게 줄어든다.", 20000, 12));
+            "남성건강 영양제", 20000, 12, "18_consume_arginine"));
         items.Add(MakeConsumable("consume_mood_lamp", "수면용 무드등",
-            "은은한 수면용 무드등.\n피로를 확실히 풀어준다.", 25000, 15));
+            "부드러운 빛이 나는 무드등", 25000, 15, "34_consume_mood_lamp"));
+        items.Add(MakeConsumable("consume_energy_bar", "에너지바",
+            "견과류가 든 에너지바", 5000, 6, "41_consume_energy_bar"));
 
         // ═══════════════════════════════════════════
-        //  세션 버프 — 체력
+        //  세션 버프 — 체력 (No.19, 20)
         // ═══════════════════════════════════════════
-        items.Add(MakeBuff("buff_protein_choco", "프로틴 초코맛",
-            "운동 전에 먹으면 효과적인 초코 프로틴.\n자유행동 1회 체력 +2", 10000, "Str", 2, "buff_str"));
-        items.Add(MakeBuff("buff_protein_straw", "프로틴 딸기맛",
-            "딸기맛 프로틴. 맛도 좋고 효과도 좋다.\n자유행동 1회 체력 +3", 12000, "Str", 3, "buff_str"));
+        items.Add(MakeBuff("buff_protein_choco", "프로틴_초코맛",
+            "단백질 충전에 필요한 초코맛 프로틴", 10000, "Str", 2, "buff_str", "19_buff_protein_choco"));
+        items.Add(MakeBuff("buff_protein_straw", "프로틴_딸기맛",
+            "단백질 충전에 필요한 딸기맛 프로틴", 12000, "Str", 3, "buff_str", "20_buff_protein_straw"));
 
         // ═══════════════════════════════════════════
-        //  세션 버프 — 지성
+        //  세션 버프 — 지성 (No.21, 22, 24, 25, 28, 30, 40)
         // ═══════════════════════════════════════════
-        items.Add(MakeBuff("buff_note", "노트",
-            "깔끔한 줄 노트. 공부 효율이 오른다.\n자유행동 1회 지성 +1", 4000, "Int", 1, "buff_int"));
-        items.Add(MakeBuff("buff_pen", "볼펜",
-            "필기감 좋은 볼펜.\n자유행동 1회 지성 +1", 3000, "Int", 1, "buff_int"));
-        items.Add(MakeBuff("buff_postit", "포스트잇",
-            "형형색색 포스트잇. 정리에 딱이다.\n자유행동 1회 지성 +1", 6000, "Int", 1, "buff_int"));
-        items.Add(MakeBuff("buff_highlighter", "형광펜 세트",
-            "5색 형광펜 세트. 중요한 건 표시!\n자유행동 1회 지성 +2", 8000, "Int", 2, "buff_int"));
-        items.Add(MakeBuff("buff_sharp", "샤프",
-            "0.3mm 정밀 샤프. 필기감이 좋다.\n자유행동 1회 지성 +1", 5000, "Int", 1, "buff_int"));
         items.Add(MakeBuff("buff_keyboard", "기계식 키보드",
-            "청축 기계식 키보드. 타건감 최고.\n자유행동 1회 지성 +2", 60000, "Int", 2, "buff_int"));
+            "타건음이 좋은 기계식 키보드", 60000, "Int", 2, "buff_int", "21_buff_keyboard"));
         items.Add(MakeBuff("buff_gaming_mouse", "게이밍 마우스",
-            "인체공학 게이밍 마우스.\n자유행동 1회 지성 +1", 35000, "Int", 1, "buff_int"));
+            "게임 플레이에 도움이 되는 마우스", 35000, "Int", 1, "buff_int", "22_buff_gaming_mouse"));
+        items.Add(MakeBuff("buff_note", "노트",
+            "필기에 사용하는 노트", 4000, "Int", 1, "buff_int", "24_buff_note"));
+        items.Add(MakeBuff("buff_pen", "볼펜",
+            "필기에 사용하는 볼펜", 3000, "Int", 1, "buff_int", "25_buff_pen"));
+        items.Add(MakeBuff("buff_postit", "포스트잇",
+            "공부할 때 사용하는 메모지", 6000, "Int", 1, "buff_int", "28_buff_postit"));
+        items.Add(MakeBuff("buff_highlighter", "형광펜 세트",
+            "필기에 사용하는 형광펜 3색 세트", 8000, "Int", 2, "buff_int", "30_buff_highlighter"));
+        items.Add(MakeBuff("buff_sharp", "샤프",
+            "필기에 사용하는 샤프", 5000, "Int", 1, "buff_int", "40_buff_sharp"));
 
         // ═══════════════════════════════════════════
-        //  세션 버프 — 끈기
+        //  세션 버프 — 끈기 (No.23, 39, 42, 43)
         // ═══════════════════════════════════════════
         items.Add(MakeBuff("buff_vertical_mouse", "버티컬 마우스",
-            "손목이 편한 버티컬 마우스.\n자유행동 1회 끈기 +1", 35000, "Per", 1, "buff_per"));
-        items.Add(MakeBuff("buff_coffee", "아이스 아메리카노",
-            "시원한 아이스 아메리카노.\n자유행동 1회 끈기 +1", 4000, "Per", 1, "buff_per"));
+            "손목 건강에 도움이 되는 마우스", 35000, "Per", 1, "buff_per", "23_buff_vertical_mouse"));
         items.Add(MakeBuff("buff_blanket", "무릎담요",
-            "따뜻한 무릎담요. 집중력이 올라간다.\n자유행동 1회 끈기 +1, 피로 -2", 8000, "Per", 1, "buff_per"));
+            "적당한 사이즈의 폭신한 담요", 8000, "Per", 1, "buff_per", "39_buff_blanket"));
+        items.Add(MakeBuff("buff_coffee", "아이스 아메리카노",
+            "시원한 아메리카노 한 잔", 4000, "Per", 1, "buff_per", "42_buff_coffee"));
         items.Add(MakeBuff("buff_handcream", "핸드크림",
-            "보습 핸드크림. 손이 편해진다.\n자유행동 1회 끈기 +1", 6000, "Per", 1, "buff_per"));
+            "좋은 향이 나는 핸드크림", 6000, "Per", 1, "buff_per", "43_buff_handcream"));
 
         // ═══════════════════════════════════════════
-        //  세션 버프 — 사교성
+        //  세션 버프 — 사교성 (No.26, 27, 29, 31, 32, 33, 35, 36, 37, 38)
         // ═══════════════════════════════════════════
         items.Add(MakeBuff("buff_tumbler", "텀블러",
-            "감성 텀블러. 대화의 시작.\n자유행동 1회 사교성 +1", 7000, "Soc", 1, "buff_soc"));
+            "음료를 담아 다닐 수 있는 텀블러", 7000, "Soc", 1, "buff_soc", "26_buff_tumbler"));
         items.Add(MakeBuff("buff_battery", "보조배터리",
-            "든든한 보조배터리.\n자유행동 1회 사교성 +1", 10000, "Soc", 1, "buff_soc"));
+            "어디서나 충전할 수 있는 보조배터리", 10000, "Soc", 1, "buff_soc", "27_buff_battery"));
         items.Add(MakeBuff("buff_diary", "다이어리",
-            "예쁜 다이어리. 일정 관리에 딱이다.\n자유행동 1회 사교성 +2", 12000, "Soc", 2, "buff_soc"));
+            "하루를 기록하는 일기장", 12000, "Soc", 2, "buff_soc", "29_buff_diary"));
         items.Add(MakeBuff("buff_laptop_stand", "노트북 거치대",
-            "인체공학 노트북 거치대.\n자유행동 1회 사교성 +1, 지성 +1", 15000, "Soc", 1, "buff_soc"));
+            "노트북을 올려둘 수 있는 거치대", 15000, "Soc", 1, "buff_soc", "31_buff_laptop_stand"));
         items.Add(MakeBuff("buff_bluelight_glasses", "블루라이트 차단 안경",
-            "눈이 편해지는 블루라이트 차단 안경.\n자유행동 1회 사교성 +1", 18000, "Soc", 1, "buff_soc"));
+            "눈에 좋지 않은 청광을 차단하는 안경", 18000, "Soc", 1, "buff_soc", "32_buff_bluelight_glasses"));
         items.Add(MakeBuff("buff_umbrella", "휴대용 우산",
-            "갑자기 비가 와도 걱정 없다.\n자유행동 1회 사교성 +1", 9000, "Soc", 1, "buff_soc"));
-        items.Add(MakeBuff("buff_plant", "미니 화분",
-            "작은 다육식물 화분.\n자유행동 1회 사교성 +1", 7000, "Soc", 1, "buff_soc"));
-        items.Add(MakeBuff("buff_calendar", "탁상 달력",
-            "귀여운 탁상 달력.\n자유행동 1회 사교성 +1", 5000, "Soc", 1, "buff_soc"));
-        items.Add(MakeBuff("buff_chocolate", "초콜릿",
-            "달콤한 초콜릿.\n자유행동 1회 사교성 +1", 8000, "Soc", 1, "buff_soc"));
-        items.Add(MakeBuff("buff_jelly", "젤리",
-            "쫀득한 젤리.\n자유행동 1회 사교성 +1", 8000, "Soc", 1, "buff_soc"));
+            "가방에 쏙 들어가는 작은 우산", 9000, "Soc", 1, "buff_soc", "33_buff_umbrella"));
+        items.Add(MakeBuff("buff_chocolate", "<마일드 스위트> 초콜릿",
+            "달콤한 밀크초콜릿", 8000, "Soc", 1, "buff_soc", "35_buff_chocolate"));
+        items.Add(MakeBuff("buff_jelly", "<몰랑말랑 후르츠> 젤리",
+            "과일 맛의 하트 모양 젤리", 8000, "Soc", 1, "buff_soc", "36_buff_jelly"));
+        items.Add(MakeBuff("buff_plant", "미니 화분 다육이",
+            "작은 다육식물 화분", 7000, "Soc", 1, "buff_soc", "37_buff_plant"));
+        items.Add(MakeBuff("buff_calendar", "탁상형 달력",
+            "책상 위에 올려놓는 달력", 5000, "Soc", 1, "buff_soc", "38_buff_calendar"));
 
         // ─── 스프라이트 자동 바인딩 ───
         int boundDetail = 0, boundIcon = 0, missing = 0;
@@ -175,8 +175,8 @@ public static class ItemCatalogGenerator
             var detail = AssetDatabase.LoadAssetAtPath<Sprite>($"{DetailDir}/{key}.png");
             if (detail != null) { item.DetailSprite = detail; boundDetail++; }
 
-            // Icon (작은 아이콘): Art/GUI/Icon/{key}.png
-            var icon = AssetDatabase.LoadAssetAtPath<Sprite>($"{IconDir}/{key}.png");
+            // Icon (작은 아이콘): Art/GUI/Icon/{key}_icon.png
+            var icon = AssetDatabase.LoadAssetAtPath<Sprite>($"{IconDir}/{key}_icon.png");
             if (icon != null) { item.IconSprite = icon; boundIcon++; }
 
             if (detail == null && icon == null) missing++;
@@ -192,22 +192,22 @@ public static class ItemCatalogGenerator
     }
 
     static ItemData MakeGift(string id, string name, string desc, int price,
-        string heroine, int love2, int love3)
+        string heroine, int love2, int love3, string iconPath)
     {
         return new ItemData(id, name, desc, price, ItemCategory.Gift,
-            iconPath: id, targetHeroine: heroine, loveEffect2: love2, loveEffect3: love3);
+            iconPath: iconPath, targetHeroine: heroine, loveEffect2: love2, loveEffect3: love3);
     }
 
-    static ItemData MakeConsumable(string id, string name, string desc, int price, int effectValue)
+    static ItemData MakeConsumable(string id, string name, string desc, int price, int effectValue, string iconPath)
     {
         return new ItemData(id, name, desc, price, ItemCategory.Consumable,
-            effectValue: effectValue, iconPath: id);
+            effectValue: effectValue, iconPath: iconPath);
     }
 
     static ItemData MakeBuff(string id, string name, string desc, int price,
-        string stat, int effectValue, string dupTag)
+        string stat, int effectValue, string dupTag, string iconPath)
     {
         return new ItemData(id, name, desc, price, ItemCategory.SessionBuff,
-            effectValue: effectValue, iconPath: id, effectStat: stat, duplicateTag: dupTag);
+            effectValue: effectValue, iconPath: iconPath, effectStat: stat, duplicateTag: dupTag);
     }
 }

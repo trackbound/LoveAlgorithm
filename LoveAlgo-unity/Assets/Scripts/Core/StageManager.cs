@@ -14,6 +14,7 @@ namespace LoveAlgo.Core
         [SerializeField] StageRig stageRig;
 
         // 외부 접근용 프로퍼티 - StageRig를 통해 접근
+        public Canvas StageCanvas => stageRig?.StageCanvas;
         public BackgroundLayer Background => stageRig?.Background;
         public VirtualBGOverlay VirtualBG => stageRig?.VirtualBG;
         public CharacterLayer Character => stageRig?.Character;

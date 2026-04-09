@@ -349,6 +349,35 @@ namespace LoveAlgo.Shop
                 return;
             }
 
+            // 구매 직후 자동 사용: Consumable(즉시 적용) / SessionBuff(활성화)
+            int currentDay = GameManager.Instance?.CurrentDay ?? 1;
+            var feedbackParts = new List<string>();
+
+            foreach (var kv in cart)
+            {
+                var item = ItemDatabase.Get(kv.Key);
+                if (item == null) continue;
+
+                for (int i = 0; i < kv.Value; i++)
+                {
+                    switch (item.Category)
+                    {
+                        case ItemCategory.Consumable:
+                            ShopManager.UseConsumable(kv.Key, currentDay);
+                            feedbackParts.Add($"{item.Name}: 피로 -{item.EffectValue}");
+                            break;
+
+                        case ItemCategory.SessionBuff:
+                            ShopManager.UseSessionBuff(kv.Key, currentDay);
+                            string buffText = $"{item.Name}: {item.EffectStat} +{item.EffectValue}(세션)";
+                            if (!string.IsNullOrEmpty(item.SubEffectStat))
+                                buffText += $", {item.SubEffectStat} {item.SubEffectValue:+#;-#;0}";
+                            feedbackParts.Add(buffText);
+                            break;
+                    }
+                }
+            }
+
             // 상태 초기화
             cart.Clear();
             foreach (var slot in activeSaleSlots)
@@ -357,7 +386,12 @@ namespace LoveAlgo.Shop
             RefreshMoneyDisplay();
 
             UISoundManager.Instance?.PlayClick();
-            PopupManager.Instance?.Toast("구매 완료", "구매가 완료되었습니다!");
+
+            // 효과 피드백 토스트
+            if (feedbackParts.Count > 0)
+                PopupManager.Instance?.Toast("구매 완료", string.Join("\n", feedbackParts), 3f);
+            else
+                PopupManager.Instance?.Toast("구매 완료", "구매가 완료되었습니다!");
         }
 
         #endregion

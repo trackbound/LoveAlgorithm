@@ -17,7 +17,7 @@ namespace LoveAlgo.Story
         [SerializeField] CanvasGroup canvasGroup;
 
         [Header("설정")]
-        [SerializeField] float defaultDuration = 1f;
+        [SerializeField] float defaultDuration = 0.5f;
 
         string currentCG;
         bool isShowing;

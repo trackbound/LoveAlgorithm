@@ -22,6 +22,8 @@ namespace LoveAlgo.Shop
         // ── 세션 버프 (자유행동 1회 동안 유효) ──
         static string activeBuffStat;
         static int activeBuffValue;
+        static string activeSubBuffStat;
+        static int activeSubBuffValue;
         static bool hasActiveBuff;
 
         static ItemEffectSystem()
@@ -39,6 +41,8 @@ namespace LoveAlgo.Shop
             dayUsageCount.Clear();
             activeBuffStat = null;
             activeBuffValue = 0;
+            activeSubBuffStat = null;
+            activeSubBuffValue = 0;
             hasActiveBuff = false;
         }
 
@@ -99,9 +103,23 @@ namespace LoveAlgo.Shop
 
             activeBuffStat = item.EffectStat;
             activeBuffValue = finalValue;
+
+            // 복합 효과 (무릎담요: 끐기+1,피로-2 / 노트북 거치대: 사교+1,지성+1)
+            if (!string.IsNullOrEmpty(item.SubEffectStat) && item.SubEffectValue != 0)
+            {
+                activeSubBuffStat = item.SubEffectStat;
+                activeSubBuffValue = item.SubEffectValue;
+            }
+            else
+            {
+                activeSubBuffStat = null;
+                activeSubBuffValue = 0;
+            }
+
             hasActiveBuff = true;
 
-            Debug.Log($"[ItemEffectSystem] 세션 버프 활성화: {item.EffectStat} +{finalValue} (원본: +{item.EffectValue})");
+            string subLog = activeSubBuffStat != null ? $", 보조: {activeSubBuffStat} {activeSubBuffValue:+#;-#;0}" : "";
+            Debug.Log($"[ItemEffectSystem] 세션 버프 활성화: {item.EffectStat} +{finalValue} (원본: +{item.EffectValue}){subLog}");
             return finalValue;
         }
 
@@ -115,20 +133,30 @@ namespace LoveAlgo.Shop
             return (activeBuffStat, activeBuffValue);
         }
 
+        /// <summary>보조 버프 정보 조회 (소비하지 않음)</summary>
+        public static (string stat, int value) PeekSubBuff()
+        {
+            if (!hasActiveBuff || string.IsNullOrEmpty(activeSubBuffStat)) return (null, 0);
+            return (activeSubBuffStat, activeSubBuffValue);
+        }
+
         /// <summary>
         /// 세션 버프 소비 (자유행동 1회 완료 시 호출)
         /// 스케줄 실행 후 GameManager.OnScheduleSelected에서 호출
         /// </summary>
-        /// <returns>(대상 스탯 ID, 보너스 값) — 버프 없으면 (null, 0)</returns>
-        public static (string stat, int bonus) ConsumeSessionBuff()
+        /// <returns>(대상 스탯, 보너스, 보조스탯, 보조값) — 버프 없으면 (null, 0, null, 0)</returns>
+        public static (string stat, int bonus, string subStat, int subValue) ConsumeSessionBuff()
         {
-            if (!hasActiveBuff) return (null, 0);
+            if (!hasActiveBuff) return (null, 0, null, 0);
 
-            var result = (activeBuffStat, activeBuffValue);
-            Debug.Log($"[ItemEffectSystem] 세션 버프 소비: {activeBuffStat} +{activeBuffValue}");
+            var result = (activeBuffStat, activeBuffValue, activeSubBuffStat, activeSubBuffValue);
+            string subLog = activeSubBuffStat != null ? $", 보조: {activeSubBuffStat} {activeSubBuffValue:+#;-#;0}" : "";
+            Debug.Log($"[ItemEffectSystem] 세션 버프 소비: {activeBuffStat} +{activeBuffValue}{subLog}");
 
             activeBuffStat = null;
             activeBuffValue = 0;
+            activeSubBuffStat = null;
+            activeSubBuffValue = 0;
             hasActiveBuff = false;
 
             return result;
@@ -170,6 +198,8 @@ namespace LoveAlgo.Shop
             {
                 ActiveBuffStat = activeBuffStat,
                 ActiveBuffValue = activeBuffValue,
+                ActiveSubBuffStat = activeSubBuffStat,
+                ActiveSubBuffValue = activeSubBuffValue,
                 HasActiveBuff = hasActiveBuff,
                 LastTrackedDay = lastTrackedDay,
                 DayUsageCount = new Dictionary<string, int>(dayUsageCount)
@@ -184,6 +214,8 @@ namespace LoveAlgo.Shop
 
             activeBuffStat = data.ActiveBuffStat;
             activeBuffValue = data.ActiveBuffValue;
+            activeSubBuffStat = data.ActiveSubBuffStat;
+            activeSubBuffValue = data.ActiveSubBuffValue;
             hasActiveBuff = data.HasActiveBuff;
             lastTrackedDay = data.LastTrackedDay;
 
@@ -203,6 +235,8 @@ namespace LoveAlgo.Shop
     {
         public string ActiveBuffStat;
         public int ActiveBuffValue;
+        public string ActiveSubBuffStat;
+        public int ActiveSubBuffValue;
         public bool HasActiveBuff;
         public int LastTrackedDay;
         public Dictionary<string, int> DayUsageCount = new();

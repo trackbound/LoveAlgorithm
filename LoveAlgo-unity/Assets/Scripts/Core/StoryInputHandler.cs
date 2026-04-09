@@ -13,12 +13,17 @@ namespace LoveAlgo.Core
     /// Space / 마우스 클릭 → 다음 대사
     /// A → Auto 모드 토글
     /// Shift 꾹 → 빠른 재생 (스킵+자동진행, 쿨다운 적용)
+    /// Ctrl 꾹 → 초고속 재생
     /// </summary>
     public class StoryInputHandler : SingletonMonoBehaviour<StoryInputHandler>
     {
 
         [Header("Shift 스킵 설정")]
         [SerializeField] float skipInterval = 0.08f;  // Shift 스킵 간격 (초)
+
+        [Header("Ctrl 초고속 스킵 설정")]
+        [SerializeField] float ctrlSkipInterval = 0.02f;  // Ctrl 스킵 간격 (초)
+
         float lastSkipTime;
 
         // Raycast 결과 캐시
@@ -62,10 +67,10 @@ namespace LoveAlgo.Core
                 {
                     dialogueUI.RequestSkip();
                 }
-                else
+                else if (runner != null && runner.IsWaitingForClick)
                 {
                     UISoundManager.Instance?.PlayDialogueNext();
-                    runner?.OnClick();
+                    runner.OnClick();
                 }
             }
 
@@ -75,6 +80,22 @@ namespace LoveAlgo.Core
                 runner?.ToggleAutoMode();
                 var mode = runner?.IsAutoMode == true ? "ON" : "OFF";
                 PopupManager.Instance?.Toast("Auto Mode", mode);
+            }
+
+            // ── Ctrl 꾹: 초고속 재생 (Shift보다 빠름) ──
+            bool ctrlPressed = keyboard.leftCtrlKey.isPressed || keyboard.rightCtrlKey.isPressed;
+            if (ctrlPressed)
+            {
+                if (Time.unscaledTime - lastSkipTime >= ctrlSkipInterval)
+                {
+                    lastSkipTime = Time.unscaledTime;
+
+                    if (dialogueUI != null && dialogueUI.IsTyping)
+                        dialogueUI.RequestSkip();
+                    else
+                        runner?.OnClick();
+                }
+                return; // Ctrl 우선, Shift 중복 방지
             }
 
             // ── Shift 꾹: 빠른 재생 (쿨다운 적용) ──

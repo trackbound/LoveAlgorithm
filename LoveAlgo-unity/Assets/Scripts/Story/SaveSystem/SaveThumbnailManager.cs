@@ -1,8 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using Cysharp.Threading.Tasks;
-using LoveAlgo.UI;
+using LoveAlgo.Core;
 
 namespace LoveAlgo.Story.SaveSystem
 {
@@ -14,18 +15,6 @@ namespace LoveAlgo.Story.SaveSystem
         const string SaveFolder = "Saves";
         const int ThumbnailWidth = 400;
         const int ThumbnailHeight = 128;
-
-        struct ThumbnailUISnapshot
-        {
-            public bool DialogueActive;
-            public bool ChoiceActive;
-            public bool ScheduleActive;
-            public bool TitleActive;
-            public bool UsernameActive;
-            public bool PlaceActive;
-            public PopupManager.ThumbnailPopupState PopupState;
-            public bool HasPopupState;
-        }
 
         /// <summary>
         /// 스크린샷 저장 경로
@@ -173,11 +162,11 @@ namespace LoveAlgo.Story.SaveSystem
         }
 
         /// <summary>
-        /// 비동기 캡처: UI 숨김 → 1프레임 대기(렌더 반영) → 캡처 → UI 복원
+        /// 비동기 캡처: Stage 외 Canvas 비활성화 → 1프레임 대기(렌더 반영) → 캡처 → 복원
         /// </summary>
         static async UniTask<Texture2D> CaptureStageOnlyTextureAsync()
         {
-            var snapshot = HideUIForThumbnailCapture();
+            var disabled = DisableNonStageCanvases();
             try
             {
                 await UniTask.WaitForEndOfFrame();
@@ -185,7 +174,7 @@ namespace LoveAlgo.Story.SaveSystem
             }
             finally
             {
-                RestoreUIAfterThumbnailCapture(snapshot);
+                RestoreCanvases(disabled);
             }
         }
 
@@ -194,7 +183,7 @@ namespace LoveAlgo.Story.SaveSystem
         /// </summary>
         static Texture2D CaptureStageOnlyTextureSync()
         {
-            var snapshot = HideUIForThumbnailCapture();
+            var disabled = DisableNonStageCanvases();
             try
             {
                 Canvas.ForceUpdateCanvases();
@@ -202,82 +191,44 @@ namespace LoveAlgo.Story.SaveSystem
             }
             finally
             {
-                RestoreUIAfterThumbnailCapture(snapshot);
+                RestoreCanvases(disabled);
             }
         }
 
         /// <summary>
-        /// 썸네일 캡처를 위해 UI 요소들 숨김
+        /// Stage Canvas(게임 화면)를 제외한 모든 Canvas를 비활성화.
+        /// 화이트리스트 방식 — 새 UI가 추가되어도 자동으로 썸네일에서 제외됨.
         /// </summary>
-        static ThumbnailUISnapshot HideUIForThumbnailCapture()
+        static List<Canvas> DisableNonStageCanvases()
         {
-            var ui = UIManager.Instance;
-            var snapshot = new ThumbnailUISnapshot();
+            var stageCanvas = StageManager.Instance?.StageCanvas;
+            var allCanvases = Canvas.FindObjectsByType<Canvas>(FindObjectsSortMode.None);
+            var disabled = new List<Canvas>();
 
-            if (ui != null)
+            foreach (var canvas in allCanvases)
             {
-                if (ui.DialogueUI != null)
-                {
-                    snapshot.DialogueActive = ui.DialogueUI.gameObject.activeSelf;
-                    ui.DialogueUI.gameObject.SetActive(false);
-                }
-                if (ui.ChoiceUI != null)
-                {
-                    snapshot.ChoiceActive = ui.ChoiceUI.gameObject.activeSelf;
-                    ui.ChoiceUI.gameObject.SetActive(false);
-                }
-                if (ui.ScheduleUI != null)
-                {
-                    snapshot.ScheduleActive = ui.ScheduleUI.gameObject.activeSelf;
-                    ui.ScheduleUI.gameObject.SetActive(false);
-                }
-                if (ui.TitleUI != null)
-                {
-                    snapshot.TitleActive = ui.TitleUI.gameObject.activeSelf;
-                    ui.TitleUI.gameObject.SetActive(false);
-                }
-                if (ui.UsernameUI != null)
-                {
-                    snapshot.UsernameActive = ui.UsernameUI.gameObject.activeSelf;
-                    ui.UsernameUI.gameObject.SetActive(false);
-                }
-                if (ui.PlaceUI != null)
-                {
-                    snapshot.PlaceActive = ui.PlaceUI.gameObject.activeSelf;
-                    ui.PlaceUI.gameObject.SetActive(false);
-                }
+                if (!canvas.enabled) continue;
+                // Stage Canvas 자체는 유지
+                if (canvas == stageCanvas) continue;
+                // Stage Canvas 하위 Canvas(레이어 내부)도 유지
+                if (stageCanvas != null && canvas.transform.IsChildOf(stageCanvas.transform)) continue;
+
+                canvas.enabled = false;
+                disabled.Add(canvas);
             }
 
-            var popup = PopupManager.Instance;
-            if (popup != null)
-            {
-                snapshot.PopupState = popup.HideForThumbnailCapture();
-                snapshot.HasPopupState = true;
-            }
-
-            return snapshot;
+            return disabled;
         }
 
         /// <summary>
-        /// 캡처 후 UI 요소들 복원
+        /// 비활성화했던 Canvas 복원
         /// </summary>
-        static void RestoreUIAfterThumbnailCapture(ThumbnailUISnapshot snapshot)
+        static void RestoreCanvases(List<Canvas> disabled)
         {
-            var ui = UIManager.Instance;
-            if (ui != null)
+            foreach (var canvas in disabled)
             {
-                if (ui.DialogueUI != null) ui.DialogueUI.gameObject.SetActive(snapshot.DialogueActive);
-                if (ui.ChoiceUI != null) ui.ChoiceUI.gameObject.SetActive(snapshot.ChoiceActive);
-                if (ui.ScheduleUI != null) ui.ScheduleUI.gameObject.SetActive(snapshot.ScheduleActive);
-                if (ui.TitleUI != null) ui.TitleUI.gameObject.SetActive(snapshot.TitleActive);
-                if (ui.UsernameUI != null) ui.UsernameUI.gameObject.SetActive(snapshot.UsernameActive);
-                if (ui.PlaceUI != null) ui.PlaceUI.gameObject.SetActive(snapshot.PlaceActive);
-            }
-
-            var popup = PopupManager.Instance;
-            if (popup != null && snapshot.HasPopupState)
-            {
-                popup.RestoreAfterThumbnailCapture(snapshot.PopupState);
+                if (canvas != null)
+                    canvas.enabled = true;
             }
         }
 

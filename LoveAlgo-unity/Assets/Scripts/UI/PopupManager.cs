@@ -17,17 +17,6 @@ namespace LoveAlgo.UI
     /// </summary>
     public class PopupManager : SingletonMonoBehaviour<PopupManager>
     {
-        public struct ThumbnailPopupState
-        {
-            public bool LayerModalActive;
-            public bool LayerTopActive;
-            public bool DimmerActive;
-            public Dictionary<string, bool> ConfirmStates;
-            public bool AlertActive;
-            public bool ToastActive;
-            public bool LogActive;
-        }
-
         [Header("레이어")]
         [SerializeField] Transform layerModal;
         [SerializeField] Transform layerTop;
@@ -355,24 +344,29 @@ namespace LoveAlgo.UI
         }
 
         /// <summary>
-        /// 현재 Modal 닫기
+        /// 현재 Modal 닫기 (애니메이션 완료 후 상태 해제)
         /// </summary>
         public void CloseModal()
+        {
+            CloseModalInternal().Forget();
+        }
+
+        async UniTaskVoid CloseModalInternal()
         {
             if (currentModal != null)
             {
                 // Modal 위에 떠 있는 ConfirmPopup이 있으면 먼저 닫기
                 DismissActiveConfirmPopups();
 
-                // Hide() 메서드 호출 (슬라이딩 애니메이션 실행)
                 var popup = currentModal.GetComponent<ModalPopupBase>();
+                ShowDimmer(false);
+
                 if (popup != null)
-                    popup.Hide();
+                    await popup.HideAsync();
                 else
                     currentModal.SetActive(false);
-                    
+
                 currentModal = null;
-                ShowDimmer(false);
             }
         }
 
@@ -529,65 +523,6 @@ namespace LoveAlgo.UI
         #endregion
 
         #region 유틸
-
-        /// <summary>
-        /// 썸네일 캡처 시 팝업 UI를 제외하기 위해 현재 상태를 저장하고 숨김
-        /// </summary>
-        public ThumbnailPopupState HideForThumbnailCapture()
-        {
-            // Confirm 캐시 상태 저장
-            var confirmStates = new Dictionary<string, bool>();
-            foreach (var kv in confirmCache)
-            {
-                if (kv.Value != null)
-                {
-                    confirmStates[kv.Key] = kv.Value.gameObject.activeSelf;
-                    kv.Value.gameObject.SetActive(false);
-                }
-            }
-
-            var state = new ThumbnailPopupState
-            {
-                LayerModalActive = layerModal != null && layerModal.gameObject.activeSelf,
-                LayerTopActive = layerTop != null && layerTop.gameObject.activeSelf,
-                DimmerActive = dimmer != null && dimmer.activeSelf,
-                ConfirmStates = confirmStates,
-                AlertActive = alertPopup != null && alertPopup.gameObject.activeSelf,
-                ToastActive = toastPopup != null && toastPopup.gameObject.activeSelf,
-                LogActive = logPopup != null && logPopup.gameObject.activeSelf
-            };
-
-            if (alertPopup != null) alertPopup.gameObject.SetActive(false);
-            if (toastPopup != null) toastPopup.gameObject.SetActive(false);
-            if (logPopup != null) logPopup.gameObject.SetActive(false);
-            if (layerTop != null) layerTop.gameObject.SetActive(false);
-            if (layerModal != null) layerModal.gameObject.SetActive(false);
-            if (dimmer != null) dimmer.SetActive(false);
-
-            return state;
-        }
-
-        /// <summary>
-        /// 썸네일 캡처 후 팝업 UI 상태 복원
-        /// </summary>
-        public void RestoreAfterThumbnailCapture(ThumbnailPopupState state)
-        {
-            if (layerModal != null) layerModal.gameObject.SetActive(state.LayerModalActive);
-            if (layerTop != null) layerTop.gameObject.SetActive(state.LayerTopActive);
-            if (dimmer != null) dimmer.SetActive(state.DimmerActive);
-
-            if (state.ConfirmStates != null)
-            {
-                foreach (var kv in state.ConfirmStates)
-                {
-                    if (confirmCache.TryGetValue(kv.Key, out var popup) && popup != null)
-                        popup.gameObject.SetActive(kv.Value);
-                }
-            }
-            if (alertPopup != null) alertPopup.gameObject.SetActive(state.AlertActive);
-            if (toastPopup != null) toastPopup.gameObject.SetActive(state.ToastActive);
-            if (logPopup != null) logPopup.gameObject.SetActive(state.LogActive);
-        }
 
         /// <summary>
         /// 모든 팝업 닫기

@@ -35,6 +35,8 @@ namespace LoveAlgo.Story
 
         public event Action OnScriptEnd;
         public bool IsAutoMode => autoMode;
+        /// <summary>텍스트 클릭 대기 중인지 (UI 입력 가드용)</summary>
+        public bool IsWaitingForClick => waitingForClick;
 
         ScriptEngine _engine;
 

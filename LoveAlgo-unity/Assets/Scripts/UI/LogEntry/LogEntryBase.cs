@@ -16,6 +16,18 @@ namespace LoveAlgo.UI
         [SerializeField] protected GameObject bubbleTemplate;
 
         /// <summary>
+        /// Awake — Instantiate 즉시 실행.
+        /// dialogueColumn 안의 프리팹 템플릿 인스턴스를 비활성화하여 고스트 버블 방지.
+        /// (bubbleTemplate은 외부 프리팹 에셋 참조이므로 SetActive 무효)
+        /// </summary>
+        protected virtual void Awake()
+        {
+            if (dialogueColumn == null) return;
+            for (int i = 0; i < dialogueColumn.childCount; i++)
+                dialogueColumn.GetChild(i).gameObject.SetActive(false);
+        }
+
+        /// <summary>
         /// 초기화 — Instantiate 직후 호출.
         /// 서브클래스에서 이름/초상화 등을 설정한다.
         /// </summary>

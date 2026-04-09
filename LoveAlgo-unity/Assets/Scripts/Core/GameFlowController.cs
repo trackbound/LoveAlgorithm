@@ -300,9 +300,9 @@ namespace LoveAlgo.Core
                 // 7) 로딩 화면 제거 (암전 상태라 안 보임)
                 loading?.HideImmediate();
 
-                // 8) 인게임 페이드 인
+                // 8) 인게임 페이드 인 (로딩 후 부드러운 등장)
                 if (fx != null)
-                    await fx.FadeInAsync(0.6f, ct);
+                    await fx.FadeInAsync(3.0f, ct);
 
                 // 10) 프롤로그 스크립트 실행 (전환 완료 후 시작)
                 ScriptRunner.Instance?.StartScript(_gm.PrologueScript).Forget();

@@ -90,6 +90,15 @@ namespace LoveAlgo.Shop
         public string EffectStat;
 
         /// <summary>
+        /// 보조 효과 대상 스탯 ID (복합 효과용: 무릎담요→"Fatigue", 노트북 거치대→"Int")
+        /// null이면 보조 효과 없음
+        /// </summary>
+        public string SubEffectStat;
+
+        /// <summary>보조 효과 값 (복합 효과용)</summary>
+        public int SubEffectValue;
+
+        /// <summary>
         /// 중복 효율 추적용 태그 (기획서: 동일 태그 2회차부터 50%)
         /// null이면 아이템 ID를 태그로 사용
         /// </summary>
@@ -110,7 +119,8 @@ namespace LoveAlgo.Shop
             int effectValue = 0, string iconPath = null,
             ItemAvailability availability = ItemAvailability.Always,
             string effectStat = null, string duplicateTag = null,
-            string targetHeroine = null, int loveEffect2 = 0, int loveEffect3 = 0)
+            string targetHeroine = null, int loveEffect2 = 0, int loveEffect3 = 0,
+            string subEffectStat = null, int subEffectValue = 0)
         {
             Id = id;
             Name = name;
@@ -125,6 +135,8 @@ namespace LoveAlgo.Shop
             TargetHeroine = targetHeroine;
             LoveEffect2 = loveEffect2;
             LoveEffect3 = loveEffect3;
+            SubEffectStat = subEffectStat;
+            SubEffectValue = subEffectValue;
         }
 
         /// <summary>중복 추적에 사용할 태그</summary>

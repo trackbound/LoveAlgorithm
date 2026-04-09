@@ -318,9 +318,11 @@ namespace LoveAlgo.Schedule
                     // 스탯 적용 (DayLoopController에서 행동 소모 + EndDay 자동 처리)
                     onScheduleSelected?.Invoke(type);
 
-                    // 남은 행동이 0이면 인터랙션 비활성 (EndDay 전환 대기, UI는 페이드로 가려짐)
+                    // 남은 행동이 0이면 인터랙션 비활성 (EndDay 전환 대기)
+                    // 단, 인라인 모드에서는 뒤로가기를 눌러야 하므로 비활성화하지 않음
                     var gm = GameManager.Instance;
-                    if (gm != null && gm.RemainingActions <= 0)
+                    if (gm != null && gm.RemainingActions <= 0
+                        && !gm.DayLoop.IsInlineSchedule)
                     {
                         canvasGroup.interactable = false;
                         canvasGroup.blocksRaycasts = false;
@@ -436,6 +438,18 @@ namespace LoveAlgo.Schedule
             var gm = GameManager.Instance;
             if (gm == null) return;
 
+            // 인라인 스케줄 모드: 확인 후 스토리 복귀
+            if (gm.DayLoop.IsInlineSchedule)
+            {
+                bool proceed = await LoveAlgo.UI.PopupManager.Instance.ConfirmAsync(
+                    "스토리를 진행하시겠습니까?");
+                if (!proceed) return;
+
+                await HideAsync(destroyCancellationToken);
+                gm.DayLoop.CompleteInlineSchedule();
+                return;
+            }
+
             // 데모 종료 조건: 확인 후 타이틀로
             if (gm.ShouldReturnToDemoEnd())
             {
@@ -448,11 +462,9 @@ namespace LoveAlgo.Schedule
                 return;
             }
 
-            bool proceed = await LoveAlgo.UI.PopupManager.Instance.ConfirmAsync(
+            bool proceedStory = await LoveAlgo.UI.PopupManager.Instance.ConfirmAsync(
                 "스토리를 진행하시겠습니까?");
-            if (!proceed) return;
-
-            // 남은 행동 소진 → EndDay
+            if (!proceedStory) return;
             gm.RemainingActions = 0;
             await HideAsync(destroyCancellationToken);
             gm.OnScheduleCompleted();
