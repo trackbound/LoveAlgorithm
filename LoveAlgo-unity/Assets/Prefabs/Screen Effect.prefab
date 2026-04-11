@@ -87,7 +87,7 @@ GameObject:
   - component: {fileID: 475651501754577124}
   - component: {fileID: 8806216242958882757}
   m_Layer: 5
-  m_Name: Loading
+  m_Name: LoadingScreen
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -129,9 +129,9 @@ MonoBehaviour:
   canvasGroup: {fileID: 8806216242958882757}
   characterImage: {fileID: 1310703179973352236}
   blackOverlay: {fileID: 1616825810305994441}
-  fadeInDuration: 0.4
-  fadeOutDuration: 0.3
-  minDisplayTime: 1
+  fadeInDuration: 0.8
+  fadeOutDuration: 0.6
+  minDisplayTime: 1.6
 --- !u!225 &8806216242958882757
 CanvasGroup:
   m_ObjectHideFlags: 0
@@ -156,7 +156,7 @@ GameObject:
   - component: {fileID: 1206603638140843728}
   - component: {fileID: 972084064012258508}
   m_Layer: 5
-  m_Name: Flash
+  m_Name: FlashOverlay
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -231,7 +231,7 @@ GameObject:
   - component: {fileID: 5907508340843253340}
   - component: {fileID: 6320438601428551178}
   m_Layer: 5
-  m_Name: Fade
+  m_Name: FadeOverlay
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -388,7 +388,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1128065468562751995
 RectTransform:
   m_ObjectHideFlags: 0
@@ -494,6 +494,7 @@ MonoBehaviour:
   stageCamera: {fileID: 0}
   stageTransform: {fileID: 0}
   dialogueUITransform: {fileID: 0}
+  tintOverlay: {fileID: 0}
   defaultFadeDuration: 0.5
   defaultFlashDuration: 0.1
   shakeFrequency: 25

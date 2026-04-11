@@ -33,6 +33,10 @@ namespace LoveAlgo.Core
         [Tooltip("화면이 어두울 때(EyeClose/FadeOut) 대신 흔들 대화창 RectTransform")]
         [SerializeField] RectTransform dialogueUITransform;
 
+        [Header("Color Tint")]
+        [Tooltip("색상 오버레이용 Image (fadeOverlay 공용 또는 별도)")]
+        [SerializeField] Image tintOverlay;
+
         [Header("설정")]
         [SerializeField] float defaultFadeDuration = 0.6f;
         [SerializeField] float defaultFlashDuration = 0.1f;
@@ -132,6 +136,7 @@ namespace LoveAlgo.Core
 
             if (fadeOverlay != null) DOTween.Kill(fadeOverlay);
             if (flashOverlay != null) DOTween.Kill(flashOverlay);
+            if (tintOverlay != null) DOTween.Kill(tintOverlay);
             if (stageTransform != null) DOTween.Kill(stageTransform);
         }
 
@@ -205,6 +210,28 @@ namespace LoveAlgo.Core
                     float zoomLevel = parts.Length > 1 && float.TryParse(parts[1], out float zl) ? zl : 1f;
                     float zoomDuration = parts.Length > 2 && float.TryParse(parts[2], out float zd) ? zd : 0.5f;
                     await CamZoomAsync(zoomLevel, zoomDuration, ct);
+                    break;
+
+                case "CamPan":
+                    // CSV: CamPan:x:y[:duration]  (x,y = 픽셀 오프셋, 0:0=원점 복귀)
+                    float panX = parts.Length > 1 && float.TryParse(parts[1], out float px) ? px : 0f;
+                    float panY = parts.Length > 2 && float.TryParse(parts[2], out float py) ? py : 0f;
+                    float panDuration = parts.Length > 3 && float.TryParse(parts[3], out float pd) ? pd : 0.5f;
+                    await CamPanAsync(panX, panY, panDuration, ct);
+                    break;
+
+                case "CamReset":
+                    // CSV: CamReset[:duration]  줌+팬 동시 원점 복귀
+                    float resetDur = parts.Length > 1 && float.TryParse(parts[1], out float rd) ? rd : 0.4f;
+                    await CamResetAsync(resetDur, ct);
+                    break;
+
+                case "ColorTint":
+                    // CSV: ColorTint:색상프리셋[:alpha[:duration]]  (Clear=해제)
+                    string tintName = parts.Length > 1 ? parts[1] : "Clear";
+                    float tintAlpha = parts.Length > 2 && float.TryParse(parts[2], out float ta) ? ta : 0.25f;
+                    float tintDur = parts.Length > 3 && float.TryParse(parts[3], out float td) ? td : 0.5f;
+                    await ColorTintAsync(tintName, tintAlpha, tintDur, ct);
                     break;
 
                 case "EyeOpen":
@@ -306,6 +333,22 @@ namespace LoveAlgo.Core
             {
                 SetOverlayAlpha(fadeOverlay, 0f);
                 fadeOverlay.raycastTarget = false;
+            }
+
+            // 틴트 오버레이 초기화
+            if (tintOverlay != null)
+            {
+                DOTween.Kill(tintOverlay);
+                SetOverlayAlpha(tintOverlay, 0f);
+                tintOverlay.raycastTarget = false;
+            }
+
+            // 줌/팬 원점 복귀
+            if (stageTransform != null)
+            {
+                stageTransform.DOKill();
+                stageTransform.localScale = Vector3.one;
+                stageTransform.anchoredPosition = Vector2.zero;
             }
 
             // Eye 바도 비활성화 (DayEnd 후 잔존 방지)
@@ -822,6 +865,100 @@ namespace LoveAlgo.Core
                 .DOScale(Vector3.one * targetScale, duration)
                 .SetEase(Ease.InOutSine)
                 .ToUniTask(cancellationToken: ct);
+        }
+
+        #endregion
+
+        #region Camera Pan
+
+        /// <summary>
+        /// 카메라 팬 — Stage RectTransform 위치 이동
+        /// CSV: FX,,CamPan:100:0:0.5,await   (오른쪽으로 100px, 0.5초)
+        /// CSV: FX,,CamPan:0:0:0.3,await     (원점 복귀)
+        /// </summary>
+        public async UniTask CamPanAsync(float x, float y, float duration, CancellationToken ct = default)
+        {
+            if (stageTransform == null)
+            {
+                Debug.LogWarning("[ScreenFX] CamPan: stageTransform이 바인딩되지 않음");
+                return;
+            }
+
+            await stageTransform
+                .DOAnchorPos(new Vector2(x, y), duration)
+                .SetEase(Ease.InOutSine)
+                .ToUniTask(cancellationToken: ct);
+        }
+
+        /// <summary>
+        /// 줌 + 팬 동시 원점 복귀
+        /// CSV: FX,,CamReset:0.4,await
+        /// </summary>
+        public async UniTask CamResetAsync(float duration, CancellationToken ct = default)
+        {
+            if (stageTransform == null) return;
+
+            var scaleTween = stageTransform.DOScale(Vector3.one, duration).SetEase(Ease.InOutSine);
+            var posTween = stageTransform.DOAnchorPos(Vector2.zero, duration).SetEase(Ease.InOutSine);
+
+            var seq = DOTween.Sequence();
+            _ = seq.Join(scaleTween);
+            _ = seq.Join(posTween);
+            await seq.ToUniTask(cancellationToken: ct);
+        }
+
+        #endregion
+
+        #region Color Tint
+
+        /// <summary>
+        /// 색상 틴트 오버레이
+        /// CSV: FX,,ColorTint:Sepia:0.3:0.5,await   (세피아 30%, 0.5초)
+        /// CSV: FX,,ColorTint:Clear::0.3,await       (해제)
+        /// 프리셋: Sepia, Blue, Red, Pink, Green, Clear
+        /// </summary>
+        public async UniTask ColorTintAsync(string preset, float alpha, float duration, CancellationToken ct = default)
+        {
+            // tintOverlay가 없으면 fadeOverlay 공용 (색상 변경)
+            var overlay = tintOverlay != null ? tintOverlay : fadeOverlay;
+            if (overlay == null)
+            {
+                Debug.LogWarning("[ScreenFX] ColorTint: 오버레이 Image가 없음");
+                return;
+            }
+
+            Color targetColor = ParseTintColor(preset);
+
+            if (preset == "Clear" || alpha <= 0f)
+            {
+                // 해제: 현재 색상 유지하며 알파만 0으로
+                await overlay.DOFade(0f, duration)
+                    .SetEase(Ease.OutSine)
+                    .ToUniTask(cancellationToken: ct);
+                overlay.raycastTarget = false;
+                return;
+            }
+
+            targetColor.a = alpha;
+            overlay.raycastTarget = false; // 틴트는 입력 차단하지 않음
+            await overlay.DOColor(targetColor, duration)
+                .SetEase(Ease.InOutSine)
+                .ToUniTask(cancellationToken: ct);
+        }
+
+        /// <summary>프리셋 색상 파싱</summary>
+        static Color ParseTintColor(string preset)
+        {
+            return preset switch
+            {
+                "Sepia" => new Color(0.44f, 0.26f, 0.08f),   // 따뜻한 갈색
+                "Blue" => new Color(0.1f, 0.15f, 0.4f),       // 차가운 파랑 (꿈/회상)
+                "Red" => new Color(0.5f, 0.05f, 0.05f),       // 충격/위기
+                "Pink" => new Color(0.6f, 0.2f, 0.35f),       // 로맨틱/설렘
+                "Green" => new Color(0.1f, 0.3f, 0.1f),       // 자연/평화
+                "Sunset" => new Color(0.6f, 0.25f, 0.1f),     // 석양/노을
+                _ => Color.clear,
+            };
         }
 
         #endregion

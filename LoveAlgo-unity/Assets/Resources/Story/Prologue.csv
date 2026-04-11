@@ -1,12 +1,11 @@
 LineID,Type,Speaker,Value,Next
 # 0일차
 ,BG,,BG_BlackCut:Cut,await
-,FX,,Wait:0.5,await
 ,Text,,어... <wait=1/>됐다.,click
 ,Sound,,BGM:Roa,>
 
 ,Text,로아,"기다렸어, {{Player}}!",click
-,CG,,CG_Roa_01:1.5,click
+,CG,,CG_Roa_01:0.8,click
 ,Text,로아,"나는 너와 함께하게 된 일상형 비서 AI, 로아야.",click
 ,Text,로아,"만나서 기뻐!\n아직 너의 데이터를 정리하는 중이니까, 잠시만 기다려줘.",click
 ,Text,로아,난 너한테 필요한 사람이 될 거야. 내가 없으면 안 될 만큼!,click
@@ -331,7 +330,7 @@ DBG_NIGHT,Sound,,BGM:Daily1,>
 ,FX,,SceneStart:BG_MyRoom_Bed_Day:EyeClose,await
 ,Text,로아,"일어나, {{Player}}! 아침이야!",click
 ,Text,로아,오늘 날씨가 얼마나 좋은지 알아? 나도 빨리 나가고 싶다!,click
-,Text,로아,"{{Player}}, 얼른 눈 떠서 얼굴 보여줘라!",click
+,Text,로아,"{{Player}}, 얼른 눈 떠서 얼굴 보여주라!",click
 ,Text,,로아는 좋겠다. AI라서 졸리지도 않은 모양이다.,click
 ,FX,,EyeOpen,await
 ,Sound,,BGM:Daily2,>
@@ -535,7 +534,8 @@ STUDENT,Sound,,BGM:Daily1,>
 ,Text,하예은,"<emote=Glare/>아씨, 답답하게 진짜!",click
 ,Char,,C:Exit,await
 
-,CG,,CG_Yeun_01:1.5,click
+,Sound,,SFX:1000,>
+,CG,,CG_Yeun_01:0.8,click
 ,FX,,DialogueShow,await
 ,Text,,예은이 덥석 내 왼쪽 무릎 뒤편에 손바닥을 대고 잡아올려 옆의 화단에 올려두었다.\n그러고는 망설임 없이 가입신청서를 내 허벅지에 올려두고는 작성하기 시작했다.,click
 ,Text,하예은,"태권도…학과, 이름, 하…예, 은.",click
@@ -627,8 +627,8 @@ DBG_STORE,Sound,,BGM:Daily2,>
 ,Text,,3개를 모두 계산하고 그냥 손에 들고 나왔다.,click
 ,BG,,BG_ConvenienceStore_Night:Fade:Cross,await
 ,Text,,서둘러 집으로 걸음을 옮기려는데 뒤에서 누군가가 나를 붙잡았다.,click
-,Sound,,BGM:Heewon,>
 ,Char,,C:Enter:Heewon,await
+,Sound,,BGM:Heewon,>
 ,Text,도희원,저기요!,click
 ,Text,,뒤를 돌아보자 화려한 외모의 여자가 서 있었다.\n있는대로 꾸민 신입생들이 가득한 거리에서도 단연 눈에 띌 정도였다.,click
 ,Text,도희원,그거 저도 사고 싶은데요.,click
@@ -825,7 +825,7 @@ DBG_ENDING,Sound,,BGM:Roa,>
 ,Text,로아,<wait=4.0/>{{Player}}에게 보여줄 수 있는 나는 여기까지야!,click
 ,Text,로아,있잖아... 혹시 나 어땠어?\n<wait=1.5/><emote=BrightSmile/>나는 사실 {{Player}}하고 처음 만나는 거라고 생각하니까 엄청 떨렸어!,click
 ,Text,로아,<emote=Default/>내 모습을 제대로 보여주지 못했을까봐 좀 걱정이 돼!<emote=Tearful/>나는 {{Player}}가 진짜진짜 좋은데!,click
-,Text,로아,<emote=Default/>그래도 이렇게 짧게나마 나를 보러와줘서 기뻤어.,click
+,Text,로아,그래도 이렇게 짧게나마 나를 보러와줘서 기뻤어.,click
 ,Text,로아,"<emote=BrightSmile/>내가 나를 더 보여줄 수 있게, 꼭 또 만나러 와줘!",click
 ,Text,로아,"<emote=Default/>기다리고 있을게. 다시 만나, {{Player}}!",click
 ,Char,,C:Exit,await

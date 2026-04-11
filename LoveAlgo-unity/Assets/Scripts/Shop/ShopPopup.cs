@@ -40,6 +40,10 @@ namespace LoveAlgo.Shop
         [SerializeField] ShopSaleSlot saleSlotPrefab;
         [SerializeField] ShopCartSlot cartSlotPrefab;
 
+        [Header("아이템 필터 (테스트 빌드용)")]
+        [Tooltip("설정 시 체크된 아이템만 상점에 노출. 미설정 시 전체 표시")]
+        [SerializeField] ShopItemFilter itemFilter;
+
         /// <summary>장바구니: itemId → 수량</summary>
         readonly Dictionary<string, int> cart = new();
 
@@ -118,12 +122,15 @@ namespace LoveAlgo.Shop
 
             var allItems = ItemDatabase.GetAll();
 
-            // 카테고리 필터 적용
+            // 카테고리 필터 + 아이템 노출 필터 적용
             var items = new List<ItemData>();
             foreach (var item in allItems)
             {
-                if (activeFilter == null || item.Category == activeFilter.Value)
-                    items.Add(item);
+                if (activeFilter != null && item.Category != activeFilter.Value)
+                    continue;
+                if (itemFilter != null && !itemFilter.IsItemEnabled(item.Id))
+                    continue;
+                items.Add(item);
             }
 
             EnsureSaleSlotPool(items.Count);
@@ -363,8 +370,11 @@ namespace LoveAlgo.Shop
                     switch (item.Category)
                     {
                         case ItemCategory.Consumable:
-                            ShopManager.UseConsumable(kv.Key, currentDay);
-                            feedbackParts.Add($"{item.Name}: 피로 -{item.EffectValue}");
+                            int applied = ShopManager.UseConsumable(kv.Key, currentDay);
+                            if (applied >= 0)
+                                feedbackParts.Add(applied < item.EffectValue
+                                    ? $"{item.Name}: 피로 -{applied} (중복 -{item.EffectValue})"
+                                    : $"{item.Name}: 피로 -{applied}");
                             break;
 
                         case ItemCategory.SessionBuff:

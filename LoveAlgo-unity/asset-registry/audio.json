@@ -18,17 +18,17 @@
   },
   "sfx": {
     "folder": "Assets/Resources/Audio/SFX",
-    "count": 9,
+    "count": 11,
     "pattern": "{NNN}_{Name}.{wav|mp3|ogg}",
     "format_counts": {
-      ".mp3": 3,
+      ".mp3": 5,
       ".wav": 3,
       ".ogg": 3
     },
     "examples": [
+      "060_Message.mp3",
       "083_Glitch.mp3",
-      "ChoiceHover.wav",
-      "ChoiceSelect.mp3",
+      "1000_YeunCG01.mp3",
       "ui_hover.ogg",
       "ui_hover_soft.wav"
     ]

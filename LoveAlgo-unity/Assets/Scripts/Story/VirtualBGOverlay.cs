@@ -159,6 +159,7 @@ namespace LoveAlgo.Story
 
             // 이미지 설정
             overlayImage.sprite = sprite;
+            overlayImage.color = Color.white; // 크로스페이드 잔여 투명도 리셋
             overlayImage.enabled = true;
             overlayImage.preserveAspect = true;
 
@@ -202,9 +203,9 @@ namespace LoveAlgo.Story
 
         /// <summary>
         /// 오버레이 전환 (표정 변경 시 사용).
-        /// 같은 오버레이면 no-op. 다르면 크로스페이드.
+        /// 같은 오버레이면 no-op. 색상 혼합 방지를 위해 빠른 디졸브(페이드아웃→교체→페이드인).
         /// </summary>
-        public async UniTask SwitchAsync(string overlayName, float duration = 0.25f, CancellationToken ct = default)
+        public async UniTask SwitchAsync(string overlayName, float duration = 0.24f, CancellationToken ct = default)
         {
             if (string.IsNullOrEmpty(overlayName)) return;
 
@@ -222,13 +223,15 @@ namespace LoveAlgo.Story
                 return;
             }
 
-            // 크로스페이드: 페이드아웃 → 스프라이트 교체 → 페이드인
-            float halfDuration = duration * 0.5f;
+            // ── 빠른 디졸브 (색 혼합 방지) ──
+            // 페이드아웃 → 스프라이트 교체 → 페이드인 (각 절반 시간)
+            float half = duration * 0.5f;
 
-            if (halfDuration > 0f)
+            // 빠르게 투명으로 (InQuart: 초반 느리고 끝에 급격히 — 중간 알파 체류 최소화)
+            if (half > 0f)
             {
-                await canvasGroup.DOFade(0f, halfDuration)
-                    .SetEase(Ease.InQuad)
+                await canvasGroup.DOFade(0f, half)
+                    .SetEase(Ease.InQuart)
                     .ToUniTask(cancellationToken: ct);
             }
             else
@@ -236,13 +239,15 @@ namespace LoveAlgo.Story
                 canvasGroup.alpha = 0f;
             }
 
+            // 스프라이트 교체 (alpha=0이라 안 보임)
             overlayImage.sprite = sprite;
             currentOverlay = overlayName;
 
-            if (halfDuration > 0f)
+            // 빠르게 복원 (OutQuart: 초반 급격히 올라감 — 중간 알파 체류 최소화)
+            if (half > 0f)
             {
-                await canvasGroup.DOFade(defaultAlpha, halfDuration)
-                    .SetEase(Ease.OutQuad)
+                await canvasGroup.DOFade(defaultAlpha, half)
+                    .SetEase(Ease.OutQuart)
                     .ToUniTask(cancellationToken: ct);
             }
             else
@@ -274,6 +279,7 @@ namespace LoveAlgo.Story
         public void HideImmediate()
         {
             DOTween.Kill(canvasGroup);
+            if (overlayImage != null) DOTween.Kill(overlayImage);
 
             if (canvasGroup != null)
             {
@@ -281,6 +287,7 @@ namespace LoveAlgo.Story
             }
             if (overlayImage != null)
             {
+                overlayImage.color = Color.white;
                 overlayImage.enabled = false;
             }
             currentOverlay = null;
@@ -290,6 +297,7 @@ namespace LoveAlgo.Story
         void OnDestroy()
         {
             DOTween.Kill(canvasGroup);
+            if (overlayImage != null) DOTween.Kill(overlayImage);
         }
     }
 }

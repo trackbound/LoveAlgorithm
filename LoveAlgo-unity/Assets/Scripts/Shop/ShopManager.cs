@@ -155,24 +155,24 @@ namespace LoveAlgo.Shop
         /// </summary>
         /// <param name="itemId">소모품 아이템 ID</param>
         /// <param name="currentDay">현재 날짜 (중복 패널티 판정용)</param>
-        /// <returns>성공 여부</returns>
-        public static bool UseConsumable(string itemId, int currentDay = -1)
+        /// <returns>실제 적용된 효과값 (실패 시 -1)</returns>
+        public static int UseConsumable(string itemId, int currentDay = -1)
         {
             var item = ItemDatabase.Get(itemId);
             if (item == null || item.Category != ItemCategory.Consumable)
             {
                 Debug.LogWarning($"[ShopManager] 소모품이 아님: {itemId}");
-                return false;
+                return -1;
             }
 
             if (!RemoveItem(itemId))
             {
                 Debug.LogWarning($"[ShopManager] 인벤토리에 없음: {itemId}");
-                return false;
+                return -1;
             }
 
             var gs = GameState.Instance;
-            if (gs == null) return false;
+            if (gs == null) return -1;
 
             // 동일날 중복 사용 시 50% 패널티 적용
             int effect = item.EffectValue;
@@ -181,7 +181,7 @@ namespace LoveAlgo.Shop
 
             gs.AddStat("Fatigue", -effect);
             Debug.Log($"[ShopManager] 소모품 사용: {item.Name} (피로 -{effect}, 원본 -{item.EffectValue})");
-            return true;
+            return effect;
         }
 
         #endregion

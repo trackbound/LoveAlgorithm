@@ -78,7 +78,7 @@
       ]
     },
     "Shop": {
-      "count": 10,
+      "count": 12,
       "files": [
         "ItemCatalogGenerator",
         "ItemCatalogSO",
@@ -87,6 +87,8 @@
         "ItemEffectSystem",
         "ShopCartSlot",
         "ShopItemDetailPopup",
+        "ShopItemFilter",
+        "ShopItemFilterEditor",
         "ShopManager",
         "ShopPopup",
         "ShopSaleSlot"

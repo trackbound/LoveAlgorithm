@@ -85,7 +85,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1334691581414269537}
   m_Layer: 0
-  m_Name: EyeEffect
+  m_Name: EyeMask
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -174,7 +174,7 @@ Canvas:
   m_AdditionalShaderChannelsFlag: 25
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 1
   m_TargetDisplay: 0
 --- !u!114 &6594087208489843051
 MonoBehaviour:
@@ -515,6 +515,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 139142742665138099}
     m_Modifications:
+    - target: {fileID: 507127724676332095, guid: ce795363ee246d348be0d29ab5915c1d, type: 3}
+      propertyPath: m_Name
+      value: DimImage
+      objectReference: {fileID: 0}
     - target: {fileID: 1075471088503680253, guid: ce795363ee246d348be0d29ab5915c1d, type: 3}
       propertyPath: m_Name
       value: MonologueDim
@@ -632,33 +636,41 @@ PrefabInstance:
       propertyPath: m_Name
       value: VirtualBG
       objectReference: {fileID: 0}
+    - target: {fileID: 1018098879918418197, guid: 7354367e4b49cda408144e814e658f65, type: 3}
+      propertyPath: m_Name
+      value: OverlayImage
+      objectReference: {fileID: 0}
+    - target: {fileID: 6640406121986671764, guid: 7354367e4b49cda408144e814e658f65, type: 3}
+      propertyPath: defaultDuration
+      value: 0.35
+      objectReference: {fileID: 0}
     - target: {fileID: 6640406121986671764, guid: 7354367e4b49cda408144e814e658f65, type: 3}
       propertyPath: overlayEntries.Array.size
       value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 6640406121986671764, guid: 7354367e4b49cda408144e814e658f65, type: 3}
       propertyPath: overlayEntries.Array.data[0].name
-      value: Roa_Mob_1
+      value: Roa_Mob_Default
       objectReference: {fileID: 0}
     - target: {fileID: 6640406121986671764, guid: 7354367e4b49cda408144e814e658f65, type: 3}
       propertyPath: overlayEntries.Array.data[1].name
-      value: Roa_Mob_2
+      value: Roa_Mob_Positive
       objectReference: {fileID: 0}
     - target: {fileID: 6640406121986671764, guid: 7354367e4b49cda408144e814e658f65, type: 3}
       propertyPath: overlayEntries.Array.data[2].name
-      value: Roa_Mob_3
+      value: Roa_Mob_Negative
       objectReference: {fileID: 0}
     - target: {fileID: 6640406121986671764, guid: 7354367e4b49cda408144e814e658f65, type: 3}
       propertyPath: overlayEntries.Array.data[3].name
-      value: Roa_PC_1
+      value: Roa_PC_Default
       objectReference: {fileID: 0}
     - target: {fileID: 6640406121986671764, guid: 7354367e4b49cda408144e814e658f65, type: 3}
       propertyPath: overlayEntries.Array.data[4].name
-      value: Roa_PC_2
+      value: Roa_PC_Positive
       objectReference: {fileID: 0}
     - target: {fileID: 6640406121986671764, guid: 7354367e4b49cda408144e814e658f65, type: 3}
       propertyPath: overlayEntries.Array.data[5].name
-      value: Roa_PC_3
+      value: Roa_PC_Negative
       objectReference: {fileID: 0}
     - target: {fileID: 6640406121986671764, guid: 7354367e4b49cda408144e814e658f65, type: 3}
       propertyPath: overlayEntries.Array.data[0].sprite
@@ -793,6 +805,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 139142742665138099}
     m_Modifications:
+    - target: {fileID: 387184768827926784, guid: 79745f2bdc3316d46ba9a24fed44594b, type: 3}
+      propertyPath: m_Name
+      value: CGImage
+      objectReference: {fileID: 0}
+    - target: {fileID: 1666593426631152566, guid: 79745f2bdc3316d46ba9a24fed44594b, type: 3}
+      propertyPath: defaultDuration
+      value: 0.6
+      objectReference: {fileID: 0}
     - target: {fileID: 3944416164620282055, guid: 79745f2bdc3316d46ba9a24fed44594b, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5

@@ -165,6 +165,10 @@ CG 종료(Exit) 시 대사창 자동 복원.
 | `EyeCloseImmediate` | `EyeCloseImmediate` |
 | `EyeBlink` | `EyeBlink:0.3:0.5:0.2` |
 | `CamShake` | `CamShake:0.5:30`, `CamShake:Medium` |
+| `CamZoom` | `CamZoom:1.3:0.5` (1.3배, 0.5초), `CamZoom:1.0:0.3` (복귀) |
+| `CamPan` | `CamPan:100:0:0.5` (오른쪽 100px), `CamPan:0:0:0.3` (원점) |
+| `CamReset` | `CamReset:0.4` (줌+팬 동시 원점 복귀) |
+| `ColorTint` | `ColorTint:Sepia:0.3:0.5`, `ColorTint:Clear::0.3` |
 | `DialogueHide` | `DialogueHide` |
 | `DialogueShow` | `DialogueShow` |
 

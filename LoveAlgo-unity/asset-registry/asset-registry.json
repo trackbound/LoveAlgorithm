@@ -20,7 +20,7 @@
     },
     "audio": {
       "bgm_count": 9,
-      "sfx_count": 9,
+      "sfx_count": 11,
       "details": "audio.json"
     },
     "stage": {
@@ -72,11 +72,11 @@
         "MiniGame": 4,
         "Phone": 7,
         "Schedule": 6,
-        "Shop": 10,
+        "Shop": 12,
         "Story": 46,
         "UI": 29
       },
-      "total": 129,
+      "total": 131,
       "details": "scripts.json"
     }
   }
