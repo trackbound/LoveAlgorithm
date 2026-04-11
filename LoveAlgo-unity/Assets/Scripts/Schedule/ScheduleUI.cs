@@ -438,14 +438,13 @@ namespace LoveAlgo.Schedule
             var gm = GameManager.Instance;
             if (gm == null) return;
 
-            // 인라인 스케줄 모드: 확인 후 스토리 복귀
+            // 인라인 스케줄 모드: 확인 후 스토리 복귀 (페이드는 ScheduleFlowCommand에서 처리)
             if (gm.DayLoop.IsInlineSchedule)
             {
                 bool proceed = await LoveAlgo.UI.PopupManager.Instance.ConfirmAsync(
                     "스토리를 진행하시겠습니까?");
                 if (!proceed) return;
 
-                await HideAsync(destroyCancellationToken);
                 gm.DayLoop.CompleteInlineSchedule();
                 return;
             }
