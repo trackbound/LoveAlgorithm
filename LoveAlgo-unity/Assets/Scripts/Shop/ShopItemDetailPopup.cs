@@ -2,6 +2,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using LoveAlgo.Core;
+using LoveAlgo.UI;
 
 namespace LoveAlgo.Shop
 {
@@ -65,6 +66,12 @@ namespace LoveAlgo.Shop
             if (iconImage != null)
                 iconImage.sprite = item.GetDetailImage();
 
+            // 마키 효과 (긴 이름 스크롤)
+            if (item.UseMarquee && nameText != null)
+                TextMarquee.GetOrAdd(nameText).Play();
+            else
+                nameText?.GetComponent<TextMarquee>()?.Stop();
+
             PositionRelativeToSlot(slotRect, viewportRect);
 
             gameObject.SetActive(true);
@@ -75,6 +82,7 @@ namespace LoveAlgo.Shop
         /// </summary>
         public void Hide()
         {
+            nameText?.GetComponent<TextMarquee>()?.Stop();
             gameObject.SetActive(false);
         }
 

@@ -203,57 +203,29 @@ namespace LoveAlgo.Story
 
         /// <summary>
         /// 오버레이 전환 (표정 변경 시 사용).
-        /// 같은 오버레이면 no-op. 색상 혼합 방지를 위해 빠른 디졸브(페이드아웃→교체→페이드인).
+        /// 같은 오버레이면 no-op. 즉시 스프라이트 교체 (감정 변화처럼 자연스럽게).
         /// </summary>
-        public async UniTask SwitchAsync(string overlayName, float duration = 0.24f, CancellationToken ct = default)
+        public UniTask SwitchAsync(string overlayName, float duration = 0f, CancellationToken ct = default)
         {
-            if (string.IsNullOrEmpty(overlayName)) return;
+            if (string.IsNullOrEmpty(overlayName)) return UniTask.CompletedTask;
 
             // 같은 오버레이 — 전환 불필요
             if (isShowing && string.Equals(currentOverlay, overlayName, StringComparison.OrdinalIgnoreCase))
-                return;
+                return UniTask.CompletedTask;
 
             var sprite = FindSprite(overlayName);
-            if (sprite == null) return;
+            if (sprite == null) return UniTask.CompletedTask;
 
             if (!isShowing)
             {
                 // 오버레이가 아직 표시되지 않은 상태 — 일반 ShowAsync로 처리
-                await ShowAsync(overlayName, duration, defaultAlpha, ct);
-                return;
+                return ShowAsync(overlayName, duration, defaultAlpha, ct);
             }
 
-            // ── 빠른 디졸브 (색 혼합 방지) ──
-            // 페이드아웃 → 스프라이트 교체 → 페이드인 (각 절반 시간)
-            float half = duration * 0.5f;
-
-            // 빠르게 투명으로 (InQuart: 초반 느리고 끝에 급격히 — 중간 알파 체류 최소화)
-            if (half > 0f)
-            {
-                await canvasGroup.DOFade(0f, half)
-                    .SetEase(Ease.InQuart)
-                    .ToUniTask(cancellationToken: ct);
-            }
-            else
-            {
-                canvasGroup.alpha = 0f;
-            }
-
-            // 스프라이트 교체 (alpha=0이라 안 보임)
+            // ── 즉시 교체 (페이드 없음) ──
             overlayImage.sprite = sprite;
             currentOverlay = overlayName;
-
-            // 빠르게 복원 (OutQuart: 초반 급격히 올라감 — 중간 알파 체류 최소화)
-            if (half > 0f)
-            {
-                await canvasGroup.DOFade(defaultAlpha, half)
-                    .SetEase(Ease.OutQuart)
-                    .ToUniTask(cancellationToken: ct);
-            }
-            else
-            {
-                canvasGroup.alpha = defaultAlpha;
-            }
+            return UniTask.CompletedTask;
         }
 
         /// <summary>

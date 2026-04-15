@@ -16,8 +16,8 @@ MonoBehaviour:
   - type: 0
     effect:
       displayName: "\uD3B8\uC758\uC810"
-      description: "\uC5B4\uCA4C\uAD6C \uD3B8\uC758\uC810\uC5D0\uC11C \uC544\uB974\uBC14\uC774\uD2B8\uB97C
-        \uD569\uB2C8\uB2E4.\n\u20A910,000\uC758 \uC218\uC775\uC744 \uD68D\uB4DD\uD569\uB2C8\uB2E4."
+      description: "\uD3B8\uC758\uC810\uC5D0\uC11C \uC544\uB974\uBC14\uC774\uD2B8\uB97C
+        \uC9C4\uD589\uD569\uB2C8\uB2E4.\\n10,000\uC6D0\uC758 \uC218\uC775\uC774 \uBC1C\uC0DD\uD569\uB2C8\uB2E4."
       moneyChange: 20000
       strengthChange: 0
       intelligenceChange: 0
@@ -27,11 +27,11 @@ MonoBehaviour:
       isLimited: 0
   - type: 1
     effect:
-      displayName: "\uC0C1\uD558\uCC28 \uC54C\uBC14"
-      description: "\uC0C1\uD558\uCC28\uB97C \uD558\uBA74 \uB3C8\uB3C4 \uBC8C\uACE0
-        \uD798\uB3C4 \uC138\uC9C0\uACE0\n\u20A950,000\uC744 \uBC84\uB294\uB370\n\uBC24\uC740
-        \uC0C8\uC57C\uD560\uC9C0\uB3C4 \uC5B4\uCA4C\uAD6C \uC800\uCA4C\uAD6C 3\uC904\uAE4C\uC9C0
-        \uC785\uB2C8\uB2E4."
+      displayName: "\uC0C1\uD558\uCC28"
+      description: "\uD0DD\uBC30 \uBB3C\uB958\uC13C\uD130\uC5D0\uC11C \uC0C1\uD558\uCC28
+        \uC544\uB974\uBC14\uC774\uD2B8\uB97C \uC9C4\uD589\uD569\uB2C8\uB2E4.\\n50,000\uC6D0\uC758
+        \uC218\uC775\uC774 \uBC1C\uC0DD\uD569\uB2C8\uB2E4.\\n\uD53C\uB85C\uB3C4\uAC00
+        \uD06C\uAC8C \uC99D\uAC00\uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4."
       moneyChange: 50000
       strengthChange: 0
       intelligenceChange: 0
@@ -41,8 +41,12 @@ MonoBehaviour:
       isLimited: 0
   - type: 2
     effect:
-      displayName: "\uCF54\uC778\uD22C\uC790"
-      description: "\uC601\uCC28\uC601\uCC28\n\uB2E4\uAC19\uC774 \uC678\uCCD0 \uC601\uCC28\uC601\uCC28"
+      displayName: "\uD22C\uC790"
+      description: "\uC790\uC0B0 \uC804\uC561\uC73C\uB85C \uCF54\uC778 \uD22C\uC790\uB97C
+        \uC9C4\uD589\uD569\uB2C8\uB2E4.\\n\uD22C\uC790 \uACB0\uACFC\uB294 \uC989\uAC01
+        \uBC18\uC601\uB418\uBA70, 50%\uC5D0\uC11C 100% \uC0AC\uC774\uB85C \uC790\uC0B0\uC774
+        \uAC10\uC18C \uD639\uC740 \uC99D\uAC00\uD569\uB2C8\uB2E4.\\n30,000\uC6D0
+        \uC774\uC0C1 \uBCF4\uC720 \uC2DC \uC120\uD0DD \uAC00\uB2A5\uD569\uB2C8\uB2E4."
       moneyChange: 0
       strengthChange: 0
       intelligenceChange: 0
@@ -125,9 +129,11 @@ MonoBehaviour:
       isLimited: 0
   categories:
   - category: 0
-    displayName: "\uC54C\uBC14"
-    description: "\uB3C8\uC744 \uBC8C \uC218 \uC788\uC5B4\uC694. \uD53C\uB85C\uB3C4\uAC00
-      \uC624\uB985\uB2C8\uB2E4."
+    displayName: "\uC544\uB974\uBC14\uC774\uD2B8"
+    description: "\uAC01\uC885 \uC544\uB974\uBC14\uC774\uD2B8\uC640 \uD22C\uC790
+      \uD65C\uB3D9\uC744 \uD1B5\uD574 \uC7AC\uD654\uB97C \uBC8C \uC218 \uC788\uC2B5\uB2C8\uB2E4.\\n\uC5B4\uB5A4
+      \uC77C\uC744 \uD558\uB294\uC9C0\uC5D0 \uB530\uB77C \uC218\uC785\uACFC \uCEE8\uB514\uC158\uC774
+      \uB2EC\uB77C\uC9C8 \uC218 \uC788\uC2B5\uB2C8\uB2E4."
   - category: 1
     displayName: "\uC6B4\uB3D9"
     description: "\uCCB4\uB825\uC744 \uC62C\uB9B4 \uC218 \uC788\uC5B4\uC694."

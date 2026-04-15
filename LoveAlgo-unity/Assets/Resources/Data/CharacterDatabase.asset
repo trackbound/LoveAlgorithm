@@ -17,8 +17,8 @@ MonoBehaviour:
     displayName: "\uC774\uBD04"
     speakerAliases: []
     spriteScale: 0.95
-    offsetX: 62.2
-    offsetY: -1327
+    offsetX: 12
+    offsetY: -1336
     pivotY: 0
     overlayPrefix: 
     positiveEmotes: []
@@ -37,8 +37,8 @@ MonoBehaviour:
     displayName: "\uB3C4\uD76C\uC6D0"
     speakerAliases: []
     spriteScale: 1.1
-    offsetX: 95
-    offsetY: -1659.9
+    offsetX: 59
+    offsetY: -1640
     pivotY: 0
     overlayPrefix: 
     positiveEmotes: []

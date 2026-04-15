@@ -156,7 +156,7 @@ namespace LoveAlgo.Schedule
             EnsureInit();
             return categoryMap.TryGetValue(cat, out var info) ? info.desc : cat switch
             {
-                ScheduleCategory.PartTime => "돈을 벌 수 있어요. 피로도가 오릅니다.",
+                ScheduleCategory.PartTime => "각종 아르바이트와 투자 활동을 통해 재화를 벌 수 있습니다.\n어떤 일을 하는지에 따라 수입과 컨디션이 달라질 수 있습니다.",
                 ScheduleCategory.Exercise => "체력을 올릴 수 있어요.",
                 ScheduleCategory.Study    => "지성을 올릴 수 있어요. 피로도가 오릅니다.",
                 _ => ""

@@ -34,7 +34,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -160.5, y: -44.75}
+  m_AnchoredPosition: {x: -111.3, y: -44.75}
   m_SizeDelta: {x: 145.1, y: 71}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &405451539613640936
@@ -443,7 +443,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 68.8, y: -44.75}
+  m_AnchoredPosition: {x: 190.2, y: -44.75}
   m_SizeDelta: {x: 305.6, y: 71}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &1181897227014089446
@@ -474,7 +474,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\uD56D\uBAA9\uC774\uB984 +  NNNNNN"
+  m_text: "\uCCB4\uB825 + 3"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 6510102d93eb1d74ba6055e1f3a9a571, type: 2}
   m_sharedMaterial: {fileID: -8511051475557064183, guid: 6510102d93eb1d74ba6055e1f3a9a571, type: 2}
@@ -483,8 +483,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4285755254
-  m_fontColor: {r: 0.46274513, g: 0.43529415, b: 0.45098042, a: 1}
+    rgba: 4288441854
+  m_fontColor: {r: 0.9960785, g: 0.427451, b: 0.6117647, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -513,7 +513,7 @@ MonoBehaviour:
   m_textAlignment: 65535
   m_characterSpacing: 0
   m_characterHorizontalScale: 1
-  m_wordSpacing: 20.7
+  m_wordSpacing: 8.7
   m_lineSpacing: 0
   m_lineSpacingMax: 0
   m_paragraphSpacing: 0
@@ -540,7 +540,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: 0, y: 0, z: -10.269745, w: 0}
+  m_margin: {x: 0, y: 0, z: 145.83408, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
@@ -885,7 +885,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\uC5B4\uCA4C\uAD6C \uC800\uCA4C\uAD6C\uC758 \uD3B8\uC758\uC810 \uC544\uB974\uBC14\uC774\uD2B8\uB97C
+  m_text: "\uCCB4\uB825 \uC2A4\uD0EF\uC774 \uC99D\uAC00\uD569\uB2C8\uB2E4.\\n\uC6B4\uB3D9\uC744
     \uC9C4\uD589\uD558\uC2DC\uACA0\uC2B5\uB2C8\uAE4C?"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 6510102d93eb1d74ba6055e1f3a9a571, type: 2}

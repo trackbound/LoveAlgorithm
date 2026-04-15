@@ -15,6 +15,7 @@ MonoBehaviour:
   items:
   - Id: gift_ankle_guard
     Name: "\uBC1C\uBAA9 \uBCF4\uD638\uB300"
+    UseMarquee: 0
     Description: "\uBC1C\uBAA9\uC744 \uBCF4\uD638\uD574 \uC8FC\uB294 \uBCF4\uD638\uB300"
     Price: 30000
     Category: 0
@@ -33,6 +34,7 @@ MonoBehaviour:
   - Id: gift_meal_coupon
     Name: "[\uD55C\uC2DD\uBA85\uC778 \uCD5C\uBA85\uC790\uC758 \uC308\uBC25\uBA85\uAC00]
       \uC2DD\uC0AC\uAD8C"
+    UseMarquee: 1
     Description: "\uC720\uBA85\uD55C \uC308\uBC25 \uB9DB\uC9D1\uC758 \uC2DD\uC0AC\uAD8C"
     Price: 25000
     Category: 0
@@ -50,6 +52,7 @@ MonoBehaviour:
     LoveEffect3: 3
   - Id: gift_game_chip
     Name: "<\uC810\uD504\uC810\uD504 \uAC70\uBD81\uB9E8> \uAC8C\uC784 \uCE69"
+    UseMarquee: 1
     Description: "\uC608\uC740\uACFC \uC5B4\uB9B4 \uB54C \uD568\uAED8 \uD50C\uB808\uC774\uD588\uB358
       \uAC8C\uC784 \uCE69"
     Price: 30000
@@ -68,6 +71,7 @@ MonoBehaviour:
     LoveEffect3: 3
   - Id: gift_album
     Name: "<\uD2B8\uB85C\uD53C\uCEEC \uAE00\uB85C\uC6B0> \uC568\uBC94"
+    UseMarquee: 0
     Description: "\uC138\uACC4\uC801 \uC778\uAE30 \uBC34\uB4DC <\uD2B8\uB85C\uD53C\uCEEC
       \uAE00\uB85C\uC6B0> \uC568\uBC94"
     Price: 30000
@@ -86,6 +90,7 @@ MonoBehaviour:
     LoveEffect3: 3
   - Id: gift_bread
     Name: "\uC54C\uBC24\uB2EC\uBC24 \uBC24\uC2DD\uBE75"
+    UseMarquee: 0
     Description: "\uD559\uAD50 \uADFC\uCC98 \uC720\uBA85 \uBCA0\uC774\uCEE4\uB9AC
       [\uBC24\uBC24\uBC24]\uC758 \uBC24\uC2DD\uBE75"
     Price: 8000
@@ -105,6 +110,7 @@ MonoBehaviour:
   - Id: gift_concert_ticket
     Name: "<\uD2B8\uB85C\uD53C\uCEEC \uAE00\uB85C\uC6B0> \uB0B4\uD55C \uCF58\uC11C\uD2B8
       \uD2F0\uCF13"
+    UseMarquee: 1
     Description: "<\uD2B8\uB85C\uD53C\uCEEC \uAE00\uB85C\uC6B0> \uB0B4\uD55C \uCF58\uC11C\uD2B8
       \uD2F0\uCF13"
     Price: 100000
@@ -123,6 +129,7 @@ MonoBehaviour:
     LoveEffect3: 5
   - Id: gift_rabbit_keyring
     Name: "\uD1A0\uB07C \uC778\uD615 \uD0A4\uB9C1"
+    UseMarquee: 0
     Description: "\uBBF8\uB2C8 \uD1A0\uB07C \uC778\uD615 \uD0A4\uB9C1"
     Price: 20000
     Category: 0
@@ -140,6 +147,7 @@ MonoBehaviour:
     LoveEffect3: 3
   - Id: gift_strawberry_milk
     Name: "[\uB0B4 \uB9D8\uC5D0 \uB538\uAE30\uAC00\uB4DD] \uB538\uAE30\uC6B0\uC720"
+    UseMarquee: 1
     Description: "\uADC0\uC5EC\uC6B4 \uD328\uD0A4\uC9C0\uC758 \uB538\uAE30\uC6B0\uC720"
     Price: 3000
     Category: 0
@@ -158,6 +166,7 @@ MonoBehaviour:
   - Id: gift_popup_ticket
     Name: "<\uB7EC\uBE14\uB9AC\uD1A1> \uD31D\uC5C5\uC2A4\uD1A0\uC5B4 \uC785\uC7A5
       \uD655\uC815 \uD2F0\uCF13"
+    UseMarquee: 1
     Description: "<\uB7EC\uBE14\uB9AC\uD1A1> \uD31D\uC5C5\uC2A4\uD1A0\uC5B4 \uC785\uC7A5
       \uD655\uC815 \uD2F0\uCF13"
     Price: 60000
@@ -176,6 +185,7 @@ MonoBehaviour:
     LoveEffect3: 4
   - Id: gift_soju
     Name: "\uD55C\uC815\uD310 \uC18C\uC8FC <\uC5EC\uB984, \uB808\uBAAC, \uBC24>"
+    UseMarquee: 1
     Description: "\uC18C\uC8FC \uBE0C\uB79C\uB4DC\uC5D0\uC11C \uC0C8\uB85C \uB098\uC628
       \uACFC\uC77C \uC18C\uC8FC"
     Price: 40000
@@ -194,6 +204,7 @@ MonoBehaviour:
     LoveEffect3: 4
   - Id: gift_diamond
     Name: "\uC5E0\uD30C\uC774\uC5B4 \uB2E4\uC774\uC544\uBAAC\uB4DC"
+    UseMarquee: 0
     Description: "\uACE0\uAE09 \uC704\uC2A4\uD0A4"
     Price: 120000
     Category: 0
@@ -211,6 +222,7 @@ MonoBehaviour:
     LoveEffect3: 5
   - Id: gift_ribbon
     Name: "\uB9AC\uBCF8 \uBA38\uB9AC\uB048"
+    UseMarquee: 0
     Description: "\uD770\uC0C9 \uC2E4\uD06C \uB9AC\uBCF8 \uBA38\uB9AC\uB048"
     Price: 35000
     Category: 0
@@ -228,6 +240,7 @@ MonoBehaviour:
     LoveEffect3: 3
   - Id: gift_blue_shirt
     Name: "\uD558\uB298\uC0C9 \uBC18\uD314 \uD2F0\uC154\uCE20"
+    UseMarquee: 0
     Description: "\uAC80\uC740\uC0C9\uC774 \uC544\uB2CC \uC637"
     Price: 40000
     Category: 0
@@ -245,6 +258,7 @@ MonoBehaviour:
     LoveEffect3: 4
   - Id: gift_monitor
     Name: "QHD \uBAA8\uB2C8\uD130"
+    UseMarquee: 0
     Description: "\uD654\uC9C8\uC774 \uB9E4\uC6B0 \uC88B\uC740 \uBAA8\uB2C8\uD130"
     Price: 120000
     Category: 0
@@ -262,6 +276,7 @@ MonoBehaviour:
     LoveEffect3: 5
   - Id: gift_headset
     Name: "\uC0DD\uB3D9\uAC10\uC774 \uB290\uAEF4\uC9C0\uB294 \uD5E4\uB4DC\uC14B"
+    UseMarquee: 0
     Description: "\uB85C\uC544\uC758 \uBAA9\uC18C\uB9AC\uB97C \uB354 \uC798 \uB4E4\uC744
       \uC218 \uC788\uB294 \uB178\uC774\uC988 \uCE94\uC2AC\uB9C1 \uD5E4\uB4DC\uC14B"
     Price: 90000
@@ -280,6 +295,7 @@ MonoBehaviour:
     LoveEffect3: 5
   - Id: consume_energy_drink
     Name: "\uC5D0\uB108\uC9C0 \uC74C\uB8CC"
+    UseMarquee: 0
     Description: "\uACE0\uCE74\uD398\uC778 \uAC01\uC131 \uC74C\uB8CC"
     Price: 3000
     Category: 1
@@ -297,6 +313,7 @@ MonoBehaviour:
     LoveEffect3: 0
   - Id: consume_vitamin
     Name: "\uC885\uD569\uBE44\uD0C0\uBBFC"
+    UseMarquee: 0
     Description: "\uD798\uC774 \uB098\uB294 \uD53C\uB85C \uD68C\uBCF5 \uBE44\uD0C0\uBBFC"
     Price: 12000
     Category: 1
@@ -314,6 +331,7 @@ MonoBehaviour:
     LoveEffect3: 0
   - Id: consume_arginine
     Name: "\uC544\uB974\uAE30\uB2CC"
+    UseMarquee: 0
     Description: "\uB0A8\uC131\uAC74\uAC15 \uC601\uC591\uC81C"
     Price: 20000
     Category: 1
@@ -331,6 +349,7 @@ MonoBehaviour:
     LoveEffect3: 0
   - Id: consume_mood_lamp
     Name: "\uC218\uBA74\uC6A9 \uBB34\uB4DC\uB4F1"
+    UseMarquee: 0
     Description: "\uBD80\uB4DC\uB7EC\uC6B4 \uBE5B\uC774 \uB098\uB294 \uBB34\uB4DC\uB4F1"
     Price: 25000
     Category: 1
@@ -348,6 +367,7 @@ MonoBehaviour:
     LoveEffect3: 0
   - Id: consume_energy_bar
     Name: "\uC5D0\uB108\uC9C0\uBC14"
+    UseMarquee: 0
     Description: "\uACAC\uACFC\uB958\uAC00 \uB4E0 \uC5D0\uB108\uC9C0\uBC14"
     Price: 5000
     Category: 1
@@ -365,6 +385,7 @@ MonoBehaviour:
     LoveEffect3: 0
   - Id: buff_protein_choco
     Name: "\uD504\uB85C\uD2F4_\uCD08\uCF54\uB9DB"
+    UseMarquee: 0
     Description: "\uB2E8\uBC31\uC9C8 \uCDA9\uC804\uC5D0 \uD544\uC694\uD55C \uCD08\uCF54\uB9DB
       \uD504\uB85C\uD2F4"
     Price: 10000
@@ -383,6 +404,7 @@ MonoBehaviour:
     LoveEffect3: 0
   - Id: buff_protein_straw
     Name: "\uD504\uB85C\uD2F4_\uB538\uAE30\uB9DB"
+    UseMarquee: 0
     Description: "\uB2E8\uBC31\uC9C8 \uCDA9\uC804\uC5D0 \uD544\uC694\uD55C \uB538\uAE30\uB9DB
       \uD504\uB85C\uD2F4"
     Price: 12000
@@ -401,6 +423,7 @@ MonoBehaviour:
     LoveEffect3: 0
   - Id: buff_keyboard
     Name: "\uAE30\uACC4\uC2DD \uD0A4\uBCF4\uB4DC"
+    UseMarquee: 0
     Description: "\uD0C0\uAC74\uC74C\uC774 \uC88B\uC740 \uAE30\uACC4\uC2DD \uD0A4\uBCF4\uB4DC"
     Price: 60000
     Category: 2
@@ -418,6 +441,7 @@ MonoBehaviour:
     LoveEffect3: 0
   - Id: buff_gaming_mouse
     Name: "\uAC8C\uC774\uBC0D \uB9C8\uC6B0\uC2A4"
+    UseMarquee: 0
     Description: "\uAC8C\uC784 \uD50C\uB808\uC774\uC5D0 \uB3C4\uC6C0\uC774 \uB418\uB294
       \uB9C8\uC6B0\uC2A4"
     Price: 35000
@@ -436,6 +460,7 @@ MonoBehaviour:
     LoveEffect3: 0
   - Id: buff_note
     Name: "\uB178\uD2B8"
+    UseMarquee: 0
     Description: "\uD544\uAE30\uC5D0 \uC0AC\uC6A9\uD558\uB294 \uB178\uD2B8"
     Price: 4000
     Category: 2
@@ -453,6 +478,7 @@ MonoBehaviour:
     LoveEffect3: 0
   - Id: buff_pen
     Name: "\uBCFC\uD39C"
+    UseMarquee: 0
     Description: "\uD544\uAE30\uC5D0 \uC0AC\uC6A9\uD558\uB294 \uBCFC\uD39C"
     Price: 3000
     Category: 2
@@ -470,6 +496,7 @@ MonoBehaviour:
     LoveEffect3: 0
   - Id: buff_postit
     Name: "\uD3EC\uC2A4\uD2B8\uC787"
+    UseMarquee: 0
     Description: "\uACF5\uBD80\uD560 \uB54C \uC0AC\uC6A9\uD558\uB294 \uBA54\uBAA8\uC9C0"
     Price: 6000
     Category: 2
@@ -487,6 +514,7 @@ MonoBehaviour:
     LoveEffect3: 0
   - Id: buff_highlighter
     Name: "\uD615\uAD11\uD39C \uC138\uD2B8"
+    UseMarquee: 0
     Description: "\uD544\uAE30\uC5D0 \uC0AC\uC6A9\uD558\uB294 \uD615\uAD11\uD39C
       3\uC0C9 \uC138\uD2B8"
     Price: 8000
@@ -505,6 +533,7 @@ MonoBehaviour:
     LoveEffect3: 0
   - Id: buff_sharp
     Name: "\uC0E4\uD504"
+    UseMarquee: 0
     Description: "\uD544\uAE30\uC5D0 \uC0AC\uC6A9\uD558\uB294 \uC0E4\uD504"
     Price: 5000
     Category: 2
@@ -522,6 +551,7 @@ MonoBehaviour:
     LoveEffect3: 0
   - Id: buff_vertical_mouse
     Name: "\uBC84\uD2F0\uCEEC \uB9C8\uC6B0\uC2A4"
+    UseMarquee: 0
     Description: "\uC190\uBAA9 \uAC74\uAC15\uC5D0 \uB3C4\uC6C0\uC774 \uB418\uB294
       \uB9C8\uC6B0\uC2A4"
     Price: 35000
@@ -540,6 +570,7 @@ MonoBehaviour:
     LoveEffect3: 0
   - Id: buff_blanket
     Name: "\uBB34\uB98E\uB2F4\uC694"
+    UseMarquee: 0
     Description: "\uC801\uB2F9\uD55C \uC0AC\uC774\uC988\uC758 \uD3ED\uC2E0\uD55C
       \uB2F4\uC694"
     Price: 8000
@@ -558,6 +589,7 @@ MonoBehaviour:
     LoveEffect3: 0
   - Id: buff_coffee
     Name: "\uC544\uC774\uC2A4 \uC544\uBA54\uB9AC\uCE74\uB178"
+    UseMarquee: 0
     Description: "\uC2DC\uC6D0\uD55C \uC544\uBA54\uB9AC\uCE74\uB178 \uD55C \uC794"
     Price: 4000
     Category: 2
@@ -575,6 +607,7 @@ MonoBehaviour:
     LoveEffect3: 0
   - Id: buff_handcream
     Name: "\uD578\uB4DC\uD06C\uB9BC"
+    UseMarquee: 0
     Description: "\uC88B\uC740 \uD5A5\uC774 \uB098\uB294 \uD578\uB4DC\uD06C\uB9BC"
     Price: 6000
     Category: 2
@@ -592,6 +625,7 @@ MonoBehaviour:
     LoveEffect3: 0
   - Id: buff_tumbler
     Name: "\uD140\uBE14\uB7EC"
+    UseMarquee: 0
     Description: "\uC74C\uB8CC\uB97C \uB2F4\uC544 \uB2E4\uB2D0 \uC218 \uC788\uB294
       \uD140\uBE14\uB7EC"
     Price: 7000
@@ -610,6 +644,7 @@ MonoBehaviour:
     LoveEffect3: 0
   - Id: buff_battery
     Name: "\uBCF4\uC870\uBC30\uD130\uB9AC"
+    UseMarquee: 0
     Description: "\uC5B4\uB514\uC11C\uB098 \uCDA9\uC804\uD560 \uC218 \uC788\uB294
       \uBCF4\uC870\uBC30\uD130\uB9AC"
     Price: 10000
@@ -628,6 +663,7 @@ MonoBehaviour:
     LoveEffect3: 0
   - Id: buff_diary
     Name: "\uB2E4\uC774\uC5B4\uB9AC"
+    UseMarquee: 0
     Description: "\uD558\uB8E8\uB97C \uAE30\uB85D\uD558\uB294 \uC77C\uAE30\uC7A5"
     Price: 12000
     Category: 2
@@ -645,6 +681,7 @@ MonoBehaviour:
     LoveEffect3: 0
   - Id: buff_laptop_stand
     Name: "\uB178\uD2B8\uBD81 \uAC70\uCE58\uB300"
+    UseMarquee: 0
     Description: "\uB178\uD2B8\uBD81\uC744 \uC62C\uB824\uB458 \uC218 \uC788\uB294
       \uAC70\uCE58\uB300"
     Price: 15000
@@ -663,6 +700,7 @@ MonoBehaviour:
     LoveEffect3: 0
   - Id: buff_bluelight_glasses
     Name: "\uBE14\uB8E8\uB77C\uC774\uD2B8 \uCC28\uB2E8 \uC548\uACBD"
+    UseMarquee: 0
     Description: "\uB208\uC5D0 \uC88B\uC9C0 \uC54A\uC740 \uCCAD\uAD11\uC744 \uCC28\uB2E8\uD558\uB294
       \uC548\uACBD"
     Price: 18000
@@ -681,6 +719,7 @@ MonoBehaviour:
     LoveEffect3: 0
   - Id: buff_umbrella
     Name: "\uD734\uB300\uC6A9 \uC6B0\uC0B0"
+    UseMarquee: 0
     Description: "\uAC00\uBC29\uC5D0 \uC3D9 \uB4E4\uC5B4\uAC00\uB294 \uC791\uC740
       \uC6B0\uC0B0"
     Price: 9000
@@ -699,6 +738,7 @@ MonoBehaviour:
     LoveEffect3: 0
   - Id: buff_chocolate
     Name: "<\uB9C8\uC77C\uB4DC \uC2A4\uC704\uD2B8> \uCD08\uCF5C\uB9BF"
+    UseMarquee: 0
     Description: "\uB2EC\uCF64\uD55C \uBC00\uD06C\uCD08\uCF5C\uB9BF"
     Price: 8000
     Category: 2
@@ -716,6 +756,7 @@ MonoBehaviour:
     LoveEffect3: 0
   - Id: buff_jelly
     Name: "<\uBAB0\uB791\uB9D0\uB791 \uD6C4\uB974\uCE20> \uC824\uB9AC"
+    UseMarquee: 0
     Description: "\uACFC\uC77C \uB9DB\uC758 \uD558\uD2B8 \uBAA8\uC591 \uC824\uB9AC"
     Price: 8000
     Category: 2
@@ -733,6 +774,7 @@ MonoBehaviour:
     LoveEffect3: 0
   - Id: buff_plant
     Name: "\uBBF8\uB2C8 \uD654\uBD84 \uB2E4\uC721\uC774"
+    UseMarquee: 0
     Description: "\uC791\uC740 \uB2E4\uC721\uC2DD\uBB3C \uD654\uBD84"
     Price: 7000
     Category: 2
@@ -750,6 +792,7 @@ MonoBehaviour:
     LoveEffect3: 0
   - Id: buff_calendar
     Name: "\uD0C1\uC0C1\uD615 \uB2EC\uB825"
+    UseMarquee: 0
     Description: "\uCC45\uC0C1 \uC704\uC5D0 \uC62C\uB824\uB193\uB294 \uB2EC\uB825"
     Price: 5000
     Category: 2

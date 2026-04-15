@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using LoveAlgo.Core;
+using LoveAlgo.UI;
 
 namespace LoveAlgo.Shop
 {
@@ -66,6 +67,12 @@ namespace LoveAlgo.Shop
 
             if (iconImage != null)
                 iconImage.sprite = item.GetSaleIcon();
+
+            // 마키 효과 (긴 이름 스크롤)
+            if (item.UseMarquee && nameText != null)
+                TextMarquee.GetOrAdd(nameText).Play();
+            else
+                nameText?.GetComponent<TextMarquee>()?.Stop();
 
             // 배경 스프라이트 초기화
             ApplyBgSprite();

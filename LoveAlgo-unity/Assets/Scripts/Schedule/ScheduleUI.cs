@@ -63,6 +63,9 @@ namespace LoveAlgo.Schedule
         [Header("헬프 패널")]
         [SerializeField] ScheduleHelpPanel helpPanel;
 
+        [Header("튜토리얼")]
+        [SerializeField] ScheduleTutorialOverlay tutorialOverlay;
+
         [Header("세션 버프 표시")]
         [SerializeField] GameObject buffIndicator;
         [SerializeField] TMP_Text buffText;
@@ -178,6 +181,18 @@ namespace LoveAlgo.Schedule
             canvasGroup.DOKill();
             await canvasGroup.DOFade(1f, showDuration).SetEase(Ease.OutQuad)
                 .ToUniTask(cancellationToken: ct);
+
+            // 첫 진입 시 튜토리얼 표시
+            if (tutorialOverlay != null
+                && GameState.Instance != null
+                && !GameState.Instance.GetFlag("HasSeenScheduleTutorial"))
+            {
+                canvasGroup.interactable = false;
+                canvasGroup.blocksRaycasts = false;
+                await tutorialOverlay.RunAsync(ct);
+                canvasGroup.interactable = true;
+                canvasGroup.blocksRaycasts = true;
+            }
         }
 
         /// <summary>

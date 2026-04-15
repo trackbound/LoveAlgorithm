@@ -1,5 +1,5 @@
 {
-  "_generated": "2026-04-11",
+  "_generated": "2026-04-15",
   "_generator": "asset-registry/generate.py",
   "_description": "AI 에이전트용 에셋 요약 인덱스. 상세는 각 카테고리 JSON 참조. 수동 편집 금지.",
   "naming_conventions": {
@@ -30,7 +30,7 @@
       "details": "stage.json"
     },
     "story": {
-      "csv_count": 1,
+      "csv_count": 2,
       "dsl_reference": "docs/reference/csv-script-commands.md",
       "details": "story.json"
     },
@@ -42,6 +42,7 @@
       "art_categories": [
         "Popup",
         "Scene",
+        "ScheduleTutorial",
         "Simulate",
         "Stage",
         "Story"
@@ -68,15 +69,15 @@
       "namespaces": {
         "Core": 21,
         "Debug": 1,
-        "Editor": 5,
+        "Editor": 6,
         "MiniGame": 4,
         "Phone": 7,
-        "Schedule": 6,
+        "Schedule": 7,
         "Shop": 12,
         "Story": 46,
-        "UI": 29
+        "UI": 30
       },
-      "total": 131,
+      "total": 134,
       "details": "scripts.json"
     }
   }

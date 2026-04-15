@@ -87,7 +87,21 @@ namespace LoveAlgo.Story
             var dialogueUI = ExecutionDependencies.DialogueUI;
             var stage = ExecutionDependencies.Stage;
             if (dialogueUI != null && stage?.Character != null)
-                dialogueUI.OnEmoteTag = emote => stage.CharacterEmote("C", emote);
+                dialogueUI.OnEmoteTag = emoteValue =>
+                {
+                    // 슬롯 지정 형식: "L:EyeSmile", "R:Sad" / 미지정: "EyeSmile" → 기본 C
+                    int sep = emoteValue.IndexOf(':');
+                    if (sep > 0 && sep <= 2)
+                    {
+                        string slot = emoteValue.Substring(0, sep);
+                        string emote = emoteValue.Substring(sep + 1);
+                        stage.CharacterEmote(slot, emote);
+                    }
+                    else
+                    {
+                        stage.CharacterEmote("C", emoteValue);
+                    }
+                };
         }
 
         protected override void OnDestroy()

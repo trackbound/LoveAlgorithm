@@ -71,15 +71,15 @@ namespace LoveAlgo.Core
                         Debug.Log($"[GameManager] 세션 보조 버프 적용: {subStat} {subValue:+#;-#;0}");
                     }
 
-                    string feedback = BuildScheduleFeedback(effect);
+                    var feedbackItems = BuildScheduleFeedbackList(effect);
                     if (buffStat != null && buffBonus > 0)
                     {
                         string buffText = $"버프: {buffStat} +{buffBonus}";
                         if (subStat != null && subValue != 0)
                             buffText += $", {subStat} {subValue:+#;-#;0}";
-                        feedback += $"\n<color=#FFD700>{buffText}</color>";
+                        feedbackItems.Add($"<color=#FFD700>{buffText}</color>");
                     }
-                    PopupManager.Instance?.Toast(effect.displayName, feedback, 2.5f);
+                    PopupManager.Instance?.ToastSequence(effect.displayName, feedbackItems, 0.8f);
                 }
             }
 
@@ -92,6 +92,15 @@ namespace LoveAlgo.Core
         /// </summary>
         string BuildScheduleFeedback(ScheduleEffect effect)
         {
+            var parts = BuildScheduleFeedbackList(effect);
+            return parts.Count > 0 ? string.Join("\n", parts) : "변화 없음";
+        }
+
+        /// <summary>
+        /// 스케줄 효과를 개별 항목 리스트로 반환 (순차 토스트용)
+        /// </summary>
+        System.Collections.Generic.List<string> BuildScheduleFeedbackList(ScheduleEffect effect)
+        {
             var parts = new System.Collections.Generic.List<string>();
             if (effect.strengthChange != 0) parts.Add($"체력 {FormatChange(effect.strengthChange)}");
             if (effect.intelligenceChange != 0) parts.Add($"지성 {FormatChange(effect.intelligenceChange)}");
@@ -99,7 +108,7 @@ namespace LoveAlgo.Core
             if (effect.perseveranceChange != 0) parts.Add($"끈기 {FormatChange(effect.perseveranceChange)}");
             if (effect.fatigueChange != 0) parts.Add($"피로 {FormatChange(effect.fatigueChange)}");
             if (effect.moneyChange != 0) parts.Add($"금액 {MoneyFormat.SignedCurrency(effect.moneyChange)}");
-            return parts.Count > 0 ? string.Join("\n", parts) : "변화 없음";
+            return parts;
         }
 
         string FormatChange(int value) => value > 0 ? $"+{value}" : value.ToString();

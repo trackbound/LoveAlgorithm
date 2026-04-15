@@ -1,5 +1,5 @@
 {
-  "_generated": "2026-04-11",
+  "_generated": "2026-04-15",
   "_generator": "asset-registry/generate.py",
   "folder": "Assets/Scripts",
   "namespaces": {
@@ -36,10 +36,11 @@
       ]
     },
     "Editor": {
-      "count": 5,
+      "count": 6,
       "files": [
         "ConsoleLogCopier",
         "DebugRemoteWindow",
+        "ScheduleTutorialSetup",
         "TMPFontCleaner",
         "UISoundTestWindow",
         "WindowsBuildTool"
@@ -67,11 +68,12 @@
       ]
     },
     "Schedule": {
-      "count": 6,
+      "count": 7,
       "files": [
         "ScheduleDataSO",
         "ScheduleHelpPanel",
         "ScheduleSlot",
+        "ScheduleTutorialOverlay",
         "ScheduleType",
         "ScheduleUI",
         "StatGauge"
@@ -146,7 +148,7 @@
       ]
     },
     "UI": {
-      "count": 29,
+      "count": 30,
       "files": [
         "AlertPopup",
         "ButtonEX",
@@ -171,6 +173,7 @@
         "ScrollbarEX",
         "SettingsPopup",
         "TabGroup",
+        "TextMarquee",
         "TitleUI",
         "ToastPopup",
         "ToggleButton",

@@ -298,6 +298,19 @@ namespace LoveAlgo.UI
             toastPopup.Show(title, message, duration);
         }
 
+        /// <summary>
+        /// 순차 토스트 — 프레임 유지하며 메시지를 하나씩 교체 표시
+        /// </summary>
+        public void ToastSequence(string title, System.Collections.Generic.List<string> messages, float holdPerItem = 0.8f)
+        {
+            if (toastPopup == null)
+            {
+                Debug.LogWarning("[PopupManager] toastPopup이 바인딩되지 않음");
+                return;
+            }
+            toastPopup.ShowSequence(title, messages, holdPerItem);
+        }
+
         #endregion
 
         #region Modal 팝업 (Lazy 생성)

@@ -329,6 +329,17 @@ namespace LoveAlgo.Core
                     await fx.FadeOutAsync(0.5f, ct);
 
                 _gm.CleanupStage();
+
+                // 데모 모드: 프롤로그 후 스케줄 없이 바로 종료 안내
+                if (_gm.IsDemoMode)
+                {
+                    _gm.SetCurrentPhase(GamePhase.DayLoop);
+                    await _gm.AutoSaveAsync();
+                    _isTransitioning = false;
+                    OnContentEnd();
+                    return;
+                }
+
                 ChangePhase(GamePhase.DayLoop);
                 await _gm.AutoSaveAsync();
 
@@ -356,12 +367,16 @@ namespace LoveAlgo.Core
         {
             var ct = _gm.GetCancellationTokenOnDestroy();
 
+            // 대화 UI 숨기기 (마지막 대사가 남아있을 수 있음)
+            var dialogueUI = UIManager.Instance?.DialogueUI;
+            dialogueUI?.HideImmediate();
+
             // 자동저장 (화면이 보이는 상태에서 스크린샷 캡처)
             await _gm.AutoSaveAsync();
 
             // 데모 종료 안내 (페이드 전 — ScreenFX가 PopupManager 위 레이어라 페이드 후엔 안 보임)
             if (UI.PopupManager.Instance != null)
-                await UI.PopupManager.Instance.AlertAsync("데모 버전 플레이가 종료되었습니다.\n자동 저장되었습니다.");
+                await UI.PopupManager.Instance.AlertAsync("데모 버전 플레이가 종료되었습니다.\n타이틀로 이동합니다.");
             else
                 await UniTask.Delay(3000, cancellationToken: ct);
 

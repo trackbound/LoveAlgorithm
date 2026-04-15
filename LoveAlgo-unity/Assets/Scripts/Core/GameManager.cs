@@ -75,6 +75,7 @@ namespace LoveAlgo.Core
         }
 
         const string DemoSingleScheduleCompleteFlag = "Demo_SingleScheduleComplete";
+        public bool IsDemoMode => limitDemoToSingleSchedule;
         public bool ShouldEndDemoAfterSchedule() => limitDemoToSingleSchedule && CurrentPhase == GamePhase.DayLoop && !IsDemoScheduleComplete();
         public bool ShouldReturnToDemoEnd() => limitDemoToSingleSchedule && CurrentPhase == GamePhase.DayLoop && IsDemoScheduleComplete();
         bool IsDemoScheduleComplete() => GameState.Instance?.GetFlag(DemoSingleScheduleCompleteFlag) ?? false;

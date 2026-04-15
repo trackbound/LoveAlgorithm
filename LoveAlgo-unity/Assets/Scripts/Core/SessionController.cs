@@ -160,6 +160,8 @@ namespace LoveAlgo.Core
                             }
                         }
 
+                        // 로드 완료 — 스크립트 실행 전에 플래그 해제 (실행 중 재로드 허용)
+                        _isLoading = false;
                         await runner.StartScriptFrom(data.ScriptName, data.LineId, data.LineIndex);
                     }
 

@@ -36,6 +36,9 @@ namespace LoveAlgo.Shop
         /// <summary>표시 이름</summary>
         public string Name;
 
+        /// <summary>이름이 길 경우 LED 전광판 스타일 스크롤 표시</summary>
+        public bool UseMarquee;
+
         /// <summary>설명</summary>
         public string Description;
 

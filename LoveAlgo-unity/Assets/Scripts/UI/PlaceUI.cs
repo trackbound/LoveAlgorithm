@@ -11,8 +11,8 @@ namespace LoveAlgo.UI
     /// 좌상단 장소/이벤트 배너 UI (2줄 구성)
     /// 
     /// CSV 사용법:
-    ///   ,Place,,이벤트명|장소명,await              → 2줄 배너, 기본 2초
-    ///   ,Place,,[ 단체 이벤트: 축제 ]|주점 부스,await → 2줄 배너, 기본 2초
+    ///   ,Place,,이벤트명|장소명,await              → 2줄 배너, 기본 2초 (이벤트명은 자동으로 [ ] 감싸짐)
+    ///   ,Place,,단체 이벤트: 축제|주점 부스,await    → [ 단체 이벤트: 축제 ] + 주점 부스
     ///   ,Place,,이벤트명|장소명:3,await              → 3초 표시
     ///   ,Place,,장소명,await                        → 장소만 1줄 표시
     ///   ,Place,,Hide,>                             → 즉시 숨김
@@ -107,7 +107,8 @@ namespace LoveAlgo.UI
             // 이벤트 줄 표시 여부
             bool hasEvent = !string.IsNullOrEmpty(eventName);
             if (eventLine != null) eventLine.SetActive(hasEvent);
-            if (hasEvent && eventText != null) eventText.text = eventName;
+            if (hasEvent && eventText != null)
+                eventText.text = $"[ {eventName} ]";
 
             // 장소명 설정
             placeText.text = placeName;
