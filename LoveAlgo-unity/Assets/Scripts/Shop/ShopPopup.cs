@@ -40,6 +40,12 @@ namespace LoveAlgo.Shop
         [SerializeField] ShopSaleSlot saleSlotPrefab;
         [SerializeField] ShopCartSlot cartSlotPrefab;
 
+        [Header("스크롤 끝 푸터")]
+        [Tooltip("판매 그리드 스크롤을 끝까지 내렸을 때 보이는 'COMING SOON' 등 푸터 GameObject.\n" +
+                 "saleContainer 또는 그 부모(Content)의 자식으로 배치해 두면 됨. " +
+                 "ShopPopup은 항상 마지막 자식으로 정렬하고 활성 상태로 유지함.")]
+        [SerializeField] GameObject saleListFooter;
+
         [Header("아이템 필터 (테스트 빌드용)")]
         [Tooltip("설정 시 체크된 아이템만 상점에 노출. 미설정 시 전체 표시")]
         [SerializeField] ShopItemFilter itemFilter;
@@ -152,6 +158,18 @@ namespace LoveAlgo.Shop
                 if (cart.ContainsKey(item.Id))
                     slot.SetSelected(true);
             }
+
+            // 푸터(COMING SOON 등)를 항상 마지막 자식으로 유지하고 활성화
+            UpdateSaleListFooter();
+        }
+
+        /// <summary>판매 그리드 끝에 표시되는 푸터를 항상 마지막 자식으로 정렬 + 활성화</summary>
+        void UpdateSaleListFooter()
+        {
+            if (saleListFooter == null) return;
+            saleListFooter.transform.SetAsLastSibling();
+            if (!saleListFooter.activeSelf)
+                saleListFooter.SetActive(true);
         }
 
         void EnsureSaleSlotPool(int requiredCount = -1)
@@ -349,43 +367,31 @@ namespace LoveAlgo.Shop
 
             if (!confirmed) return;
 
+            // 구매 직전 합계 (피드백용; BuyBatch 후엔 cart가 비기 전 캡처)
+            int totalCost = GetCartTotal();
+
             // 일괄 구매 (원자적 트랜잭션)
+            //   - 기획서 준수: "구매" = 돈 차감 + 인벤토리 적재만 수행
+            //   - 효과 적용은 별도 시점("자유행동 전/후"에 별도 사용 UI에서)
+            //     · Consumable(피로회복): 사용 시점에 즉시 피로 감소 (0 미만 클램프)
+            //     · SessionBuff(세션 버프): 사용 시점에 활성화 → 다음 자유행동 1회만 적용
+            //     · Gift(선물): 2차/3차 이벤트에서만 사용 가능
+            //   - 동일날 중복 사용 50% 패널티는 "사용" 시점에 ItemEffectSystem이 처리
             if (!ShopManager.BuyBatch(cart))
             {
                 PopupManager.Instance?.Toast("구매 실패", "소지금이 부족합니다!");
                 return;
             }
 
-            // 구매 직후 자동 사용: Consumable(즉시 적용) / SessionBuff(활성화)
-            int currentDay = GameManager.Instance?.CurrentDay ?? 1;
+            // 피드백 메시지: 구매한 아이템 목록 (스탯 변동은 표시하지 않음 — 사용 시점에 표시됨)
             var feedbackParts = new List<string>();
-
             foreach (var kv in cart)
             {
                 var item = ItemDatabase.Get(kv.Key);
                 if (item == null) continue;
-
-                for (int i = 0; i < kv.Value; i++)
-                {
-                    switch (item.Category)
-                    {
-                        case ItemCategory.Consumable:
-                            int applied = ShopManager.UseConsumable(kv.Key, currentDay);
-                            // Consumable은 GameState에 "Fatigue -applied" 적용 → 스케줄과 동일 포맷
-                            if (applied > 0)
-                                feedbackParts.Add($"피로 {FormatStatChange(-applied)}");
-                            break;
-
-                        case ItemCategory.SessionBuff:
-                            ShopManager.UseSessionBuff(kv.Key, currentDay);
-                            // 즉시 적용은 아니지만 스케줄과 동일 포맷 + (세션) 표시
-                            if (!string.IsNullOrEmpty(item.EffectStat) && item.EffectValue != 0)
-                                feedbackParts.Add($"{StatNameKr(item.EffectStat)} {FormatStatChange(item.EffectValue)} (세션)");
-                            if (!string.IsNullOrEmpty(item.SubEffectStat) && item.SubEffectValue != 0)
-                                feedbackParts.Add($"{StatNameKr(item.SubEffectStat)} {FormatStatChange(item.SubEffectValue)} (세션)");
-                            break;
-                    }
-                }
+                feedbackParts.Add(kv.Value > 1
+                    ? $"{item.Name} x{kv.Value}"
+                    : item.Name);
             }
 
             // 상태 초기화
@@ -398,10 +404,12 @@ namespace LoveAlgo.Shop
             UISoundManager.Instance?.PlayClick();
 
             // 효과 피드백 토스트 (스케줄과 동일한 순차 표시)
-            if (feedbackParts.Count > 0)
-                PopupManager.Instance?.ToastSequence("구매 완료", feedbackParts, 0.8f);
-            else
-                PopupManager.Instance?.Toast("구매 완료", "구매가 완료되었습니다!");
+            //   순서: 합계 → 구매 항목 (효과는 인벤토리에서 사용 시점에 별도 안내)
+            var toastLines = new List<string>();
+            toastLines.Add($"합계 {MoneyFormat.SignedCurrency(-totalCost)}");
+            toastLines.AddRange(feedbackParts);
+
+            PopupManager.Instance?.ToastSequence("구매 완료", toastLines, 0.8f);
         }
 
         #endregion
@@ -413,26 +421,6 @@ namespace LoveAlgo.Shop
             {
                 var gs = GameState.Instance;
                 moneyText.text = gs != null ? MoneyFormat.Currency(gs.Money) : MoneyFormat.Currency(0);
-            }
-        }
-
-        // ── 토스트 포맷 헬퍼 (스케줄과 동일 표기) ────────────────
-
-        /// <summary>스탯 변화량 포맷 — 스케줄 토스트와 동일 ("+1" / "-1")</summary>
-        static string FormatStatChange(int value) => value > 0 ? $"+{value}" : value.ToString();
-
-        /// <summary>스탯 ID → 한글 짧은 이름 (스케줄 토스트와 동일: "사교성"이 아닌 "사교")</summary>
-        static string StatNameKr(string statId)
-        {
-            if (string.IsNullOrEmpty(statId)) return statId;
-            switch (statId)
-            {
-                case "Str":     return "체력";
-                case "Int":     return "지성";
-                case "Soc":     return "사교";
-                case "Per":     return "끈기";
-                case "Fatigue": return "피로";
-                default:        return statId;
             }
         }
     }

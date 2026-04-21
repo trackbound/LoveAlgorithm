@@ -159,8 +159,11 @@ namespace LoveAlgo.UI
                 if (!confirm) return;
             }
 
-            // ShowSave()에서 팝업 열기 전 미리 캡처한 pending 썸네일을 사용
-            // (여기서 재캡처하면 팝업/딤이 썸네일에 포함될 수 있음)
+            // ShowSave()에서 팝업 열기 전 미리 캡처한 pending 썸네일은 첫 commit 시 삭제됨.
+            // 같은 SaveLoadPopup 세션에서 2번째 이후 저장에도 정확한 썸네일이 적용되도록
+            // 매 저장 직전에 다시 캡처. (Confirm 팝업은 이미 닫혔고, SaveLoadPopup/Confirm은
+            // SaveThumbnailManager.DisableNonStageCanvases가 자동으로 제외함)
+            await SaveManager.CapturePendingScreenshotAsync();
 
             // 저장 실행 + 슬롯 갱신 (팝업은 유지)
             onSlotSelected?.Invoke(slotIndex);

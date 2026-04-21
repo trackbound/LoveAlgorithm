@@ -38,15 +38,14 @@ MonoBehaviour:
       socialChange: 0
       perseveranceChange: 2
       fatigueChange: 15
-      isLimited: 0
+      isLimited: 1
   - type: 2
     effect:
       displayName: "\uD22C\uC790"
-      description: "\uC790\uC0B0 \uC804\uC561\uC73C\uB85C \uCF54\uC778 \uD22C\uC790\uB97C
-        \uC9C4\uD589\uD569\uB2C8\uB2E4.\\n\uD22C\uC790 \uACB0\uACFC\uB294 \uC989\uAC01
-        \uBC18\uC601\uB418\uBA70, 50%\uC5D0\uC11C 100% \uC0AC\uC774\uB85C \uC790\uC0B0\uC774
-        \uAC10\uC18C \uD639\uC740 \uC99D\uAC00\uD569\uB2C8\uB2E4.\\n30,000\uC6D0
-        \uC774\uC0C1 \uBCF4\uC720 \uC2DC \uC120\uD0DD \uAC00\uB2A5\uD569\uB2C8\uB2E4."
+      description: "\uD604\uC7AC \uC790\uC0B0 \uC804\uC561\uC73C\uB85C \uCF54\uC778
+        \uD22C\uC790\uB97C \uC9C4\uD589\uD569\uB2C8\uB2E4.\\n50%~100%\uC758 \uBE44\uC728\uB85C
+        \uC790\uC0B0\uC774 \uAC10\uC18C \uD639\uC740 \uC99D\uAC00\uD569\uB2C8\uB2E4.\\n30,000\uC6D0
+        \uC774\uC0C1 \uC790\uC0B0 \uBCF4\uC720 \uC2DC \uC120\uD0DD\uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4."
       moneyChange: 0
       strengthChange: 0
       intelligenceChange: 0

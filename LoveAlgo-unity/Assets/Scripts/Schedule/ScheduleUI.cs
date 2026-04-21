@@ -300,10 +300,18 @@ namespace LoveAlgo.Schedule
         /// </summary>
         void OnScheduleClick(ScheduleType type)
         {
-            OnScheduleClickAsync(type).Forget();
+            OnScheduleClickAsync(type, null).Forget();
         }
 
-        async UniTaskVoid OnScheduleClickAsync(ScheduleType type)
+        /// <summary>
+        /// 스케줄 클릭 (표시 이름 오버라이드 — 탭 직접 행동 모드용)
+        /// </summary>
+        void OnScheduleClick(ScheduleType type, string displayNameOverride)
+        {
+            OnScheduleClickAsync(type, displayNameOverride).Forget();
+        }
+
+        async UniTaskVoid OnScheduleClickAsync(ScheduleType type, string displayNameOverride)
         {
             if (isProcessingSchedule) return;
             isProcessingSchedule = true;
@@ -329,7 +337,8 @@ namespace LoveAlgo.Schedule
 
                 var effect = ScheduleTable.Get(type);
                 string statName = GetPrimaryStatName(effect);
-                string message = $"{statName} 스탯이 증가합니다.\n{effect.displayName}을 진행하시겠습니까?";
+                string displayName = string.IsNullOrEmpty(displayNameOverride) ? effect.displayName : displayNameOverride;
+                string message = $"{statName} 스탯이 증가합니다.\n{displayName}을 진행하시겠습니까?";
                 string effectText = BuildEffectText(type, effect);
 
                 // 기획서: dim + 확인 팝업
@@ -411,8 +420,21 @@ namespace LoveAlgo.Schedule
 
         void OnTabChanged(int index)
         {
-            if (index >= 0 && index < TabCategories.Length)
-                SwitchTab(TabCategories[index]);
+            if (index < 0 || index >= TabCategories.Length) return;
+            var category = TabCategories[index];
+
+            // 직접 행동 모드: 슬롯 컨테이너 표시 대신 행동 팝업 즉시 실행
+            // 탭 시각 선택은 알바(0)로 되돌리고 PartTime 컨테이너 유지
+            if (TryGetDirectAction(category, out var directType))
+            {
+                tabGroup?.Select(0, notify: false);
+                SwitchTab(ScheduleCategory.PartTime);
+                // 카테고리 이름("운동"/"공부")으로 팝업 표시 (예: "운동을 진행하시겠습니까?")
+                OnScheduleClick(directType, ScheduleTable.GetCategoryName(category));
+                return;
+            }
+
+            SwitchTab(category);
         }
 
         /// <summary>탭 전환 — 해당 카테고리 컨테이너만 표시</summary>
@@ -426,6 +448,23 @@ namespace LoveAlgo.Schedule
 
             if (categoryDescText != null)
                 categoryDescText.text = ScheduleTable.GetCategoryDescription(category);
+        }
+
+        /// <summary>해당 카테고리가 "직접 행동 모드"로 설정됐는지</summary>
+        bool TryGetDirectAction(ScheduleCategory category, out ScheduleType type)
+        {
+            switch (category)
+            {
+                case ScheduleCategory.Exercise when exerciseAsDirectAction:
+                    type = exerciseDirectAction;
+                    return true;
+                case ScheduleCategory.Study when studyAsDirectAction:
+                    type = studyDirectAction;
+                    return true;
+                default:
+                    type = default;
+                    return false;
+            }
         }
 
         #endregion

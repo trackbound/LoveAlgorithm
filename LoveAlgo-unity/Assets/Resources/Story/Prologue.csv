@@ -621,14 +621,13 @@ STUDENT,Sound,,BGM:Daily1,>
 
 # 편의점
 DBG_STORE,Sound,,BGM:Daily2,>
-,BG,,BG_ConvenienceStore_Inside:Fade,await
+,BG,,BG_ConvenienceStore_Night:Fade:Fade,await
 ,Place,,밤 | 집 앞 편의점,>
 ,Text,,학기 초라 그런지 늦은 시간인데도 제법 사람 많은 거리를 지나 편의점에 도착했다.,click
 ,Text,,"늘 먹는 음료수가 진열된 냉장고 앞에 섰는데, 남은 게 3개밖에 없다.",click
 ,Text,,잠시 고민하다가 3개를 전부 집어들었다.\n자주 먹는 거라 냉장고에 넣어둘 생각이었다.,click
 ,Text,,"왜 이건 큰 병으로는 안 나오지.\n인터넷에서는 다들 이게 그렇게 맛없다는데, 나는 이 이상의 음료수를 찾지 못했다.",click
 ,Text,,3개를 모두 계산하고 그냥 손에 들고 나왔다.,click
-,BG,,BG_ConvenienceStore_Night:Fade:Cross,await
 ,Text,,서둘러 집으로 걸음을 옮기려는데 뒤에서 누군가가 나를 붙잡았다.,click
 ,Char,,C:Enter:Heewon,await
 ,Sound,,BGM:Heewon,>
