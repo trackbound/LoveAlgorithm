@@ -196,8 +196,8 @@ TextureImporter:
       - key: SpriteEditor.SliceSettings
         value: '{"sliceOnImport":true,"gridCellCount":{"x":3.0,"y":1.0},"gridSpriteSize":{"x":333.0,"y":281.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":1,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":2,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
-      tutorial_textbox_0: -2095089654
-      tutorial_textbox_1: -1643037520
+      tutorial_textbox_0: -197069273
+      tutorial_textbox_1: -825825798
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

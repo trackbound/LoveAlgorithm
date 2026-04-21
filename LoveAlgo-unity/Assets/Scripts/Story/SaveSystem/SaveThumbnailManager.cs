@@ -202,7 +202,7 @@ namespace LoveAlgo.Story.SaveSystem
         static List<Canvas> DisableNonStageCanvases()
         {
             var stageCanvas = StageManager.Instance?.StageCanvas;
-            var allCanvases = Canvas.FindObjectsByType<Canvas>(FindObjectsSortMode.None);
+            var allCanvases = UnityEngine.Object.FindObjectsByType<Canvas>(FindObjectsInactive.Include);
             var disabled = new List<Canvas>();
 
             foreach (var canvas in allCanvases)

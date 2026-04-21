@@ -119,7 +119,7 @@ namespace LoveAlgo.UI
         public void BindAllButtons()
         {
             // 비활성화된 오브젝트 포함해서 모든 버튼 찾기
-            var buttons = FindObjectsByType<Button>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            var buttons = FindObjectsByType<Button>(FindObjectsInactive.Include);
             foreach (var button in buttons)
             {
                 RegisterButton(button);

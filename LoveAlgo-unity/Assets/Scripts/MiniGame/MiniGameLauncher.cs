@@ -54,7 +54,7 @@ namespace LoveAlgo.MiniGame
             var go = UnityEngine.Object.Instantiate(prefab);
 
             // Canvas 하위에 배치 (최상위 UI)
-            var canvas = UnityEngine.Object.FindFirstObjectByType<Canvas>();
+            var canvas = UnityEngine.Object.FindAnyObjectByType<Canvas>();
             if (canvas != null)
                 go.transform.SetParent(canvas.transform, false);
 

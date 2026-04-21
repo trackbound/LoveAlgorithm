@@ -114,7 +114,7 @@ namespace LoveAlgo.Editor
             dialogueText.color = Color.white;
             dialogueText.alignment = TextAlignmentOptions.TopLeft;
             dialogueText.raycastTarget = false;
-            dialogueText.enableWordWrapping = true;
+            dialogueText.textWrappingMode = TextWrappingModes.Normal;
             dialogueText.overflowMode = TextOverflowModes.Overflow;
 
             // ─── 7. 스프라이트 로드 & 바인딩 ───
