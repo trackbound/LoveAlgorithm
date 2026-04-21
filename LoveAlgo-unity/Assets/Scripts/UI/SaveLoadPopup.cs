@@ -137,6 +137,13 @@ namespace LoveAlgo.UI
 
         async UniTaskVoid OnSaveSlotClicked(int slotIndex)
         {
+            // 자동 저장 슬롯(0)은 수동 저장 불가 — 안내 팝업 후 종료
+            if (slotIndex == SaveManager.AutoSaveSlot)
+            {
+                await PopupManager.Instance.AlertAsync("자동 저장 슬롯입니다.\n다른 슬롯에 저장해 주세요.");
+                return;
+            }
+
             bool hasData = SaveManager.Exists(slotIndex);
 
             if (hasData)
@@ -202,8 +209,9 @@ namespace LoveAlgo.UI
                 slot.Setup(i, OnSlotClicked, autoSave: isAutoSave);
                 slot.SetDisplayNumber(globalIndex);
 
-                // 세이브 모드에서 자동저장 슬롯은 클릭 불가
-                slot.SetInteractable(!isSaveMode || !isAutoSave);
+                // 세이브 모드에서도 자동저장 슬롯을 클릭 가능하게 둔다.
+                // 클릭 시 OnSaveSlotClicked가 안내 팝업을 띄우고 종료한다.
+                slot.SetInteractable(true);
 
                 // 세이브 데이터 확인
                 var data = SaveManager.Load(globalIndex);

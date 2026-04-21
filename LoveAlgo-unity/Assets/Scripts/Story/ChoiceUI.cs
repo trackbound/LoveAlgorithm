@@ -316,6 +316,19 @@ namespace LoveAlgo.Story
             }
         }
 
+        /// <summary>
+        /// 선택지 상태를 즉시 초기화 (로드/씬 전환 시 호출).
+        /// 진행 중이던 ShowAndWaitAsync가 취소되어도 버튼/CanvasGroup이 화면에 남는 잔상 방지.
+        /// </summary>
+        public void ResetImmediate()
+        {
+            if (canvasGroup != null) DOTween.Kill(canvasGroup);
+            isWaitingForChoice = false;
+            selectedIndex = -1;
+            ClearButtons();
+            Hide();
+        }
+
         async UniTask ShowAsync(CancellationToken ct)
         {
             gameObject.SetActive(true);

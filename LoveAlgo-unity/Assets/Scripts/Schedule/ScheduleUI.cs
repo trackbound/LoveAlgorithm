@@ -133,6 +133,11 @@ namespace LoveAlgo.Schedule
             // 기본 탭: 알바
             tabGroup?.Select(0, notify: false);
             SwitchTab(ScheduleCategory.PartTime);
+
+            // 저장 썸네일에 스케줄/상점 화면이 함께 보이도록 화이트리스트 등록
+            // (ShopPopup은 scheduleContent의 자식 패널이므로 동일 Canvas에 포함됨)
+            var ownCanvas = GetComponentInParent<Canvas>();
+            LoveAlgo.Story.SaveSystem.SaveThumbnailManager.RegisterWhitelistCanvas(ownCanvas);
         }
 
         void OnEnable()
@@ -596,6 +601,10 @@ namespace LoveAlgo.Schedule
             var quickMenu = transform.parent?.GetComponentInChildren<LoveAlgo.UI.QuickMenuUI>(true);
             if (quickMenu != null)
                 quickMenu.OnBackRequested -= OnBackPressed;
+
+            // 저장 썸네일 화이트리스트 해제
+            var ownCanvas = GetComponentInParent<Canvas>();
+            LoveAlgo.Story.SaveSystem.SaveThumbnailManager.UnregisterWhitelistCanvas(ownCanvas);
         }
     }
 }

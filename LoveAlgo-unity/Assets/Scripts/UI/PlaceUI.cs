@@ -108,7 +108,7 @@ namespace LoveAlgo.UI
             bool hasEvent = !string.IsNullOrEmpty(eventName);
             if (eventLine != null) eventLine.SetActive(hasEvent);
             if (hasEvent && eventText != null)
-                eventText.text = $"[ {eventName} ]";
+                eventText.text = $"[{eventName}]";
 
             // 장소명 설정
             placeText.text = placeName;

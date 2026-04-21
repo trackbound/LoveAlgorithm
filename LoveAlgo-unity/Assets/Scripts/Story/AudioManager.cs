@@ -182,6 +182,9 @@ namespace LoveAlgo.Story
             var token = CancelPreviousBGM();
             DOTween.Kill(bgmSource);
 
+            // [진단 로그] BGM 전환 지점 — 찌직거림 추적용
+            Debug.Log($"[AudioManager][BGM] {currentBGM ?? "(none)"} -> {name} | fade={fadeDuration:F2}s | playing={bgmSource.isPlaying} | t={Time.time:F2}");
+
             // 이전 BGM 클립 참조 보관 (해제용)
             var previousClip = bgmSource.clip;
 

@@ -544,7 +544,7 @@ MonoBehaviour:
   nextSprite: {fileID: 21300000, guid: 19e65c7b40a6b2b44924792a7601221a, type: 3}
   nextDisabledSprite: {fileID: 21300000, guid: e23510e6929966442ac9114bd106f05c, type: 3}
   slotsPerPage: 6
-  userSlots: 30
+  userSlots: 29
 --- !u!1 &4435382891480755921
 GameObject:
   m_ObjectHideFlags: 0

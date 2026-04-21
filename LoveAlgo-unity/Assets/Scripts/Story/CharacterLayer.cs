@@ -501,6 +501,8 @@ namespace LoveAlgo.Story
         /// </summary>
         static void PlayGlitchSFX()
         {
+            // [진단 로그] BGM과 동시 발생 시 찌직거림 추적용
+            Debug.Log($"[CharacterLayer][GlitchSFX] t={Time.time:F2}");
             AudioManager.Instance?.PlaySFX("Glitch");
         }
 

@@ -18,11 +18,18 @@ from pathlib import Path
 
 # Pillow 필요
 try:
-    from PIL import Image
+    from PIL import Image, ImageFilter
     Image.MAX_IMAGE_PIXELS = 200_000_000  # 고해상도 원본 허용
 except ImportError:
     print("ERROR: Pillow가 필요합니다.  pip install Pillow")
     sys.exit(1)
+
+# Windows cp949 콘솔에서도 이모지/한글 안전 출력
+try:
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+except Exception:
+    pass
 
 # ─── 경로 설정 ───────────────────────────────────────────────
 SCRIPT_DIR = Path(__file__).resolve().parent
@@ -80,14 +87,26 @@ def parse_korean_filename(stem: str):
 
 
 def process_image(src: Path, dst: Path, max_height: int):
-    """원본을 Lanczos로 다운스케일하여 저장. 이미 작으면 그대로 복사."""
+    """원본을 다단계 Lanczos로 다운스케일 후 UnsharpMask로 디테일 복원."""
     img = Image.open(src)
 
+    # 알파 보존을 위해 RGBA 통일
+    if img.mode != "RGBA":
+        img = img.convert("RGBA")
+
     w, h = img.size
+    downscaled = False
     if h > max_height:
         ratio = max_height / h
         new_w = round(w * ratio)
-        img = img.resize((new_w, max_height), Image.LANCZOS)
+        # reducing_gap=3.0 → 큰 축소 비율에서 내부적으로 box reduce 후 Lanczos 적용
+        # (Photoshop "bicubic sharper" 와 유사한 다단계 처리)
+        img = img.resize((new_w, max_height), Image.LANCZOS, reducing_gap=3.0)
+        downscaled = True
+
+    # 큰 폭 다운스케일 후 디테일 복원 (캐릭터 라인아트 선명화)
+    if downscaled:
+        img = img.filter(ImageFilter.UnsharpMask(radius=1.5, percent=160, threshold=2))
 
     # PNG 최적화 저장 (투명도 유지)
     img.save(dst, "PNG", optimize=True)

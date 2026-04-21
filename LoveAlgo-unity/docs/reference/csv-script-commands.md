@@ -29,6 +29,28 @@ LineID,Type,Speaker,Value,Next
 | `0.5` | N초 후 자동 진행 | 자동 대사/연출 타이밍 |
 | `await` | 현재 액션 완료 대기 | 페이드/트윈 완료 후 진행 |
 
+### 동시 연출 패턴 (권장)
+
+여러 액션을 **동시에** 보이고 싶을 때는 마지막 행만 `await`/`click`/숫자로 두고
+앞 행은 `>`로 연결한다. 그러면 앞 액션이 시작되자마자 다음 행이 발사되어 시각적으로 같이 진행된다.
+
+```csv
+# ❌ 부자연스러움 — 표정 → 배경 → 흔들림이 순차적으로 일어남
+,Char,,C:Emote:Glare:Roa_PC_Negative,await
+,BG,,VirtualSpace_Day:Fade:1.0,await
+,FX,,CharShake:C:15:0.3,await
+,Text,로아,어 지금 재미없는 잔소리 했다고 생각했지!,click
+
+# ✅ 자연스러움 — 셋이 동시에 시작하고, 흔들림이 끝난 후 대사
+,Char,,C:Emote:Glare:Roa_PC_Negative,>
+,BG,,VirtualSpace_Day:Fade:1.0,>
+,FX,,CharShake:C:15:0.3,await
+,Text,로아,어 지금 재미없는 잔소리 했다고 생각했지!,click
+```
+
+> 참고: `C:Emote:표정:오버레이`처럼 한 행에 표정 + 오버레이를 함께 적으면
+> 엔진이 내부적으로 두 동작을 자동으로 동시에 실행한다 (별도 행으로 나누지 않아도 된다).
+
 ---
 
 ## Type 레퍼런스
@@ -189,6 +211,8 @@ CG 종료(Exit) 시 대사창 자동 복원.
 | `Jump` | `Jump:Study_Start` |
 | `End` | `End` |
 | `Save` | `Save` |
+| `Day` | `Day:2` (CurrentDay 강제 설정 — 스케줄 UI 일차 표시용) |
+| `Schedule` | `Schedule` (인라인 스케줄 — 1회 선택 후 스토리 복귀) |
 | `If` | `If:Love:Roa>=30:Confession` |
 | `MiniGame` | `MiniGame:CherryBlossom:Roa` |
 

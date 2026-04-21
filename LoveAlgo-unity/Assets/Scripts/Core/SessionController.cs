@@ -100,6 +100,9 @@ namespace LoveAlgo.Core
                 // 로드 시작 전 팝업 강제 정리 (CloseModalAsync 실패 시 안전장치)
                 PopupManager.Instance?.CloseAll();
 
+                // 진행 중이던 선택지 UI 잔상 제거 (스케줄/팝업과 함께 저장된 케이스)
+                UIManager.Instance?.ChoiceUI?.ResetImmediate();
+
                 // 이전 BGM 정리 (페이드아웃 완료 대기)
                 if (Story.AudioManager.Instance != null)
                 {
@@ -218,8 +221,16 @@ namespace LoveAlgo.Core
 
             // 스크린샷 저장
             // - 수동 저장 팝업: ShowSave에서 미리 캡처한 pending 썸네일 우선 사용
-            // - 자동저장/기타: pending 미사용 또는 부재 시 즉시 캡처
-            if (!usePendingThumbnail || !SaveManager.TryCommitPendingScreenshot(slot))
+            //   (commit 실패 시 즉시 재캡처는 SaveLoadPopup/Confirm/딤이 찍힐 위험이 있어 생략)
+            // - 자동저장/기타: pending 미사용 시 즉시 캡처
+            if (usePendingThumbnail)
+            {
+                if (!SaveManager.TryCommitPendingScreenshot(slot))
+                {
+                    Debug.LogWarning($"[SessionController] 슬롯 {slot} pending 썸네일 commit 실패 — 기존 썸네일 유지");
+                }
+            }
+            else
             {
                 SaveManager.CaptureScreenshot(slot);
             }
