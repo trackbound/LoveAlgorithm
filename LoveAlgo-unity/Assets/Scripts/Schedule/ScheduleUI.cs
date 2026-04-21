@@ -48,6 +48,15 @@ namespace LoveAlgo.Schedule
         [SerializeField] GameObject containerExercise;
         [SerializeField] GameObject containerStudy;
 
+        [Header("탭 직접 행동 모드 (탭 클릭 → 슬롯 표시 대신 즉시 행동 팝업)")]
+        [Tooltip("체크 시 운동 탭 클릭 → exerciseDirectAction 즉시 실행 (슬롯 미표시).\n해제 시 기존 탭 동작 (슬롯 표시).")]
+        [SerializeField] bool exerciseAsDirectAction = true;
+        [SerializeField] ScheduleType exerciseDirectAction = ScheduleType.Exercise_A; // 헬스장 (체력+3)
+
+        [Tooltip("체크 시 공부 탭 클릭 → studyDirectAction 즉시 실행 (슬롯 미표시).\n해제 시 기존 탭 동작 (슬롯 표시).")]
+        [SerializeField] bool studyAsDirectAction = true;
+        [SerializeField] ScheduleType studyDirectAction = ScheduleType.Study_D;       // 독서실 (지성+3)
+
         [Header("카테고리 설명")]
         [SerializeField] TMP_Text categoryDescText;
 

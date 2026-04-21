@@ -144,10 +144,12 @@ namespace LoveAlgo.UI
 
                 lastGroup.AddLine(entry.Text);
 
-                // 프레임 분산: N개 생성마다 1프레임 양보
+                // 프레임 분산: N개 생성마다 1프레임 양보 + 중간 스크롤 보정
                 if (created >= batchSize)
                 {
                     created = 0;
+                    // 배치 종료 시점에 즉시 레이아웃 갱신 후 바닥 고정
+                    ForceLayoutAndScrollToBottom();
                     await UniTask.Yield(ct);
                     // 팝업이 닫혔으면 중단
                     if (!gameObject.activeSelf) return;
@@ -156,7 +158,7 @@ namespace LoveAlgo.UI
 
             builtCount = log.Count;
 
-            // 스크롤 (레이아웃 계산 대기)
+            // 최종 스크롤 (레이아웃 완전 반영 보장)
             await ScrollToBottomAsync();
         }
 
@@ -190,14 +192,41 @@ namespace LoveAlgo.UI
             lastCharId = null;
         }
 
+        /// <summary>contentRoot 레이아웃 즉시 재계산 후 스크롤 바닥 고정</summary>
+        void ForceLayoutAndScrollToBottom()
+        {
+            if (scrollRect == null || contentRoot == null) return;
+
+            // 자식(엔트리) 레이아웃부터 안쪽→바깥 순서로 강제 재계산
+            // (VLG + ContentSizeFitter 중첩 시 한 번에 안 잡히는 경우 대응)
+            for (int i = 0; i < contentRoot.childCount; i++)
+            {
+                var child = contentRoot.GetChild(i) as RectTransform;
+                if (child != null)
+                    LayoutRebuilder.ForceRebuildLayoutImmediate(child);
+            }
+            LayoutRebuilder.ForceRebuildLayoutImmediate(contentRoot);
+            Canvas.ForceUpdateCanvases();
+            scrollRect.verticalNormalizedPosition = 0f;
+        }
+
         async UniTask ScrollToBottomAsync()
         {
             if (scrollRect == null) return;
-            // 2프레임 대기로 레이아웃 완전 반영 보장
+
+            // 3패스로 스크롤 보정 — VLG+CSF+TMP 비동기 메시 빌드 대응
+            // 1) 즉시: 현재 프레임에서 강제 레이아웃 + 스크롤
+            ForceLayoutAndScrollToBottom();
+
+            // 2) 1프레임 후: TMP 메시 빌드 완료 대기
             await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
+            if (this == null || scrollRect == null || !gameObject.activeSelf) return;
+            ForceLayoutAndScrollToBottom();
+
+            // 3) 1프레임 더: 폰트/스프라이트 폴백 등 추가 변동 대응
             await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
-            if (scrollRect != null)
-                scrollRect.verticalNormalizedPosition = 0f;
+            if (this == null || scrollRect == null || !gameObject.activeSelf) return;
+            ForceLayoutAndScrollToBottom();
         }
     }
 

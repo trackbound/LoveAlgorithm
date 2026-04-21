@@ -371,18 +371,18 @@ namespace LoveAlgo.Shop
                     {
                         case ItemCategory.Consumable:
                             int applied = ShopManager.UseConsumable(kv.Key, currentDay);
-                            if (applied >= 0)
-                                feedbackParts.Add(applied < item.EffectValue
-                                    ? $"{item.Name}: 피로 -{applied} (중복 -{item.EffectValue})"
-                                    : $"{item.Name}: 피로 -{applied}");
+                            // Consumable은 GameState에 "Fatigue -applied" 적용 → 스케줄과 동일 포맷
+                            if (applied > 0)
+                                feedbackParts.Add($"피로 {FormatStatChange(-applied)}");
                             break;
 
                         case ItemCategory.SessionBuff:
                             ShopManager.UseSessionBuff(kv.Key, currentDay);
-                            string buffText = $"{item.Name}: {item.EffectStat} +{item.EffectValue}(세션)";
-                            if (!string.IsNullOrEmpty(item.SubEffectStat))
-                                buffText += $", {item.SubEffectStat} {item.SubEffectValue:+#;-#;0}";
-                            feedbackParts.Add(buffText);
+                            // 즉시 적용은 아니지만 스케줄과 동일 포맷 + (세션) 표시
+                            if (!string.IsNullOrEmpty(item.EffectStat) && item.EffectValue != 0)
+                                feedbackParts.Add($"{StatNameKr(item.EffectStat)} {FormatStatChange(item.EffectValue)} (세션)");
+                            if (!string.IsNullOrEmpty(item.SubEffectStat) && item.SubEffectValue != 0)
+                                feedbackParts.Add($"{StatNameKr(item.SubEffectStat)} {FormatStatChange(item.SubEffectValue)} (세션)");
                             break;
                     }
                 }
@@ -397,9 +397,9 @@ namespace LoveAlgo.Shop
 
             UISoundManager.Instance?.PlayClick();
 
-            // 효과 피드백 토스트
+            // 효과 피드백 토스트 (스케줄과 동일한 순차 표시)
             if (feedbackParts.Count > 0)
-                PopupManager.Instance?.Toast("구매 완료", string.Join("\n", feedbackParts), 3f);
+                PopupManager.Instance?.ToastSequence("구매 완료", feedbackParts, 0.8f);
             else
                 PopupManager.Instance?.Toast("구매 완료", "구매가 완료되었습니다!");
         }
@@ -413,6 +413,26 @@ namespace LoveAlgo.Shop
             {
                 var gs = GameState.Instance;
                 moneyText.text = gs != null ? MoneyFormat.Currency(gs.Money) : MoneyFormat.Currency(0);
+            }
+        }
+
+        // ── 토스트 포맷 헬퍼 (스케줄과 동일 표기) ────────────────
+
+        /// <summary>스탯 변화량 포맷 — 스케줄 토스트와 동일 ("+1" / "-1")</summary>
+        static string FormatStatChange(int value) => value > 0 ? $"+{value}" : value.ToString();
+
+        /// <summary>스탯 ID → 한글 짧은 이름 (스케줄 토스트와 동일: "사교성"이 아닌 "사교")</summary>
+        static string StatNameKr(string statId)
+        {
+            if (string.IsNullOrEmpty(statId)) return statId;
+            switch (statId)
+            {
+                case "Str":     return "체력";
+                case "Int":     return "지성";
+                case "Soc":     return "사교";
+                case "Per":     return "끈기";
+                case "Fatigue": return "피로";
+                default:        return statId;
             }
         }
     }
