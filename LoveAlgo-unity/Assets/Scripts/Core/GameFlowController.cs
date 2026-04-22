@@ -257,6 +257,15 @@ namespace LoveAlgo.Core
         }
 
         /// <summary>
+        /// 새 게임: 이름 입력 없이 곳장 프롬로그로 진입 (로딩 화면 + 페이드 포함).
+        /// 이름은 프롬로그 CSV의 `Flow,,Username,>` 시점에 따로 받는다.
+        /// </summary>
+        public void StartPrologueFromNewGame()
+        {
+            TransitionToPrologueAsync().Forget();
+        }
+
+        /// <summary>
         /// Username → Prologue 전환 (로딩 화면 + 페이드)
         /// </summary>
         async UniTaskVoid TransitionToPrologueAsync()

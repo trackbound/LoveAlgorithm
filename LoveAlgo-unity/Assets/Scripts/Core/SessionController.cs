@@ -45,9 +45,9 @@ namespace LoveAlgo.Core
             _gm.SetPlayerName("");
             _gm.CurrentDay = 1;
             _gm.RemainingActions = GameConstants.ActionsPerDay;
-            // 새 게임은 곧바로 프롤로그로 진입한다.
-            // 이름 입력은 프롤로그 CSV 중간의 `Flow,,Username,>` 명령으로 호출된다.
-            GameManager.Instance.Flow?.ChangePhase(GamePhase.Prologue);
+            // 새 게임은 곧바로 프롬로그로 진입한다 (로딩 화면 + 페이드 + 스크립트 시작).
+            // 이름 입력은 프롬로그 CSV 중간의 `Flow,,Username,>` 명령으로 호출된다.
+            GameManager.Instance.Flow?.StartPrologueFromNewGame();
         }
 
         /// <summary>

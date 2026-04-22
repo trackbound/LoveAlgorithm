@@ -32,6 +32,8 @@ namespace LoveAlgo.Schedule
         [SerializeField] float fadeInDuration = 0.3f;
         [SerializeField] float fadeOutDuration = 0.25f;
         [SerializeField] float textFadeDuration = 0.15f;
+        [Tooltip("첫 진입 시 안내 멘트(텍스트박스 + 텍스트) 등장 페이드 시간")]
+        [SerializeField] float firstStepFadeDuration = 0.2f;
 
         [Header("텍스트박스 동적 리사이즈")]
         [Tooltip("텍스트박스 상하 패딩 (px)")]
@@ -56,6 +58,12 @@ namespace LoveAlgo.Schedule
             {
                 dialogueText.text = "";
                 dialogueText.alpha = 0f;
+            }
+            // 텍스트박스도 처음에는 숨겨둔 상태로 시작 (첫 스텝에서 텍스트와 함께 페이드 인)
+            if (textboxImage != null)
+            {
+                var c = textboxImage.color;
+                textboxImage.color = new Color(c.r, c.g, c.b, 0f);
             }
             if (overlayGroup != null) overlayGroup.alpha = 0f;
             if (dimImage != null) dimImage.enabled = false;
@@ -103,6 +111,12 @@ namespace LoveAlgo.Schedule
                 dialogueText.text = "";
                 dialogueText.alpha = 0f;
             }
+            // 텍스트박스 배경도 숨김 (첫 스텝 등장 시 함께 페이드)
+            if (textboxImage != null)
+            {
+                var c = textboxImage.color;
+                textboxImage.color = new Color(c.r, c.g, c.b, 0f);
+            }
 
             // 페이드 인
             await overlayGroup.DOFade(1f, fadeInDuration)
@@ -127,10 +141,25 @@ namespace LoveAlgo.Schedule
                 dialogueText.alpha = 0f;
                 dialogueText.text = text;
                 FitTextboxHeight();
-                await DOTween.ToAlpha(
-                    () => dialogueText.color, c => dialogueText.color = c,
-                    1f, textFadeDuration
-                ).SetEase(Ease.OutCubic).ToUniTask(cancellationToken: ct);
+
+                if (i == 0 && textboxImage != null)
+                {
+                    // 첫 진입: 텍스트박스 배경 + 텍스트를 같이 빠르게 페이드 인
+                    var seq = DOTween.Sequence();
+                    seq.Join(textboxImage.DOFade(1f, firstStepFadeDuration).SetEase(Ease.OutCubic));
+                    seq.Join(DOTween.ToAlpha(
+                        () => dialogueText.color, c => dialogueText.color = c,
+                        1f, firstStepFadeDuration
+                    ).SetEase(Ease.OutCubic));
+                    await seq.ToUniTask(cancellationToken: ct);
+                }
+                else
+                {
+                    await DOTween.ToAlpha(
+                        () => dialogueText.color, c => dialogueText.color = c,
+                        1f, textFadeDuration
+                    ).SetEase(Ease.OutCubic).ToUniTask(cancellationToken: ct);
+                }
 
                 // 클릭 대기
                 await WaitForClickAsync(ct);
