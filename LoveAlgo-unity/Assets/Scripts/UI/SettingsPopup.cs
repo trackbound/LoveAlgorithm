@@ -123,16 +123,16 @@ namespace LoveAlgo.UI
                 MarkDirty();
             });
 
-            // 캐릭터별 음성
-            voiceYeunSlider?.onValueChanged.AddListener(v => { SetCharacterVoice("Yeun", v); MarkDirty(); });
-            voiceDaeunSlider?.onValueChanged.AddListener(v => { SetCharacterVoice("Daeun", v); MarkDirty(); });
-            voiceBomSlider?.onValueChanged.AddListener(v => { SetCharacterVoice("Bom", v); MarkDirty(); });
-            voiceHeewonSlider?.onValueChanged.AddListener(v => { SetCharacterVoice("Heewon", v); MarkDirty(); });
-            voiceRoaSlider?.onValueChanged.AddListener(v => { SetCharacterVoice("Roa", v); MarkDirty(); });
+            // 캐릭터별 음성 — 프리뷰는 해당 캐릭터 슬라이더 값 배율로 재생
+            voiceYeunSlider?.onValueChanged.AddListener(v => { SetCharacterVoice("Yeun", v); UISoundManager.Instance?.PlayVolumePreview(v); MarkDirty(); });
+            voiceDaeunSlider?.onValueChanged.AddListener(v => { SetCharacterVoice("Daeun", v); UISoundManager.Instance?.PlayVolumePreview(v); MarkDirty(); });
+            voiceBomSlider?.onValueChanged.AddListener(v => { SetCharacterVoice("Bom", v); UISoundManager.Instance?.PlayVolumePreview(v); MarkDirty(); });
+            voiceHeewonSlider?.onValueChanged.AddListener(v => { SetCharacterVoice("Heewon", v); UISoundManager.Instance?.PlayVolumePreview(v); MarkDirty(); });
+            voiceRoaSlider?.onValueChanged.AddListener(v => { SetCharacterVoice("Roa", v); UISoundManager.Instance?.PlayVolumePreview(v); MarkDirty(); });
 
-            // 속도 (변경 추적)
-            textSpeedSlider?.onValueChanged.AddListener(v => { OnTextSpeedChanged(v); MarkDirty(); });
-            autoSpeedSlider?.onValueChanged.AddListener(v => { OnAutoSpeedChanged(v); MarkDirty(); });
+            // 속도 (변경 추적) — 프리뷰는 SFX 볼륨 그대로 (volumeScale = 1)
+            textSpeedSlider?.onValueChanged.AddListener(v => { OnTextSpeedChanged(v); UISoundManager.Instance?.PlayVolumePreview(); MarkDirty(); });
+            autoSpeedSlider?.onValueChanged.AddListener(v => { OnAutoSpeedChanged(v); UISoundManager.Instance?.PlayVolumePreview(); MarkDirty(); });
         }
 
         void MarkDirty()

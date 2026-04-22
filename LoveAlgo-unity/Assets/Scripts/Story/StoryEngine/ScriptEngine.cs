@@ -128,6 +128,10 @@ namespace LoveAlgo.Story.StoryEngine
                     await Flow.ScheduleFlowCommand.ExecuteAsync(ct);
                     return true;
 
+                case "Username":
+                    await Flow.UsernameFlowCommand.ExecuteAsync(ct);
+                    return true;
+
                 case "Day":
                     await Flow.DayFlowCommand.ExecuteAsync(parts, ct);
                     return true;

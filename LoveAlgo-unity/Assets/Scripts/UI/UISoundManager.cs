@@ -63,6 +63,7 @@ namespace LoveAlgo.UI
         HashSet<Button> excludedButtons = new HashSet<Button>();
         float lastTypingPlayTime = -999f;
         float volumePreviewScheduledTime = -1f;  // 디바운스 예약 시각 (-1 = 예약 없음)
+        float volumePreviewScale = 1f;           // 예약된 프리뷰 볼륨 스케일 (1.0 = 기본 0.8)
 
         protected override void OnSingletonAwake()
         {
@@ -235,11 +236,13 @@ namespace LoveAlgo.UI
 
         /// <summary>
         /// 볼륨 슬라이더 조작 중 샘플 사운드 예약 (디바운스)
-        /// 슬라이더가 멈춘 후 volumePreviewDebounce 시간이 지나면 1회만 재생
+        /// 슬라이더가 멈춘 후 volumePreviewDebounce 시간이 지나면 1회만 재생.
         /// </summary>
-        public void PlayVolumePreview()
+        /// <param name="volumeScale">0~1 볼륨 배율 (기본 1.0 = 0.8배 재생). 캐릭터 음성 슬라이더 등 개별 볼륨 미리듣기에 사용.</param>
+        public void PlayVolumePreview(float volumeScale = 1f)
         {
             volumePreviewScheduledTime = Time.unscaledTime + volumePreviewDebounce;
+            volumePreviewScale = Mathf.Clamp01(volumeScale);
         }
 
         void Update()
@@ -253,7 +256,9 @@ namespace LoveAlgo.UI
                          : clickClip != null ? clickClip
                          : dialogueNextClip;
                 if (clip != null)
-                    PlayClip(clip, 0.8f);
+                    PlayClip(clip, 0.8f * volumePreviewScale);
+
+                volumePreviewScale = 1f;
             }
         }
 

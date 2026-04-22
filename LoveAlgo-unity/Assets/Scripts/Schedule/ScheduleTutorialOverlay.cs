@@ -50,6 +50,16 @@ namespace LoveAlgo.Schedule
         {
             _dimLookup = BuildLookup(dimSprites);
             _roaLookup = BuildLookup(roaSprites);
+
+            // 인스펙터 기본 텍스트(플레이스홀더)가 잠깐 보이는 것을 방지
+            if (dialogueText != null)
+            {
+                dialogueText.text = "";
+                dialogueText.alpha = 0f;
+            }
+            if (overlayGroup != null) overlayGroup.alpha = 0f;
+            if (dimImage != null) dimImage.enabled = false;
+
             gameObject.SetActive(false);
         }
 
@@ -86,6 +96,13 @@ namespace LoveAlgo.Schedule
             gameObject.SetActive(true);
             overlayGroup.alpha = 0f;
             dimImage.enabled = false;
+
+            // 인스펙터 기본 텍스트가 1프레임 노출되는 것을 방지: 첫 스텝 적용 전에 비워두기
+            if (dialogueText != null)
+            {
+                dialogueText.text = "";
+                dialogueText.alpha = 0f;
+            }
 
             // 페이드 인
             await overlayGroup.DOFade(1f, fadeInDuration)

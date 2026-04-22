@@ -213,6 +213,7 @@ CG 종료(Exit) 시 대사창 자동 복원.
 | `Save` | `Save` |
 | `Day` | `Day:2` (CurrentDay 강제 설정 — 스케줄 UI 일차 표시용) |
 | `Schedule` | `Schedule` (인라인 스케줄 — 1회 선택 후 스토리 복귀) |
+| `Username` | `Username` (인라인 이름 입력 — 입력/확인 후 스토리 복귀, GameManager·GameState에 즉시 반영) |
 | `If` | `If:Love:Roa>=30:Confession` |
 | `MiniGame` | `MiniGame:CherryBlossom:Roa` |
 

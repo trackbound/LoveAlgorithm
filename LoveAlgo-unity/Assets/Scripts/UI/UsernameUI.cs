@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using LoveAlgo.Core;
@@ -29,6 +30,13 @@ namespace LoveAlgo.UI
         [SerializeField] float shakeDuration = 0.3f;
         [SerializeField] float shakeStrength = 15f;
         [SerializeField] string defaultName = "성민";
+
+        // 인라인 모드 (Flow,,Username): true일 때는 확인 후 OnNameConfirmed 대신 TCS에 이름을 설정
+        bool _inlineMode;
+        UniTaskCompletionSource<string> _inlineTcs;
+
+        /// <summary>인라인 모드 여부 (Flow,,Username으로 열린 경우 true)</summary>
+        public bool IsInline => _inlineMode;
 
         void Start()
         {
@@ -133,8 +141,19 @@ namespace LoveAlgo.UI
 
             if (confirmed)
             {
-                // GameManager에 이름 전달
-                GameManager.Instance?.OnNameConfirmed(name);
+                if (_inlineMode)
+                {
+                    // 인라인 모드: phase 전환 없이 TCS로 결과 전달 (대기 중인 UsernameFlowCommand가 이어받음)
+                    var tcs = _inlineTcs;
+                    _inlineTcs = null;
+                    _inlineMode = false;
+                    tcs?.TrySetResult(name);
+                }
+                else
+                {
+                    // 기본 흐름: GameManager로 이름 전달 (Username → Prologue 전환)
+                    GameManager.Instance?.OnNameConfirmed(name);
+                }
             }
             else
             {
@@ -145,8 +164,36 @@ namespace LoveAlgo.UI
 
         void OnBackClick()
         {
+            if (_inlineMode)
+            {
+                // 인라인 모드에서는 뒤로가기 버튼 동작 없음 (기본 이름으로 결정되고 스토리 복귀되지 않도록 무시)
+                return;
+            }
             // Title로 복귀
             GameManager.Instance?.ChangePhase(GamePhase.Title);
+        }
+
+        /// <summary>
+        /// 인라인 모드로 입력창을 열고 확정된 이름을 반환한다 (Flow,,Username 전용).
+        /// GameFlowController의 phase 전환 없이 이름만 받아온다.
+        /// </summary>
+        public async UniTask<string> ShowInlineAsync(CancellationToken ct)
+        {
+            _inlineMode = true;
+            _inlineTcs = new UniTaskCompletionSource<string>();
+
+            using (ct.Register(() =>
+            {
+                _inlineTcs?.TrySetCanceled();
+                _inlineTcs = null;
+                _inlineMode = false;
+            }))
+            {
+                gameObject.SetActive(true);
+                ResetInput();
+                FocusInput();
+                return await _inlineTcs.Task;
+            }
         }
 
         #endregion

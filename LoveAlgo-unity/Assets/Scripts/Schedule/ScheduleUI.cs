@@ -87,6 +87,9 @@ namespace LoveAlgo.Schedule
         /// <summary>오늘 상하차를 이미 했는지 (하루 1회 제한)</summary>
         public bool UsedLoadingToday { get; set; }
 
+        /// <summary>이번 스케줄 세션에서 이미 하나를 선택했는지 (알바/운동/공부 통합 1회 제한)</summary>
+        bool usedScheduleThisSession;
+
         /// <summary>현재 상점 패널이 활성화 상태인지</summary>
         bool isShopVisible;
 
@@ -175,6 +178,9 @@ namespace LoveAlgo.Schedule
         public async UniTask ShowAsync(Action<ScheduleType> onSelected, CancellationToken ct = default)
         {
             onScheduleSelected = onSelected;
+
+            // 새 스케줄 세션 시작 — 통합 1회 제한 초기화
+            usedScheduleThisSession = false;
 
             // 항상 스케줄 패널로 리셋
             SetPanelVisible(scheduleContent, true);
@@ -328,6 +334,13 @@ namespace LoveAlgo.Schedule
                     return;
                 }
 
+                // 이번 스케줄 세션에서 알바/운동/공부 통합 1회만 선택 가능
+                if (usedScheduleThisSession)
+                {
+                    LoveAlgo.UI.PopupManager.Instance?.Toast("제한", "이번 스케줄에서는 이미 하나를 선택했습니다.");
+                    return;
+                }
+
                 // 투자 조건: 자산 ≥ 30,000원
                 if (type == ScheduleType.Invest && (gs == null || gs.Money < 30000))
                 {
@@ -352,6 +365,9 @@ namespace LoveAlgo.Schedule
                     // 상하차 사용 기록
                     if (type == ScheduleType.PartTime_Loading)
                         UsedLoadingToday = true;
+
+                    // 이번 스케줄 세션 사용 기록 (알바/운동/공부 통합 1회)
+                    usedScheduleThisSession = true;
 
                     // 스탯 적용 (DayLoopController에서 행동 소모 + EndDay 자동 처리)
                     onScheduleSelected?.Invoke(type);
