@@ -72,17 +72,20 @@ namespace LoveAlgo.Schedule
         [Header("헬프 패널")]
         [SerializeField] ScheduleHelpPanel helpPanel;
 
-        [Header("튜토리얼")]
-        [SerializeField] ScheduleTutorialOverlay tutorialOverlay;
+        // 튜토리얼 오버레이는 화면 전체 dim을 위해 ScheduleUI 외부 — UIManager가 별도 관리
+        LoveAlgo.UI.TutorialOverlay tutorialOverlay => LoveAlgo.UI.UIManager.Instance?.TutorialOverlay;
 
         [Header("세션 버프 표시")]
         [SerializeField] GameObject buffIndicator;
         [SerializeField] TMP_Text buffText;
 
         [Header("크로스페이드 패널")]
+        [Tooltip("스케줄 콘텐츠 그룹 (Schedule 프리합 내부). ShopUI는 UIManager가 별도 관리.")]
         [SerializeField] CanvasGroup scheduleContent;
-        [SerializeField] CanvasGroup shopContent;
-        [SerializeField] Shop.ShopPopup shopPanel;
+
+        // Shop은 UIManager.Instance.ShopUI 로 lazy 접근
+        Shop.ShopPopup shopPanel => LoveAlgo.UI.UIManager.Instance?.ShopUI;
+        CanvasGroup shopContent => shopPanel != null ? shopPanel.CanvasGroup : null;
 
         /// <summary>오늘 상하차를 이미 했는지 (하루 1회 제한)</summary>
         public bool UsedLoadingToday { get; set; }
@@ -124,8 +127,8 @@ namespace LoveAlgo.Schedule
             if (helpButton != null)
                 helpButton.onClick.AddListener(() => helpPanel?.Open());
 
-            // 퀵메뉴 돌아가기 (QuickMenu는 ScheduleUI의 형제 — 부모(Simulate)에서 검색)
-            var quickMenu = transform.parent?.GetComponentInChildren<LoveAlgo.UI.QuickMenuUI>(true);
+            // 퀵메뉴 돌아가기 — UIManager가 관리하는 공용 인스턴스
+            var quickMenu = LoveAlgo.UI.UIManager.Instance?.QuickMenuUI;
             if (quickMenu != null)
                 quickMenu.OnBackRequested += OnBackPressed;
 
@@ -209,7 +212,7 @@ namespace LoveAlgo.Schedule
             {
                 canvasGroup.interactable = false;
                 canvasGroup.blocksRaycasts = false;
-                await tutorialOverlay.RunAsync(ct);
+                await tutorialOverlay.RunAsync("Story/ScheduleTutorial", "HasSeenScheduleTutorial", ct);
                 canvasGroup.interactable = true;
                 canvasGroup.blocksRaycasts = true;
             }
@@ -662,7 +665,7 @@ namespace LoveAlgo.Schedule
             if (shopContent != null)
                 shopContent.DOKill();
 
-            var quickMenu = transform.parent?.GetComponentInChildren<LoveAlgo.UI.QuickMenuUI>(true);
+            var quickMenu = LoveAlgo.UI.UIManager.Instance?.QuickMenuUI;
             if (quickMenu != null)
                 quickMenu.OnBackRequested -= OnBackPressed;
 

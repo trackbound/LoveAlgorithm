@@ -19,9 +19,10 @@ namespace LoveAlgo.Core
         [SerializeField] Image fadeOverlay;         // 검은색 오버레이
         [SerializeField] Image flashOverlay;        // 흰색 플래시용 (선택)
         
-        [Header("Eye Open/Close 효과")]
-        [SerializeField] Image eyeTop;              // 위쪽 검은 바 (Image)
-        [SerializeField] Image eyeBottom;           // 아래쪽 검은 바 (Image)
+        // Eye Open/Close 용 검은 바 — Stage 하위의 EyeMask에서 런타임 resolve.
+        // (국렦 감은 상태에서도 대화창이 보이도록 Stage 캔버스에 배치, 이 화면 전역 FX와는 분리)
+        Image eyeTop;
+        Image eyeBottom;
         
         [Header("Camera Shake")]
         [Tooltip("Stage Canvas (Screen Space - Camera/Overlay). 바인딩 시 Camera/Transform 자동 추출")]
@@ -113,19 +114,6 @@ namespace LoveAlgo.Core
             // Eye 바가 Inspector에서 미바인딩 시 자동 생성
             EnsureEyeBars();
 
-            // dialogueUITransform 자동 바인딩 (별도 캔버스라 Inspector 연결 어려움)
-            if (dialogueUITransform == null)
-            {
-                var dialogueUI = LoveAlgo.UI.UIManager.Instance?.DialogueUI;
-                if (dialogueUI != null)
-                    dialogueUITransform = dialogueUI.GetComponent<RectTransform>();
-            }
-
-            EnsureBindings();
-        }
-
-        void OnValidate()
-        {
             EnsureBindings();
         }
 
@@ -140,8 +128,17 @@ namespace LoveAlgo.Core
             if (stageTransform != null) DOTween.Kill(stageTransform);
         }
 
+        /// <summary>
+        /// 외부 바인딩(stageCanvas/stageCamera/stageTransform/dialogueUITransform) 런타임 자동 resolve.
+        /// 프리합이라 인스펙터로 못 묶으므로 StageManager / UIManager를 통해 보강.
+        /// 접근 시점에 아직 존재하지 않는 경우가 있으므로 각 사용처에서 필요 시 다시 호출됨.
+        /// </summary>
         void EnsureBindings()
         {
+            if (stageCanvas == null)
+            {
+                stageCanvas = LoveAlgo.Core.StageManager.Instance?.StageCanvas;
+            }
             if (stageCanvas == null) return;
 
             if (stageTransform == null)
@@ -158,6 +155,13 @@ namespace LoveAlgo.Core
             if (stageCamera != null && stageCamera.backgroundColor != Color.black)
             {
                 stageCamera.backgroundColor = Color.black;
+            }
+
+            if (dialogueUITransform == null)
+            {
+                var dialogueUI = LoveAlgo.UI.UIManager.Instance?.DialogueUI;
+                if (dialogueUI != null)
+                    dialogueUITransform = dialogueUI.GetComponent<RectTransform>();
             }
         }
 
@@ -472,6 +476,7 @@ namespace LoveAlgo.Core
         /// </summary>
         public async UniTask CamShakeAsync(float duration, float strength, CancellationToken ct = default)
         {
+            EnsureBindings();
             if ((IsEyeClosed || IsFadeBlack) && dialogueUITransform != null)
             {
                 await DialogueShakeAsync(duration, strength, ct);
@@ -529,6 +534,10 @@ namespace LoveAlgo.Core
         /// </summary>
         public async UniTask DialogueShakeAsync(float duration, float strength, CancellationToken ct = default)
         {
+            if (dialogueUITransform == null)
+            {
+                EnsureBindings();
+            }
             if (dialogueUITransform == null)
             {
                 Debug.LogWarning("[ScreenFX] DialogueShake: dialogueUITransform이 바인딩되지 않음");
@@ -973,28 +982,26 @@ namespace LoveAlgo.Core
         Sequence eyeSequence;
 
         /// <summary>
-        /// Eye 바가 없으면 런타임에 자동 생성 (Stage 캔버스 최상단 — BG/캐릭터를 가리되 대사창은 안 가림)
+        /// Eye 바를 Stage 하위 EyeMask에서 당겨온다. 없으면 폴백으로 Stage 캔버스에 자동 생성.
         /// </summary>
         void EnsureEyeBars()
         {
             if (eyeTop != null && eyeBottom != null) return;
 
-            // Eye 바는 Stage 캔버스(sort 0)에 배치해야
-            // Overlay 캔버스(Dialogue, sort 1)보다 아래에서 렌더됨
-            Transform eyeParent = null;
+            // 1. StageManager → EyeMask 우선 (추천 경로 — 인스펙터에서 바인딩)
+            var mask = StageManager.Instance?.EyeMask;
+            if (mask != null)
+            {
+                if (eyeTop == null) eyeTop = mask.Top;
+                if (eyeBottom == null) eyeBottom = mask.Bottom;
+                if (eyeTop != null && eyeBottom != null) return;
+            }
 
-            // 1. stageCanvas가 바인딩되어 있으면 그 아래에 생성
-            if (stageCanvas != null)
-            {
-                eyeParent = stageCanvas.transform;
-            }
-            else
-            {
-                // 2. StageManager → StageRig → StageCanvas 탐색
-                var stageRig = StageManager.Instance?.GetComponentInChildren<StageRig>(true);
-                if (stageRig?.StageCanvas != null)
-                    eyeParent = stageRig.StageCanvas.transform;
-            }
+            // 2. 폴백: Stage 캔버스 아래에 자동 생성 (Overlay 캔버스의 대화창보다 아래)
+            Transform eyeParent = null;
+            var stageRig = StageManager.Instance?.GetComponentInChildren<StageRig>(true);
+            if (stageRig?.StageCanvas != null)
+                eyeParent = stageRig.StageCanvas.transform;
 
             if (eyeParent == null)
             {
@@ -1035,6 +1042,8 @@ namespace LoveAlgo.Core
         void EnsureEyeSetup()
         {
             if (eyeInitialized) return;
+            // Stage(EyeMask)가 늦게 깨어날 수 있어 매 호출마다 재시도
+            if (eyeTop == null || eyeBottom == null) EnsureEyeBars();
             if (eyeTop == null || eyeBottom == null) return;
 
             rtEyeTop = eyeTop.rectTransform;

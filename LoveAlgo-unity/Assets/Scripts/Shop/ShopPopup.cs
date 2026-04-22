@@ -11,7 +11,7 @@ using LoveAlgo.UI;
 namespace LoveAlgo.Shop
 {
     /// <summary>
-    /// 상점 패널 (ScheduleUI 내부 크로스페이드 패널)
+    /// 상점 패널 (UIManager 관리 — ScheduleUI와 크로스페이드 스왑)
     ///
     /// 레이아웃:
     ///   - 좌측: 잔액 + 장바구니(CART) + 합계 + 구매하기 버튼
@@ -19,8 +19,12 @@ namespace LoveAlgo.Shop
     ///   - 호버 시: 아이템 설명 팝업 (ShopItemDetailPopup)
     ///   - 클릭: 토글 선택/해제 (체크마크)
     /// </summary>
+    [RequireComponent(typeof(CanvasGroup))]
     public class ShopPopup : MonoBehaviour
     {
+        CanvasGroup _canvasGroup;
+        public CanvasGroup CanvasGroup => _canvasGroup != null ? _canvasGroup : (_canvasGroup = GetComponent<CanvasGroup>());
+
         [Header("상점 UI")]
         [SerializeField] TMP_Text moneyText;
         [SerializeField] Transform saleContainer;
@@ -47,7 +51,8 @@ namespace LoveAlgo.Shop
         [SerializeField] GameObject saleListFooter;
 
         [Header("아이템 필터 (테스트 빌드용)")]
-        [Tooltip("설정 시 체크된 아이템만 상점에 노출. 미설정 시 전체 표시")]
+        [Tooltip("설정 시 체크된 아이템만 상점에 노출. 미설정 시 전체 표시.\n" +
+                 "비워두면 ShopUI 프리합 루트/자식에서 자동 탐색됨.")]
         [SerializeField] ShopItemFilter itemFilter;
 
         /// <summary>장바구니: itemId → 수량</summary>
@@ -75,6 +80,11 @@ namespace LoveAlgo.Shop
 
             if (categoryTabs != null)
                 categoryTabs.OnTabChanged += OnCategoryTabChanged;
+
+            // 인스펙터에서 미바인딩 시 자기 자신/자식에서 필터 자동 탐색
+            // (ShopUI 프리합 루트에 ShopItemFilter를 컴포넌트로 붙이면 완료)
+            if (itemFilter == null)
+                itemFilter = GetComponentInChildren<ShopItemFilter>(true);
 
             EnsureSaleSlotPool();
         }
