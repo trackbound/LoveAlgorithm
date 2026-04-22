@@ -17,9 +17,11 @@ namespace LoveAlgo.UI
     /// </summary>
     public class PopupManager : SingletonMonoBehaviour<PopupManager>
     {
-        [Header("레이어")]
+        [Header("Layer Roots (비워두면 자동 생성)")]
         [SerializeField] Transform layerModal;
         [SerializeField] Transform layerTop;
+
+        [Header("Dimmer")]
         [SerializeField] GameObject dimmer;
         [SerializeField] CanvasGroup dimmerCanvasGroup;
         [SerializeField] float dimmerFadeDuration = 0.2f;
@@ -27,10 +29,10 @@ namespace LoveAlgo.UI
         [Header("Top 팝업 — Confirm 프리팹 (이름으로 조회)")]
         [SerializeField] List<ConfirmPopup> confirmPrefabs;
 
-        [Header("Top 팝업 — 기타")]
-        [SerializeField] AlertPopup alertPopup;
-        [SerializeField] ToastPopup toastPopup;
-        [SerializeField] LogPopup logPopup;
+        [Header("Top 팝업 — 프리팹 바인딩 (lazy spawn into layerTop)")]
+        [SerializeField] AlertPopup alertPopupPrefab;
+        [SerializeField] ToastPopup toastPopupPrefab;
+        [SerializeField] LogPopup logPopupPrefab;
 
         [Header("Modal 팝업 (프리팹)")]
         [SerializeField] List<GameObject> modalPrefabs;
@@ -41,13 +43,62 @@ namespace LoveAlgo.UI
         // Confirm 캐시 (프리팹 이름 → 인스턴스)
         readonly Dictionary<string, ConfirmPopup> confirmCache = new();
 
+        // Top 팝업 lazy 인스턴스
+        AlertPopup _alertPopup;
+        ToastPopup _toastPopup;
+        LogPopup _logPopup;
+
+        AlertPopup AlertPopup => _alertPopup != null ? _alertPopup : (_alertPopup = SpawnTop(alertPopupPrefab));
+        ToastPopup ToastPopup => _toastPopup != null ? _toastPopup : (_toastPopup = SpawnTop(toastPopupPrefab));
+        LogPopup LogPopup => _logPopup != null ? _logPopup : (_logPopup = SpawnTop(logPopupPrefab));
+
         // 현재 열린 Modal
         GameObject currentModal;
 
         protected override void OnSingletonAwake()
         {
+            EnsureLayerRoots();
             PreWarmConfirms();
             InitPopups();
+        }
+
+        /// <summary>
+        /// layerModal/layerTop이 비어있으면 자동으로 stretch RectTransform 생성
+        /// </summary>
+        void EnsureLayerRoots()
+        {
+            if (layerModal == null) layerModal = CreateLayerRoot("Modal", 0);
+            if (layerTop == null) layerTop = CreateLayerRoot("Top", 1);
+        }
+
+        Transform CreateLayerRoot(string name, int siblingIndex)
+        {
+            var go = new GameObject(name, typeof(RectTransform));
+            var rt = go.GetComponent<RectTransform>();
+            rt.SetParent(transform, false);
+            rt.anchorMin = Vector2.zero;
+            rt.anchorMax = Vector2.one;
+            rt.offsetMin = Vector2.zero;
+            rt.offsetMax = Vector2.zero;
+            rt.SetSiblingIndex(siblingIndex);
+            return rt;
+        }
+
+        /// <summary>
+        /// Top 팝업 프리합 인스턴스화 (이름 정리 + 초기 비활성화 + 사운드 바인딩)
+        /// </summary>
+        T SpawnTop<T>(T prefab) where T : MonoBehaviour
+        {
+            if (prefab == null)
+            {
+                Debug.LogWarning($"[PopupManager] {typeof(T).Name} 프리합이 바인딩되지 않음");
+                return null;
+            }
+            var inst = Instantiate(prefab, layerTop);
+            inst.name = prefab.name;
+            inst.gameObject.SetActive(false);
+            UISoundManager.Instance?.BindButtonsInTransform(inst.transform);
+            return inst;
         }
 
         protected override void OnDestroy()
@@ -79,14 +130,14 @@ namespace LoveAlgo.UI
                     return;
                 }
             }
-            if (alertPopup != null && alertPopup.IsVisible)
+            if (_alertPopup != null && _alertPopup.IsVisible)
             {
-                alertPopup.Hide();
+                _alertPopup.Hide();
                 return;
             }
-            if (logPopup != null && logPopup.IsVisible)
+            if (_logPopup != null && _logPopup.IsVisible)
             {
-                logPopup.Hide();
+                _logPopup.Hide();
                 return;
             }
 
@@ -122,14 +173,11 @@ namespace LoveAlgo.UI
 
         void InitPopups()
         {
-            // Confirm 캐시 인스턴스 초기 비활성화
+            // Confirm 캐시 인스턴스 초기 비활성화 (Alert/Toast/Log는 lazy 속성에서 처리)
             foreach (var kv in confirmCache)
             {
                 if (kv.Value != null) kv.Value.gameObject.SetActive(false);
             }
-            alertPopup?.gameObject.SetActive(false);
-            toastPopup?.gameObject.SetActive(false);
-            logPopup?.gameObject.SetActive(false);
             dimmer?.SetActive(false);
 
             // Dimmer 클릭 시 Modal 닫기 (디머에 Button 컴포넌트 추가)
@@ -200,7 +248,7 @@ namespace LoveAlgo.UI
             {
                 if (kv.Value != null && kv.Value.IsVisible) return;
             }
-            if (alertPopup != null && alertPopup.IsVisible)
+            if (_alertPopup != null && _alertPopup.IsVisible)
                 return;
 
             // Modal 팝업 닫기
@@ -277,12 +325,9 @@ namespace LoveAlgo.UI
         /// </summary>
         public UniTask AlertAsync(string message)
         {
-            if (alertPopup == null)
-            {
-                Debug.LogWarning("[PopupManager] alertPopup이 바인딩되지 않음");
-                return UniTask.CompletedTask;
-            }
-            return alertPopup.ShowAsync(message);
+            var popup = AlertPopup;
+            if (popup == null) return UniTask.CompletedTask;
+            return popup.ShowAsync(message);
         }
 
         /// <summary>
@@ -290,12 +335,9 @@ namespace LoveAlgo.UI
         /// </summary>
         public void Toast(string title, string message, float duration = 2f)
         {
-            if (toastPopup == null)
-            {
-                Debug.LogWarning("[PopupManager] toastPopup이 바인딩되지 않음");
-                return;
-            }
-            toastPopup.Show(title, message, duration);
+            var popup = ToastPopup;
+            if (popup == null) return;
+            popup.Show(title, message, duration);
         }
 
         /// <summary>
@@ -303,12 +345,9 @@ namespace LoveAlgo.UI
         /// </summary>
         public void ToastSequence(string title, System.Collections.Generic.List<string> messages, float holdPerItem = 0.8f)
         {
-            if (toastPopup == null)
-            {
-                Debug.LogWarning("[PopupManager] toastPopup이 바인딩되지 않음");
-                return;
-            }
-            toastPopup.ShowSequence(title, messages, holdPerItem);
+            var popup = ToastPopup;
+            if (popup == null) return;
+            popup.ShowSequence(title, messages, holdPerItem);
         }
 
         #endregion
@@ -482,12 +521,13 @@ namespace LoveAlgo.UI
 
         public void ShowLog(IReadOnlyList<DialogueLogEntry> log)
         {
-            if (logPopup == null)
+            var popup = LogPopup;
+            if (popup == null)
             {
-                Debug.LogError("[PopupManager] logPopup이 바인딩되지 않음 - Inspector에서 할당 필요");
+                Debug.LogError("[PopupManager] logPopupPrefab이 바인딩되지 않음 - Inspector에서 할당 필요");
                 return;
             }
-            logPopup.Show(log);
+            popup.Show(log);
         }
 
         #endregion
@@ -544,7 +584,7 @@ namespace LoveAlgo.UI
         {
             CloseModal();
             DismissActiveConfirmPopups();
-            alertPopup?.Hide();
+            _alertPopup?.Hide();
         }
 
         /// <summary>
@@ -559,8 +599,8 @@ namespace LoveAlgo.UI
                 {
                     if (kv.Value != null && kv.Value.IsVisible) return true;
                 }
-                return (alertPopup != null && alertPopup.IsVisible) ||
-                       (logPopup != null && logPopup.IsVisible);
+                return (_alertPopup != null && _alertPopup.IsVisible) ||
+                       (_logPopup != null && _logPopup.IsVisible);
             }
         }
 

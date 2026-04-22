@@ -31,8 +31,16 @@ namespace LoveAlgo.Core
         [SerializeField] Camera stageCamera;        // Screen Space - Camera 모드용
         [Tooltip("Overlay Canvas 사용 시 Stage RectTransform 바인딩 (폴백)")]
         [SerializeField] RectTransform stageTransform; // 폴백용
-        [Tooltip("화면이 어두울 때(EyeClose/FadeOut) 대신 흔들 대화창 RectTransform")]
-        [SerializeField] RectTransform dialogueUITransform;
+
+        // dialogueUITransform은 DialogueUI가 lazy spawn/destroy 되므로 캐싱하지 않고 매번 조회 (싱글톤 1단계)
+        RectTransform DialogueUITransform
+        {
+            get
+            {
+                var ui = LoveAlgo.UI.UIManager.Instance?.DialogueUI;
+                return ui != null ? ui.transform as RectTransform : null;
+            }
+        }
 
         [Header("Color Tint")]
         [Tooltip("색상 오버레이용 Image (fadeOverlay 공용 또는 별도)")]
@@ -95,7 +103,7 @@ namespace LoveAlgo.Core
         public bool IsFadeBlack => fadeOverlay != null && fadeOverlay.color.a >= 0.95f;
 
         /// <summary>눈 감기 효과가 활성 상태인지 (세이브용)</summary>
-        public bool IsEyeClosed => eyeTop != null && eyeTop.gameObject.activeSelf;
+        public bool IsEyeClosed => StageManager.Instance?.EyeMask?.IsClosed ?? false;
 
         protected override void OnSingletonAwake()
         {
@@ -111,8 +119,7 @@ namespace LoveAlgo.Core
                 flashOverlay.raycastTarget = false;
             }
 
-            // Eye 바가 Inspector에서 미바인딩 시 자동 생성
-            EnsureEyeBars();
+            // Eye 효과는 Stage(EyeMask)에서 관리. ScreenFX는 명령 위임만.
 
             EnsureBindings();
         }
@@ -120,7 +127,6 @@ namespace LoveAlgo.Core
         protected override void OnDestroy()
         {
             base.OnDestroy();
-            KillEyeSequence();
 
             if (fadeOverlay != null) DOTween.Kill(fadeOverlay);
             if (flashOverlay != null) DOTween.Kill(flashOverlay);
@@ -129,9 +135,9 @@ namespace LoveAlgo.Core
         }
 
         /// <summary>
-        /// 외부 바인딩(stageCanvas/stageCamera/stageTransform/dialogueUITransform) 런타임 자동 resolve.
-        /// 프리합이라 인스펙터로 못 묶으므로 StageManager / UIManager를 통해 보강.
-        /// 접근 시점에 아직 존재하지 않는 경우가 있으므로 각 사용처에서 필요 시 다시 호출됨.
+        /// 외부 바인딩(stageCanvas/stageCamera/stageTransform) 런타임 자동 resolve.
+        /// 프리합이라 인스펙터로 못 묶으므로 StageManager를 통해 보강.
+        /// dialogueUITransform은 별도로 매번 즉시 조회 (DialogueUITransform 프로퍼티).
         /// </summary>
         void EnsureBindings()
         {
@@ -155,13 +161,6 @@ namespace LoveAlgo.Core
             if (stageCamera != null && stageCamera.backgroundColor != Color.black)
             {
                 stageCamera.backgroundColor = Color.black;
-            }
-
-            if (dialogueUITransform == null)
-            {
-                var dialogueUI = LoveAlgo.UI.UIManager.Instance?.DialogueUI;
-                if (dialogueUI != null)
-                    dialogueUITransform = dialogueUI.GetComponent<RectTransform>();
             }
         }
 
@@ -477,7 +476,7 @@ namespace LoveAlgo.Core
         public async UniTask CamShakeAsync(float duration, float strength, CancellationToken ct = default)
         {
             EnsureBindings();
-            if ((IsEyeClosed || IsFadeBlack) && dialogueUITransform != null)
+            if ((IsEyeClosed || IsFadeBlack) && DialogueUITransform != null)
             {
                 await DialogueShakeAsync(duration, strength, ct);
                 return;
@@ -534,13 +533,10 @@ namespace LoveAlgo.Core
         /// </summary>
         public async UniTask DialogueShakeAsync(float duration, float strength, CancellationToken ct = default)
         {
-            if (dialogueUITransform == null)
+            var target = DialogueUITransform;
+            if (target == null)
             {
-                EnsureBindings();
-            }
-            if (dialogueUITransform == null)
-            {
-                Debug.LogWarning("[ScreenFX] DialogueShake: dialogueUITransform이 바인딩되지 않음");
+                Debug.LogWarning("[ScreenFX] DialogueShake: DialogueUI가 아직 존재하지 않음");
                 return;
             }
 
@@ -557,7 +553,7 @@ namespace LoveAlgo.Core
                 ImpactFlashAsync(ct).Forget();
 
             await ShakeRectTransformImpactAsync(
-                dialogueUITransform, duration, strength, profile,
+                target, duration, strength, profile,
                 dialogueImpactFrequencyHz, dialogueImpactDamping, ct);
         }
 
@@ -972,256 +968,50 @@ namespace LoveAlgo.Core
 
         #endregion
 
-        #region Eye Open/Close (눈 뜨기/감기 효과)
+        #region Eye Open/Close (눈 뜨기/감기 효과 — EyeMask로 위임)
 
-        // Eye 바 캐싱
-        RectTransform rtEyeTop;
-        RectTransform rtEyeBottom;
-        float eyeHalfHeight;
-        bool eyeInitialized;
-        Sequence eyeSequence;
+        // 모든 Eye 트윈/상태는 Stage 하위 EyeMask가 소유. ScreenFX는 명령만 위임.
+        // EyeMask가 없으면(Stage 미스폰 등) FadeIn/Out으로 폴백.
 
-        /// <summary>
-        /// Eye 바를 Stage 하위 EyeMask에서 당겨온다. 없으면 폴백으로 Stage 캔버스에 자동 생성.
-        /// </summary>
-        void EnsureEyeBars()
-        {
-            if (eyeTop != null && eyeBottom != null) return;
-
-            // 1. StageManager → EyeMask 우선 (추천 경로 — 인스펙터에서 바인딩)
-            var mask = StageManager.Instance?.EyeMask;
-            if (mask != null)
-            {
-                if (eyeTop == null) eyeTop = mask.Top;
-                if (eyeBottom == null) eyeBottom = mask.Bottom;
-                if (eyeTop != null && eyeBottom != null) return;
-            }
-
-            // 2. 폴백: Stage 캔버스 아래에 자동 생성 (Overlay 캔버스의 대화창보다 아래)
-            Transform eyeParent = null;
-            var stageRig = StageManager.Instance?.GetComponentInChildren<StageRig>(true);
-            if (stageRig?.StageCanvas != null)
-                eyeParent = stageRig.StageCanvas.transform;
-
-            if (eyeParent == null)
-            {
-                Debug.LogWarning("[ScreenFX] EnsureEyeBars: Stage 캔버스를 찾을 수 없어 Eye 바 생성 불가");
-                return;
-            }
-
-            if (eyeTop == null)
-            {
-                var goTop = new GameObject("EyeTop", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
-                goTop.layer = LayerMask.NameToLayer("UI");
-                goTop.transform.SetParent(eyeParent, false);
-                goTop.transform.SetAsLastSibling();  // Stage 내 최상단 (BG/캐릭터 위)
-                eyeTop = goTop.GetComponent<Image>();
-                eyeTop.color = Color.black;
-                eyeTop.raycastTarget = false;
-                goTop.SetActive(false);
-            }
-
-            if (eyeBottom == null)
-            {
-                var goBottom = new GameObject("EyeBottom", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
-                goBottom.layer = LayerMask.NameToLayer("UI");
-                goBottom.transform.SetParent(eyeParent, false);
-                goBottom.transform.SetAsLastSibling();
-                eyeBottom = goBottom.GetComponent<Image>();
-                eyeBottom.color = Color.black;
-                eyeBottom.raycastTarget = false;
-                goBottom.SetActive(false);
-            }
-
-            Debug.Log("[ScreenFX] Eye 바 자동 생성 완료 (Stage 캔버스)");
-        }
-
-        /// <summary>
-        /// Eye 바 초기화 (최초 1회)
-        /// </summary>
-        void EnsureEyeSetup()
-        {
-            if (eyeInitialized) return;
-            // Stage(EyeMask)가 늦게 깨어날 수 있어 매 호출마다 재시도
-            if (eyeTop == null || eyeBottom == null) EnsureEyeBars();
-            if (eyeTop == null || eyeBottom == null) return;
-
-            rtEyeTop = eyeTop.rectTransform;
-            rtEyeBottom = eyeBottom.rectTransform;
-
-            var parentRect = (RectTransform)rtEyeTop.parent;
-            float screenHeight = parentRect.rect.height;
-            float screenWidth = parentRect.rect.width;
-            eyeHalfHeight = screenHeight / 2f;
-
-            // eyeTop: 상단 앵커, pivot 하단
-            rtEyeTop.anchorMin = new Vector2(0.5f, 1f);
-            rtEyeTop.anchorMax = new Vector2(0.5f, 1f);
-            rtEyeTop.pivot = new Vector2(0.5f, 0f);
-            rtEyeTop.sizeDelta = new Vector2(screenWidth + 100f, eyeHalfHeight + 50f);
-
-            // eyeBottom: 하단 앵커, pivot 상단
-            rtEyeBottom.anchorMin = new Vector2(0.5f, 0f);
-            rtEyeBottom.anchorMax = new Vector2(0.5f, 0f);
-            rtEyeBottom.pivot = new Vector2(0.5f, 1f);
-            rtEyeBottom.sizeDelta = new Vector2(screenWidth + 100f, eyeHalfHeight + 50f);
-
-            eyeInitialized = true;
-        }
-
-        /// <summary>
-        /// 진행 중인 Eye 트윈 정리
-        /// </summary>
-        void KillEyeSequence()
-        {
-            if (eyeSequence != null && eyeSequence.IsActive())
-            {
-                eyeSequence.Kill();
-            }
-            eyeSequence = null;
-        }
-
-        /// <summary>
-        /// 눈 뜨는 효과 — 2단계: 살짝 틈 → 확 열림
-        /// EyeOpen[:totalDuration]
-        /// Phase 1 (30%): 살짝 열림 — 눈부심으로 멈칫 (OutSine)
-        /// Phase 2 (70%): 부드럽게 완전히 열림 (OutCubic)
-        /// </summary>
         public async UniTask EyeOpenAsync(float duration = 1f, CancellationToken ct = default)
         {
-            if (eyeTop == null || eyeBottom == null)
+            var mask = StageManager.Instance?.EyeMask;
+            if (mask == null)
             {
-                Debug.LogWarning("[ScreenFX] Eye 바인딩이 없습니다.");
+                Debug.LogWarning("[ScreenFX] EyeMask가 없어 FadeIn으로 폴백");
                 await FadeInAsync(duration, ct);
                 return;
             }
-
-            EnsureEyeSetup();
-            KillEyeSequence();
-
-            // 시작: 눈 감은 상태
-            rtEyeTop.anchoredPosition = new Vector2(0, -eyeHalfHeight);
-            rtEyeBottom.anchoredPosition = new Vector2(0, eyeHalfHeight);
-            eyeTop.gameObject.SetActive(true);
-            eyeBottom.gameObject.SetActive(true);
-
-            float peekRatio = 0.15f;  // 살짝 열리는 양 (15%)
-            float peekY = eyeHalfHeight * (1f - peekRatio);
-            float phase1 = duration * 0.3f;
-            float phase2 = duration * 0.7f;
-
-            eyeSequence = DOTween.Sequence()
-                // Phase 1: 살짝 열림 (눈부심 멈칫)
-                .Append(rtEyeTop.DOAnchorPosY(-peekY, phase1).SetEase(Ease.OutSine))
-                .Join(rtEyeBottom.DOAnchorPosY(peekY, phase1).SetEase(Ease.OutSine))
-                // Phase 2: 완전히 열림
-                .Append(rtEyeTop.DOAnchorPosY(0, phase2).SetEase(Ease.OutCubic))
-                .Join(rtEyeBottom.DOAnchorPosY(0, phase2).SetEase(Ease.OutCubic));
-
-            await eyeSequence.ToUniTask(cancellationToken: ct);
-
-            eyeTop.gameObject.SetActive(false);
-            eyeBottom.gameObject.SetActive(false);
-            eyeSequence = null;
+            await mask.OpenAsync(duration, ct);
         }
 
-        /// <summary>
-        /// 눈 감는 효과 — 서서히 → 끝에서 가속 (눈꺼풀 무게감)
-        /// EyeClose[:duration]
-        /// </summary>
         public async UniTask EyeCloseAsync(float duration = 1f, CancellationToken ct = default)
         {
-            if (eyeTop == null || eyeBottom == null)
+            var mask = StageManager.Instance?.EyeMask;
+            if (mask == null)
             {
-                Debug.LogWarning("[ScreenFX] Eye 바인딩이 없습니다.");
+                Debug.LogWarning("[ScreenFX] EyeMask가 없어 FadeOut으로 폴백");
                 await FadeOutAsync(duration, ct);
                 return;
             }
-
-            EnsureEyeSetup();
-            KillEyeSequence();
-
-            // 시작: 눈 뜬 상태
-            rtEyeTop.anchoredPosition = new Vector2(0, 0);
-            rtEyeBottom.anchoredPosition = new Vector2(0, 0);
-            eyeTop.gameObject.SetActive(true);
-            eyeBottom.gameObject.SetActive(true);
-
-            eyeSequence = DOTween.Sequence()
-                .Append(rtEyeTop.DOAnchorPosY(-eyeHalfHeight, duration).SetEase(Ease.InCubic))
-                .Join(rtEyeBottom.DOAnchorPosY(eyeHalfHeight, duration).SetEase(Ease.InCubic));
-
-            await eyeSequence.ToUniTask(cancellationToken: ct);
-            eyeSequence = null;
+            await mask.CloseAsync(duration, ct);
         }
 
-        /// <summary>
-        /// 눈 깜빡임 — 닫기 → 잠깐 유지(hold) → 열기
-        /// EyeBlink[:closeDuration:openDuration[:holdTime]]
-        /// hold가 없으면 기본 0.05초 (자연스러운 멈춤)
-        /// </summary>
         public async UniTask EyeBlinkAsync(float closeDuration = 0.1f, float openDuration = 0.15f,
             float holdTime = 0.05f, CancellationToken ct = default)
         {
-            if (eyeTop == null || eyeBottom == null)
+            var mask = StageManager.Instance?.EyeMask;
+            if (mask == null)
             {
                 await FadeOutAsync(closeDuration, ct);
                 await FadeInAsync(openDuration, ct);
                 return;
             }
-
-            EnsureEyeSetup();
-            KillEyeSequence();
-
-            // 시작: 눈 뜬 상태
-            rtEyeTop.anchoredPosition = new Vector2(0, 0);
-            rtEyeBottom.anchoredPosition = new Vector2(0, 0);
-            eyeTop.gameObject.SetActive(true);
-            eyeBottom.gameObject.SetActive(true);
-
-            eyeSequence = DOTween.Sequence()
-                // 닫기 (빠르게, 가속)
-                .Append(rtEyeTop.DOAnchorPosY(-eyeHalfHeight, closeDuration).SetEase(Ease.InQuad))
-                .Join(rtEyeBottom.DOAnchorPosY(eyeHalfHeight, closeDuration).SetEase(Ease.InQuad))
-                // 닫힌 상태 유지
-                .AppendInterval(holdTime)
-                // 열기 (부드럽게, 감속)
-                .Append(rtEyeTop.DOAnchorPosY(0, openDuration).SetEase(Ease.OutCubic))
-                .Join(rtEyeBottom.DOAnchorPosY(0, openDuration).SetEase(Ease.OutCubic));
-
-            await eyeSequence.ToUniTask(cancellationToken: ct);
-
-            eyeTop.gameObject.SetActive(false);
-            eyeBottom.gameObject.SetActive(false);
-            eyeSequence = null;
+            await mask.BlinkAsync(closeDuration, openDuration, holdTime, ct);
         }
 
-        /// <summary>
-        /// 눈 즉시 닫힘 (애니메이션 없이)
-        /// </summary>
-        public void EyeCloseImmediate()
-        {
-            if (eyeTop == null || eyeBottom == null) return;
-
-            EnsureEyeSetup();
-            KillEyeSequence();
-
-            rtEyeTop.anchoredPosition = new Vector2(0, -eyeHalfHeight);
-            rtEyeBottom.anchoredPosition = new Vector2(0, eyeHalfHeight);
-
-            eyeTop.gameObject.SetActive(true);
-            eyeBottom.gameObject.SetActive(true);
-        }
-
-        /// <summary>
-        /// 눈 즉시 열림 (애니메이션 없이, Eye 바 비활성화)
-        /// </summary>
-        public void EyeOpenImmediate()
-        {
-            KillEyeSequence();
-            if (eyeTop != null) eyeTop.gameObject.SetActive(false);
-            if (eyeBottom != null) eyeBottom.gameObject.SetActive(false);
-        }
+        public void EyeCloseImmediate() => StageManager.Instance?.EyeMask?.CloseImmediate();
+        public void EyeOpenImmediate() => StageManager.Instance?.EyeMask?.OpenImmediate();
 
         #endregion
 

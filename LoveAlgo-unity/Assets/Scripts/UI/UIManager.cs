@@ -20,6 +20,7 @@ namespace LoveAlgo.UI
 
         [Header("Story")]
         [SerializeField] DialogueUI dialogueUIPrefab;
+        [SerializeField] DialogueShowButton dialogueShowButtonPrefab;
         [SerializeField] ChoiceUI choiceUIPrefab;
         [SerializeField] PlaceUI placeUIPrefab;
 
@@ -38,6 +39,7 @@ namespace LoveAlgo.UI
 
         // ── lazy-instantiated 캐시 ───────────────────────────────────────
         DialogueUI _dialogueUI;
+        DialogueShowButton _dialogueShowButton;
         ChoiceUI _choiceUI;
         PlaceUI _placeUI;
         ScheduleUI _scheduleUI;
@@ -48,7 +50,41 @@ namespace LoveAlgo.UI
         UsernameUI _usernameUI;
 
         // ── 외부 공개 프로퍼티 (첫 접근 시 자동 인스턴스화) ──────────────
-        public DialogueUI DialogueUI => _dialogueUI != null ? _dialogueUI : (_dialogueUI = Spawn(dialogueUIPrefab, GroupRoot.Story));
+        public DialogueUI DialogueUI
+        {
+            get
+            {
+                if (_dialogueUI == null)
+                {
+                    // 캐시를 Spawn 전에 채우면 안 되지만, Spawn 직후 즉시 대입해야
+                    // 하위 컴포넌트의 OnEnable 등에서 재귀 호출이 발생하지 않는다.
+                    var inst = Spawn(dialogueUIPrefab, GroupRoot.Story);
+                    _dialogueUI = inst;
+                    // DialogueShowButton 동시 생성 (대사창 항상 동반)
+                    if (dialogueShowButtonPrefab != null && _dialogueShowButton == null)
+                    {
+                        _dialogueShowButton = Spawn(dialogueShowButtonPrefab, GroupRoot.Story);
+                        if (_dialogueShowButton != null)
+                        {
+                            _dialogueShowButton.Bind(_dialogueUI);
+                            _dialogueShowButton.gameObject.SetActive(true);
+                        }
+                    }
+                }
+                return _dialogueUI;
+            }
+        }
+        public DialogueShowButton DialogueShowButton
+        {
+            get
+            {
+                if (_dialogueShowButton == null)
+                {
+                    _ = DialogueUI; // 동반 spawn 트리거
+                }
+                return _dialogueShowButton;
+            }
+        }
         public ChoiceUI ChoiceUI => _choiceUI != null ? _choiceUI : (_choiceUI = Spawn(choiceUIPrefab, GroupRoot.Story));
         public PlaceUI PlaceUI => _placeUI != null ? _placeUI : (_placeUI = Spawn(placeUIPrefab, GroupRoot.Story));
         public ScheduleUI ScheduleUI => _scheduleUI != null ? _scheduleUI : (_scheduleUI = Spawn(scheduleUIPrefab, GroupRoot.Simulate));

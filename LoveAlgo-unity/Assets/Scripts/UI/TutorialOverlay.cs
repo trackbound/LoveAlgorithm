@@ -173,8 +173,8 @@ namespace LoveAlgo.UI
                 {
                     // 첫 진입: 텍스트박스 배경 + 텍스트를 같이 빠르게 페이드 인
                     var seq = DOTween.Sequence();
-                    seq.Join(textboxImage.DOFade(1f, firstStepFadeDuration).SetEase(Ease.OutCubic));
-                    seq.Join(DOTween.ToAlpha(
+                    _ = seq.Join(textboxImage.DOFade(1f, firstStepFadeDuration).SetEase(Ease.OutCubic));
+                    _ = seq.Join(DOTween.ToAlpha(
                         () => dialogueText.color, c => dialogueText.color = c,
                         1f, firstStepFadeDuration
                     ).SetEase(Ease.OutCubic));

@@ -43,7 +43,7 @@ namespace LoveAlgo.Story
         [SerializeField] Button autoButton;
         [SerializeField] Button logButton;
         [SerializeField] Button hideButton;
-        [SerializeField] GameObject showButtonObject;  // Hide 시 표시될 Show 버튼
+        // Show 버튼은 별도 DialogueShowButton 컴포넌트로 외부 분리됨 (UIManager Story 그룹 lazy spawn)
 
         [Header("선택적 바인딩")]
         [SerializeField] GameObject nameBox;        // 없으면 nameText만 사용
@@ -56,6 +56,8 @@ namespace LoveAlgo.Story
         CancellationTokenSource dotsAnimCts;
 
         [Header("대사창 애니메이션")]
+        [Tooltip("슬라이드/페이드 대상 RectTransform. 비워두면 root 사용. ShowButton이 같이 슬라이드되지 않게 하려면 대사창 내부 패널을 따로 바인딩.")]
+        [SerializeField] RectTransform slidePanel;
         [SerializeField] float fadeDuration = 0.3f;        // Show/Hide 페이드 속도
         [SerializeField] float slideDuration = 0.25f;      // 버튼 슬라이드 속도
         [SerializeField] float slideDistance = 200f;       // 슬라이드 거리 (px)
@@ -84,6 +86,14 @@ namespace LoveAlgo.Story
         bool skipRequested;
         string fullText;
         bool isHidden;
+        public bool IsHidden => isHidden;
+        public event System.Action<bool> OnHiddenChanged;
+        void SetHidden(bool value)
+        {
+            if (isHidden == value) return;
+            isHidden = value;
+            OnHiddenChanged?.Invoke(isHidden);
+        }
 #pragma warning disable CS0414 // 향후 페이드인 조건 분기용 (현재 할당만)
         bool needsFadeIn;
 #pragma warning restore CS0414
@@ -118,13 +128,13 @@ namespace LoveAlgo.Story
 
         void Awake()
         {
-            rectTransform = GetComponent<RectTransform>();
+            // 슬라이드 대상: 인스펙터에서 별도 바인딩했으면 그것, 아니면 root
+            rectTransform = slidePanel != null ? slidePanel : GetComponent<RectTransform>();
             if (rectTransform != null)
                 originalY = rectTransform.anchoredPosition.y;
 
             HideNextIndicator();
             SetupButtons();
-            if (showButtonObject != null) showButtonObject.SetActive(false);
 
             // 저장된 텍스트 속도 복원
             float savedSpeed = PlayerPrefs.GetFloat("TextSpeed", GameConstants.DefaultTextSpeed);
@@ -140,13 +150,6 @@ namespace LoveAlgo.Story
             autoButton?.onClick.AddListener(OnAutoClick);
             logButton?.onClick.AddListener(OnLogClick);
             hideButton?.onClick.AddListener(OnHideClick);
-            
-            // Show 버튼 (Hide 상태에서 표시됨)
-            if (showButtonObject != null)
-            {
-                var showButton = showButtonObject.GetComponent<Button>();
-                showButton?.onClick.AddListener(OnShowClick);
-            }
         }
 
         /// <summary>
@@ -573,6 +576,9 @@ namespace LoveAlgo.Story
         /// </summary>
         public void Show()
         {
+            // FX/스크립 주도 Show — 사용자 hide 상태 해제 (DialogueShowButton이 구독)
+            SetHidden(false);
+
             if (canvasGroup == null) { gameObject.SetActive(true); needsFadeIn = false; return; }
 
             KillAnimations();
@@ -609,6 +615,9 @@ namespace LoveAlgo.Story
         /// </summary>
         public void Hide()
         {
+            // FX/스크립 주도 Hide — 사용자 hide 아님 → ShowButton 뜨지 않음
+            SetHidden(false);
+
             StopDotsAnimation();
             needsFadeIn = true;
 
@@ -649,6 +658,8 @@ namespace LoveAlgo.Story
         /// </summary>
         public void ShowImmediate()
         {
+            SetHidden(false);
+
             KillAnimations();
             needsFadeIn = false;
 
@@ -672,6 +683,8 @@ namespace LoveAlgo.Story
         /// </summary>
         public void HideImmediate()
         {
+            SetHidden(false);
+
             StopDotsAnimation();
             KillAnimations();
             needsFadeIn = true;
@@ -911,7 +924,7 @@ namespace LoveAlgo.Story
 
         void OnHideClick()
         {
-            isHidden = true;
+            SetHidden(true);
             StopDotsAnimation();
             KillAnimations();
 
@@ -929,14 +942,20 @@ namespace LoveAlgo.Story
                     canvasGroup.interactable = false;
                     canvasGroup.blocksRaycasts = false;
                 }
-                if (showButtonObject != null) showButtonObject.SetActive(true);
             });
+        }
+
+        /// <summary>
+        /// 외부 DialogueShowButton에서 호출 — 사용자 hide 상태 해제하고 대사창 복귀
+        /// </summary>
+        public void RequestShow()
+        {
+            OnShowClick();
         }
 
         void OnShowClick()
         {
-            isHidden = false;
-            if (showButtonObject != null) showButtonObject.SetActive(false);
+            SetHidden(false);
             KillAnimations();
 
             // 시작 위치: 아래에서

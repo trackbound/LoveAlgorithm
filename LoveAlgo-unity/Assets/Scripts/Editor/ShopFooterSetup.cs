@@ -125,7 +125,7 @@ namespace LoveAlgo.EditorTools
                 tmp.fontSize = 36f;
                 tmp.color = Color.white;
                 tmp.raycastTarget = false;
-                tmp.enableWordWrapping = true;
+                tmp.textWrappingMode = TextWrappingModes.Normal;
 
                 // 5) ShopPopup.saleListFooter 바인딩
                 var prop = soShop.FindProperty("saleListFooter");

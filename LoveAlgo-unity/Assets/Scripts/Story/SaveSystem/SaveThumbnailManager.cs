@@ -1,9 +1,8 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using Cysharp.Threading.Tasks;
-using LoveAlgo.Core;
+using LoveAlgo.UI;
 
 namespace LoveAlgo.Story.SaveSystem
 {
@@ -15,27 +14,17 @@ namespace LoveAlgo.Story.SaveSystem
         const string SaveFolder = "Saves";
         const int ThumbnailWidth = 400;
         const int ThumbnailHeight = 128;
-        /// <summary>
-        /// 썸네일에 같이 노출될 추가 화이트리스트 Canvas 목록.
-        /// 스케줄/상점 같은 화면을 포함하고 싶을 때 각 UI에서 Register/Unregister 호출.
-        /// </summary>
-        static readonly HashSet<Canvas> additionalWhitelist = new();
 
-        /// <summary>
-        /// 스크린샷에 포함할 추가 Canvas 등록 (중복 등록 무해)
-        /// </summary>
-        public static void RegisterWhitelistCanvas(Canvas canvas)
+        struct ThumbnailUISnapshot
         {
-            if (canvas != null) additionalWhitelist.Add(canvas);
+            public bool DialogueActive;
+            public bool ChoiceActive;
+            public bool ScheduleActive;
+            public bool TitleActive;
+            public bool UsernameActive;
+            public bool PlaceActive;
         }
 
-        /// <summary>
-        /// 화이트리스트에서 제외 (UI 소멸/쥌 때 호출)
-        /// </summary>
-        public static void UnregisterWhitelistCanvas(Canvas canvas)
-        {
-            if (canvas != null) additionalWhitelist.Remove(canvas);
-        }
         /// <summary>
         /// 스크린샷 저장 경로
         /// </summary>
@@ -182,11 +171,11 @@ namespace LoveAlgo.Story.SaveSystem
         }
 
         /// <summary>
-        /// 비동기 캡처: Stage 외 Canvas 비활성화 → 1프레임 대기(렌더 반영) → 캡처 → 복원
+        /// 비동기 캡처: UI 숨김 → 1프레임 대기(렌더 반영) → 캡처 → UI 복원
         /// </summary>
         static async UniTask<Texture2D> CaptureStageOnlyTextureAsync()
         {
-            var disabled = DisableNonStageCanvases();
+            var snapshot = HideUIForThumbnailCapture();
             try
             {
                 await UniTask.WaitForEndOfFrame();
@@ -194,7 +183,7 @@ namespace LoveAlgo.Story.SaveSystem
             }
             finally
             {
-                RestoreCanvases(disabled);
+                RestoreUIAfterThumbnailCapture(snapshot);
             }
         }
 
@@ -203,7 +192,7 @@ namespace LoveAlgo.Story.SaveSystem
         /// </summary>
         static Texture2D CaptureStageOnlyTextureSync()
         {
-            var disabled = DisableNonStageCanvases();
+            var snapshot = HideUIForThumbnailCapture();
             try
             {
                 Canvas.ForceUpdateCanvases();
@@ -211,62 +200,71 @@ namespace LoveAlgo.Story.SaveSystem
             }
             finally
             {
-                RestoreCanvases(disabled);
+                RestoreUIAfterThumbnailCapture(snapshot);
             }
         }
 
         /// <summary>
-        /// Stage Canvas(게임 화면) + 등록된 화이트리스트 Canvas를 제외한 모든 Canvas를 비활성화.
-        /// 화이트리스트 방식 — 새 UI가 추가되어도 자동으로 썸네일에서 제외됨.
+        /// 썸네일 캡처를 위해 UI 요소들 숨김
         /// </summary>
-        static List<Canvas> DisableNonStageCanvases()
+        static ThumbnailUISnapshot HideUIForThumbnailCapture()
         {
-            var stageCanvas = StageManager.Instance?.StageCanvas;
-            var allCanvases = UnityEngine.Object.FindObjectsByType<Canvas>(FindObjectsInactive.Include);
-            var disabled = new List<Canvas>();
+            var ui = UIManager.Instance;
+            var snapshot = new ThumbnailUISnapshot();
 
-            foreach (var canvas in allCanvases)
+            if (ui != null)
             {
-                if (!canvas.enabled) continue;
-                // Stage Canvas 자체는 유지
-                if (canvas == stageCanvas) continue;
-                // Stage Canvas 하위 Canvas(레이어 내부)도 유지
-                if (stageCanvas != null && canvas.transform.IsChildOf(stageCanvas.transform)) continue;
-                // 추가 화이트리스트 (스케줄/상점 등) 유지
-                if (IsWhitelisted(canvas)) continue;
-
-                canvas.enabled = false;
-                disabled.Add(canvas);
+                if (ui.DialogueUI != null)
+                {
+                    snapshot.DialogueActive = ui.DialogueUI.gameObject.activeSelf;
+                    ui.DialogueUI.gameObject.SetActive(false);
+                }
+                if (ui.ChoiceUI != null)
+                {
+                    snapshot.ChoiceActive = ui.ChoiceUI.gameObject.activeSelf;
+                    ui.ChoiceUI.gameObject.SetActive(false);
+                }
+                if (ui.ScheduleUI != null)
+                {
+                    snapshot.ScheduleActive = ui.ScheduleUI.gameObject.activeSelf;
+                    ui.ScheduleUI.gameObject.SetActive(false);
+                }
+                if (ui.TitleUI != null)
+                {
+                    snapshot.TitleActive = ui.TitleUI.gameObject.activeSelf;
+                    ui.TitleUI.gameObject.SetActive(false);
+                }
+                if (ui.UsernameUI != null)
+                {
+                    snapshot.UsernameActive = ui.UsernameUI.gameObject.activeSelf;
+                    ui.UsernameUI.gameObject.SetActive(false);
+                }
+                if (ui.PlaceUI != null)
+                {
+                    snapshot.PlaceActive = ui.PlaceUI.gameObject.activeSelf;
+                    ui.PlaceUI.gameObject.SetActive(false);
+                }
             }
 
-            return disabled;
+            return snapshot;
         }
 
         /// <summary>
-        /// 등록된 화이트리스트 Canvas 또는 그 자식인지 판별
+        /// 캡처 후 UI 요소들 복원
         /// </summary>
-        static bool IsWhitelisted(Canvas canvas)
+        static void RestoreUIAfterThumbnailCapture(ThumbnailUISnapshot snapshot)
         {
-            if (canvas == null) return false;
-            foreach (var w in additionalWhitelist)
+            var ui = UIManager.Instance;
+            if (ui != null)
             {
-                if (w == null) continue;
-                if (canvas == w) return true;
-                if (canvas.transform.IsChildOf(w.transform)) return true;
+                if (ui.DialogueUI != null) ui.DialogueUI.gameObject.SetActive(snapshot.DialogueActive);
+                if (ui.ChoiceUI != null) ui.ChoiceUI.gameObject.SetActive(snapshot.ChoiceActive);
+                if (ui.ScheduleUI != null) ui.ScheduleUI.gameObject.SetActive(snapshot.ScheduleActive);
+                if (ui.TitleUI != null) ui.TitleUI.gameObject.SetActive(snapshot.TitleActive);
+                if (ui.UsernameUI != null) ui.UsernameUI.gameObject.SetActive(snapshot.UsernameActive);
+                if (ui.PlaceUI != null) ui.PlaceUI.gameObject.SetActive(snapshot.PlaceActive);
             }
-            return false;
-        }
 
-        /// <summary>
-        /// 비활성화했던 Canvas 복원
-        /// </summary>
-        static void RestoreCanvases(List<Canvas> disabled)
-        {
-            foreach (var canvas in disabled)
-            {
-                if (canvas != null)
-                    canvas.enabled = true;
-            }
         }
 
         /// <summary>

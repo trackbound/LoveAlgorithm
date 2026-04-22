@@ -31,6 +31,13 @@ namespace LoveAlgo.Core
         public CGLayer CG => cgLayer;
         public EyeMask EyeMask => eyeMask;
 
+        void Awake()
+        {
+            // 런타임 안전망: 프리팹이 lazy-instantiate된 경우 OnValidate가 실행되지 않아
+            // serialized 필드가 비어있을 수 있음 → 자식에서 한 번 더 자동 바인딩
+            AutoBind();
+        }
+
         void OnValidate()
         {
             AutoBind();
