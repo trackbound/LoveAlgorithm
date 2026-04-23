@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using Cysharp.Threading.Tasks;
@@ -8,21 +9,20 @@ namespace LoveAlgo.Story.SaveSystem
 {
     /// <summary>
     /// 썸네일 스크린샷 캡처, 생성, UI 숨김/복원 담당
+    /// 화이트리스트 방식: "ThumbnailKeep" 태그가 붙은 GameObject(와 그 자손)는
+    /// 캡처 시 그대로 유지되고, 그 외 UIManager/PopupManager 하위 UI는 모두 숨겨진다.
+    /// 캐릭터 CG, 배경 BG는 UIManager/PopupManager 바깥에 있어 항상 유지됨.
     /// </summary>
     public static class SaveThumbnailManager
     {
         const string SaveFolder = "Saves";
         const int ThumbnailWidth = 400;
         const int ThumbnailHeight = 128;
+        const string WhitelistTag = "ThumbnailKeep";
 
         struct ThumbnailUISnapshot
         {
-            public bool DialogueActive;
-            public bool ChoiceActive;
-            public bool ScheduleActive;
-            public bool TitleActive;
-            public bool UsernameActive;
-            public bool PlaceActive;
+            public List<GameObject> DisabledObjects;
         }
 
         /// <summary>
@@ -205,66 +205,83 @@ namespace LoveAlgo.Story.SaveSystem
         }
 
         /// <summary>
-        /// 썸네일 캡처를 위해 UI 요소들 숨김
+        /// 썸네일 캡처를 위해 화이트리스트 외 UI 요소들 숨김.
+        /// 유지(화이트리스트): 캐릭터 CG, 배경 BG(Stage 요소들 — UIManager/PopupManager 하위가 아님),
+        ///                     ScheduleUI, ShopUI (UIManager 하위).
+        /// 숨김: 그 외 UIManager 하위 UI 전부, PopupManager 하위 모든 팝업/레이어.
         /// </summary>
         static ThumbnailUISnapshot HideUIForThumbnailCapture()
         {
-            var ui = UIManager.Instance;
-            var snapshot = new ThumbnailUISnapshot();
-
-            if (ui != null)
+            var snapshot = new ThumbnailUISnapshot
             {
-                if (ui.DialogueUI != null)
-                {
-                    snapshot.DialogueActive = ui.DialogueUI.gameObject.activeSelf;
-                    ui.DialogueUI.gameObject.SetActive(false);
-                }
-                if (ui.ChoiceUI != null)
-                {
-                    snapshot.ChoiceActive = ui.ChoiceUI.gameObject.activeSelf;
-                    ui.ChoiceUI.gameObject.SetActive(false);
-                }
-                if (ui.ScheduleUI != null)
-                {
-                    snapshot.ScheduleActive = ui.ScheduleUI.gameObject.activeSelf;
-                    ui.ScheduleUI.gameObject.SetActive(false);
-                }
-                if (ui.TitleUI != null)
-                {
-                    snapshot.TitleActive = ui.TitleUI.gameObject.activeSelf;
-                    ui.TitleUI.gameObject.SetActive(false);
-                }
-                if (ui.UsernameUI != null)
-                {
-                    snapshot.UsernameActive = ui.UsernameUI.gameObject.activeSelf;
-                    ui.UsernameUI.gameObject.SetActive(false);
-                }
-                if (ui.PlaceUI != null)
-                {
-                    snapshot.PlaceActive = ui.PlaceUI.gameObject.activeSelf;
-                    ui.PlaceUI.gameObject.SetActive(false);
-                }
-            }
+                DisabledObjects = new List<GameObject>()
+            };
+
+            var ui = UIManager.Instance;
+            if (ui != null)
+                HideActiveExceptWhitelist(ui.transform, snapshot.DisabledObjects);
+
+            var popups = PopupManager.Instance;
+            if (popups != null)
+                HideActiveExceptWhitelist(popups.transform, snapshot.DisabledObjects);
 
             return snapshot;
         }
 
         /// <summary>
-        /// 캡처 후 UI 요소들 복원
+        /// root의 자손들을 순회하며, 화이트리스트에 해당하지 않는 활성 GameObject를 비활성화.
+        /// 화이트리스트를 자손으로 가진 컨테이너는 비활성화하지 않고 재귀만 수행.
+        /// </summary>
+        static void HideActiveExceptWhitelist(Transform root, List<GameObject> disabledList)
+        {
+            for (int i = 0; i < root.childCount; i++)
+            {
+                var child = root.GetChild(i);
+                var go = child.gameObject;
+
+                if (IsWhitelisted(go))
+                    continue; // 화이트리스트 — 서브트리 그대로 유지
+
+                if (ContainsWhitelisted(child))
+                {
+                    // 자손 중 화이트리스트가 있으므로 컨테이너는 유지하고 내부만 처리
+                    HideActiveExceptWhitelist(child, disabledList);
+                }
+                else if (go.activeSelf)
+                {
+                    go.SetActive(false);
+                    disabledList.Add(go);
+                }
+            }
+        }
+
+        static bool IsWhitelisted(GameObject go)
+        {
+            return go.CompareTag(WhitelistTag);
+        }
+
+        static bool ContainsWhitelisted(Transform t)
+        {
+            // 비활성 자손까지 모두 검사 (프리팹 구조 상 아직 켜지지 않은 화이트리스트도 보호)
+            var all = t.GetComponentsInChildren<Transform>(true);
+            for (int i = 0; i < all.Length; i++)
+            {
+                if (all[i].CompareTag(WhitelistTag)) return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// 캡처 후 비활성화했던 GameObject들을 원복
         /// </summary>
         static void RestoreUIAfterThumbnailCapture(ThumbnailUISnapshot snapshot)
         {
-            var ui = UIManager.Instance;
-            if (ui != null)
+            if (snapshot.DisabledObjects == null) return;
+            for (int i = snapshot.DisabledObjects.Count - 1; i >= 0; i--)
             {
-                if (ui.DialogueUI != null) ui.DialogueUI.gameObject.SetActive(snapshot.DialogueActive);
-                if (ui.ChoiceUI != null) ui.ChoiceUI.gameObject.SetActive(snapshot.ChoiceActive);
-                if (ui.ScheduleUI != null) ui.ScheduleUI.gameObject.SetActive(snapshot.ScheduleActive);
-                if (ui.TitleUI != null) ui.TitleUI.gameObject.SetActive(snapshot.TitleActive);
-                if (ui.UsernameUI != null) ui.UsernameUI.gameObject.SetActive(snapshot.UsernameActive);
-                if (ui.PlaceUI != null) ui.PlaceUI.gameObject.SetActive(snapshot.PlaceActive);
+                var go = snapshot.DisabledObjects[i];
+                if (go != null) go.SetActive(true);
             }
-
         }
 
         /// <summary>

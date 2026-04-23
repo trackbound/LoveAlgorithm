@@ -161,8 +161,9 @@ namespace LoveAlgo.UI
 
             // ShowSave()에서 팝업 열기 전 미리 캡처한 pending 썸네일은 첫 commit 시 삭제됨.
             // 같은 SaveLoadPopup 세션에서 2번째 이후 저장에도 정확한 썸네일이 적용되도록
-            // 매 저장 직전에 다시 캡처. (Confirm 팝업은 이미 닫혔고, SaveLoadPopup/Confirm은
-            // SaveThumbnailManager.DisableNonStageCanvases가 자동으로 제외함)
+            // 매 저장 직전에 다시 캡처. (Confirm 팝업은 이미 닫혔고, SaveLoadPopup/Confirm 등
+            // PopupManager 하위 모든 팝업은 SaveThumbnailManager 화이트리스트 캡처에서
+            // 자동으로 숨겨진다 — 화이트리스트: 캐릭터 CG, 배경 BG, ScheduleUI, ShopUI)
             await SaveManager.CapturePendingScreenshotAsync();
 
             // 저장 실행 + 슬롯 갱신 (팝업은 유지)

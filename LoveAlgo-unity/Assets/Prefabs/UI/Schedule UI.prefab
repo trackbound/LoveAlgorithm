@@ -6110,7 +6110,7 @@ GameObject:
   - component: {fileID: 1160599857170623701}
   m_Layer: 0
   m_Name: Schedule UI
-  m_TagString: Untagged
+  m_TagString: ThumbnailKeep
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -6197,7 +6197,6 @@ MonoBehaviour:
   phoneNewBadge: {fileID: 0}
   helpButton: {fileID: 1508837780173219648}
   helpPanel: {fileID: 3146998020257822884}
-  tutorialOverlay: {fileID: 0}
   buffIndicator: {fileID: 0}
   buffText: {fileID: 0}
   scheduleContent: {fileID: 3894211006068221513}

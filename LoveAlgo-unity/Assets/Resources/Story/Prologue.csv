@@ -109,7 +109,7 @@ same_clothes,Text,로아,<emote=Glare/>예쁜 옷이 없는 것도 아닌데 왜
 ,Flow,,Jump:go_campus,>
 
 # 선택2
-diff_clothes,Text,로아,"<emote=Default/>그래, 훨씬 더 좋네!\n이번 학기의 내 목표는 {{Player}}가 옷 1벌을 사게 만드는 거야. 열심히 해야지!",click
+diff_clothes,Text,로아,"<emote=Default/>그래, 훨씬 더 좋네!\n이번 학기의 내 목표는 {{Player}}가 옷 한 벌을 사게 만드는 거야. 열심히 해야지!",click
 ,Flow,,Jump:go_campus,>
 
 # 복귀

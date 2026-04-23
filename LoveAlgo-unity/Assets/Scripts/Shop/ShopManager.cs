@@ -104,6 +104,129 @@ namespace LoveAlgo.Shop
             return true;
         }
 
+        /// <summary>
+        /// 장바구니 일괄 구매 + 즉시 효과 적용 (기획: 선물 제외 즉시 소진)
+        ///   - Consumable: 피로 즉시 감소 (중복 패널티 적용, 인벤토리에 남지 않음)
+        ///   - SessionBuff: 스탯 즉시 증가 + SubEffect 즉시 적용 (중복 패널티 적용, 인벤토리 X)
+        ///   - Gift: 인벤토리에 적재 (기존 동작 유지 — 2차/3차 이벤트에서 사용)
+        ///   - 피로는 GameState.SetStat의 [0, MaxStat] 클램프로 음수 방지
+        /// </summary>
+        /// <param name="items">itemId → 수량</param>
+        /// <param name="currentDay">현재 날짜 (동일날 중복 50% 패널티 판정)</param>
+        /// <param name="appliedEffects">
+        /// 토스트용 피드백 라인 목록. 순서: 아이템별로 "아이템명 xN" 다음 줄에 효과 ("체력 +3" 등).
+        /// Gift는 효과 라인 없음.
+        /// </param>
+        /// <returns>성공 여부</returns>
+        public static bool BuyBatchAndApply(
+            IReadOnlyDictionary<string, int> items,
+            int currentDay,
+            out List<string> appliedEffects)
+        {
+            appliedEffects = new List<string>();
+
+            var gs = GameState.Instance;
+            if (gs == null) return false;
+
+            // 사전 검증: 아이템 존재 + 총액
+            int total = 0;
+            foreach (var kv in items)
+            {
+                var item = ItemDatabase.Get(kv.Key);
+                if (item == null)
+                {
+                    Debug.LogWarning($"[ShopManager] BuyBatchAndApply 아이템 없음: {kv.Key}");
+                    return false;
+                }
+                total += item.Price * kv.Value;
+            }
+
+            if (gs.Money < total)
+            {
+                Debug.Log($"[ShopManager] BuyBatchAndApply 소지금 부족: {MoneyFormat.Currency(gs.Money)} < {MoneyFormat.Currency(total)}");
+                return false;
+            }
+
+            gs.AddMoney(-total);
+
+            foreach (var kv in items)
+            {
+                var item = ItemDatabase.Get(kv.Key);
+                int qty = kv.Value;
+                if (item == null || qty <= 0) continue;
+
+                switch (item.Category)
+                {
+                    case ItemCategory.Gift:
+                        // 선물은 기존대로 인벤토리에 적재 (사용은 2차/3차 이벤트에서)
+                        AddItem(item.Id, qty);
+                        appliedEffects.Add(qty > 1 ? $"{item.Name} x{qty}" : item.Name);
+                        break;
+
+                    case ItemCategory.Consumable:
+                        appliedEffects.Add(qty > 1 ? $"{item.Name} x{qty}" : item.Name);
+                        for (int i = 0; i < qty; i++)
+                        {
+                            int effect = ItemEffectSystem.ApplyDuplicatePenalty(
+                                item.GetDuplicateTag(), item.EffectValue, currentDay);
+                            gs.AddStat("Fatigue", -effect);
+                            appliedEffects.Add($"피로 -{effect}");
+                        }
+                        Debug.Log($"[ShopManager] 즉시적용 Consumable: {item.Name} x{qty}");
+                        break;
+
+                    case ItemCategory.SessionBuff:
+                        appliedEffects.Add(qty > 1 ? $"{item.Name} x{qty}" : item.Name);
+                        for (int i = 0; i < qty; i++)
+                        {
+                            // 주 효과
+                            if (!string.IsNullOrEmpty(item.EffectStat))
+                            {
+                                int mainVal = ItemEffectSystem.ApplyDuplicatePenalty(
+                                    item.GetDuplicateTag(), item.EffectValue, currentDay);
+                                if (mainVal != 0)
+                                {
+                                    gs.AddStat(item.EffectStat, mainVal);
+                                    appliedEffects.Add($"{StatDisplayName(item.EffectStat)} {FormatSigned(mainVal)}");
+                                }
+                            }
+                            // 보조 효과 (중복 패널티 동일 태그 적용)
+                            if (!string.IsNullOrEmpty(item.SubEffectStat) && item.SubEffectValue != 0)
+                            {
+                                int subVal = ItemEffectSystem.ApplyDuplicatePenalty(
+                                    item.GetDuplicateTag(), item.SubEffectValue, currentDay);
+                                if (subVal != 0)
+                                {
+                                    gs.AddStat(item.SubEffectStat, subVal);
+                                    appliedEffects.Add($"{StatDisplayName(item.SubEffectStat)} {FormatSigned(subVal)}");
+                                }
+                            }
+                        }
+                        Debug.Log($"[ShopManager] 즉시적용 SessionBuff: {item.Name} x{qty}");
+                        break;
+                }
+            }
+
+            Debug.Log($"[ShopManager] BuyBatchAndApply 완료: {items.Count}종 ({MoneyFormat.SignedCurrency(-total)})");
+            return true;
+        }
+
+        /// <summary>스탯 ID → 한글 표시명</summary>
+        static string StatDisplayName(string statId)
+        {
+            return (statId ?? "").ToLower() switch
+            {
+                "str" or "strength" => "체력",
+                "int" or "intelligence" => "지성",
+                "soc" or "sociability" => "사교성",
+                "per" or "perseverance" => "끈기",
+                "fatigue" => "피로",
+                _ => statId,
+            };
+        }
+
+        static string FormatSigned(int value) => value > 0 ? $"+{value}" : value.ToString();
+
         #endregion
 
         #region 인벤토리

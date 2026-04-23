@@ -380,28 +380,16 @@ namespace LoveAlgo.Shop
             // 구매 직전 합계 (피드백용; BuyBatch 후엔 cart가 비기 전 캡처)
             int totalCost = GetCartTotal();
 
-            // 일괄 구매 (원자적 트랜잭션)
-            //   - 기획서 준수: "구매" = 돈 차감 + 인벤토리 적재만 수행
-            //   - 효과 적용은 별도 시점("자유행동 전/후"에 별도 사용 UI에서)
-            //     · Consumable(피로회복): 사용 시점에 즉시 피로 감소 (0 미만 클램프)
-            //     · SessionBuff(세션 버프): 사용 시점에 활성화 → 다음 자유행동 1회만 적용
-            //     · Gift(선물): 2차/3차 이벤트에서만 사용 가능
-            //   - 동일날 중복 사용 50% 패널티는 "사용" 시점에 ItemEffectSystem이 처리
-            if (!ShopManager.BuyBatch(cart))
+            // 일괄 구매 + 즉시 효과 적용 (원자적 트랜잭션)
+            //   기획: "구매 = 즉시 적용" — 선물(Gift) 제외하고 Consumable/SessionBuff는 구매 시점에 바로 소진·적용
+            //     · Consumable(피로회복): 피로 즉시 감소 (중복 패널티 그대로 적용, 인벤토리에 남지 않음)
+            //     · SessionBuff(스탯 증가): 주/보조 효과 즉시 AddStat (중복 패널티 적용, 인벤토리 X)
+            //     · Gift(선물): 인벤토리에 적재, 2차/3차 이벤트에서 사용
+            int currentDay = GameManager.Instance != null ? GameManager.Instance.CurrentDay : 0;
+            if (!ShopManager.BuyBatchAndApply(cart, currentDay, out var feedbackParts))
             {
                 PopupManager.Instance?.Toast("구매 실패", "소지금이 부족합니다!");
                 return;
-            }
-
-            // 피드백 메시지: 구매한 아이템 목록 (스탯 변동은 표시하지 않음 — 사용 시점에 표시됨)
-            var feedbackParts = new List<string>();
-            foreach (var kv in cart)
-            {
-                var item = ItemDatabase.Get(kv.Key);
-                if (item == null) continue;
-                feedbackParts.Add(kv.Value > 1
-                    ? $"{item.Name} x{kv.Value}"
-                    : item.Name);
             }
 
             // 상태 초기화
@@ -414,7 +402,7 @@ namespace LoveAlgo.Shop
             UISoundManager.Instance?.PlayClick();
 
             // 효과 피드백 토스트 (스케줄과 동일한 순차 표시)
-            //   순서: 합계 → 구매 항목 (효과는 인벤토리에서 사용 시점에 별도 안내)
+            //   순서: 합계 → (아이템별) 이름 → 효과("체력 +3", "피로 -5" 등)
             var toastLines = new List<string>();
             toastLines.Add($"합계 {MoneyFormat.SignedCurrency(-totalCost)}");
             toastLines.AddRange(feedbackParts);
