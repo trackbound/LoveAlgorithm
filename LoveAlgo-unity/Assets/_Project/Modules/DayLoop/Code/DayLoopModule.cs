@@ -1,5 +1,6 @@
 using LoveAlgo.Common;
 using UnityEngine;
+using LoveAlgo.Core;
 
 namespace LoveAlgo.Modules.DayLoop
 {

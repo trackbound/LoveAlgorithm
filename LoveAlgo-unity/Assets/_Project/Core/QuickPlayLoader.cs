@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Cysharp.Threading.Tasks;
 using LoveAlgo.Story;
+using LoveAlgo.Core;
 
 namespace LoveAlgo.Core
 {

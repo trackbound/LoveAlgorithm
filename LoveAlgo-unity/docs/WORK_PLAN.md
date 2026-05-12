@@ -42,10 +42,13 @@
 - [ ] 호칭 업적 (퍼즐콜렉터 +5 / 마스터 +10)
 
 ### A5. PC잠금 시스템 (신규)
-- [ ] `LockScreenController` (첫시작 / 일반진입 / 재설정 모드)
-- [ ] 비밀번호 저장 (PrefsKeys, 단방향 해시)
-- [ ] 3회 오류 카운터 → 열쇠 아이콘
-- [ ] 투두리스트 33개 SO + 랜덤 3개 표출
+- [x] `LockScreenController` (첫시작 / 일반진입 / 재설정 모드) — `Modules/LockScreen/Code/`
+- [x] 비밀번호 저장 (PrefsKeys, 단방향 해시) — `PasswordHasher` SHA256+salt
+- [x] 3회 오류 카운터 → 열쇠 아이콘 (`ShowKeyIcon`)
+- [x] 투두리스트 33개 SO + 랜덤 3개 표출 — `ToDoItemSO` + `ToDoListSO.PickRandom`
+- [ ] UI 스크립트 + 프리팹 (LockScreenPanel/ClockWidget/ToDoWidget/PasswordInput)
+- [ ] 33개 ToDo 데이터 + 4개 로아 메시지 채움
+- [ ] TitleUI 진입 통합 + 씬 GameObject 추가
 
 ---
 

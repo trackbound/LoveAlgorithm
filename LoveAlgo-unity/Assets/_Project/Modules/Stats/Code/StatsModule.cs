@@ -1,6 +1,7 @@
 using LoveAlgo.Common;
 using LoveAlgo.Story;
 using UnityEngine;
+using LoveAlgo.Core;
 
 namespace LoveAlgo.Modules.Stats
 {

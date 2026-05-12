@@ -10,6 +10,7 @@ using LoveAlgo.Common;
 using LoveAlgo.Modules.Stats;
 using LoveAlgo.UI;
 using DG.Tweening;
+using LoveAlgo.Core;
 
 namespace LoveAlgo.Story
 {

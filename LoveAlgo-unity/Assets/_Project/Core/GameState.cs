@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using LoveAlgo.Core;
 
-namespace LoveAlgo.Story
+namespace LoveAlgo.Core
 {
     /// <summary>
     /// 게임 상태 - 호감도, 스탯, 플래그, 돈 관리

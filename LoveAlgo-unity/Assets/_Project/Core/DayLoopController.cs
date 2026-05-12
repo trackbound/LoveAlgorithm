@@ -7,6 +7,7 @@ using LoveAlgo.Modules.Stats;
 using LoveAlgo.Story;
 using LoveAlgo.UI;
 using LoveAlgo.Schedule;
+using LoveAlgo.Core;
 
 namespace LoveAlgo.Core
 {

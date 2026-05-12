@@ -3,6 +3,7 @@ using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using LoveAlgo.Story;
 using LoveAlgo.Schedule;
+using LoveAlgo.Core;
 
 namespace LoveAlgo.Core
 {

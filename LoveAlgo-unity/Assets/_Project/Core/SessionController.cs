@@ -7,6 +7,7 @@ using LoveAlgo.Story;
 using LoveAlgo.Story.SaveSystem;
 using LoveAlgo.UI;
 using LoveAlgo.Schedule;
+using LoveAlgo.Core;
 
 namespace LoveAlgo.Core
 {

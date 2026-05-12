@@ -4,6 +4,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using LoveAlgo.UI;
+using LoveAlgo.Core;
 
 namespace LoveAlgo.Phone
 {
@@ -105,7 +106,7 @@ namespace LoveAlgo.Phone
             if (playerSlotPrefab != null)
             {
                 var playerSlot = Instantiate(playerSlotPrefab, friendListContent);
-                var gs = Story.GameState.Instance;
+                var gs = GameState.Instance;
                 playerSlot.Setup("Player", gs?.PlayerName ?? "나", "");
                 activeFriendSlots.Add(playerSlot);
             }

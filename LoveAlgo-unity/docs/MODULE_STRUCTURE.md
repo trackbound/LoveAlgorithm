@@ -214,7 +214,7 @@ Services.Get<IStage>().ShowCharacter("Roa", "Default", "C");
 | **Stats** | `_Project/Modules/Stats/Code/` | (완료) | ✅ | 파일 이동. GameState는 Core 유지 (중앙 상태). 게임플레이 호출자 IStats 경유. Save/Debug는 GameState 직접 |
 | **DayLoop** | `_Project/Modules/DayLoop/Code/` | (완료) | ✅ | 파일 이동. DayLoopController는 Core 유지. IDayLoop 쿼리/이벤트 모듈화 |
 | **Audio** | `_Project/Modules/Audio/Code/` | (완료) | ✅ | 파일 이동 + 네임스페이스 `LoveAlgo.Modules.Audio` + 호출자 13 갱신 완료 |
-| Narrative | `Story/` (대부분) | `Modules/Narrative/` | ⬜ | 분리 트리거: Narrative 본격 수정 시 |
+| **Narrative** | `_Project/Modules/Narrative/Code/` | (완료) | ✅ | 파일 이동 (ScriptRunner + StoryEngine 전체) + `INarrative` + `NarrativeModule`. 네임스페이스 `LoveAlgo.Story` 유지. GameState는 Core로 분리 |
 | **Stage** | `_Project/Modules/Stage/Code/` | (완료) | ✅ | 파일 이동 + `IStage` + `StageModule`. 네임스페이스 유지 (LoveAlgo.Core / LoveAlgo.Story) |
 | **Save** | `_Project/Modules/Save/Code/` | (완료) | ✅ | 파일 이동 + `ISave` + `SaveModule`. 원본 static 유지, 바인딩은 기능 작업 시 |
 | **Schedule** | `_Project/Modules/Schedule/Code/` | (완료) | ✅ | 파일 이동 + `ISchedule` + `ScheduleModule`. ScheduleUI 내부 로직 분리는 E섹션 참조 |
@@ -228,7 +228,7 @@ Services.Get<IStage>().ShowCharacter("Roa", "Default", "C");
 | **Narrative UI** | `_Project/Modules/Narrative/UI/` | (UI만 이동) | 🔄 | DialogueUI/ChoiceUI/LogPopup + Log entries 이동. ScriptRunner 등 코어는 추후 |
 | **Save UI** | `_Project/Modules/Save/UI/` | (완료) | ✅ | SaveLoadPopup/SaveLoadSlot 이동 |
 | **Affinity (신규 기능)** | — | `Modules/Affinity/` | 🔄 | 위 Affinity 항목 참조 |
-| **LockScreen** | 없음 | `Modules/LockScreen/` | ⬜ | A5 (PC잠금 연출 작업 시) |
+| **LockScreen** | `_Project/Modules/LockScreen/` | (코드 완료, UI 미완) | 🟦 | `ILockScreen` + `LockScreenController` + `LockScreenModule`. 비번 SHA256+salt, 모드 3종, 오류 카운터, ToDoListSO. UI 프리팹은 다음 단계 |
 | **Gacha** | 없음 | `Modules/Gacha/` | ⬜ | A4 (퍼즐 가챠 작업 시) |
 
 **금지:** "정리만을 위한" 일괄 이동. 반드시 기능 작업과 묶어서 이주.

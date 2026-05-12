@@ -8,6 +8,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 using LoveAlgo.Story;
+using LoveAlgo.Core;
 
 namespace LoveAlgo.UI
 {

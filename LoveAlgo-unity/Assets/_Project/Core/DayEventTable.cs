@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using LoveAlgo.Core;
 
 namespace LoveAlgo.Core
 {
@@ -174,7 +175,7 @@ namespace LoveAlgo.Core
         /// </summary>
         public static DayEvent GetEvent(int day, DayTiming timing)
         {
-            var gs = Story.GameState.Instance;
+            var gs = GameState.Instance;
 
             // 1) 일차 고정 이벤트
             if (events.TryGetValue((day, timing), out var dayList))
