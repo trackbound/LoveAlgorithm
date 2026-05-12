@@ -14,7 +14,7 @@ namespace LoveAlgo.UI
     /// 상태/저장소 접근은 모두 ISettings 경유. UI는 슬라이더/버튼 입력 처리만 담당.
     /// 화면, 볼륨, 캐릭터 음성, 속도 설정.
     /// </summary>
-    public class SettingsPopup : ModalPopupBase
+    public class SettingsPopup : PopupBase
     {
         [Header("화면 설정")]
         [SerializeField] Button fullscreenButton;

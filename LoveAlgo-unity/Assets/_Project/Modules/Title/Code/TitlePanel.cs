@@ -292,7 +292,7 @@ namespace LoveAlgo.UI
         void OnExtraClick()
         {
             Debug.Log("[TitlePanel] Extra - 엑스트라");
-            PopupManager.Instance?.ShowModal<ExtraPopup>();
+            PopupManager.Instance?.Show<ExtraPopup>();
         }
 
         void OnExitClick()

@@ -224,7 +224,7 @@ Services.Get<IStage>().ShowCharacter("Roa", "Default", "C");
 | **Title** | `_Project/Modules/Title/Code/` | (완료, Phase 1) | 🔄 | TitlePanel/UsernameUI/ExtraPopup. Phase 2에서 ITitle 도입 예정 |
 | **Settings** | `_Project/Modules/Settings/Code/` | (완료) | ✅ | `ISettings` + `SettingsModule` (PlayerPrefs 흡수 + IAudio/INarrative 경유 적용). SettingsPopup 정적 결합 0 |
 | **Tutorial** | `_Project/Modules/Tutorial/Code/` | (완료, Phase 1) | 🔄 | TutorialOverlay 이동. Phase 2에서 ITutorial 도입 예정 |
-| **UI 인프라** | `_Project/UI/{Core,Components,Popups,HUD}/` | (완료) | ✅ | UIManager/PopupManager/UISoundManager/ModalPopupBase + 버튼·탭 컴포넌트 + 범용 팝업 + HUD |
+| **UI 인프라** | `_Project/UI/{Core,Components,Popups,Notifications,Contextual}/` | (완료) | ✅ | Core(`UIManager`/`PopupManager`/`UISoundManager`/`PopupBase`) + Components(버튼·탭) + Popups(Alert/Confirm) + Notifications(Place/Toast) + Contextual(QuickMenu) |
 | **Narrative UI** | `_Project/Modules/Narrative/UI/` | (UI만 이동) | 🔄 | DialogueUI/ChoiceUI/LogPopup + Log entries 이동. ScriptRunner 등 코어는 추후 |
 | **Save UI** | `_Project/Modules/Save/UI/` | (완료) | ✅ | SaveLoadPopup/SaveLoadSlot 이동 |
 | **Affinity (신규 기능)** | — | `Modules/Affinity/` | 🔄 | 위 Affinity 항목 참조 |

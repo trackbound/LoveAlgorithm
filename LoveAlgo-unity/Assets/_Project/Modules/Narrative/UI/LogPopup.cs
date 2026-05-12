@@ -14,7 +14,7 @@ namespace LoveAlgo.UI
     ///
     /// 최적화: 증분 빌드 — 이전 Show 이후 추가된 로그만 생성
     /// </summary>
-    public class LogPopup : MonoBehaviour
+    public class LogPopup : PopupBase
     {
         [Header("바인딩")]
         [SerializeField] ScrollRect scrollRect;
@@ -46,10 +46,9 @@ namespace LoveAlgo.UI
         LogEntryBase lastGroup;      // 마지막 그룹 (연속 대사 추가용)
         CancellationTokenSource buildCts;  // 중복 빌드 방지용
 
-        public bool IsVisible => gameObject.activeSelf;
-
-        void Awake()
+        protected override void Awake()
         {
+            base.Awake();
             closeButton?.onClick.AddListener(Close);
             // gameObject.SetActive(false)은 PopupManager.InitPopups()에서 처리
             // 여기서 호출하면: 씬에서 비활성화 시작 → 첫 Show() → SetActive(true) → Awake 실행 → 다시 꺼짐 버그 발생
@@ -73,7 +72,7 @@ namespace LoveAlgo.UI
                 emptyMessage.SetActive(!hasEntries);
 
             // 먼저 활성화해야 Instantiate 시 레이아웃 계산이 정상 작동
-            gameObject.SetActive(true);
+            Show(); // base — SetActive(true) + NotifyOpened
 
             if (hasEntries)
             {
@@ -87,9 +86,7 @@ namespace LoveAlgo.UI
                 ScrollToBottomAsync().Forget();
         }
 
-        public void Close() => Hide();
-
-        public void Hide() => gameObject.SetActive(false);
+        // Hide/Close는 PopupBase에서 제공 (base.Hide는 SetActive(false) + NotifyClosed)
 
         /// <summary>증분 빌드 — 새 항목만 추가 (비동기: 프레임 분산)</summary>
         async UniTaskVoid BuildIncrementalAsync(IReadOnlyList<DialogueLogEntry> log, CancellationToken ct)
@@ -170,12 +167,13 @@ namespace LoveAlgo.UI
             return sprite;
         }
 
-        void OnDestroy()
+        protected override void OnDestroy()
         {
             buildCts?.Cancel();
             buildCts?.Dispose();
             buildCts = null;
             ClearEntries();
+            base.OnDestroy();
         }
 
         void ClearEntries()

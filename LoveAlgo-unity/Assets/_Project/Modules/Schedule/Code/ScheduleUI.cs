@@ -354,7 +354,6 @@ namespace LoveAlgo.Schedule
 
                 // 기획서: dim + 확인 팝업
                 var confirmed = await LoveAlgo.UI.PopupManager.Instance.ConfirmAsync(
-                    "Schedule",
                     new LoveAlgo.UI.ConfirmPopupData { mainText = message, sub1 = effectText }
                 );
 
@@ -646,7 +645,7 @@ namespace LoveAlgo.Schedule
         /// <summary>폰 열기 (행동 소비 없음)</summary>
         void OnPhoneClick()
         {
-            LoveAlgo.UI.PopupManager.Instance?.ShowModal<Phone.PhonePopup>();
+            LoveAlgo.UI.PopupManager.Instance?.Show<Phone.PhonePopup>();
         }
 
         #endregion

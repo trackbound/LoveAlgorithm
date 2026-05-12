@@ -9,7 +9,7 @@ using LoveAlgo.Core;
 namespace LoveAlgo.Phone
 {
     /// <summary>
-    /// 폰 메인 패널 (ModalPopupBase)
+    /// 폰 메인 패널 (PopupBase)
     /// 
     /// PhonePopup 프리팹에 연결:
     ///   - Sidebar: Tab_Friend, Tab_Chat, Tab_Theme
@@ -18,7 +18,7 @@ namespace LoveAlgo.Phone
     ///   - ChatRoomPanel: 개별 대화방
     ///   - ProfilePanel: 프로필 팝업
     /// </summary>
-    public class PhonePopup : ModalPopupBase
+    public class PhonePopup : PopupBase
     {
         [Header("탭 그룹")]
         [SerializeField] TabGroup tabGroup;

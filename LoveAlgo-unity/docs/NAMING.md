@@ -8,7 +8,7 @@
 
 | Suffix | 정의 | 차단성 (게임 진행) | 자동 소멸 | 베이스 클래스 |
 |--------|------|------------------|---------|--------------|
-| **`*Popup`** | 모달 다이얼로그 | ✅ 진행 차단 + 배경 dim | ❌ 명시적 닫기 | `ModalPopupBase` (필수) |
+| **`*Popup`** | 모달 다이얼로그 | ✅ 진행 차단 + 배경 dim | ❌ 명시적 닫기 | `PopupBase` (필수, Layer=Modal) |
 | **`*Panel`** | **게임 진행 외부** (진입 흐름·메뉴·게이트) | △ 진입 차단 | ❌ 명시적 종료 | `MonoBehaviour` |
 | **`*Notification`** | 자동 소멸 알림 | ❌ 없음 | ✅ 타이머 | `MonoBehaviour` |
 | **`*Tooltip`** | 호버 시 표시, 떠나면 사라짐 | ❌ | ✅ 호버 종료 | `MonoBehaviour` |
@@ -33,7 +33,9 @@
 
 ## 추가 규칙
 
-- **`Popup` suffix**: 모달(차단 + dim) 동작 필수. `ModalPopupBase` 상속은 권장(표준 Show/Hide 흐름). 자체 흐름을 가진 기존 팝업(`AlertPopup`/`ConfirmPopup`/`LogPopup`/`ChoicePopup`/`ScheduleHelpPopup`)은 점진 통일.
+- **`Popup` suffix**: 모달(차단 + dim) 동작. **`PopupBase` 상속 필수** (Layer/useDimmer/Stack 통보 표준 흐름).
+- **결과 반환 팝업** (`ConfirmPopup` 등): `PopupBase<TResult>` 상속. `AwaitResult()` + `Complete(result)` 사용.
+- **Notification/Tooltip** 등 자동소멸·호버 UI도 `PopupBase`(Layer=Top, useDimmer=false) 상속 권장 — 새 팝업 추가 비용 최소화.
 - **`*UI` suffix는 모드 단위 컨테이너에만** (예: `ScheduleUI`, `ShopUI`). 위젯·슬롯·엔트리에는 사용 금지.
 - 약어 `EX`(확장)는 컴포넌트 전용 (`ButtonEX`, `ScrollbarEX`).
 - 모듈 진입점은 **`{Name}Module`** (예: `AudioModule`, `SaveModule`).
@@ -96,7 +98,8 @@
   Art/              모듈 전용 아트 리소스 (선택)
 ```
 
-공용 UI (모듈 종속 없음) 는 `Assets/_Project/UI/{Core,Components,Popups,HUD}/`.
+공용 UI (모듈 종속 없음) 는 `Assets/_Project/UI/{Core,Components,Popups,Notifications,Contextual,HUD,Panels}/`.
+실제 사용 카테고리만 폴더 생성 (현재: Core, Components, Popups, Notifications, Contextual).
 
 ---
 

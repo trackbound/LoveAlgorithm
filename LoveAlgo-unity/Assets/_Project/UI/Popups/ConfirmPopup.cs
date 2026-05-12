@@ -23,10 +23,9 @@ namespace LoveAlgo.UI
     }
 
     /// <summary>
-    /// 확인 팝업 (확인/취소).
-    /// 프리팹 이름으로 PopupManager에서 조회되며, 최대 5개 텍스트 슬롯을 지원한다.
+    /// 확인 팝업 (예/아니요). 결과 bool 반환.
     /// </summary>
-    public class ConfirmPopup : MonoBehaviour
+    public class ConfirmPopup : PopupBase<bool>
     {
         [Header("텍스트 슬롯")]
         [FormerlySerializedAs("messageText")]
@@ -47,62 +46,40 @@ namespace LoveAlgo.UI
         [SerializeField] string defaultConfirmText = "예";
         [SerializeField] string defaultCancelText = "아니요";
 
-        UniTaskCompletionSource<bool> tcs;
-
-        public bool IsVisible => gameObject.activeSelf;
-
-        void Awake()
+        protected override void Awake()
         {
+            base.Awake();
             confirmButton?.onClick.AddListener(OnConfirm);
             cancelButton?.onClick.AddListener(OnCancel);
         }
 
-        /// <summary>
-        /// 팝업 표시 및 결과 대기 (데이터 구조체 버전)
-        /// </summary>
         public UniTask<bool> ShowAsync(ConfirmPopupData data)
         {
-            tcs?.TrySetCanceled();
-            tcs = new UniTaskCompletionSource<bool>();
-
-            ShowInternal(data);
-            return tcs.Task;
+            var task = AwaitResult();
+            Apply(data);
+            Show();
+            return task;
         }
 
-        /// <summary>
-        /// 팝업 표시 및 결과 대기 (간편 버전)
-        /// </summary>
         public UniTask<bool> ShowAsync(string message, string confirmText = null, string cancelText = null)
-        {
-            return ShowAsync(new ConfirmPopupData
+            => ShowAsync(new ConfirmPopupData
             {
                 mainText = message,
                 confirmText = confirmText,
                 cancelText = cancelText,
             });
-        }
 
-        /// <summary>
-        /// 팝업 표시 (콜백 버전)
-        /// </summary>
         public void Show(string message, Action onConfirm, Action onCancel = null)
         {
-            tcs?.TrySetCanceled();
-            tcs = new UniTaskCompletionSource<bool>();
-
-            ShowInternal(new ConfirmPopupData { mainText = message });
-
-            tcs.Task.ContinueWith(result =>
+            ShowAsync(message).ContinueWith(result =>
             {
                 if (result) onConfirm?.Invoke();
                 else onCancel?.Invoke();
             });
         }
 
-        void ShowInternal(ConfirmPopupData data)
+        void Apply(ConfirmPopupData data)
         {
-            PopupManager.Instance?.ShowTopDimmer(true);
-
             SetSlot(mainTextField, data.mainText);
             SetSlot(sub1Text, data.sub1);
             SetSlot(sub2Text, data.sub2);
@@ -113,8 +90,6 @@ namespace LoveAlgo.UI
                 confirmButtonText.text = data.confirmText ?? defaultConfirmText;
             if (cancelButtonText != null)
                 cancelButtonText.text = data.cancelText ?? defaultCancelText;
-
-            gameObject.SetActive(true);
         }
 
         static void SetSlot(TMP_Text field, string value)
@@ -125,34 +100,7 @@ namespace LoveAlgo.UI
             field.text = hasValue ? value : "";
         }
 
-        void OnConfirm()
-        {
-            var pending = tcs;
-            tcs = null;
-            Hide();
-            pending?.TrySetResult(true);
-        }
-
-        void OnCancel()
-        {
-            var pending = tcs;
-            tcs = null;
-            Hide();
-            pending?.TrySetResult(false);
-        }
-
-        public void Hide()
-        {
-            gameObject.SetActive(false);
-            PopupManager.Instance?.ShowTopDimmer(false);
-            tcs?.TrySetResult(false);
-            tcs = null;
-        }
-
-        void OnDestroy()
-        {
-            tcs?.TrySetCanceled();
-            tcs = null;
-        }
+        void OnConfirm() => Complete(true);
+        void OnCancel() => Complete(false);
     }
 }

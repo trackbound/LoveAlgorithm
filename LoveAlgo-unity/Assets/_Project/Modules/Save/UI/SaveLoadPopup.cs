@@ -12,7 +12,7 @@ namespace LoveAlgo.UI
     /// <summary>
     /// 세이브/로드 모달 팝업
     /// </summary>
-    public class SaveLoadPopup : ModalPopupBase
+    public class SaveLoadPopup : PopupBase
     {
         [Header("SaveLoad UI")]
         [SerializeField] Button closeButton;
@@ -188,7 +188,7 @@ namespace LoveAlgo.UI
             if (!confirm) return;
 
             // 로드는 씬 전환이므로 팝업 닫고 실행
-            await PopupManager.Instance.CloseModalAsync();
+            await HideAsync();
             await UniTask.Delay(150);
             onSlotSelected?.Invoke(slotIndex);
         }

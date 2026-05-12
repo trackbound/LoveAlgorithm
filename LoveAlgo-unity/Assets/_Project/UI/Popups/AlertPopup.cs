@@ -6,9 +6,9 @@ using UnityEngine.UI;
 namespace LoveAlgo.UI
 {
     /// <summary>
-    /// 알림 팝업 (확인만)
+    /// 알림 팝업 (확인만). PopupBase 통합 흐름 사용.
     /// </summary>
-    public class AlertPopup : MonoBehaviour
+    public class AlertPopup : PopupBase
     {
         [Header("UI 바인딩")]
         [SerializeField] TMP_Text messageText;
@@ -20,52 +20,47 @@ namespace LoveAlgo.UI
 
         UniTaskCompletionSource tcs;
 
-        public bool IsVisible => gameObject.activeSelf;
-
-        void Awake()
+        protected override void Awake()
         {
+            base.Awake();
             confirmButton?.onClick.AddListener(OnConfirm);
         }
 
-        /// <summary>
-        /// 팝업 표시 및 확인 대기
-        /// </summary>
+        /// <summary>팝업 표시 및 확인 대기.</summary>
         public UniTask ShowAsync(string message, string confirmText = null)
         {
-            // 이전 작업 완료 처리
+            // 이전 대기 task 해제
             tcs?.TrySetResult();
             tcs = new UniTaskCompletionSource();
 
-            // Dimmer 표시
-            PopupManager.Instance?.ShowTopDimmer(true);
-
-            // UI 설정
             if (messageText != null) messageText.text = message;
             if (confirmButtonText != null)
                 confirmButtonText.text = confirmText ?? defaultConfirmText;
 
-            gameObject.SetActive(true);
+            Show();
             return tcs.Task;
         }
 
         void OnConfirm()
         {
+            var pending = tcs;
+            tcs = null;
             Hide();
-            tcs?.TrySetResult();
+            pending?.TrySetResult();
         }
 
-        public void Hide()
+        public override void Hide()
         {
-            gameObject.SetActive(false);
-            PopupManager.Instance?.ShowTopDimmer(false);
-            // 외부에서 Hide() 호출 시에도 대기 중인 UniTask를 완료
+            base.Hide();
             tcs?.TrySetResult();
+            tcs = null;
         }
 
-        void OnDestroy()
+        protected override void OnDestroy()
         {
             tcs?.TrySetCanceled();
             tcs = null;
+            base.OnDestroy();
         }
     }
 }

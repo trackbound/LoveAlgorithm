@@ -5,15 +5,19 @@ using DG.Tweening;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
+using LoveAlgo.Common;
 using LoveAlgo.Core;
+using LoveAlgo.Save;
 using LoveAlgo.Story;
 
 namespace LoveAlgo.UI
 {
-    public enum PopupLayer { Modal, Top }
-
     /// <summary>
-    /// 팝업 매니저 - 레이어 기반 팝업 관리
+    /// 통합 팝업 매니저.
+    /// - 모든 팝업은 <see cref="PopupBase"/>의 자식. Type 기반 registry.
+    /// - <see cref="PopupBase.Layer"/>로 Modal/Top 구분 (Modal 위에 Top 가능).
+    /// - 베이스가 Show/Hide 시 <see cref="NotifyOpened"/>/<see cref="NotifyClosed"/>를 호출 → openStack 관리.
+    /// - ESC / Dimmer 클릭 / dimmer 표시 정책 모두 Stack 기준으로 자동.
     /// </summary>
     public class PopupManager : SingletonMonoBehaviour<PopupManager>
     {
@@ -26,45 +30,23 @@ namespace LoveAlgo.UI
         [SerializeField] CanvasGroup dimmerCanvasGroup;
         [SerializeField] float dimmerFadeDuration = 0.2f;
 
-        [Header("Top 팝업 — Confirm 프리팹 (이름으로 조회)")]
-        [SerializeField] List<ConfirmPopup> confirmPrefabs;
+        [Header("팝업 프리팹 (모든 PopupBase 인스턴스)")]
+        [Tooltip("Layer에 따라 자동으로 layerModal/layerTop 아래에 생성됨")]
+        [SerializeField] List<PopupBase> popupPrefabs;
 
-        [Header("Top 팝업 — 프리팹 바인딩 (lazy spawn into layerTop)")]
-        [SerializeField] AlertPopup alertPopupPrefab;
-        [SerializeField] ToastNotification toastPopupPrefab;
-        [SerializeField] LogPopup logPopupPrefab;
+        // Type → Instance 캐시 (PreWarm + Lazy)
+        readonly Dictionary<Type, PopupBase> cache = new();
 
-        [Header("Modal 팝업 (프리팹)")]
-        [SerializeField] List<GameObject> modalPrefabs;
-
-        // Modal 캐시 (Type → Instance)
-        readonly Dictionary<Type, GameObject> modalCache = new();
-
-        // Confirm 캐시 (프리팹 이름 → 인스턴스)
-        readonly Dictionary<string, ConfirmPopup> confirmCache = new();
-
-        // Top 팝업 lazy 인스턴스
-        AlertPopup _alertPopup;
-        ToastNotification _toastPopup;
-        LogPopup _logPopup;
-
-        AlertPopup AlertPopup => _alertPopup != null ? _alertPopup : (_alertPopup = SpawnTop(alertPopupPrefab));
-        ToastNotification ToastNotification => _toastPopup != null ? _toastPopup : (_toastPopup = SpawnTop(toastPopupPrefab));
-        LogPopup LogPopup => _logPopup != null ? _logPopup : (_logPopup = SpawnTop(logPopupPrefab));
-
-        // 현재 열린 Modal
-        GameObject currentModal;
+        // 현재 열린 팝업 스택 (가장 위 = 끝)
+        readonly List<PopupBase> openStack = new();
 
         protected override void OnSingletonAwake()
         {
             EnsureLayerRoots();
-            PreWarmConfirms();
-            InitPopups();
+            InitDimmer();
+            PreWarm();
         }
 
-        /// <summary>
-        /// layerModal/layerTop이 비어있으면 자동으로 stretch RectTransform 생성
-        /// </summary>
         void EnsureLayerRoots()
         {
             if (layerModal == null) layerModal = CreateLayerRoot("Modal", 0);
@@ -84,21 +66,40 @@ namespace LoveAlgo.UI
             return rt;
         }
 
-        /// <summary>
-        /// Top 팝업 프리합 인스턴스화 (이름 정리 + 초기 비활성화 + 사운드 바인딩)
-        /// </summary>
-        T SpawnTop<T>(T prefab) where T : MonoBehaviour
+        void InitDimmer()
         {
-            if (prefab == null)
+            if (dimmer == null) return;
+            dimmer.SetActive(false);
+
+            var btn = dimmer.GetComponent<Button>();
+            if (btn == null) btn = dimmer.AddComponent<Button>();
+            btn.transition = Selectable.Transition.None;
+            btn.onClick.AddListener(OnDimmerClicked);
+        }
+
+        /// <summary>등록된 모든 프리팹 인스턴스 사전 생성 (첫 표시 시 렉 방지).</summary>
+        void PreWarm()
+        {
+            if (popupPrefabs == null) return;
+            foreach (var prefab in popupPrefabs)
             {
-                Debug.LogWarning($"[PopupManager] {typeof(T).Name} 프리합이 바인딩되지 않음");
-                return null;
+                if (prefab == null) continue;
+                Materialize(prefab);
             }
-            var inst = Instantiate(prefab, layerTop);
-            inst.name = prefab.name;
-            inst.gameObject.SetActive(false);
-            UISoundManager.Instance?.BindButtonsInTransform(inst.transform);
-            return inst;
+        }
+
+        PopupBase Materialize(PopupBase prefab)
+        {
+            var type = prefab.GetType();
+            if (cache.TryGetValue(type, out var existing)) return existing;
+
+            var parent = prefab.Layer == PopupLayer.Top ? layerTop : layerModal;
+            var instance = Instantiate(prefab, parent);
+            instance.name = prefab.name; // (Clone) 제거
+            instance.gameObject.SetActive(false);
+            cache[type] = instance;
+            UISoundManager.Instance?.BindButtonsInTransform(instance.transform);
+            return instance;
         }
 
         protected override void OnDestroy()
@@ -107,401 +108,83 @@ namespace LoveAlgo.UI
             if (dimmerCanvasGroup != null) dimmerCanvasGroup.DOKill();
         }
 
-        void Update()
-        {
-            // ESC 키로 팝업 닫기 (새 Input System)
-            if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
-            {
-                HandleEscapeKey();
-            }
-        }
+        // ── 공개 API ──────────────────────────────────────────
 
-        /// <summary>
-        /// ESC 키 처리 - 열린 팝업 순서대로 닫기
-        /// </summary>
-        void HandleEscapeKey()
-        {
-            // 1. Top 팝업 우선 (Confirm variants, Alert, Log)
-            foreach (var kv in confirmCache)
-            {
-                if (kv.Value != null && kv.Value.IsVisible)
-                {
-                    kv.Value.Hide();
-                    return;
-                }
-            }
-            if (_alertPopup != null && _alertPopup.IsVisible)
-            {
-                _alertPopup.Hide();
-                return;
-            }
-            if (_logPopup != null && _logPopup.IsVisible)
-            {
-                _logPopup.Hide();
-                return;
-            }
-
-            // 2. Modal 팝업 닫기 (변경사항 확인 후)
-            if (currentModal != null)
-            {
-                TryCloseModalAsync().Forget();
-                return;
-            }
-        }
-
-        /// <summary>
-        /// Modal 닫기 시도 (변경사항 확인 포함)
-        /// </summary>
-        async UniTaskVoid TryCloseModalAsync()
-        {
-            if (currentModal == null) return;
-
-            var popup = currentModal.GetComponent<ModalPopupBase>();
-            if (popup != null)
-            {
-                bool canClose = await popup.TryCloseAsync();
-                if (canClose)
-                {
-                    CloseModal();
-                }
-            }
-            else
-            {
-                CloseModal();
-            }
-        }
-
-        void InitPopups()
-        {
-            // Confirm 캐시 인스턴스 초기 비활성화 (Alert/Toast/Log는 lazy 속성에서 처리)
-            foreach (var kv in confirmCache)
-            {
-                if (kv.Value != null) kv.Value.gameObject.SetActive(false);
-            }
-            dimmer?.SetActive(false);
-
-            // Dimmer 클릭 시 Modal 닫기 (디머에 Button 컴포넌트 추가)
-            if (dimmer != null)
-            {
-                var dimBtn = dimmer.GetComponent<Button>();
-                if (dimBtn == null)
-                    dimBtn = dimmer.AddComponent<Button>();
-                dimBtn.transition = Selectable.Transition.None;
-                dimBtn.onClick.AddListener(OnDimmerClicked);
-            }
-
-            // Modal 프리팩 사전 생성 (Lazy 대신 즉시 캐싱 → 첫 클릭 렉 방지)
-            PreWarmModals();
-        }
-
-        /// <summary>
-        /// Confirm 프리팹을 미리 생성하여 캐시 (이름 → 인스턴스)
-        /// </summary>
-        void PreWarmConfirms()
-        {
-            confirmCache.Clear();
-            if (confirmPrefabs == null) return;
-            foreach (var prefab in confirmPrefabs)
-            {
-                if (prefab == null) continue;
-                string key = prefab.gameObject.name;
-                if (confirmCache.ContainsKey(key)) continue;
-
-                var instance = Instantiate(prefab, layerTop);
-                instance.gameObject.SetActive(false);
-                confirmCache[key] = instance;
-
-                UISoundManager.Instance?.BindButtonsInTransform(instance.transform);
-            }
-        }
-
-        /// <summary>
-        /// Modal 프리팩을 미리 생성하여 캐시 (Instantiate 렉 방지)
-        /// </summary>
-        void PreWarmModals()
-        {
-            foreach (var prefab in modalPrefabs)
-            {
-                if (prefab == null) continue;
-                var popup = prefab.GetComponent<ModalPopupBase>();
-                if (popup == null) continue;
-
-                var type = popup.GetType();
-                if (modalCache.ContainsKey(type)) continue;
-
-                var instance = Instantiate(prefab, layerModal);
-                instance.SetActive(false);
-                modalCache[type] = instance;
-
-                // 버튼 사운드 사전 바인딩
-                UISoundManager.Instance?.BindButtonsInTransform(instance.transform);
-            }
-        }
-
-        /// <summary>
-        /// Dimmer 클릭 처리: Modal만 닫기 (Top 팝업은 닫지 않음)
-        /// </summary>
-        void OnDimmerClicked()
-        {
-            // Top 팝업이 열려있으면 디머 클릭 무시 (alert, confirm 등)
-            foreach (var kv in confirmCache)
-            {
-                if (kv.Value != null && kv.Value.IsVisible) return;
-            }
-            if (_alertPopup != null && _alertPopup.IsVisible)
-                return;
-
-            // Modal 팝업 닫기
-            if (currentModal != null)
-                TryCloseModalAsync().Forget();
-        }
-
-        #region Top 팝업 (즉시 사용)
-
-        /// <summary>
-        /// 이름으로 Confirm 프리팹 인스턴스 조회. 없으면 null.
-        /// </summary>
-        ConfirmPopup GetConfirm(string name)
-        {
-            confirmCache.TryGetValue(name, out var popup);
-            return popup;
-        }
-
-        /// <summary>
-        /// 첫 번째 Confirm 프리팹 (기본값)
-        /// </summary>
-        ConfirmPopup GetDefaultConfirm()
-        {
-            if (confirmPrefabs != null && confirmPrefabs.Count > 0)
-                return GetConfirm(confirmPrefabs[0].gameObject.name);
-            return null;
-        }
-
-        /// <summary>
-        /// 확인 팝업 (예/아니오) - 기본 프리팹 사용
-        /// </summary>
-        public UniTask<bool> ConfirmAsync(string message, string confirmText = null, string cancelText = null)
-        {
-            var popup = GetDefaultConfirm();
-            if (popup == null)
-            {
-                Debug.LogWarning("[PopupManager] 기본 confirmPopup 프리팹이 없음");
-                return UniTask.FromResult(false);
-            }
-            return popup.ShowAsync(message, confirmText, cancelText);
-        }
-
-        /// <summary>
-        /// 이름 지정 확인 팝업 — 프리팹 이름으로 조회
-        /// </summary>
-        public UniTask<bool> ConfirmAsync(string prefabName, ConfirmPopupData data)
-        {
-            var popup = GetConfirm(prefabName);
-            if (popup == null)
-            {
-                Debug.LogWarning($"[PopupManager] Confirm 프리팹 없음: {prefabName}");
-                return UniTask.FromResult(false);
-            }
-            return popup.ShowAsync(data);
-        }
-
-        /// <summary>
-        /// 확인 팝업 (예/아니오) - 콜백 버전
-        /// </summary>
-        public void Confirm(string message, Action onConfirm, Action onCancel)
-        {
-            var popup = GetDefaultConfirm();
-            if (popup == null)
-            {
-                Debug.LogWarning("[PopupManager] 기본 confirmPopup 프리팹이 없음");
-                onCancel?.Invoke();
-                return;
-            }
-            popup.Show(message, onConfirm, onCancel);
-        }
-
-        /// <summary>
-        /// 알림 팝업 (확인만)
-        /// </summary>
-        public UniTask AlertAsync(string message)
-        {
-            var popup = AlertPopup;
-            if (popup == null) return UniTask.CompletedTask;
-            return popup.ShowAsync(message);
-        }
-
-        /// <summary>
-        /// 토스트 메시지 (자동 사라짐)
-        /// </summary>
-        public void Toast(string title, string message, float duration = 2f)
-        {
-            var popup = ToastNotification;
-            if (popup == null) return;
-            popup.Show(title, message, duration);
-        }
-
-        /// <summary>
-        /// 순차 토스트 — 프레임 유지하며 메시지를 하나씩 교체 표시
-        /// </summary>
-        public void ToastSequence(string title, System.Collections.Generic.List<string> messages, float holdPerItem = 0.8f)
-        {
-            var popup = ToastNotification;
-            if (popup == null) return;
-            popup.ShowSequence(title, messages, holdPerItem);
-        }
-
-        #endregion
-
-        #region Modal 팝업 (Lazy 생성)
-
-        /// <summary>
-        /// Modal 팝업 표시 (Lazy 생성 + 캐시)
-        /// </summary>
-        public T ShowModal<T>() where T : ModalPopupBase
+        /// <summary>Type으로 팝업 인스턴스 조회 (없으면 popupPrefabs에서 찾아 생성).</summary>
+        public T Get<T>() where T : PopupBase
         {
             var type = typeof(T);
+            if (cache.TryGetValue(type, out var existing)) return existing as T;
 
-            // 캐시 확인
-            if (!modalCache.TryGetValue(type, out var instance))
+            if (popupPrefabs != null)
             {
-                var prefab = FindModalPrefab<T>();
-                if (prefab == null)
+                foreach (var prefab in popupPrefabs)
                 {
-                    Debug.LogError($"[PopupManager] Modal 프리팹 없음: {type.Name}");
-                    return null;
+                    if (prefab is T)
+                        return Materialize(prefab) as T;
                 }
-
-                instance = Instantiate(prefab, layerModal);
-                modalCache[type] = instance;
             }
-
-            // 이전 Modal 숨김
-            if (currentModal != null && currentModal != instance)
-            {
-                var prevPopup = currentModal.GetComponent<ModalPopupBase>();
-                if (prevPopup != null)
-                    prevPopup.Hide();
-                else
-                    currentModal.SetActive(false);
-            }
-
-            currentModal = instance;
-            ShowDimmer(true);
-
-            // Show() 메서드 호출 (슬라이딩 애니메이션 실행)
-            var popup = instance.GetComponent<T>();
-            popup?.Show();
-
-            return popup;
-        }
-
-        /// <summary>
-        /// 현재 Modal 닫기 (애니메이션 완료 후 상태 해제)
-        /// </summary>
-        public void CloseModal()
-        {
-            CloseModalInternal().Forget();
-        }
-
-        async UniTaskVoid CloseModalInternal()
-        {
-            if (currentModal != null)
-            {
-                // Modal 위에 떠 있는 ConfirmPopup이 있으면 먼저 닫기
-                DismissActiveConfirmPopups();
-
-                var popup = currentModal.GetComponent<ModalPopupBase>();
-                ShowDimmer(false);
-
-                if (popup != null)
-                    await popup.HideAsync();
-                else
-                    currentModal.SetActive(false);
-
-                currentModal = null;
-            }
-        }
-
-        /// <summary>
-        /// 현재 Modal 닫기 (애니메이션 완료까지 대기)
-        /// </summary>
-        public async UniTask CloseModalAsync()
-        {
-            if (currentModal != null)
-            {
-                // Modal 위에 떠 있는 ConfirmPopup이 있으면 먼저 닫기
-                DismissActiveConfirmPopups();
-
-                var popup = currentModal.GetComponent<ModalPopupBase>();
-                ShowDimmer(false);  // 디머와 패널 동시 페이드
-
-                if (popup != null)
-                    await popup.HideAsync();
-                else
-                    currentModal.SetActive(false);
-
-                currentModal = null;
-            }
-        }
-
-        /// <summary>
-        /// 활성 상태인 Confirm/ScheduleConfirm 팝업을 모두 닫기
-        /// Hide()가 tcs.TrySetResult(false)를 호출하므로 대기 중인 UniTask도 자동 완료됨
-        /// </summary>
-        void DismissActiveConfirmPopups()
-        {
-            foreach (var kv in confirmCache)
-            {
-                if (kv.Value != null && kv.Value.IsVisible)
-                    kv.Value.Hide();
-            }
-        }
-
-        GameObject FindModalPrefab<T>() where T : ModalPopupBase
-        {
-            foreach (var prefab in modalPrefabs)
-            {
-                if (prefab != null && prefab.GetComponent<T>() != null)
-                    return prefab;
-            }
+            Debug.LogError($"[PopupManager] 팝업 프리팹 미등록: {type.Name}");
             return null;
         }
 
-        #endregion
-
-        #region 편의 메서드
-
-        /// <summary>
-        /// 세이브 팝업 열기
-        /// </summary>
-        public void ShowSavePopup(System.Action<int> onSlotSelected = null)
+        /// <summary>팝업 표시 후 인스턴스 반환. 추가 설정은 호출자가 진행.</summary>
+        public T Show<T>() where T : PopupBase
         {
-            var popup = ShowModal<SaveLoadPopup>();
-            popup?.ShowSave(onSlotSelected);
+            var popup = Get<T>();
+            popup?.Show();
+            return popup;
         }
 
-        /// <summary>
-        /// 로드 팝업 열기
-        /// </summary>
-        public void ShowLoadPopup(System.Action<int> onSlotSelected = null)
+        // ── 도메인 헬퍼 (시그니처 유지, 내부는 Generic Show) ────────
+
+        public UniTask AlertAsync(string message, string confirmText = null)
         {
-            var popup = ShowModal<SaveLoadPopup>();
-            popup?.ShowLoad(onSlotSelected);
+            var p = Get<AlertPopup>();
+            return p != null ? p.ShowAsync(message, confirmText) : UniTask.CompletedTask;
         }
 
-        /// <summary>
-        /// 설정 팝업 열기
-        /// </summary>
-        public void ShowSettings()
+        public UniTask<bool> ConfirmAsync(string message, string confirmText = null, string cancelText = null)
         {
-            ShowModal<SettingsPopup>();
+            var p = Get<ConfirmPopup>();
+            return p != null ? p.ShowAsync(message, confirmText, cancelText) : UniTask.FromResult(false);
         }
+
+        public UniTask<bool> ConfirmAsync(ConfirmPopupData data)
+        {
+            var p = Get<ConfirmPopup>();
+            return p != null ? p.ShowAsync(data) : UniTask.FromResult(false);
+        }
+
+        /// <summary>콜백 버전 (await 안 하고 처리).</summary>
+        public void Confirm(string message, Action onConfirm, Action onCancel = null)
+            => Get<ConfirmPopup>()?.Show(message, onConfirm, onCancel);
+
+        public void Toast(string title, string message, float duration = 2f)
+            => Get<ToastNotification>()?.Show(title, message, duration);
+
+        public void ToastSequence(string title, List<string> messages, float holdPerItem = 0.8f)
+            => Get<ToastNotification>()?.ShowSequence(title, messages, holdPerItem);
+
+        // ── 도메인 진입점 (1줄 wrapper, IService 경유) ───────────
+
+        public void ShowSettings() => Show<SettingsPopup>();
+
+        public void ShowLog(IReadOnlyList<DialogueLogEntry> log)
+            => Get<LogPopup>()?.Show(log); // LogPopup.Show(log) 내부에서 base.Show() 호출됨
+
+        // SaveLoadPopup.ShowSave/ShowLoad 내부에서 base.Show() 호출되므로 Get<>() 사용
+        public void ShowSavePopup(Action<int> onSlotSelected = null)
+            => Get<SaveLoadPopup>()?.ShowSave(onSlotSelected);
+
+        public void ShowLoadPopup(Action<int> onSlotSelected = null)
+            => Get<SaveLoadPopup>()?.ShowLoad(onSlotSelected);
 
         public async void ShowSave()
         {
-            // 팝업이 뜨기 전에 게임 화면 캡처 (1프레임 대기하여 팝업이 찍히는 것 방지)
-            await Story.SaveManager.CapturePendingScreenshotAsync();
-            ShowModal<SaveLoadPopup>()?.ShowSave(slot =>
+            var save = Services.Get<ISave>();
+            if (save != null) await save.CapturePendingScreenshotAsync();
+            Get<SaveLoadPopup>()?.ShowSave(slot =>
             {
                 GameManager.Instance?.Save(slot);
                 UISoundManager.Instance?.PlaySaveComplete();
@@ -511,7 +194,7 @@ namespace LoveAlgo.UI
 
         public void ShowLoad()
         {
-            ShowModal<SaveLoadPopup>()?.ShowLoad(slot => 
+            Get<SaveLoadPopup>()?.ShowLoad(slot =>
             {
                 GameManager.Instance?.LoadGame(slot);
                 UISoundManager.Instance?.PlayLoadComplete();
@@ -519,26 +202,69 @@ namespace LoveAlgo.UI
             });
         }
 
-        public void ShowLog(IReadOnlyList<DialogueLogEntry> log)
+        // ── Stack / Dimmer 관리 (PopupBase가 호출) ───────────────
+
+        internal void NotifyOpened(PopupBase popup)
         {
-            var popup = LogPopup;
-            if (popup == null)
-            {
-                Debug.LogError("[PopupManager] logPopupPrefab이 바인딩되지 않음 - Inspector에서 할당 필요");
-                return;
-            }
-            popup.Show(log);
+            if (popup == null) return;
+            openStack.Remove(popup); // 중복 방지
+            openStack.Add(popup);
+            UpdateDimmer();
         }
 
-        #endregion
+        internal void NotifyClosed(PopupBase popup)
+        {
+            if (popup == null) return;
+            openStack.Remove(popup);
+            UpdateDimmer();
+        }
 
-        #region Dimmer
+        /// <summary>openStack에 useDimmer=true인 팝업이 있으면 dimmer ON, 아니면 OFF.</summary>
+        void UpdateDimmer()
+        {
+            bool needDimmer = false;
+            for (int i = 0; i < openStack.Count; i++)
+            {
+                if (openStack[i] != null && openStack[i].UseDimmer) { needDimmer = true; break; }
+            }
+            ShowDimmer(needDimmer);
+        }
+
+        // ── ESC / Dimmer 클릭 ────────────────────────────────
+
+        void Update()
+        {
+            if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
+                HandleEscape();
+        }
+
+        void HandleEscape()
+        {
+            var top = PeekTop();
+            top?.Close();
+        }
+
+        void OnDimmerClicked()
+        {
+            // 최상위가 Modal이면 닫기 시도 (Top 팝업은 디머 클릭 시 닫지 않음 — 기존 정책 유지)
+            var top = PeekTop();
+            if (top != null && top.Layer == PopupLayer.Modal) top.Close();
+        }
+
+        PopupBase PeekTop()
+        {
+            for (int i = openStack.Count - 1; i >= 0; i--)
+            {
+                if (openStack[i] != null && openStack[i].IsVisible) return openStack[i];
+            }
+            return null;
+        }
+
+        // ── Dimmer 애니메이션 ────────────────────────────────
 
         void ShowDimmer(bool show)
         {
             if (dimmer == null) return;
-
-            // 기존 dimmer 트윈 정리 (DOTween.KillAll() 등으로 OnComplete 누락 방지)
             dimmerCanvasGroup?.DOKill();
 
             if (show)
@@ -556,7 +282,7 @@ namespace LoveAlgo.UI
                 {
                     dimmerCanvasGroup.DOFade(0f, dimmerFadeDuration)
                         .SetEase(Ease.InQuad)
-                        .OnKill(() => { if (dimmer != null) dimmer.SetActive(false); });
+                        .OnKill(() => { if (dimmer != null && !IsAnyDimmerPopupOpen()) dimmer.SetActive(false); });
                 }
                 else
                 {
@@ -565,45 +291,22 @@ namespace LoveAlgo.UI
             }
         }
 
-        /// <summary>
-        /// Top 레이어 팝업용 Dimmer (외부 호출용)
-        /// </summary>
-        public void ShowTopDimmer(bool show)
+        bool IsAnyDimmerPopupOpen()
         {
-            ShowDimmer(show);
+            for (int i = 0; i < openStack.Count; i++)
+                if (openStack[i] != null && openStack[i].UseDimmer && openStack[i].IsVisible) return true;
+            return false;
         }
 
-        #endregion
+        // ── 유틸 ───────────────────────────────────────────
 
-        #region 유틸
+        public bool IsAnyPopupOpen => openStack.Count > 0;
 
-        /// <summary>
-        /// 모든 팝업 닫기
-        /// </summary>
         public void CloseAll()
         {
-            CloseModal();
-            DismissActiveConfirmPopups();
-            _alertPopup?.Hide();
+            var snapshot = openStack.ToArray();
+            for (int i = snapshot.Length - 1; i >= 0; i--)
+                snapshot[i]?.Hide();
         }
-
-        /// <summary>
-        /// 팝업이 열려있는지
-        /// </summary>
-        public bool IsAnyPopupOpen
-        {
-            get
-            {
-                if (currentModal != null) return true;
-                foreach (var kv in confirmCache)
-                {
-                    if (kv.Value != null && kv.Value.IsVisible) return true;
-                }
-                return (_alertPopup != null && _alertPopup.IsVisible) ||
-                       (_logPopup != null && _logPopup.IsVisible);
-            }
-        }
-
-        #endregion
     }
 }

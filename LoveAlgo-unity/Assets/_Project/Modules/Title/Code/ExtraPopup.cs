@@ -9,7 +9,7 @@ namespace LoveAlgo.UI
     /// Extra 화면 — SCENE / CG / 수집
     /// 중앙에 3개 대형 메뉴 버튼, 호버 시 위로 살짝 올라가는 애니메이션
     /// </summary>
-    public class ExtraPopup : ModalPopupBase
+    public class ExtraPopup : PopupBase
     {
         [Header("메뉴 버튼")]
         [SerializeField] Button sceneButton;
