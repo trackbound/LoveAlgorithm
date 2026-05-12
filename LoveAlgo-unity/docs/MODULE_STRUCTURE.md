@@ -221,7 +221,12 @@ Services.Get<IStage>().ShowCharacter("Roa", "Default", "C");
 | **Shop** | `_Project/Modules/Shop/Code/` | (완료) | ✅ | 파일 이동 + `IShop` + `ShopModule`. Inventory 분리는 기능 작업 시 |
 | **Phone** | `_Project/Modules/Phone/Code/` | (완료) | ✅ | 파일 이동 + `IPhone` + `PhoneModule` |
 | **MiniGame** | `_Project/Modules/MiniGame/Code/` | (완료) | ✅ | 파일 이동 + `IMiniGame` + `MiniGameModule` |
-| Title | `UI/TitleUI.cs` | (모듈 없음) | ⛔ | 단일 UI 컴포넌트, cross-module 호출 표면 없음 — 필요 시 GameFlow 모듈 흡수 |
+| **Title** | `_Project/Modules/Title/Code/` | (완료, Phase 1) | 🔄 | TitleUI/UsernameUI/ExtraPopup 이동. Phase 2에서 ITitle 도입 예정 |
+| **Settings** | `_Project/Modules/Settings/Code/` | (완료, Phase 1) | 🔄 | SettingsPopup 이동. Phase 2에서 ISettings 도입 예정 |
+| **Tutorial** | `_Project/Modules/Tutorial/Code/` | (완료, Phase 1) | 🔄 | TutorialOverlay 이동. Phase 2에서 ITutorial 도입 예정 |
+| **UI 인프라** | `_Project/UI/{Core,Components,Popups,HUD}/` | (완료) | ✅ | UIManager/PopupManager/UISoundManager/ModalPopupBase + 버튼·탭 컴포넌트 + 범용 팝업 + HUD |
+| **Narrative UI** | `_Project/Modules/Narrative/UI/` | (UI만 이동) | 🔄 | DialogueUI/ChoiceUI/LogPopup + Log entries 이동. ScriptRunner 등 코어는 추후 |
+| **Save UI** | `_Project/Modules/Save/UI/` | (완료) | ✅ | SaveLoadPopup/SaveLoadSlot 이동 |
 | **Affinity (신규 기능)** | — | `Modules/Affinity/` | 🔄 | 위 Affinity 항목 참조 |
 | **LockScreen** | 없음 | `Modules/LockScreen/` | ⬜ | A5 (PC잠금 연출 작업 시) |
 | **Gacha** | 없음 | `Modules/Gacha/` | ⬜ | A4 (퍼즐 가챠 작업 시) |
