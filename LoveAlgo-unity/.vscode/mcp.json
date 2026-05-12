@@ -1,11 +1,19 @@
 {
-	"inputs": [
-		{
-			"id": "CONTEXT7_API_KEY",
-			"type": "promptString",
-			"description": "API key for authentication",
-			"password": true
-		}
-	],
-	"servers": {}
+  "inputs": [
+    {
+      "id": "CONTEXT7_API_KEY",
+      "type": "promptString",
+      "description": "API key for authentication",
+      "password": true
+    }
+  ],
+  "servers": {},
+  "mcpServers": {
+    "mcp-unity": {
+      "command": "node",
+      "args": [
+        "C:/Users/chris/GitHub/LoveAlgorithm/LoveAlgo-unity/Library/PackageCache/com.gamelovers.mcp-unity@d176a9d737cc/Server~/build/index.js"
+      ]
+    }
+  }
 }

@@ -154,7 +154,7 @@ namespace LoveAlgo.UI
             if (playSound && Application.isPlaying)
             {
                 var sfx = isOn ? toggleOnSfx : toggleOffSfx;
-                LoveAlgo.Story.AudioManager.Instance?.PlaySFX(sfx);
+                LoveAlgo.Modules.Audio.AudioManager.Instance?.PlaySFX(sfx);
             }
 
             // 이벤트

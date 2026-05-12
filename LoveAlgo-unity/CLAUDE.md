@@ -1,0 +1,85 @@
+# CLAUDE.md — Love Algorithm 작업 원칙
+
+> 최상위 문서. Claude Code가 이 프로젝트에서 일할 때 항상 따르는 규칙.
+
+## 게임 정체성
+**비주얼노벨 + 스케줄 시뮬레이션 + 이벤트 분기**
+- VN: CSV 스크립트 엔진 (대사/이벤트/연출)
+- 시뮬: 자유행동(낮·밤 2회) → 스탯 성장
+- 이벤트: 1차 → 축제 → 2차 → MT → 3차 → 고백 → 엔딩
+
+---
+
+## 1. 태도
+
+- **간결하게**. 잘 작동하면 설명 생략 가능. 오류·중요 결정만 언급.
+- **확신 없으면 묻는다**. 추측해서 코드 만들지 말 것.
+- **목업이 필요하면 반드시 요청**. UI/아트 리소스 형태를 추측해서 작업하지 않는다.
+
+## 2. 전략 — 모듈 독립성
+
+기능 추가 요청 = "그 기능만 만들고 기존 코드 건드리지 않는다."
+
+| 규칙 | 의미 |
+|------|------|
+| 한 기능 = 한 폴더 | `Scripts/{Feature}/` 안에서 자급자족 |
+| 외부 통신은 이벤트/인터페이스 | 직접 참조 금지. `GameManager` 같은 God Object 의존 X |
+| 데이터는 SO 또는 CSV | 코드에 하드코딩 금지 — **기획자가 인스펙터에서 수정 가능해야 함** |
+| 프리팹은 자족적 | 컴포넌트가 프리팹 내부에서 완결. 씬에 외부 의존 최소화 |
+
+세부 폴더/하이어라키 구조: [`docs/MODULE_STRUCTURE.md`](docs/MODULE_STRUCTURE.md) 참조.
+
+## 3. 토큰 효율
+
+- **수정 범위 = 그 기능 폴더만**. 의도치 않은 다른 파일 수정 금지.
+- **요약·재진술 생략**. 코드 변경 후 길게 정리하지 말 것.
+- **mcp-unity 사용 금지** (토큰 낭비). 컴파일 검증·콘솔 로그·씬 조작은 사용자가 Unity 에디터에서 직접 수행. Claude는 코드 변경 후 "Unity에서 컴파일 확인 부탁" 정도만 알린다.
+
+### Serena MCP 우선 사용
+
+코드 탐색·수정 시 Read/Grep 대신 Serena 도구를 우선 사용한다. 토큰 비용이 크게 낮고 결과가 정확함.
+
+| 작업 | 우선 사용 | 비고 |
+|------|-----------|------|
+| 심볼(클래스/메서드) 찾기 | `find_symbol` | Grep+Read 조합보다 압도적으로 저렴 |
+| 참조 찾기 (refactor) | `find_referencing_symbols` | 안전한 이름 변경·시그니처 변경에 필수 |
+| 파일 구조 파악 | `get_symbols_overview` | Read로 전체 읽지 말 것 |
+| 메서드 단위 수정 | `replace_symbol_body` | Edit으로 큰 파일 들춰보지 말 것 |
+| 심볼 앞/뒤 삽입 | `insert_after_symbol` / `insert_before_symbol` | 새 메서드·필드 추가 |
+| 의미 검색 | `search_for_pattern` | 정규식 기반, Grep 대체 |
+
+**Serena 비적합 상황** — 이때만 Read/Grep 사용:
+- CSV / Markdown / JSON / YAML 같은 비-코드 파일
+- 100줄 미만의 짧은 파일 (Read가 더 빠름)
+- 파일 전체 흐름 이해가 필요한 경우 (예: 새 파일 처음 보기)
+
+## 4. 기획 친화성 (Inspector / SO)
+
+신규 기능에 숫자/문자열이 들어가면:
+1. 먼저 **ScriptableObject 또는 CSV**로 빼낸다.
+2. 코드는 SO 참조만. 매직넘버 금지.
+3. SO 위치: `Assets/Data/{Feature}/`
+4. 기본값(폴백) 코드는 SO 없을 때만 사용.
+
+예시: `ScheduleDataSO`, `ResourcePaths`, `GameConstants`.
+
+## 5. 아트 / 프리팹
+
+작업 전 확인:
+- 캐릭터: `Resources/Characters/Char_{Name}_{Emotion}.png` (5명 × 8표정)
+- 배경: `Resources/Backgrounds/BG_*.png`
+- 아이템 아이콘: `Art/GUI/{번호}_{분류}_{이름}.png`
+- 로아 PC잠금: `Art/UI/Stage/Roa_PC_*.png`
+
+**리소스 부족 시**: `docs/ASSET_REQUESTS.md`에 요청 추가하고 사용자에게 알린다.
+
+## 6. 작업 진행
+
+- 현재 작업 리스트: [`docs/WORK_PLAN.md`](docs/WORK_PLAN.md)
+- 리소스 요청: [`docs/ASSET_REQUESTS.md`](docs/ASSET_REQUESTS.md)
+- 작업 완료 / 새 작업 발견 시 두 문서 갱신.
+
+## 7. 커밋 / 변경
+
+- 한 기능 = 한 커밋. 여러 기능을 하나로 합치지 않는다.
+- 사용자가 명시적으로 요청할 때만 커밋. 자동 커밋 금지.

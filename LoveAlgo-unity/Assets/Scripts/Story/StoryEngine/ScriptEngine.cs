@@ -139,6 +139,10 @@ namespace LoveAlgo.Story.StoryEngine
                 case "End":
                     return false;
 
+                case "Affinity":
+                    Flow.AffinityFlowCommand.Execute(parts);
+                    return true;
+
                 default:
                     Debug.LogWarning($"[Flow] 알 수 없는 Flow 명령: {command}");
                     return true;

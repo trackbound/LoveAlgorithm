@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(where.exe uv *)",
+      "Bash(where.exe uvx *)",
+      "Bash(uvx --help)",
+      "Bash(uvx serena *)",
+      "Bash(uvx *)",
+      "mcp__serena__initial_instructions",
+      "Bash(Get-ChildItem \"C:\\\\Users\\\\chris\\\\GitHub\\\\LoveAlgorithm\")",
+      "Bash(Select-Object Name, PSIsContainer)"
+    ]
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "mcp-unity"
+  ]
+}

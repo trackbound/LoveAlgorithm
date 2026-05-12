@@ -2,6 +2,7 @@ using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using TMPro;
 using UnityEngine;
+using LoveAlgo.Modules.Audio;
 using UnityEngine.UI;
 using LoveAlgo.Story;
 

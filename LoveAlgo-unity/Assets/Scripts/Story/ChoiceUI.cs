@@ -4,7 +4,10 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using TMPro;
 using UnityEngine;
+using LoveAlgo.Modules.Audio;
 using UnityEngine.UI;
+using LoveAlgo.Common;
+using LoveAlgo.Modules.Stats;
 using LoveAlgo.UI;
 using DG.Tweening;
 
@@ -232,7 +235,9 @@ namespace LoveAlgo.Story
                     // Stat:StatName:Value
                     if (parts.Length >= 3 && int.TryParse(parts[2], out int statValue))
                     {
-                        GameState.Instance.AddStat(parts[1], statValue);
+                        var stats = Services.Get<IStats>();
+                        if (stats != null) stats.Add(parts[1], statValue);
+                        else GameState.Instance.AddStat(parts[1], statValue);
                     }
                     break;
 

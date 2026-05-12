@@ -1,0 +1,34 @@
+{
+  "disabledMcpjsonServers": ["mcp-unity"],
+  "permissions": {
+    "defaultMode": "acceptEdits",
+    "allow": [
+      "Bash(ls *)",
+      "Bash(ls:*)",
+      "Bash(find *)",
+      "Bash(find:*)",
+      "Bash(mkdir *)",
+      "Bash(mkdir:*)",
+      "Bash(mv *)",
+      "Bash(cp *)",
+      "Bash(rmdir *)",
+      "Bash(rm *.meta)",
+      "Bash(grep *)",
+      "Bash(wc *)",
+      "Bash(head *)",
+      "Bash(tail *)",
+      "Bash(echo *)",
+      "Bash(cd *)",
+      "Bash(pwd)",
+      "Bash(git status*)",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "Bash(git branch*)"
+    ],
+    "deny": [
+      "Bash(rm -rf *)",
+      "Bash(git push *)",
+      "Bash(git reset --hard*)"
+    ]
+  }
+}
