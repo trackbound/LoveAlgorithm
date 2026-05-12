@@ -221,14 +221,14 @@ Services.Get<IStage>().ShowCharacter("Roa", "Default", "C");
 | **Shop** | `_Project/Modules/Shop/Code/` | (완료) | ✅ | 파일 이동 + `IShop` + `ShopModule`. Inventory 분리는 기능 작업 시 |
 | **Phone** | `_Project/Modules/Phone/Code/` | (완료) | ✅ | 파일 이동 + `IPhone` + `PhoneModule` |
 | **MiniGame** | `_Project/Modules/MiniGame/Code/` | (완료) | ✅ | 파일 이동 + `IMiniGame` + `MiniGameModule` |
-| **Title** | `_Project/Modules/Title/Code/` | (완료, Phase 1) | 🔄 | TitleUI/UsernameUI/ExtraPopup 이동. Phase 2에서 ITitle 도입 예정 |
-| **Settings** | `_Project/Modules/Settings/Code/` | (완료, Phase 1) | 🔄 | SettingsPopup 이동. Phase 2에서 ISettings 도입 예정 |
+| **Title** | `_Project/Modules/Title/Code/` | (완료, Phase 1) | 🔄 | TitlePanel/UsernameUI/ExtraPopup. Phase 2에서 ITitle 도입 예정 |
+| **Settings** | `_Project/Modules/Settings/Code/` | (완료) | ✅ | `ISettings` + `SettingsModule` (PlayerPrefs 흡수 + IAudio/INarrative 경유 적용). SettingsPopup 정적 결합 0 |
 | **Tutorial** | `_Project/Modules/Tutorial/Code/` | (완료, Phase 1) | 🔄 | TutorialOverlay 이동. Phase 2에서 ITutorial 도입 예정 |
 | **UI 인프라** | `_Project/UI/{Core,Components,Popups,HUD}/` | (완료) | ✅ | UIManager/PopupManager/UISoundManager/ModalPopupBase + 버튼·탭 컴포넌트 + 범용 팝업 + HUD |
 | **Narrative UI** | `_Project/Modules/Narrative/UI/` | (UI만 이동) | 🔄 | DialogueUI/ChoiceUI/LogPopup + Log entries 이동. ScriptRunner 등 코어는 추후 |
 | **Save UI** | `_Project/Modules/Save/UI/` | (완료) | ✅ | SaveLoadPopup/SaveLoadSlot 이동 |
 | **Affinity (신규 기능)** | — | `Modules/Affinity/` | 🔄 | 위 Affinity 항목 참조 |
-| **LockScreen** | `_Project/Modules/LockScreen/` | (코드 완료, UI 미완) | 🟦 | `ILockScreen` + `LockScreenController` + `LockScreenModule`. 비번 SHA256+salt, 모드 3종, 오류 카운터, ToDoListSO. UI 프리팹은 다음 단계 |
+| **LockScreen** | `_Project/Modules/LockScreen/` | (코드+UI스크립트 완료) | 🟦 | `ILockScreen`/`LockScreenController`/`LockScreenModule` + UI(`LockScreenPanel`/`ClockWidget`/`ToDoWidget`/`RoaMessageWidget`/`PasswordInputWidget`). 프리팹·콘텐츠·TitleUI 통합은 다음 단계 |
 | **Gacha** | 없음 | `Modules/Gacha/` | ⬜ | A4 (퍼즐 가챠 작업 시) |
 
 **금지:** "정리만을 위한" 일괄 이동. 반드시 기능 작업과 묶어서 이주.

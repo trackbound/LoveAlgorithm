@@ -11,7 +11,7 @@ namespace LoveAlgo.UI
     /// <summary>
     /// 토스트 팝업 (자동 사라짐). 순차 메시지 지원.
     /// </summary>
-    public class ToastPopup : MonoBehaviour
+    public class ToastNotification : MonoBehaviour
     {
         [Header("UI 바인딩")]
         [SerializeField] TMP_Text titleText;

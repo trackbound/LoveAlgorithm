@@ -8,7 +8,7 @@ namespace LoveAlgo.Schedule
     /// Open() / Close() 로 표시/숨김.
     /// closeButtons 배열에 닫힘 버튼을 여러 개 등록 가능.
     /// </summary>
-    public class ScheduleHelpPanel : MonoBehaviour
+    public class ScheduleHelpPopup : MonoBehaviour
     {
         [Header("닫힘 버튼 (여러 개 등록 가능)")]
         [SerializeField] Button[] closeButtons;

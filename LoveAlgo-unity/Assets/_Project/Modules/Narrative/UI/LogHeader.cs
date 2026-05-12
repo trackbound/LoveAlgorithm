@@ -8,7 +8,7 @@ namespace LoveAlgo.UI
     /// 로그 헤더 프리팹 컴포넌트 — 프로필(선택) + 이름 표시
     /// 고정 크기 프리팹이므로 LayoutGroup 불필요, RectTransform 앵커로 배치
     /// </summary>
-    public class LogHeaderUI : MonoBehaviour
+    public class LogHeader : MonoBehaviour
     {
         [SerializeField] Image portraitImage;    // 케이스1만 사용 (nullable)
         [SerializeField] TMP_Text nameText;      // 화자 이름

@@ -6,7 +6,7 @@ namespace LoveAlgo.Shop
     /// <summary>
     /// 상점 아이템 노출 필터 (테스트 빌드용)
     /// 인스펙터에서 체크된 아이템만 상점에 노출
-    /// ShopPopup과 같은 GameObject에 부착하거나, ShopPopup에서 참조
+    /// ShopUI과 같은 GameObject에 부착하거나, ShopUI에서 참조
     /// </summary>
     public class ShopItemFilter : MonoBehaviour
     {

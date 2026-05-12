@@ -106,7 +106,7 @@ namespace LoveAlgo.Core
                 PopupManager.Instance?.CloseAll();
 
                 // 진행 중이던 선택지 UI 잔상 제거 (스케줄/팝업과 함께 저장된 케이스)
-                UIManager.Instance?.ChoiceUI?.ResetImmediate();
+                UIManager.Instance?.ChoicePopup?.ResetImmediate();
 
                 // 이전 BGM 정리 (페이드아웃 완료 대기)
                 if (AudioManager.Instance != null)

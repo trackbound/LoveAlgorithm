@@ -27,7 +27,7 @@ namespace LoveAlgo.Story.StoryEngine.Macros
             dialogueUI?.HideImmediate();
             stage?.Character?.ClearAll();
             stage?.VirtualBG?.HideImmediate();
-            UIManager.Instance?.PlaceUI?.HideImmediate();
+            UIManager.Instance?.PlaceNotification?.HideImmediate();
 
             if (ExecutionDependencies.Audio != null)
                 await ExecutionDependencies.Audio.ExecuteAsync("BGM:Stop:Fade:1.0", ct);

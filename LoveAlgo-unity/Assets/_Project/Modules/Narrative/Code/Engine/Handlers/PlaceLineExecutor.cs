@@ -15,7 +15,7 @@ namespace LoveAlgo.Story.StoryEngine.Handlers
 
         public UniTask<bool> ExecuteAsync(ScriptLine line, CancellationToken ct)
         {
-            var placeUI = UIManager.Instance?.PlaceUI;
+            var placeUI = UIManager.Instance?.PlaceNotification;
             if (placeUI != null)
             {
                 placeUI.ExecuteAsync(line.Value, ct).Forget();

@@ -7,7 +7,7 @@ namespace LoveAlgo.UI
     /// <summary>
     /// 로그 팝업 — 그룹 항목 UI
     ///
-    /// 같은 화자의 연속 대사를 하나의 LogEntryUI로 묶는다.
+    /// 같은 화자의 연속 대사를 하나의 LogEntry로 묶는다.
     /// 헤더 프리팹(고정 크기) 1개 + 우측 DialogueColumn에 버블 N개.
     ///
     /// LogEntry (HorizontalLayoutGroup)
@@ -17,7 +17,7 @@ namespace LoveAlgo.UI
     ///     ├── VLG + Image (텍스트박스 BG) + LE
     ///     └── MessageText (TMP) + Shadow
     /// </summary>
-    public class LogEntryUI : MonoBehaviour
+    public class LogEntry : MonoBehaviour
     {
         [Header("헤더 프리팹 (고정 크기)")]
         [SerializeField] GameObject headerCharacterPrefab;  // 프로필+네임박스
@@ -137,14 +137,14 @@ namespace LoveAlgo.UI
 
         // ── 내부 헬퍼 ─────────────────────────────────────
 
-        LogHeaderUI SpawnHeader(GameObject prefab)
+        LogHeader SpawnHeader(GameObject prefab)
         {
             if (prefab == null) return null;
 
             var go = Instantiate(prefab, transform);
             go.SetActive(true);
             go.transform.SetAsFirstSibling();
-            return go.GetComponent<LogHeaderUI>();
+            return go.GetComponent<LogHeader>();
         }
     }
 }

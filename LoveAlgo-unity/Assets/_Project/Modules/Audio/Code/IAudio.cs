@@ -21,5 +21,11 @@ namespace LoveAlgo.Modules.Audio
 
         /// <summary>보이스 정지.</summary>
         void StopVoice();
+
+        // ── 볼륨 설정 (Settings 모듈에서 호출) ───────────────
+        void SetMasterVolume(float v);
+        void SetBGMVolume(float v);
+        void SetSFXVolume(float v);
+        void SetCharacterVoiceVolume(string character, float v);
     }
 }

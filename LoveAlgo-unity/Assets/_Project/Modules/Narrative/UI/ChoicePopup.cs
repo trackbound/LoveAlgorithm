@@ -17,7 +17,7 @@ namespace LoveAlgo.Story
     /// <summary>
     /// 선택지 UI
     /// </summary>
-    public class ChoiceUI : MonoBehaviour
+    public class ChoicePopup : MonoBehaviour
     {
         [Header("바인딩")]
         [SerializeField] Transform buttonContainer;
@@ -50,7 +50,7 @@ namespace LoveAlgo.Story
 
             if (validOptions.Count == 0)
             {
-                Debug.LogWarning("[ChoiceUI] 표시할 선택지가 없습니다.");
+                Debug.LogWarning("[ChoicePopup] 표시할 선택지가 없습니다.");
                 return null;
             }
 

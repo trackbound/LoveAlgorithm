@@ -21,32 +21,32 @@ namespace LoveAlgo.UI
         [Header("Story")]
         [SerializeField] DialogueUI dialogueUIPrefab;
         [SerializeField] DialogueShowButton dialogueShowButtonPrefab;
-        [SerializeField] ChoiceUI choiceUIPrefab;
-        [SerializeField] PlaceUI placeUIPrefab;
+        [SerializeField] ChoicePopup choiceUIPrefab;
+        [SerializeField] PlaceNotification placeUIPrefab;
 
         [Header("Simulate")]
         [SerializeField] ScheduleUI scheduleUIPrefab;
-        [SerializeField] ShopPopup shopUIPrefab;
-        [SerializeField] QuickMenuUI quickMenuUIPrefab;
+        [SerializeField] ShopUI shopUIPrefab;
+        [SerializeField] QuickMenu quickMenuUIPrefab;
 
         [Header("Tutorial")]
         [Tooltip("범용 튜토리얼 오버레이 (CSV+flagKey 인자로 재사용). 화면 전체 dim을 위해 독립 프리합.")]
         [SerializeField] TutorialOverlay tutorialOverlayPrefab;
 
         [Header("Scene")]
-        [SerializeField] TitleUI titleUIPrefab;
+        [SerializeField] TitlePanel titleUIPrefab;
         [SerializeField] UsernameUI usernameUIPrefab;
 
         // ── lazy-instantiated 캐시 ───────────────────────────────────────
         DialogueUI _dialogueUI;
         DialogueShowButton _dialogueShowButton;
-        ChoiceUI _choiceUI;
-        PlaceUI _placeUI;
+        ChoicePopup _choiceUI;
+        PlaceNotification _placeUI;
         ScheduleUI _scheduleUI;
-        ShopPopup _shopUI;
-        QuickMenuUI _quickMenuUI;
+        ShopUI _shopUI;
+        QuickMenu _quickMenuUI;
         TutorialOverlay _tutorialOverlay;
-        TitleUI _titleUI;
+        TitlePanel _titleUI;
         UsernameUI _usernameUI;
 
         // ── 외부 공개 프로퍼티 (첫 접근 시 자동 인스턴스화) ──────────────
@@ -85,13 +85,13 @@ namespace LoveAlgo.UI
                 return _dialogueShowButton;
             }
         }
-        public ChoiceUI ChoiceUI => _choiceUI != null ? _choiceUI : (_choiceUI = Spawn(choiceUIPrefab, GroupRoot.Story));
-        public PlaceUI PlaceUI => _placeUI != null ? _placeUI : (_placeUI = Spawn(placeUIPrefab, GroupRoot.Story));
+        public ChoicePopup ChoicePopup => _choiceUI != null ? _choiceUI : (_choiceUI = Spawn(choiceUIPrefab, GroupRoot.Story));
+        public PlaceNotification PlaceNotification => _placeUI != null ? _placeUI : (_placeUI = Spawn(placeUIPrefab, GroupRoot.Story));
         public ScheduleUI ScheduleUI => _scheduleUI != null ? _scheduleUI : (_scheduleUI = Spawn(scheduleUIPrefab, GroupRoot.Simulate));
-        public ShopPopup ShopUI => _shopUI != null ? _shopUI : (_shopUI = Spawn(shopUIPrefab, GroupRoot.Simulate));
-        public QuickMenuUI QuickMenuUI => _quickMenuUI != null ? _quickMenuUI : (_quickMenuUI = Spawn(quickMenuUIPrefab, GroupRoot.Simulate));
+        public ShopUI ShopUI => _shopUI != null ? _shopUI : (_shopUI = Spawn(shopUIPrefab, GroupRoot.Simulate));
+        public QuickMenu QuickMenu => _quickMenuUI != null ? _quickMenuUI : (_quickMenuUI = Spawn(quickMenuUIPrefab, GroupRoot.Simulate));
         public TutorialOverlay TutorialOverlay => _tutorialOverlay != null ? _tutorialOverlay : (_tutorialOverlay = Spawn(tutorialOverlayPrefab, GroupRoot.Simulate));
-        public TitleUI TitleUI => _titleUI != null ? _titleUI : (_titleUI = Spawn(titleUIPrefab, GroupRoot.Scene));
+        public TitlePanel TitlePanel => _titleUI != null ? _titleUI : (_titleUI = Spawn(titleUIPrefab, GroupRoot.Scene));
         public UsernameUI UsernameUI => _usernameUI != null ? _usernameUI : (_usernameUI = Spawn(usernameUIPrefab, GroupRoot.Scene));
 
         enum GroupRoot { Story, Simulate, Scene }
@@ -175,10 +175,10 @@ namespace LoveAlgo.UI
                     break;
                 case MainUIType.Schedule:
                     SetActiveIfExists(ScheduleUI, true);
-                    SetActiveIfExists(QuickMenuUI, true);
+                    SetActiveIfExists(QuickMenu, true);
                     break;
                 case MainUIType.Title:
-                    SetActiveIfExists(TitleUI, true);
+                    SetActiveIfExists(TitlePanel, true);
                     break;
                 case MainUIType.Username:
                     SetActiveIfExists(UsernameUI, true);

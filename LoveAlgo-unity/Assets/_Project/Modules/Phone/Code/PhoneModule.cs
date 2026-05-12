@@ -5,13 +5,13 @@ namespace LoveAlgo.Phone
 {
     /// <summary>
     /// 폰(메신저) 모듈 진입점.
-    /// PhonePanel/MessengerManager를 IPhone 인터페이스로 노출.
+    /// PhonePopup/MessengerManager를 IPhone 인터페이스로 노출.
     /// 씬 하이어라키: _Modules/PhoneModule
     /// </summary>
     [DefaultExecutionOrder(-500)]
     public class PhoneModule : MonoBehaviour, IPhone
     {
-        [SerializeField] PhonePanel phonePanel;
+        [SerializeField] PhonePopup phonePanel;
 
         void Awake() => Services.Register<IPhone>(this);
 

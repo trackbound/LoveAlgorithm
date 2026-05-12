@@ -43,5 +43,11 @@ namespace LoveAlgo.Modules.Audio
         public void PlaySFX(string name) => AudioManager.Instance?.PlaySFX(name);
         public void PlayVoice(string character, string voiceName) => AudioManager.Instance?.PlayVoice(character, voiceName);
         public void StopVoice() => AudioManager.Instance?.StopVoice();
+
+        public void SetMasterVolume(float v) => AudioManager.Instance?.SetMasterVolume(v);
+        public void SetBGMVolume(float v) => AudioManager.Instance?.SetBGMVolume(v);
+        public void SetSFXVolume(float v) => AudioManager.Instance?.SetSFXVolume(v);
+        public void SetCharacterVoiceVolume(string character, float v)
+            => AudioManager.Instance?.SetCharacterVoiceVolume(character, v);
     }
 }

@@ -72,7 +72,7 @@ namespace LoveAlgo.Core
         void EnterTitle()
         {
             UIManager.Instance?.ShowOnly(MainUIType.Title);
-            UIManager.Instance?.TitleUI?.PlayTitleBGM();
+            UIManager.Instance?.TitlePanel?.PlayTitleBGM();
         }
 
         void EnterUsername()

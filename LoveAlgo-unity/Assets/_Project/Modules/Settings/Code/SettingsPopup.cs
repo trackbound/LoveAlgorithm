@@ -2,36 +2,37 @@ using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using TMPro;
 using UnityEngine;
-using LoveAlgo.Modules.Audio;
 using UnityEngine.UI;
-using LoveAlgo.Story;
+using LoveAlgo.Common;
+using LoveAlgo.Core;
+using LoveAlgo.Settings;
 
 namespace LoveAlgo.UI
 {
     /// <summary>
-    /// 설정 팝업 (Modal)
-    /// 화면, 볼륨, 캐릭터 음성, 속도 설정
+    /// 설정 팝업 (Modal).
+    /// 상태/저장소 접근은 모두 ISettings 경유. UI는 슬라이더/버튼 입력 처리만 담당.
+    /// 화면, 볼륨, 캐릭터 음성, 속도 설정.
     /// </summary>
     public class SettingsPopup : ModalPopupBase
     {
         [Header("화면 설정")]
         [SerializeField] Button fullscreenButton;
         [SerializeField] Button windowedButton;
-        [SerializeField] Sprite modeOnSprite;   // btn_config_mode_on
-        [SerializeField] Sprite modeOffSprite;  // btn_config_mode
-        [SerializeField] Color modeTextSelectedColor = new Color(1f, 0.6f, 0.75f, 1f);   // 분홍
-        [SerializeField] Color modeTextDeselectedColor = new Color(0.6f, 0.6f, 0.6f, 1f); // 회색
+        [SerializeField] Sprite modeOnSprite;
+        [SerializeField] Sprite modeOffSprite;
+        [SerializeField] Color modeTextSelectedColor = new Color(1f, 0.6f, 0.75f, 1f);
+        [SerializeField] Color modeTextDeselectedColor = new Color(0.6f, 0.6f, 0.6f, 1f);
         [SerializeField] Button resolutionPrevButton;
         [SerializeField] Button resolutionNextButton;
-        [SerializeField] Sprite arrowLeftSprite;      // btn_config_arrow_left
-        [SerializeField] Sprite arrowLeftDisabled;     // btn_config_arrow_left_disabled
-        [SerializeField] Sprite arrowRightSprite;      // btn_config_arrow_right
-        [SerializeField] Sprite arrowRightDisabled;    // btn_config_arrow_right_disabled
+        [SerializeField] Sprite arrowLeftSprite;
+        [SerializeField] Sprite arrowLeftDisabled;
+        [SerializeField] Sprite arrowRightSprite;
+        [SerializeField] Sprite arrowRightDisabled;
         [Tooltip("해상도 표시용 이미지(프리팹에 스프라이트 바인딩). 없으면 텍스트로 폴백")]
-        [SerializeField] UnityEngine.UI.Image resolutionImage;
-        [Tooltip("해상도별 스프라이트 목록: 인덱스는 resolutions 배열과 대응합니다")]
+        [SerializeField] Image resolutionImage;
+        [Tooltip("해상도별 스프라이트 목록: 인덱스는 ISettings 해상도 목록과 대응")]
         [SerializeField] Sprite[] resolutionSprites;
-
 
         [Header("메인 볼륨")]
         [SerializeField] Slider masterSlider;
@@ -50,36 +51,23 @@ namespace LoveAlgo.UI
         [SerializeField] Slider autoSpeedSlider;
 
         [Header("버튼")]
-        [SerializeField] Button confirmButton; // 우측상단 적용 (해상도 제외 설정 저장 및 창닫기)
-        [SerializeField] Button resetButton;   // 우측상단 리셋 (기본값으로 초기화)
-        [SerializeField] Button closeButton;   // 우측상단 닫기 (변경사항 확인)
-        
-        // 해상도 전용 적용 버튼 (이미 존재)
-        [Header("해상도 적용 버튼")]
-        [SerializeField] Button applyButton; // 해상도 전용 즉시 적용 + 저장 (ResolutionIndex / Fullscreen)
+        [SerializeField] Button confirmButton; // 슬라이더 일괄 저장
+        [SerializeField] Button resetButton;   // 기본값 초기화
+        [SerializeField] Button closeButton;   // 닫기 (변경 확인)
 
-        // 해상도 목록 (오름차순: ← 작아짐 / → 커짐)
-        readonly (int w, int h)[] resolutions = GameConstants.Resolutions;
-        int currentResolutionIndex = GameConstants.DefaultResolutionIndex; // 기본 1920x1080
-        bool isFullscreen = true;
+        [Header("해상도 적용 버튼")]
+        [SerializeField] Button applyButton;   // 해상도 전용 즉시 적용 + 저장
 
         // 변경사항 추적
-        bool isDirty;               // 해상도 제외(볼륨/속도/캐릭터 음성 등)
-        bool isResolutionDirty;     // 해상도/전체화면 변경 여부
+        bool isDirty;            // 슬라이더 변경
+        bool isResolutionDirty;  // 해상도/전체화면 변경
 
-        // ── 열기 시점 스냅샷 (되돌리기용) ──
-        struct SettingsSnapshot
-        {
-            public float masterVolume;
-            public float bgmVolume, sfxVolume;
-            public float voiceYeun, voiceDaeun, voiceBom, voiceHeewon, voiceRoa;
-            public float textSpeed, autoSpeed;
-        }
-        SettingsSnapshot snapshot;
+        ISettings settings;
 
         protected override void Awake()
         {
             base.Awake();
+            settings = Services.Get<ISettings>();
 
             SetupButtons();
             SetupSliders();
@@ -87,12 +75,10 @@ namespace LoveAlgo.UI
 
         void SetupButtons()
         {
-            // 상단 버튼 (우측 상단: 리셋 / 적용 / 닫기)
-            confirmButton?.onClick.AddListener(OnConfirmClick); // 해상도 제외 설정 저장 및 닫기
+            confirmButton?.onClick.AddListener(OnConfirmClick);
             resetButton?.onClick.AddListener(OnResetClick);
             closeButton?.onClick.AddListener(Close);
 
-            // 화면 설정 (해상도 전용: 프리뷰 후 'Apply'로 즉시 적용)
             fullscreenButton?.onClick.AddListener(() => SetWindowMode(true));
             windowedButton?.onClick.AddListener(() => SetWindowMode(false));
             resolutionPrevButton?.onClick.AddListener(PrevResolution);
@@ -102,121 +88,85 @@ namespace LoveAlgo.UI
 
         void SetupSliders()
         {
-            // 마스터 볼륨
             masterSlider?.onValueChanged.AddListener(v =>
             {
-                AudioManager.Instance?.SetMasterVolume(v);
+                if (settings != null) settings.MasterVolume = v;
                 UISoundManager.Instance?.PlayVolumePreview();
                 MarkDirty();
             });
-
-            // 메인 볼륨 (변경 추적)
             bgmSlider?.onValueChanged.AddListener(v =>
             {
-                AudioManager.Instance?.SetBGMVolume(v);
+                if (settings != null) settings.BGMVolume = v;
                 UISoundManager.Instance?.PlayVolumePreview();
                 MarkDirty();
             });
             sfxSlider?.onValueChanged.AddListener(v =>
             {
-                AudioManager.Instance?.SetSFXVolume(v);
+                if (settings != null) settings.SFXVolume = v;
                 UISoundManager.Instance?.PlayVolumePreview();
                 MarkDirty();
             });
 
-            // 캐릭터별 음성 — 프리뷰는 해당 캐릭터 슬라이더 값 배율로 재생
-            voiceYeunSlider?.onValueChanged.AddListener(v => { SetCharacterVoice("Yeun", v); UISoundManager.Instance?.PlayVolumePreview(v); MarkDirty(); });
-            voiceDaeunSlider?.onValueChanged.AddListener(v => { SetCharacterVoice("Daeun", v); UISoundManager.Instance?.PlayVolumePreview(v); MarkDirty(); });
-            voiceBomSlider?.onValueChanged.AddListener(v => { SetCharacterVoice("Bom", v); UISoundManager.Instance?.PlayVolumePreview(v); MarkDirty(); });
-            voiceHeewonSlider?.onValueChanged.AddListener(v => { SetCharacterVoice("Heewon", v); UISoundManager.Instance?.PlayVolumePreview(v); MarkDirty(); });
-            voiceRoaSlider?.onValueChanged.AddListener(v => { SetCharacterVoice("Roa", v); UISoundManager.Instance?.PlayVolumePreview(v); MarkDirty(); });
+            voiceYeunSlider?.onValueChanged.AddListener(v => { settings?.SetCharacterVoice("Yeun", v); UISoundManager.Instance?.PlayVolumePreview(v); MarkDirty(); });
+            voiceDaeunSlider?.onValueChanged.AddListener(v => { settings?.SetCharacterVoice("Daeun", v); UISoundManager.Instance?.PlayVolumePreview(v); MarkDirty(); });
+            voiceBomSlider?.onValueChanged.AddListener(v => { settings?.SetCharacterVoice("Bom", v); UISoundManager.Instance?.PlayVolumePreview(v); MarkDirty(); });
+            voiceHeewonSlider?.onValueChanged.AddListener(v => { settings?.SetCharacterVoice("Heewon", v); UISoundManager.Instance?.PlayVolumePreview(v); MarkDirty(); });
+            voiceRoaSlider?.onValueChanged.AddListener(v => { settings?.SetCharacterVoice("Roa", v); UISoundManager.Instance?.PlayVolumePreview(v); MarkDirty(); });
 
-            // 속도 (변경 추적) — 프리뷰는 SFX 볼륨 그대로 (volumeScale = 1)
-            textSpeedSlider?.onValueChanged.AddListener(v => { OnTextSpeedChanged(v); UISoundManager.Instance?.PlayVolumePreview(); MarkDirty(); });
-            autoSpeedSlider?.onValueChanged.AddListener(v => { OnAutoSpeedChanged(v); UISoundManager.Instance?.PlayVolumePreview(); MarkDirty(); });
+            textSpeedSlider?.onValueChanged.AddListener(v =>
+            {
+                if (settings != null) settings.TextSpeed = v;
+                UISoundManager.Instance?.PlayVolumePreview();
+                MarkDirty();
+            });
+            autoSpeedSlider?.onValueChanged.AddListener(v =>
+            {
+                if (settings != null) settings.AutoSpeed = v;
+                UISoundManager.Instance?.PlayVolumePreview();
+                MarkDirty();
+            });
         }
 
-        void MarkDirty()
-        {
-            isDirty = true;
-        }
-
-        void MarkResolutionDirty()
-        {
-            isResolutionDirty = true;
-        }
+        void MarkDirty() => isDirty = true;
+        void MarkResolutionDirty() => isResolutionDirty = true;
 
         #region Show/Hide
 
         public override void Show()
         {
-            LoadSettings();
-            TakeSnapshot();
+            SyncUIFromSettings();
+            settings?.TakeSnapshot();
             isDirty = false;
             isResolutionDirty = false;
             base.Show();
         }
 
-        public override void Hide()
-        {
-            // 저장은 적용 버튼 또는 닫기 확인에서만 수행
-            base.Hide();
-        }
+        public override void Hide() => base.Hide();
 
         #endregion
 
-        #region 설정 로드/저장
+        #region UI ↔ Settings 동기화
 
-        void LoadSettings()
+        /// <summary>현재 settings 값으로 슬라이더/해상도 UI 갱신.</summary>
+        void SyncUIFromSettings()
         {
-            // 화면 설정
-            isFullscreen = PlayerPrefs.GetInt("Fullscreen", 1) == 1;
-            currentResolutionIndex = PlayerPrefs.GetInt("ResolutionIndex", 4);
+            if (settings == null) return;
+
             UpdateWindowModeUI();
             UpdateResolutionUI();
 
-            // 마스터 볼륨
-            masterSlider?.SetValueWithoutNotify(PlayerPrefs.GetFloat("MasterVolume", GameConstants.DefaultMasterVolume));
+            masterSlider?.SetValueWithoutNotify(settings.MasterVolume);
+            bgmSlider?.SetValueWithoutNotify(settings.BGMVolume);
+            sfxSlider?.SetValueWithoutNotify(settings.SFXVolume);
 
-            // 메인 볼륨
-            bgmSlider?.SetValueWithoutNotify(PlayerPrefs.GetFloat("BGMVolume", GameConstants.DefaultBGMVolume));
-            sfxSlider?.SetValueWithoutNotify(PlayerPrefs.GetFloat("SFXVolume", GameConstants.DefaultSFXVolume));
+            voiceYeunSlider?.SetValueWithoutNotify(settings.GetCharacterVoice("Yeun"));
+            voiceDaeunSlider?.SetValueWithoutNotify(settings.GetCharacterVoice("Daeun"));
+            voiceBomSlider?.SetValueWithoutNotify(settings.GetCharacterVoice("Bom"));
+            voiceHeewonSlider?.SetValueWithoutNotify(settings.GetCharacterVoice("Heewon"));
+            voiceRoaSlider?.SetValueWithoutNotify(settings.GetCharacterVoice("Roa"));
 
-            // 캐릭터별 음성
-            voiceYeunSlider?.SetValueWithoutNotify(PlayerPrefs.GetFloat("Voice_Yeun", GameConstants.DefaultVoiceVolume));
-            voiceDaeunSlider?.SetValueWithoutNotify(PlayerPrefs.GetFloat("Voice_Daeun", GameConstants.DefaultVoiceVolume));
-            voiceBomSlider?.SetValueWithoutNotify(PlayerPrefs.GetFloat("Voice_Bom", GameConstants.DefaultVoiceVolume));
-            voiceHeewonSlider?.SetValueWithoutNotify(PlayerPrefs.GetFloat("Voice_Heewon", GameConstants.DefaultVoiceVolume));
-            voiceRoaSlider?.SetValueWithoutNotify(PlayerPrefs.GetFloat("Voice_Roa", GameConstants.DefaultVoiceVolume));
-
-            // 속도
-            textSpeedSlider?.SetValueWithoutNotify(PlayerPrefs.GetFloat("TextSpeed", GameConstants.DefaultTextSpeed));
-            autoSpeedSlider?.SetValueWithoutNotify(PlayerPrefs.GetFloat("AutoSpeed", GameConstants.DefaultAutoSpeed));
-        }
-
-        void SaveSettings()
-        {
-            // 해상도 관련 값(Fullscreen/ResolutionIndex)은 해상도 전용 Apply 버튼에서 저장합니다.
-
-            // 마스터 볼륨
-            PlayerPrefs.SetFloat("MasterVolume", masterSlider?.value ?? GameConstants.DefaultMasterVolume);
-
-            // 메인 볼륨
-            PlayerPrefs.SetFloat("BGMVolume", bgmSlider?.value ?? GameConstants.DefaultBGMVolume);
-            PlayerPrefs.SetFloat("SFXVolume", sfxSlider?.value ?? GameConstants.DefaultSFXVolume);
-
-            // 캐릭터별 음성 (런타임 딕셔너리 + PlayerPrefs 동기화)
-            PlayerPrefs.SetFloat("Voice_Yeun", voiceYeunSlider?.value ?? GameConstants.DefaultVoiceVolume);
-            PlayerPrefs.SetFloat("Voice_Daeun", voiceDaeunSlider?.value ?? GameConstants.DefaultVoiceVolume);
-            PlayerPrefs.SetFloat("Voice_Bom", voiceBomSlider?.value ?? GameConstants.DefaultVoiceVolume);
-            PlayerPrefs.SetFloat("Voice_Heewon", voiceHeewonSlider?.value ?? GameConstants.DefaultVoiceVolume);
-            PlayerPrefs.SetFloat("Voice_Roa", voiceRoaSlider?.value ?? GameConstants.DefaultVoiceVolume);
-
-            // 속도
-            PlayerPrefs.SetFloat("TextSpeed", textSpeedSlider?.value ?? GameConstants.DefaultTextSpeed);
-            PlayerPrefs.SetFloat("AutoSpeed", autoSpeedSlider?.value ?? GameConstants.DefaultAutoSpeed);
-
-            PlayerPrefs.Save();
+            textSpeedSlider?.SetValueWithoutNotify(settings.TextSpeed);
+            autoSpeedSlider?.SetValueWithoutNotify(settings.AutoSpeed);
         }
 
         #endregion
@@ -225,112 +175,74 @@ namespace LoveAlgo.UI
 
         void SetWindowMode(bool fullscreen)
         {
-            isFullscreen = fullscreen;
+            if (settings != null) settings.IsFullscreen = fullscreen;
             UpdateWindowModeUI();
             MarkResolutionDirty();
         }
 
         void UpdateWindowModeUI()
         {
+            bool fs = settings?.IsFullscreen ?? true;
             if (modeOnSprite != null && modeOffSprite != null)
             {
-                var fsImg = fullscreenButton?.GetComponent<UnityEngine.UI.Image>();
-                var wdImg = windowedButton?.GetComponent<UnityEngine.UI.Image>();
-                if (fsImg != null) fsImg.sprite = isFullscreen ? modeOnSprite : modeOffSprite;
-                if (wdImg != null) wdImg.sprite = isFullscreen ? modeOffSprite : modeOnSprite;
+                var fsImg = fullscreenButton?.GetComponent<Image>();
+                var wdImg = windowedButton?.GetComponent<Image>();
+                if (fsImg != null) fsImg.sprite = fs ? modeOnSprite : modeOffSprite;
+                if (wdImg != null) wdImg.sprite = fs ? modeOffSprite : modeOnSprite;
             }
-
-            // 텍스트 색상: 선택 = 분홍, 미선택 = 회색
             var fsTxt = fullscreenButton?.GetComponentInChildren<TMP_Text>();
             var wdTxt = windowedButton?.GetComponentInChildren<TMP_Text>();
-            if (fsTxt != null) fsTxt.color = isFullscreen ? modeTextSelectedColor : modeTextDeselectedColor;
-            if (wdTxt != null) wdTxt.color = isFullscreen ? modeTextDeselectedColor : modeTextSelectedColor;
+            if (fsTxt != null) fsTxt.color = fs ? modeTextSelectedColor : modeTextDeselectedColor;
+            if (wdTxt != null) wdTxt.color = fs ? modeTextDeselectedColor : modeTextSelectedColor;
         }
 
         void PrevResolution()
         {
-            currentResolutionIndex = Mathf.Max(0, currentResolutionIndex - 1);
+            if (settings == null) return;
+            settings.ResolutionIndex = Mathf.Max(0, settings.ResolutionIndex - 1);
             UpdateResolutionUI();
             MarkResolutionDirty();
         }
-        
+
         void NextResolution()
         {
-            currentResolutionIndex = Mathf.Min(resolutions.Length - 1, currentResolutionIndex + 1);
+            if (settings == null) return;
+            settings.ResolutionIndex = Mathf.Min(settings.ResolutionCount - 1, settings.ResolutionIndex + 1);
             UpdateResolutionUI();
             MarkResolutionDirty();
         }
 
         void UpdateResolutionUI()
         {
-            if (resolutionImage != null && resolutionSprites != null && resolutionSprites.Length > currentResolutionIndex)
-            {
-                resolutionImage.sprite = resolutionSprites[currentResolutionIndex];
-            }
+            int idx = settings?.ResolutionIndex ?? 0;
+            int count = settings?.ResolutionCount ?? 0;
 
-            // 화살표 스프라이트 교체 (끝 지점에서 disabled 이미지)
-            bool atFirst = currentResolutionIndex <= 0;
-            bool atLast  = currentResolutionIndex >= resolutions.Length - 1;
+            if (resolutionImage != null && resolutionSprites != null && resolutionSprites.Length > idx)
+                resolutionImage.sprite = resolutionSprites[idx];
 
+            bool atFirst = idx <= 0;
+            bool atLast = idx >= count - 1;
             if (resolutionPrevButton != null)
             {
-                var img = resolutionPrevButton.GetComponent<UnityEngine.UI.Image>();
+                var img = resolutionPrevButton.GetComponent<Image>();
                 if (img != null && arrowLeftSprite != null && arrowLeftDisabled != null)
                     img.sprite = atFirst ? arrowLeftDisabled : arrowLeftSprite;
                 resolutionPrevButton.interactable = !atFirst;
             }
             if (resolutionNextButton != null)
             {
-                var img = resolutionNextButton.GetComponent<UnityEngine.UI.Image>();
+                var img = resolutionNextButton.GetComponent<Image>();
                 if (img != null && arrowRightSprite != null && arrowRightDisabled != null)
                     img.sprite = atLast ? arrowRightDisabled : arrowRightSprite;
                 resolutionNextButton.interactable = !atLast;
             }
         }
 
-        void ApplyResolution()
-        {
-            var res = resolutions[currentResolutionIndex];
-            Screen.SetResolution(res.w, res.h, isFullscreen ? FullScreenMode.FullScreenWindow : FullScreenMode.Windowed);
-            Debug.Log($"[SettingsPopup] 해상도 적용: {res.w}x{res.h}, 전체화면: {isFullscreen}");
-        }
-
-        /// <summary>
-        /// 해상도 전용 Apply 버튼 클릭 핸들러
-        /// - 화면 해상도 즉시 적용 및 PlayerPrefs에 저장
-        /// </summary>
         void ApplyResolutionButton_Click()
         {
-            ApplyResolution();
-            // 해상도 값 저장(별도 플로우)
-            PlayerPrefs.SetInt("Fullscreen", isFullscreen ? 1 : 0);
-            PlayerPrefs.SetInt("ResolutionIndex", currentResolutionIndex);
-            PlayerPrefs.Save();
+            settings?.ApplyResolution();
             isResolutionDirty = false;
             PopupManager.Instance?.Toast("해상도 적용", "해상도가 적용되었습니다.");
-        }
-
-        #endregion
-
-        #region 캐릭터별 음성
-
-        void SetCharacterVoice(string character, float volume)
-        {
-            AudioManager.Instance?.SetCharacterVoiceVolume(character, volume);
-        }
-
-        #endregion
-
-        #region 속도 설정
-
-        void OnTextSpeedChanged(float value)
-        {
-            UIManager.Instance?.DialogueUI?.SetTextSpeed(value);
-        }
-
-        void OnAutoSpeedChanged(float value)
-        {
-            ScriptRunner.Instance?.SetAutoDelay(value);
         }
 
         #endregion
@@ -339,58 +251,25 @@ namespace LoveAlgo.UI
 
         void OnConfirmClick()
         {
-            // '적용' 버튼: 슬라이더 + 해상도 일괄 저장 (창 닫지 않음)
-            SaveSettings();
-            ApplyResolution();
-            PlayerPrefs.SetInt("Fullscreen", isFullscreen ? 1 : 0);
-            PlayerPrefs.SetInt("ResolutionIndex", currentResolutionIndex);
-            PlayerPrefs.Save();
+            if (settings != null)
+            {
+                settings.Save();
+                settings.ApplyResolution(); // 해상도도 함께 저장/적용
+            }
             isDirty = false;
             isResolutionDirty = false;
             PopupManager.Instance?.Toast("적용", "설정이 저장되었습니다.");
         }
 
-        void OnResetClick()
-        {
-            ConfirmReset().Forget();
-        }
+        void OnResetClick() => ConfirmReset().Forget();
 
         async UniTaskVoid ConfirmReset()
         {
             bool confirmed = await PopupManager.Instance.ConfirmAsync("모든 설정을 기본값으로\n초기화하시겠습니까?");
             if (!confirmed) return;
 
-            ApplyResetValues();
-        }
-
-        void ApplyResetValues()
-        {
-            // 슬라이더만 기본값으로 초기화 — 해상도/전체화면은 건드리지 않음
-            masterSlider?.SetValueWithoutNotify(GameConstants.DefaultMasterVolume);
-            bgmSlider?.SetValueWithoutNotify(GameConstants.DefaultBGMVolume);
-            sfxSlider?.SetValueWithoutNotify(GameConstants.DefaultSFXVolume);
-
-            voiceYeunSlider?.SetValueWithoutNotify(GameConstants.DefaultVoiceVolume);
-            voiceDaeunSlider?.SetValueWithoutNotify(GameConstants.DefaultVoiceVolume);
-            voiceBomSlider?.SetValueWithoutNotify(GameConstants.DefaultVoiceVolume);
-            voiceHeewonSlider?.SetValueWithoutNotify(GameConstants.DefaultVoiceVolume);
-            voiceRoaSlider?.SetValueWithoutNotify(GameConstants.DefaultVoiceVolume);
-
-            textSpeedSlider?.SetValueWithoutNotify(GameConstants.DefaultTextSpeed);
-            autoSpeedSlider?.SetValueWithoutNotify(GameConstants.DefaultAutoSpeed);
-
-            // 실시간 반영
-            AudioManager.Instance?.SetMasterVolume(GameConstants.DefaultMasterVolume);
-            AudioManager.Instance?.SetBGMVolume(GameConstants.DefaultBGMVolume);
-            AudioManager.Instance?.SetSFXVolume(GameConstants.DefaultSFXVolume);
-            AudioManager.Instance?.SetCharacterVoiceVolume("Yeun", GameConstants.DefaultVoiceVolume);
-            AudioManager.Instance?.SetCharacterVoiceVolume("Daeun", GameConstants.DefaultVoiceVolume);
-            AudioManager.Instance?.SetCharacterVoiceVolume("Bom", GameConstants.DefaultVoiceVolume);
-            AudioManager.Instance?.SetCharacterVoiceVolume("Heewon", GameConstants.DefaultVoiceVolume);
-            AudioManager.Instance?.SetCharacterVoiceVolume("Roa", GameConstants.DefaultVoiceVolume);
-            UIManager.Instance?.DialogueUI?.SetTextSpeed(GameConstants.DefaultTextSpeed);
-            ScriptRunner.Instance?.SetAutoDelay(GameConstants.DefaultAutoSpeed);
-
+            settings?.ResetToDefaults();
+            SyncUIFromSettings();
             isDirty = true;
             PopupManager.Instance?.Toast("초기화", "기본값으로 변경되었습니다.\n적용 버튼을 눌러 저장하세요.");
         }
@@ -399,86 +278,25 @@ namespace LoveAlgo.UI
 
         #region 닫기 확인
 
-        /// <summary>
-        /// 변경사항이 있으면 확인 팝업 표시
-        /// </summary>
         public override async UniTask<bool> TryCloseAsync()
         {
-            // 해상도 변경은 Resolution 적용 버튼 전용 → 닫을 때 무시(확인팝업 없이 폐기)
+            // 해상도는 Apply 버튼 외에는 무시(저장된 값으로 UI만 복원)
             if (isResolutionDirty)
             {
-                // UI만 저장값으로 복원 (실제 화면은 Apply 안 했으므로 변경 없음)
-                isFullscreen = PlayerPrefs.GetInt("Fullscreen", 1) == 1;
-                currentResolutionIndex = PlayerPrefs.GetInt("ResolutionIndex", 4);
-                UpdateWindowModeUI();
-                UpdateResolutionUI();
+                settings?.Load(); // PrefsKeys 값으로 메모리/UI 복원
+                SyncUIFromSettings();
                 isResolutionDirty = false;
             }
 
-            // 슬라이더 변경사항 없으면 바로 닫기
-            if (!isDirty)
-            {
-                return true;
-            }
+            if (!isDirty) return true;
 
-            // 슬라이더 변경사항이 있으면 확인 팝업
             bool save = await PopupManager.Instance.ConfirmAsync("변경된 정보가 있습니다.\n저장 하시겠습니까?");
+            if (save) settings?.Save();
+            else settings?.RevertToSnapshot();
 
-            if (save)
-            {
-                SaveSettings();
-            }
-            else
-            {
-                RevertSettings();
-            }
-
+            SyncUIFromSettings();
             isDirty = false;
-            return true;  // 어느 쪽이든 닫기
-        }
-
-        /// <summary>
-        /// 현재 저장값(PlayerPrefs) 기준 스냅샷 저장
-        /// </summary>
-        void TakeSnapshot()
-        {
-            snapshot = new SettingsSnapshot
-            {
-                masterVolume = PlayerPrefs.GetFloat("MasterVolume", GameConstants.DefaultMasterVolume),
-                bgmVolume   = PlayerPrefs.GetFloat("BGMVolume", GameConstants.DefaultBGMVolume),
-                sfxVolume   = PlayerPrefs.GetFloat("SFXVolume", GameConstants.DefaultSFXVolume),
-                voiceYeun   = PlayerPrefs.GetFloat("Voice_Yeun", GameConstants.DefaultVoiceVolume),
-                voiceDaeun  = PlayerPrefs.GetFloat("Voice_Daeun", GameConstants.DefaultVoiceVolume),
-                voiceBom    = PlayerPrefs.GetFloat("Voice_Bom", GameConstants.DefaultVoiceVolume),
-                voiceHeewon = PlayerPrefs.GetFloat("Voice_Heewon", GameConstants.DefaultVoiceVolume),
-                voiceRoa    = PlayerPrefs.GetFloat("Voice_Roa", GameConstants.DefaultVoiceVolume),
-                textSpeed   = PlayerPrefs.GetFloat("TextSpeed", GameConstants.DefaultTextSpeed),
-                autoSpeed   = PlayerPrefs.GetFloat("AutoSpeed", GameConstants.DefaultAutoSpeed),
-            };
-        }
-
-        /// <summary>
-        /// 스냅샷 값으로 모든 런타임 설정 복원 (저장 안 하고 닫기 시)
-        /// </summary>
-        void RevertSettings()
-        {
-            // 마스터 볼륨 복원
-            AudioManager.Instance?.SetMasterVolume(snapshot.masterVolume);
-
-            // 볼륨 복원
-            AudioManager.Instance?.SetBGMVolume(snapshot.bgmVolume);
-            AudioManager.Instance?.SetSFXVolume(snapshot.sfxVolume);
-
-            // 캐릭터 음성 복원
-            AudioManager.Instance?.SetCharacterVoiceVolume("Yeun", snapshot.voiceYeun);
-            AudioManager.Instance?.SetCharacterVoiceVolume("Daeun", snapshot.voiceDaeun);
-            AudioManager.Instance?.SetCharacterVoiceVolume("Bom", snapshot.voiceBom);
-            AudioManager.Instance?.SetCharacterVoiceVolume("Heewon", snapshot.voiceHeewon);
-            AudioManager.Instance?.SetCharacterVoiceVolume("Roa", snapshot.voiceRoa);
-
-            // 속도 복원
-            UIManager.Instance?.DialogueUI?.SetTextSpeed(snapshot.textSpeed);
-            ScriptRunner.Instance?.SetAutoDelay(snapshot.autoSpeed);
+            return true;
         }
 
         #endregion

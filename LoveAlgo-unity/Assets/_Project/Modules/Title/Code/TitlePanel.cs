@@ -12,7 +12,7 @@ namespace LoveAlgo.UI
     /// <summary>
     /// 타이틀 UI
     /// </summary>
-    public class TitleUI : MonoBehaviour
+    public class TitlePanel : MonoBehaviour
     {
         [Header("메뉴 버튼")]
         [SerializeField] Button startButton;
@@ -207,7 +207,7 @@ namespace LoveAlgo.UI
 
         void OnStartClick()
         {
-            Debug.Log("[TitleUI] Start - 새 게임 시작");
+            Debug.Log("[TitlePanel] Start - 새 게임 시작");
             ConfirmNewGame().Forget();
         }
 
@@ -235,7 +235,7 @@ namespace LoveAlgo.UI
 
         void OnContinueClick()
         {
-            Debug.Log("[TitleUI] Continue - 이어하기");
+            Debug.Log("[TitlePanel] Continue - 이어하기");
             HandleContinue().Forget();
         }
 
@@ -274,7 +274,7 @@ namespace LoveAlgo.UI
 
         void OnLoadClick()
         {
-            Debug.Log("[TitleUI] Load - 불러오기");
+            Debug.Log("[TitlePanel] Load - 불러오기");
             
             PopupManager.Instance?.ShowLoadPopup(slot =>
             {
@@ -285,19 +285,19 @@ namespace LoveAlgo.UI
 
         void OnSettingsClick()
         {
-            Debug.Log("[TitleUI] Settings - 설정");
+            Debug.Log("[TitlePanel] Settings - 설정");
             PopupManager.Instance?.ShowSettings();
         }
 
         void OnExtraClick()
         {
-            Debug.Log("[TitleUI] Extra - 엑스트라");
+            Debug.Log("[TitlePanel] Extra - 엑스트라");
             PopupManager.Instance?.ShowModal<ExtraPopup>();
         }
 
         void OnExitClick()
         {
-            Debug.Log("[TitleUI] Exit - 종료");
+            Debug.Log("[TitlePanel] Exit - 종료");
             ConfirmExit().Forget();
         }
 

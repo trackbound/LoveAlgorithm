@@ -31,7 +31,7 @@ namespace LoveAlgo.UI
 
         [Header("Top 팝업 — 프리팹 바인딩 (lazy spawn into layerTop)")]
         [SerializeField] AlertPopup alertPopupPrefab;
-        [SerializeField] ToastPopup toastPopupPrefab;
+        [SerializeField] ToastNotification toastPopupPrefab;
         [SerializeField] LogPopup logPopupPrefab;
 
         [Header("Modal 팝업 (프리팹)")]
@@ -45,11 +45,11 @@ namespace LoveAlgo.UI
 
         // Top 팝업 lazy 인스턴스
         AlertPopup _alertPopup;
-        ToastPopup _toastPopup;
+        ToastNotification _toastPopup;
         LogPopup _logPopup;
 
         AlertPopup AlertPopup => _alertPopup != null ? _alertPopup : (_alertPopup = SpawnTop(alertPopupPrefab));
-        ToastPopup ToastPopup => _toastPopup != null ? _toastPopup : (_toastPopup = SpawnTop(toastPopupPrefab));
+        ToastNotification ToastNotification => _toastPopup != null ? _toastPopup : (_toastPopup = SpawnTop(toastPopupPrefab));
         LogPopup LogPopup => _logPopup != null ? _logPopup : (_logPopup = SpawnTop(logPopupPrefab));
 
         // 현재 열린 Modal
@@ -335,7 +335,7 @@ namespace LoveAlgo.UI
         /// </summary>
         public void Toast(string title, string message, float duration = 2f)
         {
-            var popup = ToastPopup;
+            var popup = ToastNotification;
             if (popup == null) return;
             popup.Show(title, message, duration);
         }
@@ -345,7 +345,7 @@ namespace LoveAlgo.UI
         /// </summary>
         public void ToastSequence(string title, System.Collections.Generic.List<string> messages, float holdPerItem = 0.8f)
         {
-            var popup = ToastPopup;
+            var popup = ToastNotification;
             if (popup == null) return;
             popup.ShowSequence(title, messages, holdPerItem);
         }

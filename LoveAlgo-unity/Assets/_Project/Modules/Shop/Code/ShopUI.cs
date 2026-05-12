@@ -16,11 +16,11 @@ namespace LoveAlgo.Shop
     /// 레이아웃:
     ///   - 좌측: 잔액 + 장바구니(CART) + 합계 + 구매하기 버튼
     ///   - 우측: 아이템 그리드 (카드형, 스크롤)
-    ///   - 호버 시: 아이템 설명 팝업 (ShopItemDetailPopup)
+    ///   - 호버 시: 아이템 설명 팝업 (ShopItemTooltip)
     ///   - 클릭: 토글 선택/해제 (체크마크)
     /// </summary>
     [RequireComponent(typeof(CanvasGroup))]
-    public class ShopPopup : MonoBehaviour
+    public class ShopUI : MonoBehaviour
     {
         CanvasGroup _canvasGroup;
         public CanvasGroup CanvasGroup => _canvasGroup != null ? _canvasGroup : (_canvasGroup = GetComponent<CanvasGroup>());
@@ -36,7 +36,7 @@ namespace LoveAlgo.Shop
         [SerializeField] TabGroup categoryTabs;
 
         [Header("호버 설명 팝업")]
-        [SerializeField] ShopItemDetailPopup itemDetailPopup;
+        [SerializeField] ShopItemTooltip itemDetailPopup;
         [Tooltip("Detail 팝업 위치 계산 기준 (그리드 ScrollRect의 Viewport)")]
         [SerializeField] RectTransform saleViewport;
 
@@ -47,7 +47,7 @@ namespace LoveAlgo.Shop
         [Header("스크롤 끝 푸터")]
         [Tooltip("판매 그리드 스크롤을 끝까지 내렸을 때 보이는 'COMING SOON' 등 푸터 GameObject.\n" +
                  "saleContainer 또는 그 부모(Content)의 자식으로 배치해 두면 됨. " +
-                 "ShopPopup은 항상 마지막 자식으로 정렬하고 활성 상태로 유지함.")]
+                 "ShopUI은 항상 마지막 자식으로 정렬하고 활성 상태로 유지함.")]
         [SerializeField] GameObject saleListFooter;
 
         [Header("아이템 필터 (테스트 빌드용)")]

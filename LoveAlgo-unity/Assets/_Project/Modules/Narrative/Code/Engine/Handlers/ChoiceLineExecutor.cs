@@ -60,7 +60,7 @@ namespace LoveAlgo.Story.StoryEngine.Handlers
             foreach (var opt in scriptOptions)
                 options.Add(OptionData.Parse(opt.Value));
 
-            var choiceUI = UIManager.Instance?.ChoiceUI;
+            var choiceUI = UIManager.Instance?.ChoicePopup;
             if (choiceUI != null)
             {
                 var result = await choiceUI.ShowAndWaitAsync(options, ct);

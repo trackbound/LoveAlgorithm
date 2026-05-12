@@ -21,7 +21,7 @@ namespace LoveAlgo.UI
     /// 
     /// 애니메이션: 페이드인 → 유지 → 페이드아웃
     /// </summary>
-    public class PlaceUI : MonoBehaviour
+    public class PlaceNotification : MonoBehaviour
     {
         [Header("UI 요소")]
         [SerializeField] CanvasGroup canvasGroup;

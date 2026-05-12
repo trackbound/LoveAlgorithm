@@ -46,7 +46,8 @@
 - [x] 비밀번호 저장 (PrefsKeys, 단방향 해시) — `PasswordHasher` SHA256+salt
 - [x] 3회 오류 카운터 → 열쇠 아이콘 (`ShowKeyIcon`)
 - [x] 투두리스트 33개 SO + 랜덤 3개 표출 — `ToDoItemSO` + `ToDoListSO.PickRandom`
-- [ ] UI 스크립트 + 프리팹 (LockScreenPanel/ClockWidget/ToDoWidget/PasswordInput)
+- [x] UI 스크립트 — `LockScreenPanel`, `ClockWidget`, `ToDoWidget`+`ToDoEntry`, `RoaMessageWidget`, `PasswordInputWidget` (Modules/LockScreen/UI/)
+- [ ] UI 프리팹 (Unity 에디터 작업 — 위 스크립트들 SerializeField 연결)
 - [ ] 33개 ToDo 데이터 + 4개 로아 메시지 채움
 - [ ] TitleUI 진입 통합 + 씬 GameObject 추가
 
@@ -81,9 +82,9 @@
 
 > UI 코드에 핵심 로직 혼재 — 기능 작업 시 분리 필요
 
-- [ ] `ScheduleUI.cs` — 스케줄 선택 로직 + 표시 + 바인딩 혼재. 로직 → `ScheduleModule`로 분리
-- [ ] `SettingsPopup.cs` — 볼륨/설정 저장 로직 직접 보유. → `IAudio` / `ISave` 경유로
-- [ ] `SaveLoadPopup.cs` — 세이브 포맷 + 썸네일 + UI 혼재. → `ISave` 모듈로 분리
+- [ ] `ScheduleUI.cs` — 스케줄 선택 로직 + 표시 + 바인딩 혼재. 로직 → `ScheduleModule`로 분리 (`IGameState`/`IGameManager` 인터페이스화 선행 필요)
+- [x] `SettingsPopup.cs` — `ISettings` 신규 작성 + `SettingsModule`. PlayerPrefs/AudioManager 직접 호출 0개 달성
+- [x] `SaveLoadPopup.cs` — `Services.Get<ISave>()` 경유로 전환. SaveManager 직접 호출 0개 달성
 
 **원칙**: UI는 표시만. 상태 변경·데이터 접근은 IService 경유.
 

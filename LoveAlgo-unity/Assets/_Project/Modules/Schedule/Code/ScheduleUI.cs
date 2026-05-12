@@ -70,7 +70,7 @@ namespace LoveAlgo.Schedule
         [SerializeField] Button helpButton;
 
         [Header("헬프 패널")]
-        [SerializeField] ScheduleHelpPanel helpPanel;
+        [SerializeField] ScheduleHelpPopup helpPanel;
 
         // 튜토리얼 오버레이는 화면 전체 dim을 위해 ScheduleUI 외부 — UIManager가 별도 관리
         LoveAlgo.UI.TutorialOverlay tutorialOverlay => LoveAlgo.UI.UIManager.Instance?.TutorialOverlay;
@@ -84,7 +84,7 @@ namespace LoveAlgo.Schedule
         [SerializeField] CanvasGroup scheduleContent;
 
         // Shop은 UIManager.Instance.ShopUI 로 lazy 접근
-        Shop.ShopPopup shopPanel => LoveAlgo.UI.UIManager.Instance?.ShopUI;
+        Shop.ShopUI shopPanel => LoveAlgo.UI.UIManager.Instance?.ShopUI;
         CanvasGroup shopContent => shopPanel != null ? shopPanel.CanvasGroup : null;
 
         /// <summary>오늘 상하차를 이미 했는지 (하루 1회 제한)</summary>
@@ -128,7 +128,7 @@ namespace LoveAlgo.Schedule
                 helpButton.onClick.AddListener(() => helpPanel?.Open());
 
             // 퀵메뉴 돌아가기 — UIManager가 관리하는 공용 인스턴스
-            var quickMenu = LoveAlgo.UI.UIManager.Instance?.QuickMenuUI;
+            var quickMenu = LoveAlgo.UI.UIManager.Instance?.QuickMenu;
             if (quickMenu != null)
                 quickMenu.OnBackRequested += OnBackPressed;
 
@@ -646,7 +646,7 @@ namespace LoveAlgo.Schedule
         /// <summary>폰 열기 (행동 소비 없음)</summary>
         void OnPhoneClick()
         {
-            LoveAlgo.UI.PopupManager.Instance?.ShowModal<Phone.PhonePanel>();
+            LoveAlgo.UI.PopupManager.Instance?.ShowModal<Phone.PhonePopup>();
         }
 
         #endregion
@@ -660,7 +660,7 @@ namespace LoveAlgo.Schedule
             if (shopContent != null)
                 shopContent.DOKill();
 
-            var quickMenu = LoveAlgo.UI.UIManager.Instance?.QuickMenuUI;
+            var quickMenu = LoveAlgo.UI.UIManager.Instance?.QuickMenu;
             if (quickMenu != null)
                 quickMenu.OnBackRequested -= OnBackPressed;
         }

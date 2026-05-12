@@ -12,7 +12,7 @@ namespace LoveAlgo.Shop
     /// 아이템 카드 위에 마우스를 올리면 표시되는 확대 설명창.
     /// 기획서: 그리드 내 위치에 따라 설명창 표시 위치가 다름.
     /// </summary>
-    public class ShopItemDetailPopup : MonoBehaviour
+    public class ShopItemTooltip : MonoBehaviour
     {
         [SerializeField] Image bgImage;
         [SerializeField] Image iconImage;

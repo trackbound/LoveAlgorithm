@@ -4,7 +4,8 @@ using DG.Tweening;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using LoveAlgo.Story;
+using LoveAlgo.Common;
+using LoveAlgo.Save;
 
 namespace LoveAlgo.UI
 {
@@ -43,9 +44,14 @@ namespace LoveAlgo.UI
         // 콜백
         System.Action<int> onSlotSelected;
 
+        // Service cache
+        ISave save;
+
         protected override void Awake()
         {
             base.Awake();
+
+            save = Services.Get<ISave>();
 
             closeButton?.onClick.AddListener(Close);
             prevButton?.onClick.AddListener(PrevPage);
@@ -138,13 +144,13 @@ namespace LoveAlgo.UI
         async UniTaskVoid OnSaveSlotClicked(int slotIndex)
         {
             // 자동 저장 슬롯(0)은 수동 저장 불가 — 안내 팝업 후 종료
-            if (slotIndex == SaveManager.AutoSaveSlot)
+            if (slotIndex == save.AutoSaveSlot)
             {
                 await PopupManager.Instance.AlertAsync("자동 저장 슬롯입니다.\n다른 슬롯에 저장해 주세요.");
                 return;
             }
 
-            bool hasData = SaveManager.Exists(slotIndex);
+            bool hasData = save.Exists(slotIndex);
 
             if (hasData)
             {
@@ -164,7 +170,7 @@ namespace LoveAlgo.UI
             // 매 저장 직전에 다시 캡처. (Confirm 팝업은 이미 닫혔고, SaveLoadPopup/Confirm 등
             // PopupManager 하위 모든 팝업은 SaveThumbnailManager 화이트리스트 캡처에서
             // 자동으로 숨겨진다 — 화이트리스트: 캐릭터 CG, 배경 BG, ScheduleUI, ShopUI)
-            await SaveManager.CapturePendingScreenshotAsync();
+            await save.CapturePendingScreenshotAsync();
 
             // 저장 실행 + 슬롯 갱신 (팝업은 유지)
             onSlotSelected?.Invoke(slotIndex);
@@ -174,7 +180,7 @@ namespace LoveAlgo.UI
         async UniTaskVoid OnLoadSlotClicked(int slotIndex)
         {
             // 빈 슬롯은 무반응
-            if (!SaveManager.Exists(slotIndex)) return;
+            if (!save.Exists(slotIndex)) return;
 
             // 로드 확인
             bool confirm = await PopupManager.Instance.ConfirmAsync(
@@ -209,7 +215,7 @@ namespace LoveAlgo.UI
 
                 slot.gameObject.SetActive(true);
 
-                bool isAutoSave = (globalIndex == SaveManager.AutoSaveSlot);
+                bool isAutoSave = (globalIndex == save.AutoSaveSlot);
                 slot.Setup(i, OnSlotClicked, autoSave: isAutoSave);
                 slot.SetDisplayNumber(globalIndex);
 
@@ -218,10 +224,10 @@ namespace LoveAlgo.UI
                 slot.SetInteractable(true);
 
                 // 세이브 데이터 확인
-                var data = SaveManager.Load(globalIndex);
+                var data = save.Load(globalIndex);
                 if (data != null)
                 {
-                    var screenshot = SaveManager.LoadScreenshot(globalIndex);
+                    var screenshot = save.LoadScreenshot(globalIndex);
                     string label = isAutoSave ? "자동 저장" : data.ChapterName;
                     slot.SetData(label, data.SaveTime, screenshot);
                 }

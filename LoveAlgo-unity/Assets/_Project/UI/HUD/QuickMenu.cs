@@ -10,7 +10,7 @@ namespace LoveAlgo.UI
     /// 스케줄/상점 화면 우측 퀵 메뉴.
     /// ButtonEX(Toggle 모드) + 슬라이드 패널.
     /// </summary>
-    public class QuickMenuUI : MonoBehaviour
+    public class QuickMenu : MonoBehaviour
     {
         [Header("토글 버튼 (ButtonEX Toggle 모드)")]
         [SerializeField] Button toggleButton;
@@ -179,7 +179,7 @@ namespace LoveAlgo.UI
 
         void OnPhone()
         {
-            PopupManager.Instance?.ShowModal<PhonePanel>();
+            PopupManager.Instance?.ShowModal<PhonePopup>();
         }
 
         void OnSave()

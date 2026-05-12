@@ -11,14 +11,14 @@ namespace LoveAlgo.Phone
     /// <summary>
     /// 폰 메인 패널 (ModalPopupBase)
     /// 
-    /// PhonePanel 프리팹에 연결:
+    /// PhonePopup 프리팹에 연결:
     ///   - Sidebar: Tab_Friend, Tab_Chat, Tab_Theme
     ///   - FriendList: 친구 목록
     ///   - ChatList: 대화방 목록
     ///   - ChatRoomPanel: 개별 대화방
     ///   - ProfilePanel: 프로필 팝업
     /// </summary>
-    public class PhonePanel : ModalPopupBase
+    public class PhonePopup : ModalPopupBase
     {
         [Header("탭 그룹")]
         [SerializeField] TabGroup tabGroup;
