@@ -15,7 +15,9 @@ namespace LoveAlgo.Simulation
     [DefaultExecutionOrder(-500)]
     public class SimulationModule : MonoBehaviour, ISimulation
     {
-        [Header("QuickMenu Prefab (시뮬 컨텍스트 사이드바)")]
+        [Header("QuickMenu (씬 인스턴스 우선 / 없으면 prefab spawn)")]
+        [Tooltip("씬에 미리 배치된 인스턴스 (권장: 시뮬 동안 상시 활성).")]
+        [SerializeField] QuickMenu quickMenuSceneInstance;
         [SerializeField] QuickMenu quickMenuPrefab;
 
         [Header("기본 메인 모드 (Enter 시 진입)")]
@@ -93,12 +95,14 @@ namespace LoveAlgo.Simulation
         void EnsureQuickMenu()
         {
             if (_quickMenu != null) return;
+            if (quickMenuSceneInstance != null) { _quickMenu = quickMenuSceneInstance; return; }
             if (quickMenuPrefab == null)
             {
-                Debug.LogWarning("[SimulationModule] quickMenuPrefab not assigned");
+                Debug.LogWarning("[SimulationModule] quickMenu (sceneInstance or prefab) not assigned");
                 return;
             }
-            _quickMenu = Instantiate(quickMenuPrefab);
+            var parent = UIManager.Instance?.GetGroupRoot(UIGroup.Simulate);
+            _quickMenu = parent != null ? Instantiate(quickMenuPrefab, parent) : Instantiate(quickMenuPrefab);
             _quickMenu.name = quickMenuPrefab.name;
             _quickMenu.gameObject.SetActive(false);
             UISoundManager.Instance?.BindButtonsInTransform(_quickMenu.transform);

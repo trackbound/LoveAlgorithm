@@ -16,10 +16,16 @@ namespace LoveAlgo.Narrative
     [DefaultExecutionOrder(-500)]
     public class NarrativeModule : MonoBehaviour, INarrative
     {
-        [Header("UI Prefabs (모듈 응집)")]
+        [Header("Popups (lazy spawn — PopupManager 등록)")]
         [SerializeField] LogPopup logPopupPrefab;
+
+        [Header("UI (씬 인스턴스 우선 / 없으면 prefab spawn)")]
+        [Tooltip("씬에 미리 배치된 인스턴스 (자주 사용되는 UI에 권장). 비어있으면 prefab으로 spawn.")]
+        [SerializeField] DialogueUI dialogueUISceneInstance;
         [SerializeField] DialogueUI dialogueUIPrefab;
+        [SerializeField] DialogueShowButton dialogueShowButtonSceneInstance;
         [SerializeField] DialogueShowButton dialogueShowButtonPrefab;
+        [SerializeField] ChoicePopup choicePopupSceneInstance;
         [SerializeField] ChoicePopup choicePopupPrefab;
 
         LogPopup logPopupInstance;
@@ -31,18 +37,17 @@ namespace LoveAlgo.Narrative
         {
             get
             {
-                if (_dialogueUI == null && dialogueUIPrefab != null)
+                if (_dialogueUI != null) return _dialogueUI;
+                _dialogueUI = ResolveOrSpawn(dialogueUISceneInstance, dialogueUIPrefab, UIGroup.Story);
+
+                // DialogueShowButton 동반 (대사창 항상 동반)
+                if (_dialogueShowButton == null)
                 {
-                    _dialogueUI = SpawnUI(dialogueUIPrefab, UIGroup.Story);
-                    // DialogueShowButton 동반 생성 (대사창 항상 동반)
-                    if (dialogueShowButtonPrefab != null && _dialogueShowButton == null)
+                    _dialogueShowButton = ResolveOrSpawn(dialogueShowButtonSceneInstance, dialogueShowButtonPrefab, UIGroup.Story);
+                    if (_dialogueShowButton != null && _dialogueUI != null)
                     {
-                        _dialogueShowButton = SpawnUI(dialogueShowButtonPrefab, UIGroup.Story);
-                        if (_dialogueShowButton != null)
-                        {
-                            _dialogueShowButton.Bind(_dialogueUI);
-                            _dialogueShowButton.gameObject.SetActive(true);
-                        }
+                        _dialogueShowButton.Bind(_dialogueUI);
+                        _dialogueShowButton.gameObject.SetActive(true);
                     }
                 }
                 return _dialogueUI;
@@ -58,15 +63,28 @@ namespace LoveAlgo.Narrative
             }
         }
 
-        public ChoicePopup ChoicePopup => _choicePopup != null
-            ? _choicePopup
-            : (_choicePopup = SpawnUI(choicePopupPrefab, UIGroup.Story));
+        public ChoicePopup ChoicePopup
+        {
+            get
+            {
+                if (_choicePopup != null) return _choicePopup;
+                _choicePopup = ResolveOrSpawn(choicePopupSceneInstance, choicePopupPrefab, UIGroup.Story);
+                return _choicePopup;
+            }
+        }
 
         void Awake()
         {
             Services.Register<INarrative>(this);
             if (logPopupPrefab != null && PopupManager.Instance != null)
                 logPopupInstance = PopupManager.Instance.Register(logPopupPrefab);
+        }
+
+        /// <summary>씬에 미리 배치된 인스턴스가 있으면 그대로, 없으면 prefab으로 spawn.</summary>
+        T ResolveOrSpawn<T>(T sceneInstance, T prefab, UIGroup group) where T : MonoBehaviour
+        {
+            if (sceneInstance != null) return sceneInstance;
+            return SpawnUI(prefab, group);
         }
 
         T SpawnUI<T>(T prefab, UIGroup group) where T : MonoBehaviour

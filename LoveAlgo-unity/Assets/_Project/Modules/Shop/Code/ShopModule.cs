@@ -14,7 +14,9 @@ namespace LoveAlgo.Shop
     [DefaultExecutionOrder(-500)]
     public class ShopModule : MonoBehaviour, IShop, ISimulationSubMode
     {
-        [Header("UI Prefab (모듈 응집)")]
+        [Header("UI (씬 인스턴스 우선 / 없으면 prefab spawn)")]
+        [Tooltip("씬에 미리 배치된 인스턴스. 비어있으면 prefab spawn.")]
+        [SerializeField] ShopUI shopUISceneInstance;
         [SerializeField] ShopUI shopUIPrefab;
 
         ShopUI _shopUI;
@@ -23,7 +25,9 @@ namespace LoveAlgo.Shop
         {
             get
             {
-                if (_shopUI == null && shopUIPrefab != null)
+                if (_shopUI != null) return _shopUI;
+                if (shopUISceneInstance != null) { _shopUI = shopUISceneInstance; return _shopUI; }
+                if (shopUIPrefab != null)
                 {
                     var parent = UIManager.Instance?.GetGroupRoot(UIGroup.Simulate);
                     _shopUI = parent != null ? Instantiate(shopUIPrefab, parent) : Instantiate(shopUIPrefab);

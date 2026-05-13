@@ -12,22 +12,39 @@ namespace LoveAlgo.Title
     [DefaultExecutionOrder(-500)]
     public class TitleModule : MonoBehaviour, ITitle
     {
-        [Header("UI Prefabs (모듈 응집)")]
+        [Header("UI (씬 인스턴스 우선 / 없으면 prefab spawn)")]
+        [Tooltip("씬에 미리 배치된 인스턴스. 비어있으면 prefab spawn.")]
+        [SerializeField] TitlePanel titlePanelSceneInstance;
         [SerializeField] TitlePanel titlePanelPrefab;
+        [SerializeField] UsernameUI usernameUISceneInstance;
         [SerializeField] UsernameUI usernameUIPrefab;
+
+        [Header("Popups (PopupManager 등록)")]
         [SerializeField] ExtraPopup extraPopupPrefab;
 
         TitlePanel _titlePanel;
         UsernameUI _usernameUI;
         ExtraPopup _extraPopupInstance;
 
-        public TitlePanel TitlePanel => _titlePanel != null
-            ? _titlePanel
-            : (_titlePanel = SpawnUI(titlePanelPrefab, UIGroup.Scene));
+        public TitlePanel TitlePanel
+        {
+            get
+            {
+                if (_titlePanel != null) return _titlePanel;
+                if (titlePanelSceneInstance != null) return _titlePanel = titlePanelSceneInstance;
+                return _titlePanel = SpawnUI(titlePanelPrefab, UIGroup.Scene);
+            }
+        }
 
-        public UsernameUI UsernameUI => _usernameUI != null
-            ? _usernameUI
-            : (_usernameUI = SpawnUI(usernameUIPrefab, UIGroup.Scene));
+        public UsernameUI UsernameUI
+        {
+            get
+            {
+                if (_usernameUI != null) return _usernameUI;
+                if (usernameUISceneInstance != null) return _usernameUI = usernameUISceneInstance;
+                return _usernameUI = SpawnUI(usernameUIPrefab, UIGroup.Scene);
+            }
+        }
 
         void Awake()
         {

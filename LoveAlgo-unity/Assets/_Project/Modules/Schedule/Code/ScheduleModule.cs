@@ -14,7 +14,9 @@ namespace LoveAlgo.Schedule
     [DefaultExecutionOrder(-500)]
     public class ScheduleModule : MonoBehaviour, ISchedule, ISimulationSubMode
     {
-        [Header("UI Prefab (모듈 응집)")]
+        [Header("UI (씬 인스턴스 우선 / 없으면 prefab spawn)")]
+        [Tooltip("씬에 미리 배치된 인스턴스. 비어있으면 prefab spawn.")]
+        [SerializeField] ScheduleUI scheduleUISceneInstance;
         [SerializeField] ScheduleUI scheduleUIPrefab;
 
         ScheduleUI _scheduleUI;
@@ -23,7 +25,9 @@ namespace LoveAlgo.Schedule
         {
             get
             {
-                if (_scheduleUI == null && scheduleUIPrefab != null)
+                if (_scheduleUI != null) return _scheduleUI;
+                if (scheduleUISceneInstance != null) { _scheduleUI = scheduleUISceneInstance; return _scheduleUI; }
+                if (scheduleUIPrefab != null)
                 {
                     var parent = UIManager.Instance?.GetGroupRoot(UIGroup.Simulate);
                     _scheduleUI = parent != null ? Instantiate(scheduleUIPrefab, parent) : Instantiate(scheduleUIPrefab);
