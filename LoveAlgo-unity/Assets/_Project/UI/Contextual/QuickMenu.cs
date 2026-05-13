@@ -1,8 +1,11 @@
 using UnityEngine;
 using UnityEngine.UI;
 using DG.Tweening;
+using LoveAlgo.Common;
 using LoveAlgo.Core;
 using LoveAlgo.Phone;
+using LoveAlgo.Save;
+using LoveAlgo.Settings;
 
 namespace LoveAlgo.UI
 {
@@ -184,17 +187,17 @@ namespace LoveAlgo.UI
 
         void OnSave()
         {
-            PopupManager.Instance?.ShowSave();
+            Services.Get<ISave>()?.ShowSaveUI();
         }
 
         void OnLoad()
         {
-            PopupManager.Instance?.ShowLoad();
+            Services.Get<ISave>()?.ShowLoadUI();
         }
 
         void OnConfig()
         {
-            PopupManager.Instance?.ShowSettings();
+            Services.Get<ISettings>()?.ShowSettingsUI();
         }
 
         void OnExit()

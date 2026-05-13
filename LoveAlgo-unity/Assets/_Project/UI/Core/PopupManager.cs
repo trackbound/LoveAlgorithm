@@ -7,8 +7,6 @@ using UnityEngine.InputSystem;
 using UnityEngine.UI;
 using LoveAlgo.Common;
 using LoveAlgo.Core;
-using LoveAlgo.Save;
-using LoveAlgo.Story;
 
 namespace LoveAlgo.UI
 {
@@ -136,6 +134,17 @@ namespace LoveAlgo.UI
             return popup;
         }
 
+        /// <summary>
+        /// 외부 모듈이 자기 팝업 프리팹을 등록 (모듈 응집 패턴).
+        /// 모듈 Awake에서 호출 권장: PopupManager.Instance.Register(myPopupPrefab).
+        /// 반환값은 생성된 인스턴스 — 모듈이 직접 참조 캐싱하려면 사용.
+        /// </summary>
+        public T Register<T>(T prefab) where T : PopupBase
+        {
+            if (prefab == null) return null;
+            return Materialize(prefab) as T;
+        }
+
         // ── 도메인 헬퍼 (시그니처 유지, 내부는 Generic Show) ────────
 
         public UniTask AlertAsync(string message, string confirmText = null)
@@ -166,41 +175,8 @@ namespace LoveAlgo.UI
         public void ToastSequence(string title, List<string> messages, float holdPerItem = 0.8f)
             => Get<ToastNotification>()?.ShowSequence(title, messages, holdPerItem);
 
-        // ── 도메인 진입점 (1줄 wrapper, IService 경유) ───────────
-
-        public void ShowSettings() => Show<SettingsPopup>();
-
-        public void ShowLog(IReadOnlyList<DialogueLogEntry> log)
-            => Get<LogPopup>()?.Show(log); // LogPopup.Show(log) 내부에서 base.Show() 호출됨
-
-        // SaveLoadPopup.ShowSave/ShowLoad 내부에서 base.Show() 호출되므로 Get<>() 사용
-        public void ShowSavePopup(Action<int> onSlotSelected = null)
-            => Get<SaveLoadPopup>()?.ShowSave(onSlotSelected);
-
-        public void ShowLoadPopup(Action<int> onSlotSelected = null)
-            => Get<SaveLoadPopup>()?.ShowLoad(onSlotSelected);
-
-        public async void ShowSave()
-        {
-            var save = Services.Get<ISave>();
-            if (save != null) await save.CapturePendingScreenshotAsync();
-            Get<SaveLoadPopup>()?.ShowSave(slot =>
-            {
-                GameManager.Instance?.Save(slot);
-                UISoundManager.Instance?.PlaySaveComplete();
-                Toast("저장 완료", $"슬롯 {slot}에 저장했습니다.");
-            });
-        }
-
-        public void ShowLoad()
-        {
-            Get<SaveLoadPopup>()?.ShowLoad(slot =>
-            {
-                GameManager.Instance?.LoadGame(slot);
-                UISoundManager.Instance?.PlayLoadComplete();
-                Toast("로드 완료", $"슬롯 {slot}에서 불러왔습니다.");
-            });
-        }
+        // 도메인 진입점은 각 모듈로 이전됨 (ISave.ShowSaveUI/ShowLoadUI, ISettings.ShowSettingsUI, INarrative.ShowLogUI).
+        // PopupManager는 공용 인프라(Alert/Confirm/Toast)만 유지.
 
         // ── Stack / Dimmer 관리 (PopupBase가 호출) ───────────────
 

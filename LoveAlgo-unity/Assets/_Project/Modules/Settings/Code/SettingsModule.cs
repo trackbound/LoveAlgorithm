@@ -3,6 +3,7 @@ using LoveAlgo.Common;
 using LoveAlgo.Core;
 using LoveAlgo.Modules.Audio;
 using LoveAlgo.Narrative;
+using LoveAlgo.UI;
 using UnityEngine;
 
 namespace LoveAlgo.Settings
@@ -45,14 +46,20 @@ namespace LoveAlgo.Settings
         // 캐릭터 키 (Voice_* PlayerPrefs 로드 범위)
         static readonly string[] DefaultCharacters = { "Yeun", "Daeun", "Bom", "Heewon", "Roa" };
 
+        [Header("UI Prefab (모듈 응집)")]
+        [SerializeField] SettingsPopup settingsPopupPrefab;
+
         IAudio audioSvc;
         INarrative narrative;
+        SettingsPopup popupInstance;
 
         void Awake()
         {
             Services.Register<ISettings>(this);
             audioSvc = Services.Get<IAudio>();
             narrative = Services.Get<INarrative>();
+            if (settingsPopupPrefab != null && PopupManager.Instance != null)
+                popupInstance = PopupManager.Instance.Register(settingsPopupPrefab);
             Load();
         }
 
@@ -217,6 +224,13 @@ namespace LoveAlgo.Settings
             AutoSpeed = GameConstants.DefaultAutoSpeed;
             foreach (var c in DefaultCharacters)
                 SetCharacterVoice(c, GameConstants.DefaultVoiceVolume);
+        }
+
+        // ── UI 진입점 ────────────────────────────────
+        public void ShowSettingsUI()
+        {
+            var popup = popupInstance != null ? popupInstance : PopupManager.Instance?.Get<SettingsPopup>();
+            popup?.Show();
         }
     }
 }

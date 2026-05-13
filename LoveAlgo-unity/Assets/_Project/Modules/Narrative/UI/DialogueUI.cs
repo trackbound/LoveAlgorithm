@@ -8,7 +8,11 @@ using TMPro;
 using UnityEngine;
 using LoveAlgo.Modules.Audio;
 using UnityEngine.UI;
+using LoveAlgo.Common;
 using LoveAlgo.Core;
+using LoveAlgo.Narrative;
+using LoveAlgo.Save;
+using LoveAlgo.Settings;
 using LoveAlgo.UI;
 
 namespace LoveAlgo.Story
@@ -893,17 +897,17 @@ namespace LoveAlgo.Story
 
         void OnSaveClick()
         {
-            PopupManager.Instance?.ShowSave();
+            Services.Get<ISave>()?.ShowSaveUI();
         }
 
         void OnLoadClick()
         {
-            PopupManager.Instance?.ShowLoad();
+            Services.Get<ISave>()?.ShowLoadUI();
         }
 
         void OnConfigClick()
         {
-            PopupManager.Instance?.ShowSettings();
+            Services.Get<ISettings>()?.ShowSettingsUI();
         }
 
         void OnAutoClick()
@@ -920,7 +924,7 @@ namespace LoveAlgo.Story
 
         void OnLogClick()
         {
-            PopupManager.Instance?.ShowLog(dialogueLog);
+            Services.Get<INarrative>()?.ShowLogUI(dialogueLog);
         }
 
         void OnHideClick()

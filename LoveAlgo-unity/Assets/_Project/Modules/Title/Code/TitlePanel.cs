@@ -4,8 +4,11 @@ using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
-using LoveAlgo.Story;
+using LoveAlgo.Common;
 using LoveAlgo.Core;
+using LoveAlgo.Save;
+using LoveAlgo.Settings;
+using LoveAlgo.Story;
 
 namespace LoveAlgo.UI
 {
@@ -275,18 +278,13 @@ namespace LoveAlgo.UI
         void OnLoadClick()
         {
             Debug.Log("[TitlePanel] Load - 불러오기");
-            
-            PopupManager.Instance?.ShowLoadPopup(slot =>
-            {
-                GameManager.Instance?.LoadGame(slot);
-                PopupManager.Instance?.Toast("로드 완료", $"슬롯 {slot}");
-            });
+            Services.Get<ISave>()?.ShowLoadUI();
         }
 
         void OnSettingsClick()
         {
             Debug.Log("[TitlePanel] Settings - 설정");
-            PopupManager.Instance?.ShowSettings();
+            Services.Get<ISettings>()?.ShowSettingsUI();
         }
 
         void OnExtraClick()

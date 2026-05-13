@@ -3,6 +3,7 @@ using Cysharp.Threading.Tasks;
 using LoveAlgo.Common;
 using LoveAlgo.Core;
 using LoveAlgo.Story.SaveSystem;
+using LoveAlgo.UI;
 using UnityEngine;
 
 namespace LoveAlgo.Save
@@ -15,7 +16,17 @@ namespace LoveAlgo.Save
     [DefaultExecutionOrder(-500)]
     public class SaveModule : MonoBehaviour, ISave
     {
-        void Awake() => Services.Register<ISave>(this);
+        [Header("UI Prefab (모듈 응집)")]
+        [SerializeField] SaveLoadPopup saveLoadPopupPrefab;
+
+        SaveLoadPopup popupInstance;
+
+        void Awake()
+        {
+            Services.Register<ISave>(this);
+            if (saveLoadPopupPrefab != null && PopupManager.Instance != null)
+                popupInstance = PopupManager.Instance.Register(saveLoadPopupPrefab);
+        }
 
         void OnDestroy()
         {
@@ -68,5 +79,29 @@ namespace LoveAlgo.Save
 
         public void DeleteScreenshot(int slot)
             => Story.SaveManager.DeleteScreenshot(slot);
+
+        // ── UI 진입점 ────────────────────────────────
+        public async void ShowSaveUI()
+        {
+            await CapturePendingScreenshotAsync();
+            var popup = popupInstance != null ? popupInstance : PopupManager.Instance?.Get<SaveLoadPopup>();
+            popup?.ShowSave(slot =>
+            {
+                GameManager.Instance?.Save(slot);
+                UISoundManager.Instance?.PlaySaveComplete();
+                PopupManager.Instance?.Toast("저장 완료", $"슬롯 {slot}에 저장했습니다.");
+            });
+        }
+
+        public void ShowLoadUI()
+        {
+            var popup = popupInstance != null ? popupInstance : PopupManager.Instance?.Get<SaveLoadPopup>();
+            popup?.ShowLoad(slot =>
+            {
+                GameManager.Instance?.LoadGame(slot);
+                UISoundManager.Instance?.PlayLoadComplete();
+                PopupManager.Instance?.Toast("로드 완료", $"슬롯 {slot}에서 불러왔습니다.");
+            });
+        }
     }
 }

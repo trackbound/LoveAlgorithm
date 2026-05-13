@@ -1,7 +1,9 @@
 using System;
+using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using LoveAlgo.Common;
 using LoveAlgo.Story;
+using LoveAlgo.UI;
 using UnityEngine;
 
 namespace LoveAlgo.Narrative
@@ -14,7 +16,17 @@ namespace LoveAlgo.Narrative
     [DefaultExecutionOrder(-500)]
     public class NarrativeModule : MonoBehaviour, INarrative
     {
-        void Awake() => Services.Register<INarrative>(this);
+        [Header("UI Prefab (모듈 응집)")]
+        [SerializeField] LogPopup logPopupPrefab;
+
+        LogPopup logPopupInstance;
+
+        void Awake()
+        {
+            Services.Register<INarrative>(this);
+            if (logPopupPrefab != null && PopupManager.Instance != null)
+                logPopupInstance = PopupManager.Instance.Register(logPopupPrefab);
+        }
 
         void OnDestroy()
         {
@@ -64,5 +76,12 @@ namespace LoveAlgo.Narrative
         public void ToggleAutoMode() => Runner?.ToggleAutoMode();
         public void SetAutoMode(bool enabled) => Runner?.SetAutoMode(enabled);
         public void SetAutoDelay(float normalized) => Runner?.SetAutoDelay(normalized);
+
+        // ── UI 진입점 ────────────────────────────────
+        public void ShowLogUI(IReadOnlyList<DialogueLogEntry> log)
+        {
+            var popup = logPopupInstance != null ? logPopupInstance : PopupManager.Instance?.Get<LogPopup>();
+            popup?.Show(log);
+        }
     }
 }

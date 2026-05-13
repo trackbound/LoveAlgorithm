@@ -40,5 +40,9 @@ namespace LoveAlgo.Settings
 
         /// <summary>기본값으로 리셋 (메모리만, Save로 영속화).</summary>
         void ResetToDefaults();
+
+        // ── UI 진입점 ────────────────────────────────
+        /// <summary>설정 팝업 표시 (모달).</summary>
+        void ShowSettingsUI();
     }
 }

@@ -48,5 +48,12 @@ namespace LoveAlgo.Save
         void CaptureScreenshot(int slot);
         Sprite LoadScreenshot(int slot);
         void DeleteScreenshot(int slot);
+
+        // ── UI 진입점 (모듈이 자기 UI 표시 책임) ─────────────
+        /// <summary>세이브 팝업 표시 + 기본 저장 흐름(GameManager.Save + 토스트).</summary>
+        void ShowSaveUI();
+
+        /// <summary>로드 팝업 표시 + 기본 로드 흐름(GameManager.LoadGame + 토스트).</summary>
+        void ShowLoadUI();
     }
 }
