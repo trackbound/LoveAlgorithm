@@ -167,7 +167,7 @@ namespace LoveAlgo.Story.StoryEngine
                 case NextType.Await:
                     if (line.Type == LineType.Place)
                     {
-                        var placeUI = UIManager.Instance?.PlaceNotification;
+                        var placeUI = PopupManager.Instance?.Get<PlaceNotification>();
                         if (placeUI != null && placeUI.IsShowing)
                             await UniTask.WaitUntil(() => !placeUI.IsShowing, cancellationToken: ct);
                     }

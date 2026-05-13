@@ -21,10 +21,10 @@ namespace LoveAlgo.UI
     /// 
     /// 애니메이션: 페이드인 → 유지 → 페이드아웃
     /// </summary>
-    public class PlaceNotification : MonoBehaviour
+    public class PlaceNotification : PopupBase
     {
         [Header("UI 요소")]
-        [SerializeField] CanvasGroup canvasGroup;
+        [SerializeField] CanvasGroup placeCg; // base.canvasGroup과 별개 (자체 fade용)
         [SerializeField] RectTransform bannerRect;
         [SerializeField] TMP_Text eventText;      // 상단: 이벤트명 (예: [ 단체 이벤트: 축제 ])
         [SerializeField] TMP_Text placeText;       // 하단: 장소명 (예: 주점 부스)
@@ -43,13 +43,11 @@ namespace LoveAlgo.UI
         /// </summary>
         public bool IsShowing { get; private set; }
 
-        void Awake()
+        protected override void Awake()
         {
+            base.Awake();
             // 초기 상태: alpha만 0으로 설정
-            // 주의: SetActive(false)를 여기서 호출하면 안 됨!
-            // 씬에서 비활성 상태(m_IsActive=0)로 시작하면 첫 SetActive(true) 시
-            // Awake가 호출되어 다시 꺼버리는 문제 발생
-            if (canvasGroup != null) canvasGroup.alpha = 0f;
+            if (placeCg != null) placeCg.alpha = 0f;
         }
 
         /// <summary>
@@ -114,8 +112,9 @@ namespace LoveAlgo.UI
             placeText.text = placeName;
 
             // alpha=0 먼저 세팅 → SetActive 시 1프레임 깜빡임 방지
-            if (canvasGroup != null) canvasGroup.alpha = 0f;
+            if (placeCg != null) placeCg.alpha = 0f;
             gameObject.SetActive(true);
+            PopupManager.Instance?.NotifyOpened(this);
             IsShowing = true;
 
             // 시퀀스: 페이드인 → 홀드 → 페이드아웃
@@ -125,7 +124,7 @@ namespace LoveAlgo.UI
 
             // 1. 등장 (페이드인 — InOutSine으로 부드럽게 등장)
             _ = currentSequence.Append(
-                canvasGroup.DOFade(1f, enterDuration)
+                placeCg.DOFade(1f, enterDuration)
                     .From(0f)
                     .SetEase(Ease.InOutSine));
 
@@ -134,12 +133,13 @@ namespace LoveAlgo.UI
 
             // 3. 퇴장 (페이드아웃)
             _ = currentSequence.Append(
-                canvasGroup.DOFade(0f, exitDuration)
+                placeCg.DOFade(0f, exitDuration)
                     .SetEase(Ease.InCubic));
 
             _ = currentSequence.OnComplete(() =>
             {
                 IsShowing = false;
+                PopupManager.Instance?.NotifyClosed(this);
                 gameObject.SetActive(false);
                 awaitSource?.TrySetResult(true);
             });
@@ -163,8 +163,9 @@ namespace LoveAlgo.UI
 
             if (!gameObject.activeSelf) return UniTask.CompletedTask;
 
-            canvasGroup.alpha = 0f;
+            placeCg.alpha = 0f;
             IsShowing = false;
+            PopupManager.Instance?.NotifyClosed(this);
             gameObject.SetActive(false);
             return UniTask.CompletedTask;
         }
@@ -175,8 +176,9 @@ namespace LoveAlgo.UI
         public void HideImmediate()
         {
             KillCurrentSequence();
-            if (canvasGroup != null) canvasGroup.alpha = 0f;
+            if (placeCg != null) placeCg.alpha = 0f;
             IsShowing = false;
+            PopupManager.Instance?.NotifyClosed(this);
             gameObject.SetActive(false);
         }
 
@@ -189,9 +191,10 @@ namespace LoveAlgo.UI
             }
         }
 
-        void OnDestroy()
+        protected override void OnDestroy()
         {
             KillCurrentSequence();
+            base.OnDestroy();
         }
     }
 }

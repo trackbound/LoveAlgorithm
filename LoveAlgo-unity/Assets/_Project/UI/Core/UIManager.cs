@@ -22,7 +22,6 @@ namespace LoveAlgo.UI
         [SerializeField] DialogueUI dialogueUIPrefab;
         [SerializeField] DialogueShowButton dialogueShowButtonPrefab;
         [SerializeField] ChoicePopup choiceUIPrefab;
-        [SerializeField] PlaceNotification placeUIPrefab;
 
         [Header("Simulate")]
         [SerializeField] ScheduleUI scheduleUIPrefab;
@@ -41,7 +40,6 @@ namespace LoveAlgo.UI
         DialogueUI _dialogueUI;
         DialogueShowButton _dialogueShowButton;
         ChoicePopup _choiceUI;
-        PlaceNotification _placeUI;
         ScheduleUI _scheduleUI;
         ShopUI _shopUI;
         QuickMenu _quickMenuUI;
@@ -86,7 +84,7 @@ namespace LoveAlgo.UI
             }
         }
         public ChoicePopup ChoicePopup => _choiceUI != null ? _choiceUI : (_choiceUI = Spawn(choiceUIPrefab, GroupRoot.Story));
-        public PlaceNotification PlaceNotification => _placeUI != null ? _placeUI : (_placeUI = Spawn(placeUIPrefab, GroupRoot.Story));
+        // PlaceNotification은 PopupManager로 이전 (모듈 응집). 호출: PopupManager.Instance.Get<PlaceNotification>()
         public ScheduleUI ScheduleUI => _scheduleUI != null ? _scheduleUI : (_scheduleUI = Spawn(scheduleUIPrefab, GroupRoot.Simulate));
         public ShopUI ShopUI => _shopUI != null ? _shopUI : (_shopUI = Spawn(shopUIPrefab, GroupRoot.Simulate));
         public QuickMenu QuickMenu => _quickMenuUI != null ? _quickMenuUI : (_quickMenuUI = Spawn(quickMenuUIPrefab, GroupRoot.Simulate));
@@ -156,7 +154,7 @@ namespace LoveAlgo.UI
             SetActiveIfExists(_titleUI, false);
             SetActiveIfExists(_usernameUI, false);
             SetActiveIfExists(_quickMenuUI, false);
-            _placeUI?.HideImmediate();
+            PopupManager.Instance?.Get<PlaceNotification>()?.HideImmediate();
         }
 
         /// <summary>

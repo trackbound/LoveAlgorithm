@@ -252,6 +252,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b6ede0ee0a1e14c488f9a67ffd376899, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.Narrative.NarrativeModule
+  logPopupPrefab: {fileID: 0}
 --- !u!1 &433971053
 GameObject:
   m_ObjectHideFlags: 0
@@ -1016,6 +1017,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c034499dc7a7ff94cbadcdf84464cf0a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.Settings.SettingsModule
+  settingsPopupPrefab: {fileID: 0}
 --- !u!1001 &986594965
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1816,6 +1818,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c894f3ad82c520b4b9b966bb1d19656f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.Save.SaveModule
+  saveLoadPopupPrefab: {fileID: 0}
 --- !u!1 &1904351948
 GameObject:
   m_ObjectHideFlags: 0
@@ -2376,7 +2379,10 @@ MonoBehaviour:
   dimmer: {fileID: 7978846008589850060}
   dimmerCanvasGroup: {fileID: 2087042009980803585}
   dimmerFadeDuration: 0.2
-  popupPrefabs: []
+  popupPrefabs:
+  - {fileID: 4152849764515966139, guid: 961083e4c45886447a4b06ff909b57ac, type: 3}
+  - {fileID: 5410031854144606818, guid: b52ee6fab345b5547b7e4835919c7cfb, type: 3}
+  - {fileID: 8386790407202011702, guid: 7b0ac3404e82ea1429a056520da6c3ce, type: 3}
 --- !u!114 &2736071673449258952
 MonoBehaviour:
   m_ObjectHideFlags: 0
