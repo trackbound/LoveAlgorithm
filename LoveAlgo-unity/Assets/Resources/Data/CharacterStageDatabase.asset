@@ -1,0 +1,71 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0faead7e2585ed34b8e42e8b60fa66d7, type: 3}
+  m_Name: CharacterStageDatabase
+  m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.Story.CharacterStageDatabase
+  entries:
+  - characterId: c05
+    spriteScale: 0.95
+    offsetX: 12
+    offsetY: -1336
+    pivotY: 0
+    overlayPrefix: 
+    overlayModes: []
+    defaultOverlayMode: 
+    positiveEmotes: []
+    negativeEmotes: []
+  - characterId: c02
+    spriteScale: 1.1
+    offsetX: 40
+    offsetY: -1671
+    pivotY: 0
+    overlayPrefix: 
+    overlayModes: []
+    defaultOverlayMode: 
+    positiveEmotes: []
+    negativeEmotes: []
+  - characterId: c04
+    spriteScale: 1.1
+    offsetX: 59
+    offsetY: -1640
+    pivotY: 0
+    overlayPrefix: 
+    overlayModes: []
+    defaultOverlayMode: 
+    positiveEmotes: []
+    negativeEmotes: []
+  - characterId: c01
+    spriteScale: 1
+    offsetX: 0
+    offsetY: -1508.3
+    pivotY: 0
+    overlayPrefix: Roa
+    overlayModes:
+    - Mob
+    - PC
+    defaultOverlayMode: Mob
+    positiveEmotes:
+    - BrightSmile
+    - EyeSmile
+    - Happy
+    negativeEmotes:
+    - Glare
+  - characterId: c03
+    spriteScale: 1
+    offsetX: 79.2
+    offsetY: -1441
+    pivotY: 0
+    overlayPrefix: 
+    overlayModes: []
+    defaultOverlayMode: 
+    positiveEmotes: []
+    negativeEmotes: []

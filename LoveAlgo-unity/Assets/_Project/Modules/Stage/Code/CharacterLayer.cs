@@ -29,6 +29,9 @@ namespace LoveAlgo.Story
         Dictionary<SlotPosition, CharacterSlot> slots;
         bool isLayerHidden;  // SD 등에 의해 레이어가 숨겨진 상태
 
+        // VirtualOverlay 모드 추적 (characterId → 현재 모드, 예: "Roa"→"Mob")
+        readonly Dictionary<string, string> overlayModes = new(StringComparer.OrdinalIgnoreCase);
+
         /// <summary>레이어가 SD 등에 의해 숨겨진 상태인지</summary>
         public bool IsLayerHidden => isLayerHidden;
 
@@ -114,16 +117,15 @@ namespace LoveAlgo.Story
             switch (action.ToLowerInvariant())
             {
                 case "enter":
-                    // 형식: 슬롯:Enter:캐릭터[:표정[:오버레이]]  — 페이드 (기본)
+                    // 형식: 슬롯:Enter:캐릭터[:표정[:모드 또는 오버레이명]]
+                    // - 5번째가 overlayModes에 등록된 모드(Mob/PC)면 모드로 사용
+                    // - 그 외에는 명시적 오버레이 이름으로 사용 (구버전 호환)
                     if (parts.Length >= 3)
                     {
                         string character = parts[2];
                         string emote = parts.Length >= 4 ? parts[3] : "Default";
-                        string overlay = parts.Length >= 5 ? parts[4] : null;
-
-                        // 오버레이 자동 결정 (CSV에 명시적 overlay가 없으면)
-                        if (string.IsNullOrEmpty(overlay))
-                            overlay = ResolveAutoOverlay(character, emote);
+                        string fifth = parts.Length >= 5 ? parts[4] : null;
+                        string overlay = ResolveEnterOverlay(character, emote, fifth);
 
                         // 로아: 글리치 SFX 즉시 + 캐릭터&오버레이 동시 페이드
                         if (IsOverlayCharacter(character))
@@ -144,15 +146,13 @@ namespace LoveAlgo.Story
                     break;
 
                 case "enterup":
-                    // 형식: 슬롯:EnterUp:캐릭터[:표정[:오버레이]]  — 아래에서 위로 슬라이드 + 페이드
+                    // 형식: 슬롯:EnterUp:캐릭터[:표정[:모드 또는 오버레이명]]
                     if (parts.Length >= 3)
                     {
                         string character = parts[2];
                         string emote = parts.Length >= 4 ? parts[3] : "Default";
-                        string overlay = parts.Length >= 5 ? parts[4] : null;
-
-                        if (string.IsNullOrEmpty(overlay))
-                            overlay = ResolveAutoOverlay(character, emote);
+                        string fifth = parts.Length >= 5 ? parts[4] : null;
+                        string overlay = ResolveEnterOverlay(character, emote, fifth);
 
                         if (IsOverlayCharacter(character))
                             PlayGlitchSFX();
@@ -172,15 +172,14 @@ namespace LoveAlgo.Story
                     break;
 
                 case "emote":
-                    // 형식: 슬롯:Emote:표정[:오버레이]
+                    // 형식: 슬롯:Emote:표정[:오버레이명]  — 모드는 현재 추적값 유지
                     if (parts.Length >= 3)
                     {
                         string emote = parts[2];
                         string overlay = parts.Length >= 4 ? parts[3] : null;
 
-                        // 오버레이 자동 전환 (CSV에 명시적 overlay가 없으면 현재 슬롯 캐릭터 기준)
                         if (string.IsNullOrEmpty(overlay))
-                            overlay = ResolveAutoOverlay(slot.CurrentCharacter, emote);
+                            overlay = ResolveAutoOverlay(slot.CurrentCharacter, emote, GetCurrentMode(slot.CurrentCharacter));
 
                         // 표정 + 오버레이 동시 전환
                         if (!string.IsNullOrEmpty(overlay))
@@ -201,8 +200,8 @@ namespace LoveAlgo.Story
                     // 형식: 슬롯:Exit  — 페이드 (기본)
                     {
                         bool shouldHideOverlay = ShouldHideOverlayOnExit(slot);
+                        string exitingChar = slot.CurrentCharacter;
 
-                        // 로아: 글리치 SFX 즉시 + 캐릭터&오버레이 동시 페이드아웃
                         if (shouldHideOverlay)
                         {
                             PlayGlitchSFX();
@@ -215,6 +214,20 @@ namespace LoveAlgo.Story
                         {
                             await slot.ExitAsync(ct);
                         }
+                        if (!string.IsNullOrEmpty(exitingChar)) overlayModes.Remove(exitingChar);
+                    }
+                    break;
+
+                case "mode":
+                    // 형식: 슬롯:Mode:캐릭터:새모드  — VirtualOverlay 모드만 전환 (캐릭터 슬롯 유지)
+                    if (parts.Length >= 4)
+                    {
+                        string character = parts[2];
+                        string newMode = parts[3];
+                        SetMode(character, newMode);
+                        string overlay = ResolveAutoOverlay(slot.CurrentCharacter, slot.CurrentEmote, newMode);
+                        if (!string.IsNullOrEmpty(overlay))
+                            await SwitchOverlayAsync(overlay, ct);
                     }
                     break;
 
@@ -222,6 +235,7 @@ namespace LoveAlgo.Story
                     // 형식: 슬롯:ExitDown  — 아래로 슬라이드 + 페이드
                     {
                         bool shouldHideOverlay = ShouldHideOverlayOnExit(slot);
+                        string exitingChar = slot.CurrentCharacter;
 
                         if (shouldHideOverlay)
                         {
@@ -235,6 +249,7 @@ namespace LoveAlgo.Story
                         {
                             await slot.ExitSlideDownAsync(ct);
                         }
+                        if (!string.IsNullOrEmpty(exitingChar)) overlayModes.Remove(exitingChar);
                     }
                     break;
 
@@ -276,8 +291,8 @@ namespace LoveAlgo.Story
             }
 
             await UniTask.WhenAll(tasks);
-            
-            // AudioManager에 모든 캐릭터 퇴장 알림
+
+            overlayModes.Clear();
             AudioManager.Instance?.OnAllCharactersExit();
         }
 
@@ -300,6 +315,7 @@ namespace LoveAlgo.Story
                 overlay?.HideImmediate();
             }
 
+            overlayModes.Clear();
             AudioManager.Instance?.OnAllCharactersExit();
         }
 
@@ -346,17 +362,8 @@ namespace LoveAlgo.Story
         /// </summary>
         string SpeakerToCharacterId(string speaker)
         {
-            // CharacterDatabase에서 매핑 조회
-            var charDb = CharacterDatabase.Instance;
-            if (charDb != null)
-            {
-                string id = charDb.SpeakerToCharacterId(speaker);
-                if (!string.IsNullOrEmpty(id))
-                    return id;
-            }
-            
-            // CharacterDatabase에 매핑이 없으면 null 반환 (주인공, 나레이션, 엑스트라 등)
-            return null;
+            var meta = CharacterMetaDatabase.Instance;
+            return meta?.SpeakerToCharacterId(speaker);
         }
 
         /// <summary>
@@ -376,7 +383,7 @@ namespace LoveAlgo.Story
 
         async UniTaskVoid ChangeEmoteWithOverlayAsync(CharacterSlot slot, string emote)
         {
-            string overlay = ResolveAutoOverlay(slot.CurrentCharacter, emote);
+            string overlay = ResolveAutoOverlay(slot.CurrentCharacter, emote, GetCurrentMode(slot.CurrentCharacter));
 
             if (!string.IsNullOrEmpty(overlay))
             {
@@ -416,31 +423,61 @@ namespace LoveAlgo.Story
 
         #region 오버레이 (로아)
 
-        /// <summary>
-        /// 오버레이 연동이 필요한 캐릭터인지 확인 (CharacterDatabase에서 판별)
-        /// </summary>
+        /// <summary>Overlay 사용 캐릭터인지 (Stage DB에서 판별)</summary>
         bool IsOverlayCharacter(string characterName)
         {
             if (string.IsNullOrEmpty(characterName)) return false;
-            var characterDatabase = CharacterDatabase.Instance;
-            if (characterDatabase != null)
-            {
-                var data = characterDatabase.GetCharacterById(characterName);
-                return data != null && data.UseOverlay;
-            }
-            return false;
+            var stageDb = CharacterStageDatabase.Instance;
+            if (stageDb == null) return false;
+            var entry = stageDb.GetById(characterName);
+            return entry != null && entry.UseOverlay;
         }
 
         /// <summary>
-        /// 표정에 따른 오버레이 이름 자동 결정. 오버레이 캐릭터가 아니면 null.
+        /// 표정 + 모드 → overlay 이름 자동 결정. 오버레이 캐릭터가 아니면 null.
         /// </summary>
-        string ResolveAutoOverlay(string characterId, string emote)
+        string ResolveAutoOverlay(string characterId, string emote, string mode = null)
         {
             if (string.IsNullOrEmpty(characterId)) return null;
-            var characterDatabase = CharacterDatabase.Instance;
-            if (characterDatabase == null) return null;
-            var data = characterDatabase.GetCharacterById(characterId);
-            return data?.GetOverlayName(emote);
+            var stageDb = CharacterStageDatabase.Instance;
+            if (stageDb == null) return null;
+            var entry = stageDb.GetById(characterId);
+            return entry?.GetOverlayName(emote, mode);
+        }
+
+        /// <summary>Enter 5번째 segment 해석 — overlayModes 등록 모드면 모드, 그 외엔 명시적 overlay 이름.</summary>
+        string ResolveEnterOverlay(string characterId, string emote, string fifthSegment)
+        {
+            if (!string.IsNullOrEmpty(fifthSegment))
+            {
+                var stageDb = CharacterStageDatabase.Instance;
+                var entry = stageDb?.GetById(characterId);
+                if (entry != null && entry.IsValidMode(fifthSegment) && entry.UseOverlay)
+                {
+                    SetMode(characterId, fifthSegment);
+                    return entry.GetOverlayName(emote, fifthSegment);
+                }
+                // overlayModes에 없는 값이면 명시적 overlay 이름으로 사용 (구버전 호환)
+                return fifthSegment;
+            }
+            // 5번째 segment 없음 → 추적중 모드 또는 default mode로 자동
+            return ResolveAutoOverlay(characterId, emote, GetCurrentMode(characterId));
+        }
+
+        /// <summary>현재 추적중 모드 조회 (없으면 stage DB의 defaultOverlayMode)</summary>
+        string GetCurrentMode(string characterId)
+        {
+            if (string.IsNullOrEmpty(characterId)) return null;
+            if (overlayModes.TryGetValue(characterId, out var m)) return m;
+            var entry = CharacterStageDatabase.Instance?.GetById(characterId);
+            return entry?.defaultOverlayMode;
+        }
+
+        /// <summary>모드 설정 (Enter/Mode action에서 호출)</summary>
+        void SetMode(string characterId, string mode)
+        {
+            if (string.IsNullOrEmpty(characterId) || string.IsNullOrEmpty(mode)) return;
+            overlayModes[characterId] = mode;
         }
 
         /// <summary>

@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: CharacterDatabase
   m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.Story.CharacterDatabase
   characters:
-  - characterId: LeeBom
+  - characterId: leebom
     displayName: "\uC774\uBD04"
     speakerAliases: []
     spriteScale: 0.95
@@ -23,7 +23,7 @@ MonoBehaviour:
     overlayPrefix: 
     positiveEmotes: []
     negativeEmotes: []
-  - characterId: SeoDaEun
+  - characterId: seodaeun
     displayName: "\uC11C\uB2E4\uC740"
     speakerAliases: []
     spriteScale: 1.1
@@ -33,7 +33,7 @@ MonoBehaviour:
     overlayPrefix: 
     positiveEmotes: []
     negativeEmotes: []
-  - characterId: DoHeewon
+  - characterId: doheewon
     displayName: "\uB3C4\uD76C\uC6D0"
     speakerAliases: []
     spriteScale: 1.1
@@ -43,7 +43,7 @@ MonoBehaviour:
     overlayPrefix: 
     positiveEmotes: []
     negativeEmotes: []
-  - characterId: Roa
+  - characterId: roa
     displayName: "\uB85C\uC544"
     speakerAliases: []
     spriteScale: 1
@@ -57,7 +57,7 @@ MonoBehaviour:
     - Happy
     negativeEmotes:
     - Glare
-  - characterId: HaYeEun
+  - characterId: hayeeun
     displayName: "\uD558\uC608\uC740"
     speakerAliases: []
     spriteScale: 1

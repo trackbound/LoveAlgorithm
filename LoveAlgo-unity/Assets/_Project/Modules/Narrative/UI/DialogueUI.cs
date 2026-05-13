@@ -993,9 +993,9 @@ namespace LoveAlgo.Story
         {
             // Speaker 이름을 CharacterId로 변환 (썸네일 로드용)
             string charId = null;
-            if (!string.IsNullOrEmpty(speaker) && CharacterDatabase.Instance != null)
+            if (!string.IsNullOrEmpty(speaker) && CharacterMetaDatabase.Instance != null)
             {
-                charId = CharacterDatabase.Instance.SpeakerToCharacterId(speaker);
+                charId = CharacterMetaDatabase.Instance.SpeakerToCharacterId(speaker);
             }
 
             dialogueLog.Add(new DialogueLogEntry

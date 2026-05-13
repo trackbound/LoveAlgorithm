@@ -334,10 +334,10 @@ namespace LoveAlgo.Story
         /// </summary>
         Sprite LoadSprite(string character, string emote)
         {
-            // 한글 표정명 → 영문 변환
-            var db = CharacterDatabase.Instance;
-            if (db != null)
-                emote = db.ResolveEmoteName(emote);
+            // 한글 표정명 → 영문 변환 (Narrative 메타 DB)
+            var meta = CharacterMetaDatabase.Instance;
+            if (meta != null)
+                emote = meta.ResolveEmoteName(emote);
 
             string path = $"Characters/Char_{character}_{emote}";
 
@@ -437,14 +437,14 @@ namespace LoveAlgo.Story
             float offsetY = 0f;
             float pivotY = 0f;
 
-            // CharacterDatabase에서 데이터 가져오기
-            var characterDatabase = CharacterDatabase.Instance;
-            if (characterDatabase != null)
+            // Stage 시각 표현 DB
+            var stageDb = CharacterStageDatabase.Instance;
+            if (stageDb != null)
             {
-                var charData = characterDatabase.GetCharacterById(characterName);
-                if (charData != null)
+                var entry = stageDb.GetById(characterName);
+                if (entry != null)
                 {
-                    charData.GetTransform(out scale, out offsetX, out offsetY, out pivotY);
+                    entry.GetTransform(out scale, out offsetX, out offsetY, out pivotY);
                 }
             }
 
