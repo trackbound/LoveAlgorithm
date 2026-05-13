@@ -94,9 +94,16 @@
     Events/         EventBus용 struct
   Data/             ScriptableObject 정의
   UI/               이 모듈 전용 UI 클래스
-  Prefabs/          이 모듈 전용 프리팹 (선택)
+  Prefabs/          이 모듈 전용 프리팹 (클래스명과 동일)
+    Sub/            sub-prefab 그룹 (예: Bubbles/)
   Art/              모듈 전용 아트 리소스 (선택)
 ```
+
+**프리팹 응집 규칙:**
+- 모듈 전용 프리팹은 반드시 `{Module}/Prefabs/`에 위치 (코드와 1:1 응집)
+- 프리팹 파일명 = 메인 클래스명 (공백·축약 금지)
+- `SaveLoadPopup.prefab`, `ScheduleUI.prefab`, `StageRig.prefab` 식
+- 공용 프리팹은 `_Project/UI/{Category}/Prefabs/`
 
 공용 UI (모듈 종속 없음) 는 `Assets/_Project/UI/{Core,Components,Popups,Notifications,Contextual,HUD,Panels}/`.
 실제 사용 카테고리만 폴더 생성 (현재: Core, Components, Popups, Notifications, Contextual).
