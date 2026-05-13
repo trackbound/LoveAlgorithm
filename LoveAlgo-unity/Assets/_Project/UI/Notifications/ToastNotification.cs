@@ -10,10 +10,13 @@ namespace LoveAlgo.UI
 {
     /// <summary>
     /// 토스트 팝업 (자동 사라짐). 순차 메시지 지원.
-    /// PopupBase 통합 흐름 사용 (Layer=Top, useDimmer=false 권장).
+    /// PopupBase 통합 흐름 사용 (Layer=Notification, UseDimmer=false).
     /// </summary>
     public class ToastNotification : PopupBase
     {
+        public override PopupLayer Layer => PopupLayer.Notification;
+        public override bool UseDimmer => false;
+
         [Header("UI 바인딩")]
         [SerializeField] TMP_Text titleText;
         [SerializeField] TMP_Text messageText;

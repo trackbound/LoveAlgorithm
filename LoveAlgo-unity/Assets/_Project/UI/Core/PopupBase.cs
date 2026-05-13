@@ -4,20 +4,19 @@ using UnityEngine;
 
 namespace LoveAlgo.UI
 {
-    /// <summary>팝업 레이어 — Modal: 진행 차단(dim+우선) / Top: 위에 떠 있음(Modal 위 표시 가능).</summary>
-    public enum PopupLayer { Modal, Top }
+    /// <summary>
+    /// 팝업 레이어 (네이밍 컨벤션의 UI 카테고리와 1:1).
+    /// Modal: *Popup — 진행 차단 + dim / Notification: *Notification·*Tooltip — 비차단, 위에 표시.
+    /// </summary>
+    public enum PopupLayer { Modal, Notification }
 
     /// <summary>
     /// 모든 팝업의 공통 베이스.
-    /// Layer/useDimmer/애니메이션/Stack 통보를 표준화한다.
+    /// 애니메이션/Stack 통보를 표준화. Layer/UseDimmer는 타입의 본질이므로 코드에서 선언.
     /// 결과를 반환하는 팝업은 <see cref="PopupBase{TResult}"/>를 상속.
     /// </summary>
     public abstract class PopupBase : MonoBehaviour
     {
-        [Header("Layer")]
-        [SerializeField] PopupLayer layer = PopupLayer.Modal;
-        [SerializeField] bool useDimmer = true;
-
         [Header("애니메이션 (panelRect/canvasGroup 바인딩 시 자동 적용)")]
         [SerializeField] protected RectTransform panelRect;
         [SerializeField] protected CanvasGroup canvasGroup;
@@ -29,8 +28,10 @@ namespace LoveAlgo.UI
         Sequence currentSequence;
         UniTaskCompletionSource hideCompletionSource;
 
-        public PopupLayer Layer => layer;
-        public bool UseDimmer => useDimmer;
+        /// <summary>팝업이 속할 레이어. 기본 Modal — *Notification 계열은 override.</summary>
+        public virtual PopupLayer Layer => PopupLayer.Modal;
+        /// <summary>Dimmer 사용 여부. 기본 true — *Notification 계열은 override로 false.</summary>
+        public virtual bool UseDimmer => true;
         public bool IsVisible => gameObject.activeSelf;
 
         protected virtual void Awake()

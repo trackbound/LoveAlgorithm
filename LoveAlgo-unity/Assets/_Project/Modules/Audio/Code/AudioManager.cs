@@ -216,12 +216,13 @@ namespace LoveAlgo.Modules.Audio
             }
             else if (fadeDuration > 0)
             {
-                // 새로 시작: 자연스러운 페이드인 (느리게 시작 → 점차 커짐)
+                // 새로 시작: 자연스러운 페이드인 (초반부터 부드럽게 올라와 끝에서 완만하게 도달)
+                // Why OutQuad: InQuad는 거의 끝까지 무음으로 있다가 끝에서 급격히 1로 튀어 "갑자기 시작"처럼 들림.
                 bgmSource.volume = 0f;
                 bgmSource.clip = clip;
                 bgmSource.Play();
                 await bgmSource.DOFade(targetVolume, fadeDuration)
-                    .SetEase(Ease.InQuad)     // 소리가 서서히 올라오는 느낌
+                    .SetEase(Ease.OutQuad)
                     .ToUniTask(cancellationToken: token);
 
                 // 트윈이 중단되어도 목표 볼륨 보장

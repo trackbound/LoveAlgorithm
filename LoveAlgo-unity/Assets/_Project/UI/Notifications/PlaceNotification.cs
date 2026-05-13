@@ -23,6 +23,9 @@ namespace LoveAlgo.UI
     /// </summary>
     public class PlaceNotification : PopupBase
     {
+        public override PopupLayer Layer => PopupLayer.Notification;
+        public override bool UseDimmer => false;
+
         [Header("UI 요소")]
         [SerializeField] CanvasGroup placeCg; // base.canvasGroup과 별개 (자체 fade용)
         [SerializeField] RectTransform bannerRect;

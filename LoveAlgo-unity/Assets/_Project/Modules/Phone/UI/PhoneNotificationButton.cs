@@ -46,13 +46,23 @@ namespace LoveAlgo.Phone
         [SerializeField] float slideDuration = 0.25f;
         [SerializeField] Ease slideEase = Ease.OutCubic;
 
+        [Header("새 메시지 진동")]
+        [Tooltip("새 메시지 도착 시 흔드는 시간 (초)")]
+        [SerializeField] float shakeDuration = 2f;
+        [Tooltip("흔들기 강도 (픽셀)")]
+        [SerializeField] float shakeStrength = 8f;
+        [Tooltip("흔들기 진동수")]
+        [SerializeField] int shakeVibrato = 18;
+
         [Header("폴링")]
         [Tooltip("새 메시지 카운트 + Stage CG/SD 가림 감지 간격 (0이면 OnEnable에서만)")]
         [SerializeField] float pollInterval = 0.2f;
 
         float collapsedX;
         Tween currentTween;
+        Tween shakeTween;
         float nextPollAt;
+        int lastUnreadCount;
 
         void Awake()
         {
@@ -63,6 +73,7 @@ namespace LoveAlgo.Phone
 
         void OnEnable()
         {
+            lastUnreadCount = MessengerManager.GetTotalUnreadCount();
             UpdateBadge();
             nextPollAt = pollInterval > 0f ? Time.unscaledTime + pollInterval : float.PositiveInfinity;
         }
@@ -126,9 +137,24 @@ namespace LoveAlgo.Phone
         /// <summary>새 메시지 상태 갱신 — normalImage / newMessageImage 토글.</summary>
         public void UpdateBadge()
         {
-            bool hasNew = MessengerManager.GetTotalUnreadCount() > 0;
+            int unread = MessengerManager.GetTotalUnreadCount();
+            bool hasNew = unread > 0;
             if (normalImage != null) normalImage.SetActive(!hasNew);
             if (newMessageImage != null) newMessageImage.SetActive(hasNew);
+
+            // 새 메시지 도착 감지 시 진동 애니메이션 (2초)
+            if (unread > lastUnreadCount)
+                PlayShake();
+            lastUnreadCount = unread;
+        }
+
+        void PlayShake()
+        {
+            if (slideContainer == null || shakeDuration <= 0f) return;
+            shakeTween?.Kill(complete: true);
+            shakeTween = slideContainer
+                .DOShakeAnchorPos(shakeDuration, new Vector2(shakeStrength, 0f), shakeVibrato, 90f, false, true)
+                .SetUpdate(true);
         }
 
         void OnOpenClick()
@@ -141,6 +167,7 @@ namespace LoveAlgo.Phone
         void OnDestroy()
         {
             currentTween?.Kill();
+            shakeTween?.Kill();
         }
     }
 }

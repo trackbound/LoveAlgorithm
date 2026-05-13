@@ -5,7 +5,7 @@ using UnityEngine.UI;
 namespace LoveAlgo.Schedule
 {
     /// <summary>
-    /// 스케줄 도움말 팝업. PopupBase 통합 흐름 사용 (Layer=Top 권장).
+    /// 스케줄 도움말 팝업 (모달). PopupBase 통합 흐름 사용.
     /// closeButtons 배열에 닫힘 버튼을 여러 개 등록 가능.
     /// </summary>
     public class ScheduleHelpPopup : PopupBase

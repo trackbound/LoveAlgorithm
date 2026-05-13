@@ -21,7 +21,7 @@ namespace LoveAlgo.UI
     {
         [Header("Layer Roots (비워두면 자동 생성)")]
         [SerializeField] Transform layerModal;
-        [SerializeField] Transform layerTop;
+        [SerializeField] Transform layerNotification;
 
         [Header("Dimmer")]
         [SerializeField] GameObject dimmer;
@@ -29,7 +29,7 @@ namespace LoveAlgo.UI
         [SerializeField] float dimmerFadeDuration = 0.2f;
 
         [Header("팝업 프리팹 (모든 PopupBase 인스턴스)")]
-        [Tooltip("Layer에 따라 자동으로 layerModal/layerTop 아래에 생성됨")]
+        [Tooltip("Layer에 따라 자동으로 layerModal/layerNotification 아래에 생성됨")]
         [SerializeField] List<PopupBase> popupPrefabs;
 
         // Type → Instance 캐시 (PreWarm + Lazy)
@@ -48,7 +48,7 @@ namespace LoveAlgo.UI
         void EnsureLayerRoots()
         {
             if (layerModal == null) layerModal = CreateLayerRoot("Modal", 0);
-            if (layerTop == null) layerTop = CreateLayerRoot("Top", 1);
+            if (layerNotification == null) layerNotification = CreateLayerRoot("Notification", 1);
         }
 
         Transform CreateLayerRoot(string name, int siblingIndex)
@@ -91,7 +91,7 @@ namespace LoveAlgo.UI
             var type = prefab.GetType();
             if (cache.TryGetValue(type, out var existing)) return existing;
 
-            var parent = prefab.Layer == PopupLayer.Top ? layerTop : layerModal;
+            var parent = prefab.Layer == PopupLayer.Notification ? layerNotification : layerModal;
             var instance = Instantiate(prefab, parent);
             instance.name = prefab.name; // (Clone) 제거
             instance.gameObject.SetActive(false);

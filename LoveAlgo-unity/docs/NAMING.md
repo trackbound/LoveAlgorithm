@@ -8,7 +8,7 @@
 
 | Suffix | 정의 | 차단성 (게임 진행) | 자동 소멸 | 베이스 클래스 |
 |--------|------|------------------|---------|--------------|
-| **`*Popup`** | 모달 다이얼로그 | ✅ 진행 차단 + 배경 dim | ❌ 명시적 닫기 | `PopupBase` (필수, Layer=Modal) |
+| **`*Popup`** | 모달 다이얼로그 | ✅ 진행 차단 + 배경 dim | ❌ 명시적 닫기 | `PopupBase` (Layer=Modal, 기본값) |
 | **`*Panel`** | **게임 진행 외부** (진입 흐름·메뉴·게이트) | △ 진입 차단 | ❌ 명시적 종료 | `MonoBehaviour` |
 | **`*Notification`** | 자동 소멸 알림 | ❌ 없음 | ✅ 타이머 | `MonoBehaviour` |
 | **`*Tooltip`** | 호버 시 표시, 떠나면 사라짐 | ❌ | ✅ 호버 종료 | `MonoBehaviour` |
@@ -33,9 +33,10 @@
 
 ## 추가 규칙
 
-- **`Popup` suffix**: 모달(차단 + dim) 동작. **`PopupBase` 상속 필수** (Layer/useDimmer/Stack 통보 표준 흐름).
+- **`Popup` suffix**: 모달(차단 + dim) 동작. **`PopupBase` 상속 필수** (Layer/UseDimmer/Stack 통보 표준 흐름).
 - **결과 반환 팝업** (`ConfirmPopup` 등): `PopupBase<TResult>` 상속. `AwaitResult()` + `Complete(result)` 사용.
-- **Notification/Tooltip** 등 자동소멸·호버 UI도 `PopupBase`(Layer=Top, useDimmer=false) 상속 권장 — 새 팝업 추가 비용 최소화.
+- **Notification/Tooltip** 등 자동소멸·호버 UI도 `PopupBase` 상속 권장. 클래스에서 `override Layer => PopupLayer.Notification` + `override UseDimmer => false` 선언.
+- **Layer/UseDimmer는 SerializeField가 아닌 virtual 프로퍼티 오버라이드로 선언** (타입의 본질 → 코드에서 결정. 인스펙터 실수 방지).
 - **`*UI` suffix는 모드 단위 컨테이너에만** (예: `ScheduleUI`, `ShopUI`). 위젯·슬롯·엔트리에는 사용 금지.
 - 약어 `EX`(확장)는 컴포넌트 전용 (`ButtonEX`, `ScrollbarEX`).
 - 모듈 진입점은 **`{Name}Module`** (예: `AudioModule`, `SaveModule`).
@@ -126,7 +127,7 @@ Main/
     ShopModule, StageModule, StatsModule, TitleModule,
     TutorialModule, SimulationModule
   _Stage/             Canvas(Camera mode) — ScreenFX, StageRig
-  _Popup/             Canvas(Overlay mode) — Dimmer/Modal/Top (PopupManager 산하)
+  _Popup/             Canvas(Overlay mode) — Dimmer/Modal/Notification (PopupManager 산하)
   _UI/                Canvas(Overlay mode) — 메인 UI 그룹
     Narrative/        DialogueUI, ChoicePopup, DialogueShowButton
     Simulation/       ScheduleUI, ShopUI, QuickMenu, TutorialOverlay

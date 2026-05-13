@@ -85,11 +85,13 @@ namespace LoveAlgo.Core
             float phase1 = duration * 0.3f;
             float phase2 = duration * 0.7f;
 
+            // 진행 속도와 무관하게 절대 시간 유지 (SetUpdate(true) = unscaledTime)
             sequence = DOTween.Sequence()
                 .Append(rtTop.DOAnchorPosY(-peekY, phase1).SetEase(Ease.OutSine))
                 .Join(rtBottom.DOAnchorPosY(peekY, phase1).SetEase(Ease.OutSine))
                 .Append(rtTop.DOAnchorPosY(0, phase2).SetEase(Ease.OutCubic))
-                .Join(rtBottom.DOAnchorPosY(0, phase2).SetEase(Ease.OutCubic));
+                .Join(rtBottom.DOAnchorPosY(0, phase2).SetEase(Ease.OutCubic))
+                .SetUpdate(true);
 
             await sequence.ToUniTask(cancellationToken: ct);
 
@@ -115,7 +117,8 @@ namespace LoveAlgo.Core
 
             sequence = DOTween.Sequence()
                 .Append(rtTop.DOAnchorPosY(-halfHeight, duration).SetEase(Ease.InCubic))
-                .Join(rtBottom.DOAnchorPosY(halfHeight, duration).SetEase(Ease.InCubic));
+                .Join(rtBottom.DOAnchorPosY(halfHeight, duration).SetEase(Ease.InCubic))
+                .SetUpdate(true);
 
             await sequence.ToUniTask(cancellationToken: ct);
             sequence = null;
@@ -142,7 +145,8 @@ namespace LoveAlgo.Core
                 .Join(rtBottom.DOAnchorPosY(halfHeight, closeDuration).SetEase(Ease.InQuad))
                 .AppendInterval(holdTime)
                 .Append(rtTop.DOAnchorPosY(0, openDuration).SetEase(Ease.OutCubic))
-                .Join(rtBottom.DOAnchorPosY(0, openDuration).SetEase(Ease.OutCubic));
+                .Join(rtBottom.DOAnchorPosY(0, openDuration).SetEase(Ease.OutCubic))
+                .SetUpdate(true);
 
             await sequence.ToUniTask(cancellationToken: ct);
 

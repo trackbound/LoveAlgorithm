@@ -200,16 +200,23 @@ namespace LoveAlgo.Schedule
             await canvasGroup.DOFade(1f, showDuration).SetEase(Ease.OutQuad)
                 .ToUniTask(cancellationToken: ct);
 
-            // 첫 진입 시 튜토리얼 표시
+            // 첫 진입 시 튜토리얼 표시 (스케줄 UI 등장 후 3초 뒤)
             if (tutorialOverlay != null
                 && GameState.Instance != null
                 && !GameState.Instance.GetFlag("HasSeenScheduleTutorial"))
             {
                 canvasGroup.interactable = false;
                 canvasGroup.blocksRaycasts = false;
-                await tutorialOverlay.RunAsync("Story/ScheduleTutorial", "HasSeenScheduleTutorial", ct);
-                canvasGroup.interactable = true;
-                canvasGroup.blocksRaycasts = true;
+                try
+                {
+                    await UniTask.Delay(TimeSpan.FromSeconds(3f), cancellationToken: ct);
+                    await tutorialOverlay.RunAsync("Story/ScheduleTutorial", "HasSeenScheduleTutorial", ct);
+                }
+                finally
+                {
+                    canvasGroup.interactable = true;
+                    canvasGroup.blocksRaycasts = true;
+                }
             }
         }
 

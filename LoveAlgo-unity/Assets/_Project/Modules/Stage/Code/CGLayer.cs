@@ -113,12 +113,13 @@ namespace LoveAlgo.Story
             cgImage.enabled = true;
             cgImage.preserveAspect = true;
 
-            // 페이드인 — Linear로 점진적 등장
+            // 페이드인 — Linear로 점진적 등장. 진행 속도(Time.timeScale)와 무관하게 절대 시간 유지.
             if (canvasGroup != null && duration > 0)
             {
                 canvasGroup.alpha = 0f;
                 await canvasGroup.DOFade(1f, duration)
                     .SetEase(Ease.Linear)
+                    .SetUpdate(true)
                     .ToUniTask(cancellationToken: ct);
             }
             else if (canvasGroup != null)
@@ -138,11 +139,12 @@ namespace LoveAlgo.Story
 
             DOTween.Kill(canvasGroup);
 
-            // 페이드아웃 — Linear로 점진적 퇴장
+            // 페이드아웃 — Linear로 점진적 퇴장. 진행 속도와 무관하게 절대 시간 유지.
             if (canvasGroup != null && duration > 0)
             {
                 await canvasGroup.DOFade(0f, duration)
                     .SetEase(Ease.Linear)
+                    .SetUpdate(true)
                     .ToUniTask(cancellationToken: ct);
             }
             else if (canvasGroup != null)

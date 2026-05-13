@@ -21,11 +21,9 @@ namespace LoveAlgo.UI
         [SerializeField] RectTransform contentRoot;
         [SerializeField] Button closeButton;
 
-        [Header("프리팹 (각 타입별 레이아웃 — LogEntryBase 서브클래스)")]
-        [SerializeField] LogEntryBase characterEntryPrefab;  // 캐릭터 (초상화 + 네임 + 버블)
-        [SerializeField] LogEntryBase extraEntryPrefab;      // 엑스트라 (네임 + 버블)
-        [SerializeField] LogEntryBase userEntryPrefab;       // 유저 (네임 + 버블)
-        [SerializeField] LogEntryBase narrationEntryPrefab;  // 독백 (버블만)
+        [Header("프리팹 — LogEntryBase 서브클래스")]
+        [SerializeField] LogEntryBase dialogueEntryPrefab;   // 히로인/엑스트라/주인공 (LogDialogueEntry)
+        [SerializeField] LogEntryBase narrationEntryPrefab;  // 독백 (LogNarrationEntry)
 
         [Header("캐릭터 초상화")]
         [SerializeField] List<PortraitEntry> portraits;
@@ -50,8 +48,6 @@ namespace LoveAlgo.UI
         {
             base.Awake();
             closeButton?.onClick.AddListener(Close);
-            // gameObject.SetActive(false)은 PopupManager.InitPopups()에서 처리
-            // 여기서 호출하면: 씬에서 비활성화 시작 → 첫 Show() → SetActive(true) → Awake 실행 → 다시 꺼짐 버그 발생
 
             if (portraits != null)
             {
@@ -112,26 +108,23 @@ namespace LoveAlgo.UI
 
                 if (!sameGroup)
                 {
-                    // ── 타입별 프리팹 선택 ──
                     LogEntryBase prefab;
                     Sprite portrait = null;
+                    bool isUser = false;
 
                     if (isNarration)
                     {
                         prefab = narrationEntryPrefab;
                     }
-                    else if (string.IsNullOrEmpty(entry.CharacterId))
-                    {
-                        prefab = userEntryPrefab;
-                    }
                     else
                     {
-                        portrait = GetPortrait(entry.CharacterId);
-                        prefab = portrait != null ? characterEntryPrefab : extraEntryPrefab;
+                        prefab = dialogueEntryPrefab;
+                        isUser = string.IsNullOrEmpty(entry.CharacterId);
+                        if (!isUser) portrait = GetPortrait(entry.CharacterId);
                     }
 
                     lastGroup = Instantiate(prefab, contentRoot);
-                    lastGroup.Init(entry.Speaker, portrait);
+                    lastGroup.Init(entry.Speaker, portrait, isUser);
 
                     lastSpeaker = entry.Speaker;
                     lastCharId = entry.CharacterId;
