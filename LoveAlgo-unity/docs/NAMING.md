@@ -141,7 +141,7 @@ Main/
 
 새 코드 작성 또는 기존 코드 변경 시 이 컨벤션 위반이 발견되면:
 1. 가능하면 즉시 rename (작은 변경)
-2. 큰 변경(상속 변경 등)은 `docs/MODULE_STRUCTURE.md`에 메모 후 별도 작업
+2. 큰 변경(상속 변경 등)은 `docs/WORK_PLAN.md`에 작업 추가 후 별도 처리
 
 ---
 
@@ -181,3 +181,63 @@ UI prefab 등록 방식 2가지 — 모듈은 두 SerializeField(`xxxSceneInstan
 2. 인스펙터에서 `Active` 체크 해제
 3. 해당 모듈 인스펙터의 `xxxSceneInstance` 슬롯에 드래그
 4. `xxxPrefab` 필드는 비워둠 (또는 백업으로 유지)
+
+---
+
+## 모듈 책임 경계
+
+같은 도메인이라도 책임을 가르는 기준:
+
+### Narrative vs Stage
+- **Narrative**: 스크립트 라인을 읽고 해석. "캐릭터 X 등장 with 표정 Y" 이벤트 발행
+- **Stage**: 그 이벤트 받아 실제 이미지 띄우고 위치/연출 처리
+- 호출: `Services.Get<IStage>().ShowCharacter(...)`
+
+### DayLoop vs Schedule vs Simulation
+- **DayLoop**: "오늘이 1차 이벤트일이냐 자유행동일이냐" — 큰 페이즈
+- **Schedule**: 자유행동일 안에서 "낮에 뭘 할 것이냐" — 단일 행동 선택 (Simulation sub-mode)
+- **Simulation**: Schedule/Shop 등 sub-mode 호스팅, QuickMenu 컨테이너
+
+### Stats vs Affinity
+- **Stats**: 플레이어 본인 능력치 (체력/지성/사교성/끈기/피로) — 1인분
+- **Affinity**: 히로인 5명 각자의 호감도 게이지 — 5인분, 임계치 비교
+
+### Shop vs Inventory
+- **Shop**: "사는 행위" — 장바구니, 구매 확인, 잔액
+- **Inventory**: "가진 것 + 쓰는 행위" — 보유 목록, 세션 효과, 중복 50% 페널티
+
+### Save
+- 각 모듈은 자기 데이터를 직렬화 가능 형태로 제공
+- Save 모듈이 모아서 JSON 직렬화. 역방향도 동일
+- 모듈은 다른 모듈 데이터를 모름
+
+---
+
+## 통신 패턴
+
+### 1. 이벤트 (느슨한 통지)
+```csharp
+// 발행 (Schedule 모듈)
+EventBus.Publish(new ScheduleSelectedEvent {
+    Type = ScheduleType.PartTime_Store,
+    Slot = TimeSlot.Day
+});
+
+// 구독 (Stats 모듈, Inventory 모듈, ... 자유)
+EventBus.Subscribe<ScheduleSelectedEvent>(OnScheduleSelected);
+```
+
+### 2. 인터페이스 조회 (요청-응답)
+```csharp
+// Stage 모듈이 등록
+Services.Register<IStage>(this);
+
+// Narrative 모듈이 사용
+Services.Get<IStage>().ShowCharacter("Roa", "Default", "C");
+```
+
+**규칙:**
+- 일방향 통지 → `EventBus`
+- 동기 결과 필요 → `Services.Get<I*>()`
+- 다른 모듈 클래스 직접 `using` / 직접 참조 → **금지**
+- UI는 표시만. 상태 변경·데이터 접근은 IService 경유

@@ -27,7 +27,7 @@
 | 데이터는 SO 또는 CSV | 코드에 하드코딩 금지 — **기획자가 인스펙터에서 수정 가능해야 함** |
 | 프리팹은 자족적 | 컴포넌트가 프리팹 내부에서 완결. 씬에 외부 의존 최소화 |
 
-세부 폴더/하이어라키 구조: [`docs/MODULE_STRUCTURE.md`](docs/MODULE_STRUCTURE.md) 참조.
+세부 폴더/하이어라키 구조, 책임 경계, 통신 패턴: [`docs/NAMING.md`](docs/NAMING.md) 참조.
 
 ## 3. 토큰 효율
 

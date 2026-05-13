@@ -150,8 +150,7 @@ Assets/Resources/         거의 비움 (Story CSV 등 Resources.Load 필수만)
 1. 모듈 1개씩 (병렬 sub-agent로 묶을 땐 의존성 없는 것만)
 2. 각 모듈 끝나면 **사용자가 Unity 컴파일 확인 후 다음으로**
 3. sub-agent 보고에 의문점 있으면 Opus가 해결
-4. 이주 완료된 모듈은 `MODULE_STRUCTURE.md` 표 상태 ✅ 갱신
-5. `WORK_PLAN.md`에 완료 항목 누적
+4. 이주 완료된 모듈은 `WORK_PLAN.md` 완료 섹션에 누적
 
 ---
 
