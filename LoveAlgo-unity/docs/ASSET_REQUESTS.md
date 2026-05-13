@@ -13,8 +13,9 @@
 ## 미수령
 
 ### 아트
-- [ ] [높음] 해피엔딩 CG 3장 — Bom / Daeun / Heewon (현재 Roa, Yeun만 존재) / 가로 비율 / 사용처: 고백 해피엔딩
-- [ ] [중간] SD 캐릭터 2종 — Yeun, Roa (현재 Bom·Daeun·Heewon만 존재)
+- [ ] [높음] 해피엔딩 CG 3장 — LeeBom / SeoDaEun / DoHeewon (현재 Roa, HaYeEun만 존재) / 가로 비율 / 사용처: 고백 해피엔딩
+- [ ] [중간] SD 캐릭터 2종 — HaYeEun, Roa (현재 LeeBom·SeoDaEun·DoHeewon만 존재)
+- [ ] [중간] BG — `bg_50_lec_01.png` 교양관 복도 낮 (Excel `작업=True`, 파일 미수령) / 2026-05-13 요청
 - [ ] [중간] 가챠 퍼즐 일러스트 1장 — 가로 직사각형, 6×5 분할 가능한 비율 / 히든 일러스트
 - [ ] [낮음] 가챠권 아이템 아이콘 — 카드형 슬롯 디자인
 

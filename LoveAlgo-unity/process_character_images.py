@@ -39,12 +39,12 @@ OUTPUT_DIR = SCRIPT_DIR / "Assets" / "Resources" / "Characters"
 # ─── 매핑 테이블 (새 항목은 여기에 추가) ──────────────────────
 # 한글 캐릭터 이름 → 영문 ID
 CHAR_NAME_MAP = {
-    "봄이":  "Bom",
-    "다은":  "Daeun",
+    "봄이":  "LeeBom",
+    "다은":  "SeoDaEun",
     "로아":  "Roa",
-    "예은":  "Yeun",
-    "희원이": "Heewon",
-    "희원":  "Heewon",
+    "예은":  "HaYeEun",
+    "희원이": "DoHeewon",
+    "희원":  "DoHeewon",
 }
 
 # 한글 표정 이름 → 영문 파일명

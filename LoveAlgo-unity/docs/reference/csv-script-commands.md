@@ -96,7 +96,7 @@ LineID,Type,Speaker,Value,Next
 
 | 액션 | Value 예시 |
 |------|------------|
-| `Enter` | `C:Enter:Roa`, `L:Enter:Daeun:Happy` |
+| `Enter` | `C:Enter:Roa`, `L:Enter:SeoDaEun:Happy` |
 | `Emote` | `C:Emote:Sad`, `R:Emote:Blush` |
 | `Exit` | `C:Exit`, `L:Exit` |
 
@@ -280,8 +280,8 @@ CG 종료(Exit) 시 대사창 자동 복원.
 ```csv
 ,Text,로아,오늘 뭐 할까?,>
 ,Choice,,,click
-,Option,,공부하자|Study_Start|Love:Daeun:1,
-,Option,,놀러가자|Play_Start|Love:Bom:1,
+,Option,,공부하자|Study_Start|Love:SeoDaEun:1,
+,Option,,놀러가자|Play_Start|Love:LeeBom:1,
 ,Option,,자자...|Sleep_Start|Fatigue:-10|if:Fatigue>=50,
 ,Option,,고백한다|Confess|Love:Roa:10|SFX:Heartbeat|if:Love:Roa>=30,
 ```

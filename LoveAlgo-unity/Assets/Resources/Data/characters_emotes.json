@@ -1,8 +1,8 @@
 {
   "characters": [
     {
-      "displayName": "Bom",
-      "id": "Bom",
+      "displayName": "LeeBom",
+      "id": "LeeBom",
       "emotes": [
         {
           "ppu": 0,
@@ -11,7 +11,7 @@
           "guid": "66a42734edfbe9544962531a868b6945",
           "key": "Bright",
           "height": 2000,
-          "resourcePath": "Characters/Bom/Bright"
+          "resourcePath": "Characters/LeeBom/Bright"
         },
         {
           "ppu": 0,
@@ -20,7 +20,7 @@
           "guid": "2c021f3f09b8fd7478a47f30020bd277",
           "key": "Default",
           "height": 2000,
-          "resourcePath": "Characters/Bom/Default"
+          "resourcePath": "Characters/LeeBom/Default"
         },
         {
           "ppu": 0,
@@ -29,7 +29,7 @@
           "guid": "ea1bf40ff20606d4fa7b327c9b75a9c6",
           "key": "EyeSmile",
           "height": 2000,
-          "resourcePath": "Characters/Bom/EyeSmile"
+          "resourcePath": "Characters/LeeBom/EyeSmile"
         },
         {
           "ppu": 0,
@@ -38,7 +38,7 @@
           "guid": "84f088ea6d49f3248adab270b6f2938c",
           "key": "Glare",
           "height": 2000,
-          "resourcePath": "Characters/Bom/Glare"
+          "resourcePath": "Characters/LeeBom/Glare"
         },
         {
           "ppu": 0,
@@ -47,7 +47,7 @@
           "guid": "5b007bd97ce09dd4ba217cc2dc150106",
           "key": "Happy",
           "height": 2000,
-          "resourcePath": "Characters/Bom/Happy"
+          "resourcePath": "Characters/LeeBom/Happy"
         },
         {
           "ppu": 0,
@@ -56,7 +56,7 @@
           "guid": "0b0be70c106f7014395069538128d569",
           "key": "Surprise",
           "height": 2000,
-          "resourcePath": "Characters/Bom/Surprise"
+          "resourcePath": "Characters/LeeBom/Surprise"
         },
         {
           "ppu": 0,
@@ -65,13 +65,13 @@
           "guid": "193fda416aaa0264e978ffe4dc6178fa",
           "key": "Tearful",
           "height": 2000,
-          "resourcePath": "Characters/Bom/Tearful"
+          "resourcePath": "Characters/LeeBom/Tearful"
         }
       ]
     },
     {
-      "displayName": "Daeun",
-      "id": "Daeun",
+      "displayName": "SeoDaEun",
+      "id": "SeoDaEun",
       "emotes": [
         {
           "ppu": 0,
@@ -80,7 +80,7 @@
           "guid": "f6a5ce1fb3ddd7c4bbc078cd58051ae5",
           "key": "Bright",
           "height": 2000,
-          "resourcePath": "Characters/Daeun/Bright"
+          "resourcePath": "Characters/SeoDaEun/Bright"
         },
         {
           "ppu": 0,
@@ -89,7 +89,7 @@
           "guid": "96e62d7715b37454bb155ef48f89b16e",
           "key": "Default",
           "height": 2000,
-          "resourcePath": "Characters/Daeun/Default"
+          "resourcePath": "Characters/SeoDaEun/Default"
         },
         {
           "ppu": 0,
@@ -98,7 +98,7 @@
           "guid": "c91fda1a0ed0da54aabd5ecad92ade91",
           "key": "EyeSmile",
           "height": 2000,
-          "resourcePath": "Characters/Daeun/EyeSmile"
+          "resourcePath": "Characters/SeoDaEun/EyeSmile"
         },
         {
           "ppu": 0,
@@ -107,7 +107,7 @@
           "guid": "98384648c6790a64fb9a5dce89c3211d",
           "key": "Glare",
           "height": 2000,
-          "resourcePath": "Characters/Daeun/Glare"
+          "resourcePath": "Characters/SeoDaEun/Glare"
         },
         {
           "ppu": 0,
@@ -116,7 +116,7 @@
           "guid": "f290774625c38ee4a989e63c0126696a",
           "key": "Happy",
           "height": 2000,
-          "resourcePath": "Characters/Daeun/Happy"
+          "resourcePath": "Characters/SeoDaEun/Happy"
         },
         {
           "ppu": 0,
@@ -125,7 +125,7 @@
           "guid": "955a60677baa3da4bbc0dccceee77fa0",
           "key": "Surprise",
           "height": 2000,
-          "resourcePath": "Characters/Daeun/Surprise"
+          "resourcePath": "Characters/SeoDaEun/Surprise"
         },
         {
           "ppu": 0,
@@ -134,13 +134,13 @@
           "guid": "cdc3b316b1e657042932a96c304ff4a0",
           "key": "Tearful",
           "height": 2000,
-          "resourcePath": "Characters/Daeun/Tearful"
+          "resourcePath": "Characters/SeoDaEun/Tearful"
         }
       ]
     },
     {
-      "displayName": "Heewon",
-      "id": "Heewon",
+      "displayName": "DoHeewon",
+      "id": "DoHeewon",
       "emotes": [
         {
           "ppu": 0,
@@ -149,7 +149,7 @@
           "guid": "a38b51483dacf5b44bb2cf7a0746c15e",
           "key": "Bright",
           "height": 2000,
-          "resourcePath": "Characters/Heewon/Bright"
+          "resourcePath": "Characters/DoHeewon/Bright"
         },
         {
           "ppu": 0,
@@ -158,7 +158,7 @@
           "guid": "83a5af511e5b489438ac9db50c3d211e",
           "key": "Default",
           "height": 2000,
-          "resourcePath": "Characters/Heewon/Default"
+          "resourcePath": "Characters/DoHeewon/Default"
         },
         {
           "ppu": 0,
@@ -167,7 +167,7 @@
           "guid": "b2bc374734197ba429424afb59448f7c",
           "key": "EyeSmile",
           "height": 2000,
-          "resourcePath": "Characters/Heewon/EyeSmile"
+          "resourcePath": "Characters/DoHeewon/EyeSmile"
         },
         {
           "ppu": 0,
@@ -176,7 +176,7 @@
           "guid": "d86ce54b1503a8a48a64c9c08b1e2d7c",
           "key": "Glare",
           "height": 2000,
-          "resourcePath": "Characters/Heewon/Glare"
+          "resourcePath": "Characters/DoHeewon/Glare"
         },
         {
           "ppu": 0,
@@ -185,7 +185,7 @@
           "guid": "f16de56055a6b6846baa2469ff4ffbed",
           "key": "Happy",
           "height": 2000,
-          "resourcePath": "Characters/Heewon/Happy"
+          "resourcePath": "Characters/DoHeewon/Happy"
         },
         {
           "ppu": 0,
@@ -194,7 +194,7 @@
           "guid": "c8e5285761c4db74cba6b7f02ca61112",
           "key": "Surprise",
           "height": 2000,
-          "resourcePath": "Characters/Heewon/Surprise"
+          "resourcePath": "Characters/DoHeewon/Surprise"
         },
         {
           "ppu": 0,
@@ -203,7 +203,7 @@
           "guid": "bcd3d6afb5417154b8f34c4f00bc376f",
           "key": "Tearful",
           "height": 2000,
-          "resourcePath": "Characters/Heewon/Tearful"
+          "resourcePath": "Characters/DoHeewon/Tearful"
         }
       ]
     },
@@ -268,8 +268,8 @@
       ]
     },
     {
-      "displayName": "Yeun",
-      "id": "Yeun",
+      "displayName": "HaYeEun",
+      "id": "HaYeEun",
       "emotes": [
         {
           "ppu": 0,
@@ -278,7 +278,7 @@
           "guid": "314de477dcd8b8f48ac5a888aa534514",
           "key": "Bright",
           "height": 17696,
-          "resourcePath": "Characters/Yeun/Bright"
+          "resourcePath": "Characters/HaYeEun/Bright"
         },
         {
           "ppu": 0,
@@ -287,7 +287,7 @@
           "guid": "c406514000337ed4d9b64184d0860c57",
           "key": "Default",
           "height": 17696,
-          "resourcePath": "Characters/Yeun/Default"
+          "resourcePath": "Characters/HaYeEun/Default"
         },
         {
           "ppu": 0,
@@ -296,7 +296,7 @@
           "guid": "cb417b1d34e95214bbedf0b8eef325dc",
           "key": "EyeSmile",
           "height": 17696,
-          "resourcePath": "Characters/Yeun/EyeSmile"
+          "resourcePath": "Characters/HaYeEun/EyeSmile"
         },
         {
           "ppu": 0,
@@ -305,7 +305,7 @@
           "guid": "ddd8da93ad6441d45b7c80e13af14f06",
           "key": "Glare",
           "height": 17696,
-          "resourcePath": "Characters/Yeun/Glare"
+          "resourcePath": "Characters/HaYeEun/Glare"
         },
         {
           "ppu": 0,
@@ -314,7 +314,7 @@
           "guid": "3894712c6ccaed14083440df2741e49d",
           "key": "Happy",
           "height": 17696,
-          "resourcePath": "Characters/Yeun/Happy"
+          "resourcePath": "Characters/HaYeEun/Happy"
         },
         {
           "ppu": 0,
@@ -323,7 +323,7 @@
           "guid": "c5b853c5bdaaf7d4c83d3582463324d8",
           "key": "Surprise",
           "height": 17696,
-          "resourcePath": "Characters/Yeun/Surprise"
+          "resourcePath": "Characters/HaYeEun/Surprise"
         },
         {
           "ppu": 0,
@@ -332,7 +332,7 @@
           "guid": "ff25d2d989c17a14ab611f1f556958e6",
           "key": "Tearful",
           "height": 17696,
-          "resourcePath": "Characters/Yeun/Tearful"
+          "resourcePath": "Characters/HaYeEun/Tearful"
         }
       ]
     }

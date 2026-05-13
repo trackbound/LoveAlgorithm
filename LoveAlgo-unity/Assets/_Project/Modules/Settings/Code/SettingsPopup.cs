@@ -107,10 +107,10 @@ namespace LoveAlgo.UI
                 MarkDirty();
             });
 
-            voiceYeunSlider?.onValueChanged.AddListener(v => { settings?.SetCharacterVoice("Yeun", v); UISoundManager.Instance?.PlayVolumePreview(v); MarkDirty(); });
-            voiceDaeunSlider?.onValueChanged.AddListener(v => { settings?.SetCharacterVoice("Daeun", v); UISoundManager.Instance?.PlayVolumePreview(v); MarkDirty(); });
-            voiceBomSlider?.onValueChanged.AddListener(v => { settings?.SetCharacterVoice("Bom", v); UISoundManager.Instance?.PlayVolumePreview(v); MarkDirty(); });
-            voiceHeewonSlider?.onValueChanged.AddListener(v => { settings?.SetCharacterVoice("Heewon", v); UISoundManager.Instance?.PlayVolumePreview(v); MarkDirty(); });
+            voiceYeunSlider?.onValueChanged.AddListener(v => { settings?.SetCharacterVoice("HaYeEun", v); UISoundManager.Instance?.PlayVolumePreview(v); MarkDirty(); });
+            voiceDaeunSlider?.onValueChanged.AddListener(v => { settings?.SetCharacterVoice("SeoDaEun", v); UISoundManager.Instance?.PlayVolumePreview(v); MarkDirty(); });
+            voiceBomSlider?.onValueChanged.AddListener(v => { settings?.SetCharacterVoice("LeeBom", v); UISoundManager.Instance?.PlayVolumePreview(v); MarkDirty(); });
+            voiceHeewonSlider?.onValueChanged.AddListener(v => { settings?.SetCharacterVoice("DoHeewon", v); UISoundManager.Instance?.PlayVolumePreview(v); MarkDirty(); });
             voiceRoaSlider?.onValueChanged.AddListener(v => { settings?.SetCharacterVoice("Roa", v); UISoundManager.Instance?.PlayVolumePreview(v); MarkDirty(); });
 
             textSpeedSlider?.onValueChanged.AddListener(v =>
@@ -159,10 +159,10 @@ namespace LoveAlgo.UI
             bgmSlider?.SetValueWithoutNotify(settings.BGMVolume);
             sfxSlider?.SetValueWithoutNotify(settings.SFXVolume);
 
-            voiceYeunSlider?.SetValueWithoutNotify(settings.GetCharacterVoice("Yeun"));
-            voiceDaeunSlider?.SetValueWithoutNotify(settings.GetCharacterVoice("Daeun"));
-            voiceBomSlider?.SetValueWithoutNotify(settings.GetCharacterVoice("Bom"));
-            voiceHeewonSlider?.SetValueWithoutNotify(settings.GetCharacterVoice("Heewon"));
+            voiceYeunSlider?.SetValueWithoutNotify(settings.GetCharacterVoice("HaYeEun"));
+            voiceDaeunSlider?.SetValueWithoutNotify(settings.GetCharacterVoice("SeoDaEun"));
+            voiceBomSlider?.SetValueWithoutNotify(settings.GetCharacterVoice("LeeBom"));
+            voiceHeewonSlider?.SetValueWithoutNotify(settings.GetCharacterVoice("DoHeewon"));
             voiceRoaSlider?.SetValueWithoutNotify(settings.GetCharacterVoice("Roa"));
 
             textSpeedSlider?.SetValueWithoutNotify(settings.TextSpeed);

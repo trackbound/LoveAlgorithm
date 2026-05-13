@@ -1572,15 +1572,15 @@ MonoBehaviour:
   userEntryPrefab: {fileID: 2611907841487487963, guid: d1e614639b0b39e4dbe7e9c7d3214211, type: 3}
   narrationEntryPrefab: {fileID: 6208944182686354050, guid: 256c50aaeeda7d24cb63c48dcf83d625, type: 3}
   portraits:
-  - characterId: bom
+  - characterId: leebom
     sprite: {fileID: 21300000, guid: 2d855355eca9d9942b42162c1df7b25b, type: 3}
-  - characterId: daeun
+  - characterId: seodaeun
     sprite: {fileID: 21300000, guid: 867b6610cbf958d48b8c912fa4b3e59a, type: 3}
-  - characterId: heewon
+  - characterId: doheewon
     sprite: {fileID: 21300000, guid: c6da704bda0d30b4c9b304055849bdce, type: 3}
   - characterId: roa
     sprite: {fileID: 21300000, guid: 0a289d5078067374b86c2dc921afe5f9, type: 3}
-  - characterId: yeun
+  - characterId: hayeeun
     sprite: {fileID: 21300000, guid: a1ed2807889a0034a806978d08ecabae, type: 3}
   emptyMessage: {fileID: 0}
 --- !u!1 &3248987956247590186

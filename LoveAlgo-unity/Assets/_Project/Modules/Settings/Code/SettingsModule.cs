@@ -44,7 +44,7 @@ namespace LoveAlgo.Settings
         Snapshot snapshot;
 
         // 캐릭터 키 (Voice_* PlayerPrefs 로드 범위)
-        static readonly string[] DefaultCharacters = { "Yeun", "Daeun", "Bom", "Heewon", "Roa" };
+        static readonly string[] DefaultCharacters = { "HaYeEun", "SeoDaEun", "LeeBom", "DoHeewon", "Roa" };
 
         [Header("UI Prefab (모듈 응집)")]
         [SerializeField] SettingsPopup settingsPopupPrefab;

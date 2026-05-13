@@ -28,7 +28,7 @@ MonoBehaviour:
     SubEffectStat: 
     SubEffectValue: 0
     DuplicateTag: 
-    TargetHeroine: Yeeun
+    TargetHeroine: HaYeEun
     LoveEffect2: 2
     LoveEffect3: 3
   - Id: gift_meal_coupon
@@ -47,7 +47,7 @@ MonoBehaviour:
     SubEffectStat: 
     SubEffectValue: 0
     DuplicateTag: 
-    TargetHeroine: Yeeun
+    TargetHeroine: HaYeEun
     LoveEffect2: 2
     LoveEffect3: 3
   - Id: gift_game_chip
@@ -66,7 +66,7 @@ MonoBehaviour:
     SubEffectStat: 
     SubEffectValue: 0
     DuplicateTag: 
-    TargetHeroine: Yeeun
+    TargetHeroine: HaYeEun
     LoveEffect2: 2
     LoveEffect3: 3
   - Id: gift_album
@@ -85,7 +85,7 @@ MonoBehaviour:
     SubEffectStat: 
     SubEffectValue: 0
     DuplicateTag: 
-    TargetHeroine: Daeun
+    TargetHeroine: SeoDaEun
     LoveEffect2: 2
     LoveEffect3: 3
   - Id: gift_bread
@@ -104,7 +104,7 @@ MonoBehaviour:
     SubEffectStat: 
     SubEffectValue: 0
     DuplicateTag: 
-    TargetHeroine: Daeun
+    TargetHeroine: SeoDaEun
     LoveEffect2: 1
     LoveEffect3: 2
   - Id: gift_concert_ticket
@@ -124,7 +124,7 @@ MonoBehaviour:
     SubEffectStat: 
     SubEffectValue: 0
     DuplicateTag: 
-    TargetHeroine: Daeun
+    TargetHeroine: SeoDaEun
     LoveEffect2: 3
     LoveEffect3: 5
   - Id: gift_rabbit_keyring
@@ -142,7 +142,7 @@ MonoBehaviour:
     SubEffectStat: 
     SubEffectValue: 0
     DuplicateTag: 
-    TargetHeroine: Bom
+    TargetHeroine: LeeBom
     LoveEffect2: 2
     LoveEffect3: 3
   - Id: gift_strawberry_milk
@@ -160,7 +160,7 @@ MonoBehaviour:
     SubEffectStat: 
     SubEffectValue: 0
     DuplicateTag: 
-    TargetHeroine: Bom
+    TargetHeroine: LeeBom
     LoveEffect2: 1
     LoveEffect3: 2
   - Id: gift_popup_ticket
@@ -180,7 +180,7 @@ MonoBehaviour:
     SubEffectStat: 
     SubEffectValue: 0
     DuplicateTag: 
-    TargetHeroine: Bom
+    TargetHeroine: LeeBom
     LoveEffect2: 3
     LoveEffect3: 4
   - Id: gift_soju
@@ -199,7 +199,7 @@ MonoBehaviour:
     SubEffectStat: 
     SubEffectValue: 0
     DuplicateTag: 
-    TargetHeroine: Heewon
+    TargetHeroine: DoHeewon
     LoveEffect2: 3
     LoveEffect3: 4
   - Id: gift_diamond
@@ -217,7 +217,7 @@ MonoBehaviour:
     SubEffectStat: 
     SubEffectValue: 0
     DuplicateTag: 
-    TargetHeroine: Heewon
+    TargetHeroine: DoHeewon
     LoveEffect2: 3
     LoveEffect3: 5
   - Id: gift_ribbon
@@ -235,7 +235,7 @@ MonoBehaviour:
     SubEffectStat: 
     SubEffectValue: 0
     DuplicateTag: 
-    TargetHeroine: Heewon
+    TargetHeroine: DoHeewon
     LoveEffect2: 2
     LoveEffect3: 3
   - Id: gift_blue_shirt

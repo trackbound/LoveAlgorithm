@@ -24,7 +24,7 @@ namespace LoveAlgo.Core
         /// <summary>
         /// 조건 문자열 (GameState.EvaluateCondition 형식)
         /// 빈 문자열이면 무조건 발동
-        /// 예: "Love:Roa>=20", "Flag:Met_Yeun", "Stat:Int>=30"
+        /// 예: "Love:Roa>=20", "Flag:Met_HaYeEun", "Stat:Int>=30"
         /// </summary>
         public string Condition { get; }
 

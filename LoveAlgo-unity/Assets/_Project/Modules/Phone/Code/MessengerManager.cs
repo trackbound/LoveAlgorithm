@@ -49,10 +49,10 @@ namespace LoveAlgo.Phone
 
             // 기본 친구 등록
             RegisterFriend("Roa", "로아", "화면 너머에서 응원 중! ✨");
-            RegisterFriend("Yeun", "하예은", "오늘도 운동 완료 💪");
-            RegisterFriend("Daeun", "서다은", "…");
-            RegisterFriend("Bom", "이봄", "오늘 뭐 먹지~? 🍕");
-            RegisterFriend("Heewon", "도희원", "");
+            RegisterFriend("HaYeEun", "하예은", "오늘도 운동 완료 💪");
+            RegisterFriend("SeoDaEun", "서다은", "…");
+            RegisterFriend("LeeBom", "이봄", "오늘 뭐 먹지~? 🍕");
+            RegisterFriend("DoHeewon", "도희원", "");
         }
 
         #region 친구 관리
@@ -174,31 +174,31 @@ namespace LoveAlgo.Phone
                     ReceiveMessage("Roa", "입학 축하해! 🎉\n오늘부터 잘 부탁해~", day, "오전 8:00");
                     break;
                 case 2:
-                    ReceiveMessage("Yeun", "어제 고마웠어! 내일 만나면 인사해~", day, "오후 9:30");
+                    ReceiveMessage("HaYeEun", "어제 고마웠어! 내일 만나면 인사해~", day, "오후 9:30");
                     break;
                 case 3:
-                    ReceiveMessage("Daeun", "수업 필기 빌려줄까?", day, "오후 1:15");
+                    ReceiveMessage("SeoDaEun", "수업 필기 빌려줄까?", day, "오후 1:15");
                     break;
                 case 5:
-                    ReceiveMessage("Bom", "이번 주말에 놀러 가자~! 🎡", day, "오후 3:00");
+                    ReceiveMessage("LeeBom", "이번 주말에 놀러 가자~! 🎡", day, "오후 3:00");
                     break;
                 case 6:
                     ReceiveMessage("Roa", "오늘 이벤트가 있대! 확인해봐!", day, "오전 9:00");
                     break;
                 case 9:
-                    ReceiveMessage("Yeun", "내일부터 축제다! 기대된다~", day, "오후 8:00");
+                    ReceiveMessage("HaYeEun", "내일부터 축제다! 기대된다~", day, "오후 8:00");
                     break;
                 case 10:
                     ReceiveMessage("Roa", "축제 시작! 🎊 재밌게 놀아!", day, "오전 10:00");
                     break;
                 case 15:
-                    ReceiveMessage("Heewon", "…도서관 옆자리 비어있어.", day, "오후 2:00");
+                    ReceiveMessage("DoHeewon", "…도서관 옆자리 비어있어.", day, "오후 2:00");
                     break;
                 case 19:
-                    ReceiveMessage("Bom", "MT 간다~! 신난다~! 🏕️", day, "오후 6:00");
+                    ReceiveMessage("LeeBom", "MT 간다~! 신난다~! 🏕️", day, "오후 6:00");
                     break;
                 case 25:
-                    ReceiveMessage("Daeun", "…곧 종강이네.", day, "오후 11:00");
+                    ReceiveMessage("SeoDaEun", "…곧 종강이네.", day, "오후 11:00");
                     break;
                 case 29:
                     ReceiveMessage("Roa", "내일이 마지막 날이야…\n후회 없이 보내!", day, "오후 10:00");

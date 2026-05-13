@@ -17,19 +17,19 @@ MonoBehaviour:
     displayName: "\uB85C\uC544"
     endingThreshold: 46
     preferredStat: Fatigue
-  - id: Yeun
+  - id: HaYeEun
     displayName: "\uD558\uC608\uC740"
     endingThreshold: 32
     preferredStat: Str
-  - id: Daeun
+  - id: SeoDaEun
     displayName: "\uC11C\uB2E4\uC740"
     endingThreshold: 35
     preferredStat: Int
-  - id: Bom
+  - id: LeeBom
     displayName: "\uC774\uBD04"
     endingThreshold: 39
     preferredStat: Soc
-  - id: Heewon
+  - id: DoHeewon
     displayName: "\uB3C4\uD76C\uC6D0"
     endingThreshold: 43
     preferredStat: Per

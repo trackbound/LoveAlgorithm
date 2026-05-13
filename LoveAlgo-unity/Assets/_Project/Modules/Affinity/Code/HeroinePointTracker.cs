@@ -27,7 +27,7 @@ namespace LoveAlgo.Modules.Affinity
     ///   - 미니게임 보너스: 1차 최대+2, 2차 최대+3 (총 5점)
     ///   - 스탯 보정: 선호 스탯 1등 +3 / 공동1등 +1 (고백 시 계산)
     ///   - 로아 피로 보정: 70~79:+3 / 80~89:+6 / 90~100:+10
-    ///   - 히로인별 임계치: Roa=46, Yeun=32, Daeun=35, Bom=39, Heewon=43
+    ///   - 히로인별 임계치: Roa=46, HaYeEun=32, SeoDaEun=35, LeeBom=39, DoHeewon=43
     /// </summary>
     public static class HeroinePointTracker
     {

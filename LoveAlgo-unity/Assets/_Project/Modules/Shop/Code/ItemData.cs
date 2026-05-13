@@ -30,7 +30,7 @@ namespace LoveAlgo.Shop
     [Serializable]
     public class ItemData
     {
-        /// <summary>고유 ID (예: gift_yeun_bracelet)</summary>
+        /// <summary>고유 ID (예: gift_hayeeun_bracelet)</summary>
         public string Id;
 
         /// <summary>표시 이름</summary>
@@ -106,7 +106,7 @@ namespace LoveAlgo.Shop
         /// null이면 아이템 ID를 태그로 사용
         /// </summary>
         public string DuplicateTag;
-        /// <summary>선물 대상 히로인 ID (Gift 전용: "Roa", "Daeun", "Yeeun", "Heewon", "Bom")</summary>
+        /// <summary>선물 대상 히로인 ID (Gift 전용: "Roa", "SeoDaEun", "HaYeEun", "DoHeewon", "LeeBom")</summary>
         public string TargetHeroine;
 
         /// <summary>2차 이벤트 호감도 보너스 (Gift 전용)</summary>

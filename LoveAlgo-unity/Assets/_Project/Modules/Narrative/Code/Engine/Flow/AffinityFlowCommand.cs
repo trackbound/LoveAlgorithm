@@ -15,9 +15,9 @@ namespace LoveAlgo.Story.StoryEngine.Flow
     ///       카테고리 포인트만 추가. category는 PointCategory enum 이름 (Event/Dialogue/Gift/MiniGame).
     ///
     /// 예시:
-    ///   ,Flow,,Affinity:EventChoice:Yeun:Event1:3,>
-    ///   ,Flow,,Affinity:Point:Yeun:Dialogue:1,>
-    ///   ,Flow,,Affinity:Point:Daeun:Gift:4,>
+    ///   ,Flow,,Affinity:EventChoice:HaYeEun:Event1:3,>
+    ///   ,Flow,,Affinity:Point:HaYeEun:Dialogue:1,>
+    ///   ,Flow,,Affinity:Point:SeoDaEun:Gift:4,>
     /// </summary>
     public static class AffinityFlowCommand
     {

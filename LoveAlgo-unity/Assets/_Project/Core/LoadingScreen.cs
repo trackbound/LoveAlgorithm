@@ -38,16 +38,16 @@ namespace LoveAlgo.Core
         /// </summary>
         static readonly string[] LoadingImagePaths =
         {
-            "UI/Loading/Load_Bom_01",
-            "UI/Loading/Load_Bom_02",
-            "UI/Loading/Load_Daeun_01",
-            "UI/Loading/Load_Daeun_02",
-            "UI/Loading/Load_Heewon_01",
-            "UI/Loading/Load_Heewon_02",
+            "UI/Loading/Load_LeeBom_01",
+            "UI/Loading/Load_LeeBom_02",
+            "UI/Loading/Load_SeoDaEun_01",
+            "UI/Loading/Load_SeoDaEun_02",
+            "UI/Loading/Load_DoHeewon_01",
+            "UI/Loading/Load_DoHeewon_02",
             "UI/Loading/Load_Roa_01",
             "UI/Loading/Load_Roa_02",
-            "UI/Loading/Load_Yeun_01",
-            "UI/Loading/Load_Yeun_02",
+            "UI/Loading/Load_HaYeEun_01",
+            "UI/Loading/Load_HaYeEun_02",
         };
 
         int lastIndex = -1;

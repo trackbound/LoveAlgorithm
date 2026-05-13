@@ -71,10 +71,10 @@ namespace LoveAlgo.Modules.Affinity
             bool happy = AffinityCalculator.IsHappyEnding(confessedHeroineId);
             return confessedHeroineId switch
             {
-                "Yeun"   => happy ? EndingType.HappyYeun   : EndingType.SadYeun,
-                "Daeun"  => happy ? EndingType.HappyDaeun  : EndingType.SadDaeun,
-                "Bom"    => happy ? EndingType.HappyBom    : EndingType.SadBom,
-                "Heewon" => happy ? EndingType.HappyHeewon : EndingType.SadHeewon,
+                "HaYeEun"   => happy ? EndingType.HappyYeun   : EndingType.SadYeun,
+                "SeoDaEun"  => happy ? EndingType.HappyDaeun  : EndingType.SadDaeun,
+                "LeeBom"    => happy ? EndingType.HappyBom    : EndingType.SadBom,
+                "DoHeewon" => happy ? EndingType.HappyHeewon : EndingType.SadHeewon,
                 _ => EndingType.None,
             };
         }

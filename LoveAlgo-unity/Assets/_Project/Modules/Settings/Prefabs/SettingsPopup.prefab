@@ -4467,7 +4467,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3526092527386687298, guid: 37fe38fc96ca6be419060370d96616a0, type: 3}
       propertyPath: m_Name
-      value: slider_yeun
+      value: slider_hayeeun
       objectReference: {fileID: 0}
     - target: {fileID: 6419240450596729231, guid: 37fe38fc96ca6be419060370d96616a0, type: 3}
       propertyPath: m_Pivot.x
@@ -5366,7 +5366,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3526092527386687298, guid: 37fe38fc96ca6be419060370d96616a0, type: 3}
       propertyPath: m_Name
-      value: slider_daeun
+      value: slider_seodaeun
       objectReference: {fileID: 0}
     - target: {fileID: 6419240450596729231, guid: 37fe38fc96ca6be419060370d96616a0, type: 3}
       propertyPath: m_Pivot.x
@@ -5527,7 +5527,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3526092527386687298, guid: 37fe38fc96ca6be419060370d96616a0, type: 3}
       propertyPath: m_Name
-      value: slider_bom
+      value: slider_leebom
       objectReference: {fileID: 0}
     - target: {fileID: 6419240450596729231, guid: 37fe38fc96ca6be419060370d96616a0, type: 3}
       propertyPath: m_Pivot.x
@@ -5688,7 +5688,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3526092527386687298, guid: 37fe38fc96ca6be419060370d96616a0, type: 3}
       propertyPath: m_Name
-      value: slider_heewon
+      value: slider_doheewon
       objectReference: {fileID: 0}
     - target: {fileID: 6419240450596729231, guid: 37fe38fc96ca6be419060370d96616a0, type: 3}
       propertyPath: m_Pivot.x

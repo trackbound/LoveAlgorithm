@@ -621,7 +621,7 @@ namespace LoveAlgo.Modules.Audio
 
         void LoadCharacterVoiceVolumes()
         {
-            string[] characters = { "Yeun", "Daeun", "Bom", "Heewon", "Roa" };
+            string[] characters = { "HaYeEun", "SeoDaEun", "LeeBom", "DoHeewon", "Roa" };
             foreach (var c in characters)
             {
                 characterVoiceVolumes[c] = PlayerPrefs.GetFloat($"Voice_{c}", GameConstants.DefaultVoiceVolume);

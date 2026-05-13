@@ -195,7 +195,7 @@ namespace LoveAlgo.Modules.Affinity
             if (gs.GetStat("Fatigue") >= 70 && roaInfo.TotalScore >= roaInfo.Threshold)
                 return "Roa";
 
-            // 나머지 히로인 (Yeun, Daeun, Bom, Heewon)
+            // 나머지 히로인 (HaYeEun, SeoDaEun, LeeBom, DoHeewon)
             string best = null;
             int bestMargin = -1;
 

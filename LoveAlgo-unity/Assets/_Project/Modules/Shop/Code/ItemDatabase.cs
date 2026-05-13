@@ -98,41 +98,41 @@ namespace LoveAlgo.Shop
                 //  선물 — 하예은 (No.1, 6, 11)
                 // ══════════════════════════════════════
                 new ItemData("gift_ankle_guard", "발목 보호대", "발목을 보호해 주는 보호대", 30000,
-                    ItemCategory.Gift, iconPath: "1_gift_ankle_guard", targetHeroine: "Yeeun", loveEffect2: 2, loveEffect3: 3),
+                    ItemCategory.Gift, iconPath: "1_gift_ankle_guard", targetHeroine: "HaYeEun", loveEffect2: 2, loveEffect3: 3),
                 new ItemData("gift_meal_coupon", "[한식명인 최명자의 쌈밥명가] 식사권", "유명한 쌈밥 맛집의 식사권", 25000,
-                    ItemCategory.Gift, iconPath: "6_gift_meal_coupon", targetHeroine: "Yeeun", loveEffect2: 2, loveEffect3: 3),
+                    ItemCategory.Gift, iconPath: "6_gift_meal_coupon", targetHeroine: "HaYeEun", loveEffect2: 2, loveEffect3: 3),
                 new ItemData("gift_game_chip", "<점프점프 거북맨> 게임 칩", "예은과 어릴 때 함께 플레이했던 게임 칩", 30000,
-                    ItemCategory.Gift, iconPath: "11_gift_game_chip", targetHeroine: "Yeeun", loveEffect2: 2, loveEffect3: 3),
+                    ItemCategory.Gift, iconPath: "11_gift_game_chip", targetHeroine: "HaYeEun", loveEffect2: 2, loveEffect3: 3),
 
                 // ══════════════════════════════════════
                 //  선물 — 서다은 (No.2, 7, 12)
                 // ══════════════════════════════════════
                 new ItemData("gift_album", "<트로피컬 글로우> 앨범", "세계적 인기 밴드 <트로피컬 글로우> 앨범", 30000,
-                    ItemCategory.Gift, iconPath: "2_gift_album", targetHeroine: "Daeun", loveEffect2: 2, loveEffect3: 3),
+                    ItemCategory.Gift, iconPath: "2_gift_album", targetHeroine: "SeoDaEun", loveEffect2: 2, loveEffect3: 3),
                 new ItemData("gift_bread", "알밤달밤 밤식빵", "학교 근처 유명 베이커리 [밤밤밤]의 밤식빵", 8000,
-                    ItemCategory.Gift, iconPath: "7_gift_bread", targetHeroine: "Daeun", loveEffect2: 1, loveEffect3: 2),
+                    ItemCategory.Gift, iconPath: "7_gift_bread", targetHeroine: "SeoDaEun", loveEffect2: 1, loveEffect3: 2),
                 new ItemData("gift_concert_ticket", "<트로피컬 글로우> 내한 콘서트 티켓", "<트로피컬 글로우> 내한 콘서트 티켓", 100000,
-                    ItemCategory.Gift, iconPath: "12_gift_concert_ticket", targetHeroine: "Daeun", loveEffect2: 3, loveEffect3: 5),
+                    ItemCategory.Gift, iconPath: "12_gift_concert_ticket", targetHeroine: "SeoDaEun", loveEffect2: 3, loveEffect3: 5),
 
                 // ══════════════════════════════════════
                 //  선물 — 이봄 (No.3, 8, 13)
                 // ══════════════════════════════════════
                 new ItemData("gift_rabbit_keyring", "토끼 인형 키링", "미니 토끼 인형 키링", 20000,
-                    ItemCategory.Gift, iconPath: "3_gift_rabbit_keyring", targetHeroine: "Bom", loveEffect2: 2, loveEffect3: 3),
+                    ItemCategory.Gift, iconPath: "3_gift_rabbit_keyring", targetHeroine: "LeeBom", loveEffect2: 2, loveEffect3: 3),
                 new ItemData("gift_strawberry_milk", "[내 맘에 딸기가득] 딸기우유", "귀여운 패키지의 딸기우유", 3000,
-                    ItemCategory.Gift, iconPath: "8_gift_strawberry_milk", targetHeroine: "Bom", loveEffect2: 1, loveEffect3: 2),
+                    ItemCategory.Gift, iconPath: "8_gift_strawberry_milk", targetHeroine: "LeeBom", loveEffect2: 1, loveEffect3: 2),
                 new ItemData("gift_popup_ticket", "<러블리톡> 팝업스토어 입장 확정 티켓", "<러블리톡> 팝업스토어 입장 확정 티켓", 60000,
-                    ItemCategory.Gift, iconPath: "13_gift_popup_ticket", targetHeroine: "Bom", loveEffect2: 3, loveEffect3: 4),
+                    ItemCategory.Gift, iconPath: "13_gift_popup_ticket", targetHeroine: "LeeBom", loveEffect2: 3, loveEffect3: 4),
 
                 // ══════════════════════════════════════
                 //  선물 — 도희원 (No.4, 9, 14)
                 // ══════════════════════════════════════
                 new ItemData("gift_soju", "한정판 소주 <여름, 레몬, 밤>", "소주 브랜드에서 새로 나온 과일 소주", 40000,
-                    ItemCategory.Gift, iconPath: "4_gift_soju", targetHeroine: "Heewon", loveEffect2: 3, loveEffect3: 4),
+                    ItemCategory.Gift, iconPath: "4_gift_soju", targetHeroine: "DoHeewon", loveEffect2: 3, loveEffect3: 4),
                 new ItemData("gift_diamond", "엠파이어 다이아몬드", "고급 위스키", 120000,
-                    ItemCategory.Gift, iconPath: "9_gift_diamond", targetHeroine: "Heewon", loveEffect2: 3, loveEffect3: 5),
+                    ItemCategory.Gift, iconPath: "9_gift_diamond", targetHeroine: "DoHeewon", loveEffect2: 3, loveEffect3: 5),
                 new ItemData("gift_ribbon", "리본 머리끈", "흰색 실크 리본 머리끈", 35000,
-                    ItemCategory.Gift, iconPath: "14_gift_ribbon", targetHeroine: "Heewon", loveEffect2: 2, loveEffect3: 3),
+                    ItemCategory.Gift, iconPath: "14_gift_ribbon", targetHeroine: "DoHeewon", loveEffect2: 2, loveEffect3: 3),
 
                 // ══════════════════════════════════════
                 //  선물 — 로아 (No.5, 10, 15)

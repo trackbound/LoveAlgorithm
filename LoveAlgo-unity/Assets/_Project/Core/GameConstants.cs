@@ -67,10 +67,10 @@ namespace LoveAlgo
                 _heroines = new HeroineConfig[]
                 {
                     new("Roa",    "로아",   46, "Fatigue"),
-                    new("Yeun",   "하예은", 32, "Str"),
-                    new("Daeun",  "서다은", 35, "Int"),
-                    new("Bom",    "이봄",   39, "Soc"),
-                    new("Heewon", "도희원", 43, "Per"),
+                    new("HaYeEun",   "하예은", 32, "Str"),
+                    new("SeoDaEun",  "서다은", 35, "Int"),
+                    new("LeeBom",    "이봄",   39, "Soc"),
+                    new("DoHeewon", "도희원", 43, "Per"),
                 };
                 _actionsPerDay = 2;
                 _maxDay = 30;

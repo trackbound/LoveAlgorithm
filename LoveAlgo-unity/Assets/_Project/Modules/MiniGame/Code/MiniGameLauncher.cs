@@ -12,7 +12,7 @@ namespace LoveAlgo.MiniGame
     /// 
     /// CSV Flow 커맨드에서 호출:
     ///   ,Flow,,MiniGame:CherryBlossom:Roa,await
-    ///   ,Flow,,MiniGame:Jogging:Yeun,await
+    ///   ,Flow,,MiniGame:Jogging:HaYeEun,await
     /// 
     /// 형식: MiniGame:{게임이름}:{히로인ID}
     /// 

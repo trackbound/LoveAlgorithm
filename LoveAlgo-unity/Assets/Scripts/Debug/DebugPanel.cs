@@ -153,10 +153,10 @@ namespace LoveAlgo.DevTools
             // ── Love ──
             GUILayout.Label("<b>Love (호감도)</b>", section);
             DrawLoveRow("로아", "Roa", ref editLoveRoa, gs);
-            DrawLoveRow("다은", "Daeun", ref editLoveDaeun, gs);
-            DrawLoveRow("예은", "Yeeun", ref editLoveYeeun, gs);
-            DrawLoveRow("희원", "Heewon", ref editLoveHeewon, gs);
-            DrawLoveRow("봄", "Bom", ref editLoveBom, gs);
+            DrawLoveRow("다은", "SeoDaEun", ref editLoveDaeun, gs);
+            DrawLoveRow("예은", "HaYeEun", ref editLoveYeeun, gs);
+            DrawLoveRow("희원", "DoHeewon", ref editLoveHeewon, gs);
+            DrawLoveRow("봄", "LeeBom", ref editLoveBom, gs);
             GUILayout.Space(6);
             DrawLine();
 
