@@ -32,7 +32,7 @@ namespace LoveAlgo.Title
             {
                 if (_titlePanel != null) return _titlePanel;
                 if (titlePanelSceneInstance != null) return _titlePanel = titlePanelSceneInstance;
-                return _titlePanel = SpawnUI(titlePanelPrefab, UIGroup.Scene);
+                return _titlePanel = SpawnUI(titlePanelPrefab, UIGroup.Title);
             }
         }
 
@@ -42,7 +42,7 @@ namespace LoveAlgo.Title
             {
                 if (_usernameUI != null) return _usernameUI;
                 if (usernameUISceneInstance != null) return _usernameUI = usernameUISceneInstance;
-                return _usernameUI = SpawnUI(usernameUIPrefab, UIGroup.Scene);
+                return _usernameUI = SpawnUI(usernameUIPrefab, UIGroup.Title);
             }
         }
 

@@ -101,7 +101,7 @@ namespace LoveAlgo.Simulation
                 Debug.LogWarning("[SimulationModule] quickMenu (sceneInstance or prefab) not assigned");
                 return;
             }
-            var parent = UIManager.Instance?.GetGroupRoot(UIGroup.Simulate);
+            var parent = UIManager.Instance?.GetGroupRoot(UIGroup.Simulation);
             _quickMenu = parent != null ? Instantiate(quickMenuPrefab, parent) : Instantiate(quickMenuPrefab);
             _quickMenu.name = quickMenuPrefab.name;
             _quickMenu.gameObject.SetActive(false);

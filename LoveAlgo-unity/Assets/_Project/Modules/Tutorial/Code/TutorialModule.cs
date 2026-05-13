@@ -23,7 +23,7 @@ namespace LoveAlgo.Tutorial
             {
                 if (_overlay == null && overlayPrefab != null)
                 {
-                    var parent = UIManager.Instance?.GetGroupRoot(UIGroup.Simulate);
+                    var parent = UIManager.Instance?.GetGroupRoot(UIGroup.Simulation);
                     _overlay = parent != null ? Instantiate(overlayPrefab, parent) : Instantiate(overlayPrefab);
                     _overlay.name = overlayPrefab.name;
                     _overlay.gameObject.SetActive(false);

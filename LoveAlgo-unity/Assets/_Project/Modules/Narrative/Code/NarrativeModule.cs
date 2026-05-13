@@ -38,12 +38,12 @@ namespace LoveAlgo.Narrative
             get
             {
                 if (_dialogueUI != null) return _dialogueUI;
-                _dialogueUI = ResolveOrSpawn(dialogueUISceneInstance, dialogueUIPrefab, UIGroup.Story);
+                _dialogueUI = ResolveOrSpawn(dialogueUISceneInstance, dialogueUIPrefab, UIGroup.Narrative);
 
                 // DialogueShowButton 동반 (대사창 항상 동반)
                 if (_dialogueShowButton == null)
                 {
-                    _dialogueShowButton = ResolveOrSpawn(dialogueShowButtonSceneInstance, dialogueShowButtonPrefab, UIGroup.Story);
+                    _dialogueShowButton = ResolveOrSpawn(dialogueShowButtonSceneInstance, dialogueShowButtonPrefab, UIGroup.Narrative);
                     if (_dialogueShowButton != null && _dialogueUI != null)
                     {
                         _dialogueShowButton.Bind(_dialogueUI);
@@ -68,7 +68,7 @@ namespace LoveAlgo.Narrative
             get
             {
                 if (_choicePopup != null) return _choicePopup;
-                _choicePopup = ResolveOrSpawn(choicePopupSceneInstance, choicePopupPrefab, UIGroup.Story);
+                _choicePopup = ResolveOrSpawn(choicePopupSceneInstance, choicePopupPrefab, UIGroup.Narrative);
                 return _choicePopup;
             }
         }

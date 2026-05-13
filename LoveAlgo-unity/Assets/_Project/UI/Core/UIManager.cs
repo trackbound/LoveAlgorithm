@@ -19,9 +19,12 @@ namespace LoveAlgo.UI
     {
         [Header("UI Group Roots (인스턴스 부모)")]
         [Tooltip("비워두면 UIManager 하위에 자동 생성. 모듈이 GetGroupRoot()로 빌려 씀.")]
-        [SerializeField] Transform storyRoot;
-        [SerializeField] Transform simulateRoot;
-        [SerializeField] Transform sceneRoot;
+        [UnityEngine.Serialization.FormerlySerializedAs("storyRoot")]
+        [SerializeField] Transform narrativeRoot;
+        [UnityEngine.Serialization.FormerlySerializedAs("simulateRoot")]
+        [SerializeField] Transform simulationRoot;
+        [UnityEngine.Serialization.FormerlySerializedAs("sceneRoot")]
+        [SerializeField] Transform titleRoot;
 
         // ── UI 인스턴스 호환성 wrapper (모듈 위임) ───────────────────
         // 옛 호출자(UIManager.Instance.X)를 위한 1줄 wrapper. 새 코드는 Services.Get<I*>() 직접 사용.
@@ -40,9 +43,9 @@ namespace LoveAlgo.UI
         {
             switch (group)
             {
-                case UIGroup.Story:    return storyRoot    != null ? storyRoot    : EnsureGroup(ref storyRoot,    "Story",    0);
-                case UIGroup.Simulate: return simulateRoot != null ? simulateRoot : EnsureGroup(ref simulateRoot, "Simulate", 1);
-                case UIGroup.Scene:    return sceneRoot    != null ? sceneRoot    : EnsureGroup(ref sceneRoot,    "Scene",    2);
+                case UIGroup.Narrative:  return narrativeRoot  != null ? narrativeRoot  : EnsureGroup(ref narrativeRoot,  "Narrative",  0);
+                case UIGroup.Simulation: return simulationRoot != null ? simulationRoot : EnsureGroup(ref simulationRoot, "Simulation", 1);
+                case UIGroup.Title:      return titleRoot      != null ? titleRoot      : EnsureGroup(ref titleRoot,      "Title",      2);
             }
             return transform;
         }
@@ -116,12 +119,12 @@ namespace LoveAlgo.UI
         }
     }
 
-    /// <summary>UI 인스턴스 부모 그룹 — 모듈이 자기 UI를 spawn할 때 사용.</summary>
+    /// <summary>UI 인스턴스 부모 그룹 (모듈명 1:1 매핑) — 모듈이 자기 UI를 spawn할 때 사용.</summary>
     public enum UIGroup
     {
-        Story,      // DialogueUI, ChoicePopup, DialogueShowButton 등
-        Simulate,   // ScheduleUI, ShopUI, QuickMenu, TutorialOverlay 등
-        Scene       // TitlePanel, UsernameUI 등 씬 단위
+        Narrative,    // DialogueUI, ChoicePopup, DialogueShowButton 등
+        Simulation,   // ScheduleUI, ShopUI, QuickMenu, TutorialOverlay 등
+        Title         // TitlePanel, UsernameUI 등 진입 화면
     }
 
     public enum MainUIType

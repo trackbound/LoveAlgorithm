@@ -29,7 +29,7 @@ namespace LoveAlgo.Shop
                 if (shopUISceneInstance != null) { _shopUI = shopUISceneInstance; return _shopUI; }
                 if (shopUIPrefab != null)
                 {
-                    var parent = UIManager.Instance?.GetGroupRoot(UIGroup.Simulate);
+                    var parent = UIManager.Instance?.GetGroupRoot(UIGroup.Simulation);
                     _shopUI = parent != null ? Instantiate(shopUIPrefab, parent) : Instantiate(shopUIPrefab);
                     _shopUI.name = shopUIPrefab.name;
                     _shopUI.gameObject.SetActive(false);

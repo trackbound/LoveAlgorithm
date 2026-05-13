@@ -209,10 +209,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.Title.TitleModule
   titlePanelSceneInstance: {fileID: 0}
-  titlePanelPrefab: {fileID: 0}
+  titlePanelPrefab: {fileID: 296323354977529891, guid: 34d42ae26237f8e4e82afd4b26b57ccf, type: 3}
   usernameUISceneInstance: {fileID: 0}
-  usernameUIPrefab: {fileID: 0}
-  extraPopupPrefab: {fileID: 0}
+  usernameUIPrefab: {fileID: 2219607363820863215, guid: 03a2d69ded2683e4aafb110e786cc14a, type: 3}
+  extraPopupPrefab: {fileID: 4770080001347497662, guid: f9debfe137247e74d9caff92830af630, type: 3}
 --- !u!1 &153953600
 GameObject:
   m_ObjectHideFlags: 0
@@ -413,6 +413,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 2099544370}
+  - {fileID: 1753965219}
   m_Father: {fileID: 578211415}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &300471521
@@ -2012,7 +2013,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e93246ca5483d0f4d93ce5249e9681fb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.Tutorial.TutorialModule
-  overlayPrefab: {fileID: 0}
+  overlayPrefab: {fileID: 1603930875630844536, guid: a11ff19b8380a9045bf9af4fc4f64912, type: 3}
 --- !u!1 &878805401
 GameObject:
   m_ObjectHideFlags: 0
@@ -3506,6 +3507,52 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1738353396}
   m_CullTransparentMesh: 1
+--- !u!1 &1753965218
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1753965219}
+  - component: {fileID: 1753965220}
+  m_Layer: 0
+  m_Name: StoryInputHandler
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1753965219
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1753965218}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 300471520}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1753965220
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1753965218}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 25110f17adb02384badaa4d16ebbc5c3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.Core.StoryInputHandler
+  skipInterval: 0.08
+  ctrlSkipInterval: 0.02
 --- !u!1 &1761437131
 GameObject:
   m_ObjectHideFlags: 0
@@ -3585,7 +3632,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1824293772}
   m_Layer: 5
-  m_Name: Simulate
+  m_Name: Simulation
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4252,9 +4299,8 @@ GameObject:
   m_Component:
   - component: {fileID: 2099544370}
   - component: {fileID: 2099544372}
-  - component: {fileID: 2099544373}
   m_Layer: 0
-  m_Name: StorySystem
+  m_Name: ScriptRunner
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4288,20 +4334,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.Story.ScriptRunner
   scriptAsset: {fileID: 4900000, guid: 8e7b239da5a69464bac9c0b23538f26d, type: 3}
---- !u!114 &2099544373
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2099544369}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 25110f17adb02384badaa4d16ebbc5c3, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.Core.StoryInputHandler
-  skipInterval: 0.08
-  ctrlSkipInterval: 0.02
 --- !u!1 &2133047569
 GameObject:
   m_ObjectHideFlags: 0
@@ -4312,7 +4344,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2133047570}
   m_Layer: 5
-  m_Name: Story
+  m_Name: Narrative
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4347,7 +4379,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2133644003}
   m_Layer: 5
-  m_Name: Scene
+  m_Name: Title
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

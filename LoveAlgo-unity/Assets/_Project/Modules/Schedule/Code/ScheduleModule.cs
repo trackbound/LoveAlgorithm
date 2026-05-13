@@ -29,7 +29,7 @@ namespace LoveAlgo.Schedule
                 if (scheduleUISceneInstance != null) { _scheduleUI = scheduleUISceneInstance; return _scheduleUI; }
                 if (scheduleUIPrefab != null)
                 {
-                    var parent = UIManager.Instance?.GetGroupRoot(UIGroup.Simulate);
+                    var parent = UIManager.Instance?.GetGroupRoot(UIGroup.Simulation);
                     _scheduleUI = parent != null ? Instantiate(scheduleUIPrefab, parent) : Instantiate(scheduleUIPrefab);
                     _scheduleUI.name = scheduleUIPrefab.name;
                     _scheduleUI.gameObject.SetActive(false);
