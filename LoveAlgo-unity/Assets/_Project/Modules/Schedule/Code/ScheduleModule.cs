@@ -35,7 +35,7 @@ namespace LoveAlgo.Schedule
             }
         }
 
-        public SimulationMode Mode => SimulationMode.Schedule;
+        public LoveAlgo.Simulation.SimulationMode Mode => LoveAlgo.Simulation.SimulationMode.Schedule;
 
         void Awake()
         {

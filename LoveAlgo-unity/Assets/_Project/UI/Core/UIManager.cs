@@ -2,6 +2,7 @@ using LoveAlgo.Common;
 using LoveAlgo.Narrative;
 using LoveAlgo.Schedule;
 using LoveAlgo.Shop;
+using LoveAlgo.Simulation;
 using LoveAlgo.Story;
 using LoveAlgo.Title;
 using LoveAlgo.Tutorial;
@@ -32,6 +33,7 @@ namespace LoveAlgo.UI
         public TitlePanel TitlePanel => Services.Get<ITitle>()?.TitlePanel;
         public UsernameUI UsernameUI => Services.Get<ITitle>()?.UsernameUI;
         public TutorialOverlay TutorialOverlay => Services.Get<ITutorial>()?.Overlay;
+        public QuickMenu QuickMenu => Services.Get<ISimulation>()?.QuickMenu;
 
         /// <summary>UI 인스턴스 부모 그룹 — 모듈이 자기 UI를 spawn할 때 사용.</summary>
         public Transform GetGroupRoot(UIGroup group)
@@ -67,19 +69,28 @@ namespace LoveAlgo.UI
             if (ui != null) ui.gameObject.SetActive(active);
         }
 
-        /// <summary>모든 메인 UI 숨기기 (생성된 인스턴스에 한해).</summary>
+        /// <summary>모든 메인 UI 숨기기 + 시뮬레이션 컨텍스트 종료 (QuickMenu 비활성 포함).</summary>
         public void HideAll()
         {
             var narr = Services.Get<INarrative>();
             SetActiveIfExists(narr?.DialogueUI, false);
-            SetActiveIfExists(Services.Get<ISchedule>()?.ScheduleUI, false);
+
+            // 시뮬레이션 컨텍스트 종료 — ScheduleUI/ShopUI/QuickMenu 모두 정리
+            var sim = Services.Get<ISimulation>();
+            if (sim != null && sim.IsActive) sim.ExitSimulation();
+            else
+            {
+                SetActiveIfExists(Services.Get<ISchedule>()?.ScheduleUI, false);
+                SetActiveIfExists(Services.Get<IShop>()?.ShopUI, false);
+            }
+
             var title = Services.Get<ITitle>();
             SetActiveIfExists(title?.TitlePanel, false);
             SetActiveIfExists(title?.UsernameUI, false);
             PopupManager.Instance?.Get<PlaceNotification>()?.HideImmediate();
         }
 
-        /// <summary>특정 UI만 표시 (나머지 숨김). 표시 대상은 모듈 lazy-instantiate.</summary>
+        /// <summary>특정 UI만 표시. Schedule은 시뮬레이션 컨텍스트 진입(QuickMenu 자동 활성).</summary>
         public void ShowOnly(MainUIType type)
         {
             HideAll();
@@ -90,7 +101,10 @@ namespace LoveAlgo.UI
                     SetActiveIfExists(DialogueUI, true);
                     break;
                 case MainUIType.Schedule:
-                    SetActiveIfExists(ScheduleUI, true);
+                    // 시뮬레이션 컨텍스트 진입 — SimulationModule이 ScheduleUI + QuickMenu 활성
+                    var sim = Services.Get<ISimulation>();
+                    if (sim != null) sim.EnterSimulation();
+                    else SetActiveIfExists(ScheduleUI, true); // 폴백
                     break;
                 case MainUIType.Title:
                     SetActiveIfExists(TitlePanel, true);

@@ -164,6 +164,53 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.Phone.PhoneModule
   phonePanel: {fileID: 0}
+--- !u!1 &105329140
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 105329141}
+  - component: {fileID: 105329142}
+  m_Layer: 0
+  m_Name: TitleModule
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &105329141
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 105329140}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 578211415}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &105329142
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 105329140}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d17fdebbd178e724e930deb789780df0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.Title.TitleModule
+  titlePanelPrefab: {fileID: 0}
+  usernameUIPrefab: {fileID: 0}
+  extraPopupPrefab: {fileID: 0}
 --- !u!1 &153953600
 GameObject:
   m_ObjectHideFlags: 0
@@ -253,6 +300,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.Narrative.NarrativeModule
   logPopupPrefab: {fileID: 0}
+  dialogueUIPrefab: {fileID: 0}
+  dialogueShowButtonPrefab: {fileID: 0}
+  choicePopupPrefab: {fileID: 0}
 --- !u!1 &433971053
 GameObject:
   m_ObjectHideFlags: 0
@@ -665,6 +715,9 @@ Transform:
   - {fileID: 1707754590}
   - {fileID: 153953601}
   - {fileID: 1352834072}
+  - {fileID: 105329141}
+  - {fileID: 856263770}
+  - {fileID: 671427926}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &619394800
@@ -856,6 +909,52 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: da1bf460045660448b25bf74a24deb4b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.Modules.Audio.AudioModule
+--- !u!1 &671427925
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 671427926}
+  - component: {fileID: 671427927}
+  m_Layer: 0
+  m_Name: SimulationModule
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &671427926
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 671427925}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 578211415}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &671427927
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 671427925}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e69b87c988f9794da5fb321a0c737ee, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.Simulation.SimulationModule
+  quickMenuPrefab: {fileID: 0}
+  mainMode: 1
 --- !u!1 &735747607
 GameObject:
   m_ObjectHideFlags: 0
@@ -1018,6 +1117,51 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.Settings.SettingsModule
   settingsPopupPrefab: {fileID: 0}
+--- !u!1 &856263769
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 856263770}
+  - component: {fileID: 856263771}
+  m_Layer: 0
+  m_Name: TutorialModule
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &856263770
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 856263769}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 578211415}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &856263771
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 856263769}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e93246ca5483d0f4d93ce5249e9681fb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.Tutorial.TutorialModule
+  overlayPrefab: {fileID: 0}
 --- !u!1001 &986594965
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1641,16 +1785,6 @@ MonoBehaviour:
   storyRoot: {fileID: 2133047570}
   simulateRoot: {fileID: 1824293772}
   sceneRoot: {fileID: 2133644003}
-  dialogueUIPrefab: {fileID: 6042698343353078107, guid: 8f092ce31f1df914daecce527e0ca897, type: 3}
-  dialogueShowButtonPrefab: {fileID: 269105233623496650, guid: 6a7bbfd502a9125429af984db31c26d5, type: 3}
-  choiceUIPrefab: {fileID: 7261170059170272204, guid: acaa06f849d639a4a9e0eb61a2614ec2, type: 3}
-  placeUIPrefab: {fileID: 6672374895635021418, guid: 87323f86563898a4fbb7ff5e229e25a4, type: 3}
-  scheduleUIPrefab: {fileID: 1160599857170623701, guid: 1c97bed1a0ce65a46a93618441eeec83, type: 3}
-  shopUIPrefab: {fileID: 8774635638947415217, guid: f0a421de39572e343aab337ec6443d6b, type: 3}
-  quickMenuUIPrefab: {fileID: 1830715381788321002, guid: 47e2faf407064c84fa70bbc2d5caf9e4, type: 3}
-  tutorialOverlayPrefab: {fileID: 1603930875630844536, guid: a11ff19b8380a9045bf9af4fc4f64912, type: 3}
-  titleUIPrefab: {fileID: 296323354977529891, guid: 34d42ae26237f8e4e82afd4b26b57ccf, type: 3}
-  usernameUIPrefab: {fileID: 2219607363820863215, guid: 03a2d69ded2683e4aafb110e786cc14a, type: 3}
 --- !u!1 &1707754589
 GameObject:
   m_ObjectHideFlags: 0
@@ -1695,6 +1829,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 529fe33cf5e8a8545b6a8b6935b1d45f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.Shop.ShopModule
+  shopUIPrefab: {fileID: 0}
 --- !u!1 &1824293771
 GameObject:
   m_ObjectHideFlags: 0
@@ -1863,6 +1998,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4352d0c78adeb8b44a872b7af1966698, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.Schedule.ScheduleModule
+  scheduleUIPrefab: {fileID: 0}
 --- !u!1 &1973111779
 GameObject:
   m_ObjectHideFlags: 0
@@ -2379,10 +2515,7 @@ MonoBehaviour:
   dimmer: {fileID: 7978846008589850060}
   dimmerCanvasGroup: {fileID: 2087042009980803585}
   dimmerFadeDuration: 0.2
-  popupPrefabs:
-  - {fileID: 4152849764515966139, guid: 961083e4c45886447a4b06ff909b57ac, type: 3}
-  - {fileID: 5410031854144606818, guid: b52ee6fab345b5547b7e4835919c7cfb, type: 3}
-  - {fileID: 8386790407202011702, guid: 7b0ac3404e82ea1429a056520da6c3ce, type: 3}
+  popupPrefabs: []
 --- !u!114 &2736071673449258952
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -35,7 +35,7 @@ namespace LoveAlgo.Shop
             }
         }
 
-        public SimulationMode Mode => SimulationMode.Shop;
+        public LoveAlgo.Simulation.SimulationMode Mode => LoveAlgo.Simulation.SimulationMode.Shop;
 
         void Awake()
         {

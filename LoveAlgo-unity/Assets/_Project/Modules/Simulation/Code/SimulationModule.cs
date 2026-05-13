@@ -27,6 +27,11 @@ namespace LoveAlgo.Simulation
         public SimulationMode CurrentMode { get; private set; } = SimulationMode.None;
         public bool IsActive => CurrentMode != SimulationMode.None;
 
+        public QuickMenu QuickMenu
+        {
+            get { EnsureQuickMenu(); return _quickMenu; }
+        }
+
         public event Action OnEntered;
         public event Action OnExited;
         public event Action<SimulationMode> OnSubModeChanged;
