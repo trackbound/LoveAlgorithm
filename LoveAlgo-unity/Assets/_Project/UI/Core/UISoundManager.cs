@@ -125,7 +125,6 @@ namespace LoveAlgo.UI
             {
                 RegisterButton(button);
             }
-            Debug.Log($"[UISoundManager] {registeredButtons.Count}개 버튼에 사운드 적용");
         }
 
         /// <summary>

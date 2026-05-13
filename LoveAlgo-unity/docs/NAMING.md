@@ -112,28 +112,28 @@
 
 ## 씬 GameObject 네이밍
 
-씬 하이어라키도 코드 클래스명과 동일하게 (1:1 매핑):
+씬 하이어라키 표준 (현재 적용 완료, 그룹명 = 모듈명):
 
 ```
 Main/
-  _Bootstrap/        부트스트랩, GameManager, SessionController
-  _Modules/          모든 IService 등록 GameObject (1개 1행)
-    AudioModule
-    SaveModule
-    StageModule
-    SettingsModule
-    NarrativeModule
-    LockScreenModule
-    ...
-  _Stage/            BG/Char/CG 렌더링 (StageRig 등)
-  _UI/
-    HUD/             상시 표시 (없으면 비어둠)
-    Notifications/   PlaceNotification, ToastNotification
-    Contextual/      ScheduleUI, ShopUI, QuickMenu
-    Modals/          PopupManager 산하 (실 모달)
-    Panels/          LockScreenPanel, TitlePanel (게임 상태 단위)
-  _Debug/
+  Main Camera
+  EventSystem
+  _Bootstrap/         시스템 진입점 (Bootstrapper, GameManager)
+  _Modules/           모든 IService 등록 GameObject (1개 1행)
+    AudioModule, AffinityModule, DayLoopModule, LockScreenModule,
+    MiniGameModule, NarrativeModule (자식: StorySystem),
+    PhoneModule, SaveModule, ScheduleModule, SettingsModule,
+    ShopModule, StageModule, StatsModule, TitleModule,
+    TutorialModule, SimulationModule
+  _Stage/             Canvas(Camera mode) — ScreenFX, StageRig
+  _Popup/             Canvas(Overlay mode) — Dimmer/Modal/Top (PopupManager 산하)
+  _UI/                Canvas(Overlay mode) — 메인 UI 그룹
+    Narrative/        DialogueUI, ChoicePopup, DialogueShowButton
+    Simulation/       ScheduleUI, ShopUI, QuickMenu, TutorialOverlay
+    Title/            TitlePanel, UsernameUI
 ```
+
+**Canvas 분리 정책**: `_UI`(메인)과 `_Popup`(모달/알림) Canvas 분리 유지 — 팝업 rebuild가 메인 UI rebuild 트리거 안 함 (Unity 권장).
 
 ---
 
@@ -142,3 +142,42 @@ Main/
 새 코드 작성 또는 기존 코드 변경 시 이 컨벤션 위반이 발견되면:
 1. 가능하면 즉시 rename (작은 변경)
 2. 큰 변경(상속 변경 등)은 `docs/MODULE_STRUCTURE.md`에 메모 후 별도 작업
+
+---
+
+## 팝업 등록 원칙: 소유자가 누구인가?
+
+모든 팝업은 `PopupBase` 상속. 등록 경로는 **소유 관계**로 결정:
+
+| 분류 | 소유자 | 등록 방식 | 예시 |
+|------|--------|-----------|------|
+| **도메인 팝업** | 특정 모듈 | 모듈 SerializeField → Awake에서 `PopupManager.Register(prefab)` | `SaveLoadPopup`(Save), `SettingsPopup`(Settings), `LogPopup`(Narrative), `ExtraPopup`(Title), `ScheduleHelpPopup`(Schedule) |
+| **공용 팝업** | 무소속 (UI 인프라) | PopupManager.`popupPrefabs` SerializeField 직접 등록 | `AlertPopup`, `ConfirmPopup`, `ToastNotification`, `PlaceNotification` |
+
+**결정 흐름**:
+1. 이 팝업은 특정 도메인(Save/Schedule/Title 등) 전용인가?
+   - **YES** → 해당 모듈이 SerializeField + Register
+   - **NO** (모든 모듈이 호출) → PopupManager.popupPrefabs
+
+---
+
+## 씬 인스턴스 vs Prefab 바인딩
+
+UI prefab 등록 방식 2가지 — 모듈은 두 SerializeField(`xxxSceneInstance` + `xxxPrefab`) 지원:
+
+| 패턴 | 언제 사용 | 장점 |
+|------|----------|------|
+| **씬 인스턴스 배치** (`xxxSceneInstance`) | 자주 사용·상시 표시 | 인스펙터 디버깅 편함, 첫 표시 hitch 없음, Canvas batching 안정 |
+| **Prefab spawn** (`xxxPrefab`) | 가끔·짧게 | 메모리 절약 (안 쓰면 X), 씬 가벼움, prefab 변경 자동 반영 |
+
+**우선순위**: SceneInstance 있으면 사용 → 없으면 Prefab → 없으면 null
+
+**현재 분류**:
+- **씬 인스턴스 권장**: DialogueUI, DialogueShowButton, ChoicePopup, ScheduleUI, ShopUI, QuickMenu
+- **Prefab 바인딩**: TitlePanel, UsernameUI, ExtraPopup, TutorialOverlay, LogPopup, SaveLoadPopup, SettingsPopup, PhonePopup, AlertPopup, ConfirmPopup, ToastNotification, PlaceNotification, ScheduleHelpPopup, ShopItemTooltip
+
+**작업 흐름** (씬 인스턴스 전환):
+1. Prefab을 `_UI/{Group}/` 하위로 drag (Narrative/Simulation/Title 중 적절한 그룹)
+2. 인스펙터에서 `Active` 체크 해제
+3. 해당 모듈 인스펙터의 `xxxSceneInstance` 슬롯에 드래그
+4. `xxxPrefab` 필드는 비워둠 (또는 백업으로 유지)

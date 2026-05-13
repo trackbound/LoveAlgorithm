@@ -221,10 +221,10 @@ Services.Get<IStage>().ShowCharacter("Roa", "Default", "C");
 | **Shop** | `_Project/Modules/Shop/Code/` | (완료) | ✅ | 파일 이동 + `IShop` + `ShopModule`. Inventory 분리는 기능 작업 시 |
 | **Phone** | `_Project/Modules/Phone/Code/` | (완료) | ✅ | 파일 이동 + `IPhone` + `PhoneModule` |
 | **MiniGame** | `_Project/Modules/MiniGame/Code/` | (완료) | ✅ | 파일 이동 + `IMiniGame` + `MiniGameModule` |
-| **Title** | `_Project/Modules/Title/Code/` | (인터페이스 도입) | 🟦 | `ITitle` + `TitleModule` (TitlePanel/UsernameUI lazy spawn + ExtraPopup PopupManager 등록). UI 인스펙터 바인딩 + UIManager 정리는 별도 |
+| **Title** | `_Project/Modules/Title/Code/` | (완료) | ✅ | `ITitle` + `TitleModule` (TitlePanel/UsernameUI 씬 인스턴스+prefab 혼합 + ExtraPopup PopupManager 등록) |
 | **Settings** | `_Project/Modules/Settings/Code/` | (완료) | ✅ | `ISettings` + `SettingsModule` (PlayerPrefs 흡수 + IAudio/INarrative 경유 적용). SettingsPopup 정적 결합 0 |
-| **Tutorial** | `_Project/Modules/Tutorial/Code/` | (인터페이스 도입) | 🟦 | `ITutorial` + `TutorialModule` (TutorialOverlay lazy spawn). UI 인스펙터 바인딩 + UIManager 정리는 별도 |
-| **Simulation** | `_Project/Modules/Simulation/Code/` | (신규) | 🟦 | `ISimulation` + `ISimulationSubMode` + `SimulationMode` enum + `SimulationModule`. QuickMenu 호스팅, sub-mode 자기 등록 패턴. Schedule/Shop이 sub-mode 구현 + 호출자 갱신 별도 |
+| **Tutorial** | `_Project/Modules/Tutorial/Code/` | (완료) | ✅ | `ITutorial` + `TutorialModule` (TutorialOverlay lazy spawn) |
+| **Simulation** | `_Project/Modules/Simulation/Code/` | (완료) | ✅ | `ISimulation` + `ISimulationSubMode` + `SimulationMode` enum + `SimulationModule`. QuickMenu 호스팅, Schedule/Shop이 sub-mode 자기 등록. OCP 준수 |
 | **UI 인프라** | `_Project/UI/{Core,Components,Popups,Notifications,Contextual}/` | (완료) | ✅ | Core(`UIManager`/`PopupManager`/`UISoundManager`/`PopupBase`) + Components(버튼·탭) + Popups(Alert/Confirm) + Notifications(Place/Toast) + Contextual(QuickMenu) |
 | **Narrative UI** | `_Project/Modules/Narrative/UI/` | (UI만 이동) | 🔄 | DialogueUI/ChoiceUI/LogPopup + Log entries 이동. ScriptRunner 등 코어는 추후 |
 | **Save UI** | `_Project/Modules/Save/UI/` | (완료) | ✅ | SaveLoadPopup/SaveLoadSlot 이동 |
@@ -234,9 +234,15 @@ Services.Get<IStage>().ShowCharacter("Roa", "Default", "C");
 
 **프리팹 응집:** 모든 프리팹은 `_Project/Modules/{Name}/Prefabs/` 또는 `_Project/UI/{Cat}/Prefabs/`로 정리됨 (2025). 클래스명과 1:1.
 
-**팝업 등록 패턴 (모듈 응집):**
-- 공용 팝업 (Alert/Confirm/Toast): `PopupManager.popupPrefabs` SerializeField에 등록
-- 모듈 팝업 (Save/Settings/Log 등): 각 모듈의 SerializeField → Awake에서 `PopupManager.Register(prefab)` 자동 호출
+**팝업 등록 원칙 (소유자 기준):** 자세히는 `docs/NAMING.md` 참조.
+- 공용 팝업 (Alert/Confirm/Toast/Place 등 — 어느 모듈도 소유 X): `PopupManager.popupPrefabs` 직접 등록
+- 도메인 팝업 (Save/Settings/Log/Extra 등 — 모듈 소유): 모듈 SerializeField + Awake에서 `PopupManager.Register(prefab)`
+
+**UI 인스턴스 패턴 (씬 vs Prefab):** 모듈은 `xxxSceneInstance` + `xxxPrefab` 두 SerializeField 지원. 씬 인스턴스 우선.
+- 자주 사용 UI(DialogueUI/ChoicePopup/ScheduleUI/ShopUI/QuickMenu): 씬 배치 권장
+- 가끔 사용 UI: prefab spawn
+
+**호출 패턴:** `Services.Get<I*>().X` 일관. UIManager.Instance.X는 호환성 wrapper (점진 마이그레이션).
 
 **금지:** "정리만을 위한" 일괄 이동. 반드시 기능 작업과 묶어서 이주.
 
