@@ -16,16 +16,68 @@ namespace LoveAlgo.Narrative
     [DefaultExecutionOrder(-500)]
     public class NarrativeModule : MonoBehaviour, INarrative
     {
-        [Header("UI Prefab (모듈 응집)")]
+        [Header("UI Prefabs (모듈 응집)")]
         [SerializeField] LogPopup logPopupPrefab;
+        [SerializeField] DialogueUI dialogueUIPrefab;
+        [SerializeField] DialogueShowButton dialogueShowButtonPrefab;
+        [SerializeField] ChoicePopup choicePopupPrefab;
 
         LogPopup logPopupInstance;
+        DialogueUI _dialogueUI;
+        DialogueShowButton _dialogueShowButton;
+        ChoicePopup _choicePopup;
+
+        public DialogueUI DialogueUI
+        {
+            get
+            {
+                if (_dialogueUI == null && dialogueUIPrefab != null)
+                {
+                    _dialogueUI = SpawnUI(dialogueUIPrefab, UIGroup.Story);
+                    // DialogueShowButton 동반 생성 (대사창 항상 동반)
+                    if (dialogueShowButtonPrefab != null && _dialogueShowButton == null)
+                    {
+                        _dialogueShowButton = SpawnUI(dialogueShowButtonPrefab, UIGroup.Story);
+                        if (_dialogueShowButton != null)
+                        {
+                            _dialogueShowButton.Bind(_dialogueUI);
+                            _dialogueShowButton.gameObject.SetActive(true);
+                        }
+                    }
+                }
+                return _dialogueUI;
+            }
+        }
+
+        public DialogueShowButton DialogueShowButton
+        {
+            get
+            {
+                if (_dialogueShowButton == null) _ = DialogueUI; // 동반 spawn 트리거
+                return _dialogueShowButton;
+            }
+        }
+
+        public ChoicePopup ChoicePopup => _choicePopup != null
+            ? _choicePopup
+            : (_choicePopup = SpawnUI(choicePopupPrefab, UIGroup.Story));
 
         void Awake()
         {
             Services.Register<INarrative>(this);
             if (logPopupPrefab != null && PopupManager.Instance != null)
                 logPopupInstance = PopupManager.Instance.Register(logPopupPrefab);
+        }
+
+        T SpawnUI<T>(T prefab, UIGroup group) where T : MonoBehaviour
+        {
+            if (prefab == null) return null;
+            var parent = UIManager.Instance?.GetGroupRoot(group);
+            var inst = parent != null ? Instantiate(prefab, parent) : Instantiate(prefab);
+            inst.name = prefab.name;
+            inst.gameObject.SetActive(false);
+            UISoundManager.Instance?.BindButtonsInTransform(inst.transform);
+            return inst;
         }
 
         void OnDestroy()

@@ -1,17 +1,47 @@
 using LoveAlgo.Common;
+using LoveAlgo.Simulation;
+using LoveAlgo.UI;
 using UnityEngine;
 
 namespace LoveAlgo.Shop
 {
     /// <summary>
     /// 상점 모듈 진입점.
-    /// ShopManager 정적 클래스를 IShop 인터페이스로 노출.
+    /// ShopManager 정적 클래스를 IShop 인터페이스로 노출 + ShopUI lazy spawn.
+    /// 시뮬레이션 sub-mode(Shop)로서 SimulationModule에 자기 등록.
     /// 씬 하이어라키: _Modules/ShopModule
     /// </summary>
     [DefaultExecutionOrder(-500)]
-    public class ShopModule : MonoBehaviour, IShop
+    public class ShopModule : MonoBehaviour, IShop, ISimulationSubMode
     {
-        void Awake() => Services.Register<IShop>(this);
+        [Header("UI Prefab (모듈 응집)")]
+        [SerializeField] ShopUI shopUIPrefab;
+
+        ShopUI _shopUI;
+
+        public ShopUI ShopUI
+        {
+            get
+            {
+                if (_shopUI == null && shopUIPrefab != null)
+                {
+                    var parent = UIManager.Instance?.GetGroupRoot(UIGroup.Simulate);
+                    _shopUI = parent != null ? Instantiate(shopUIPrefab, parent) : Instantiate(shopUIPrefab);
+                    _shopUI.name = shopUIPrefab.name;
+                    _shopUI.gameObject.SetActive(false);
+                    UISoundManager.Instance?.BindButtonsInTransform(_shopUI.transform);
+                }
+                return _shopUI;
+            }
+        }
+
+        public SimulationMode Mode => SimulationMode.Shop;
+
+        void Awake()
+        {
+            Services.Register<IShop>(this);
+            Services.Get<ISimulation>()?.RegisterSubMode(this);
+        }
 
         void OnDestroy()
         {
@@ -19,6 +49,19 @@ namespace LoveAlgo.Shop
                 Services.Unregister<IShop>();
         }
 
+        // ── ISimulationSubMode ───────────────────────
+        public void Enter()
+        {
+            var ui = ShopUI;
+            if (ui != null) ui.gameObject.SetActive(true);
+        }
+
+        public void Exit()
+        {
+            if (_shopUI != null) _shopUI.gameObject.SetActive(false);
+        }
+
+        // ── IShop (도메인) ───────────────────────────
         public bool HasItem(string itemId) => ShopManager.GetItemCount(itemId) > 0;
         public int GetItemCount(string itemId) => ShopManager.GetItemCount(itemId);
 

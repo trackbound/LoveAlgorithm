@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using LoveAlgo.Story;
+using LoveAlgo.UI;
 using UnityEngine;
 
 namespace LoveAlgo.Narrative
@@ -46,5 +47,10 @@ namespace LoveAlgo.Narrative
         // ── UI 진입점 ────────────────────────────────
         /// <summary>대사 로그 팝업 표시.</summary>
         void ShowLogUI(IReadOnlyList<DialogueLogEntry> log);
+
+        // ── UI 인스턴스 노출 (모듈 응집 — UIManager.lazy spawn에서 이전) ────
+        DialogueUI DialogueUI { get; }
+        DialogueShowButton DialogueShowButton { get; }
+        ChoicePopup ChoicePopup { get; }
     }
 }

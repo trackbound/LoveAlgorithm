@@ -17,5 +17,8 @@ namespace LoveAlgo.Shop
 
         /// <summary>세션 버프 아이템 등록 (자유행동 1회 보정용).</summary>
         bool UseSessionBuff(string itemId, int currentDay);
+
+        /// <summary>ShopUI 인스턴스 (lazy spawn).</summary>
+        ShopUI ShopUI { get; }
     }
 }
