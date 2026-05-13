@@ -1,0 +1,52 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3fa5fa4972812ec40a32af5bd33022db, type: 3}
+  m_Name: LogUIDesignConfig
+  m_EditorClassIdentifier: Assembly-CSharp-Editor::LoveAlgo.NarrativeEditor.LogUIDesignConfig
+  entryPadLeft: 50
+  entryPadRight: 30
+  entryPadTop: 30
+  entryPadBottom: 30
+  entrySpacing: 36
+  headerWidth: 230
+  portraitSize: {x: 230, y: 229}
+  characterNameBoxSize: {x: 208, y: 99}
+  userNameBoxSize: {x: 218, y: 100}
+  headerPortraitToNameGap: -80.3
+  dialogueColumnPadLeft: 0
+  dialogueColumnPadRight: 0
+  dialogueColumnPadTop: 35
+  dialogueColumnPadBottom: 0
+  dialogueColumnSpacing: 19.3
+  bubblePadLeft: 26
+  bubblePadRight: 28
+  bubblePadTop: 14
+  bubblePadBottom: 14
+  bubbleMinHeight: 60
+  bodyFontSize: 22.2
+  nameFontSize: 16
+  narrationFontSize: 24
+  bodyCharacterSpacing: 0
+  bodyLineSpacing: 40
+  narrationLineSpacing: 0
+  charTextColor: {r: 0.18, g: 0.18, b: 0.22, a: 1}
+  userTextColor: {r: 1, g: 1, b: 1, a: 1}
+  narrTextColor: {r: 1, g: 1, b: 1, a: 1}
+  characterNameColor: {r: 1, g: 1, b: 1, a: 1}
+  userNameColor: {r: 1, g: 1, b: 1, a: 1}
+  bgTextboxCharacter: {fileID: 21300000, guid: 400ca891e3e7b77458772788a3d14ecd, type: 3}
+  bgTextboxUser: {fileID: 21300000, guid: 2fe32a63c937d594587d65c775eb5704, type: 3}
+  bgNameBoxCharacter: {fileID: 21300000, guid: 3e6129db69bf8ef408ccdfd98e5e4ec4, type: 3}
+  bgNameBoxUser: {fileID: 21300000, guid: 9c1cf79fd98fed04784d4b2f9cc99f97, type: 3}
+  bodyFont: {fileID: 11400000, guid: c7575f76679c25f41bc2ea08f741c6d6, type: 2}
+  nameFont: {fileID: 11400000, guid: 8fdf8d6681689524ba54788d30ad5191, type: 2}
+  narrationFont: {fileID: 11400000, guid: 6510102d93eb1d74ba6055e1f3a9a571, type: 2}
