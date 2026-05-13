@@ -231,6 +231,12 @@ Services.Get<IStage>().ShowCharacter("Roa", "Default", "C");
 | **LockScreen** | `_Project/Modules/LockScreen/` | (코드+UI스크립트 완료) | 🟦 | `ILockScreen`/`LockScreenController`/`LockScreenModule` + UI(`LockScreenPanel`/`ClockWidget`/`ToDoWidget`/`RoaMessageWidget`/`PasswordInputWidget`). 프리팹·콘텐츠·TitleUI 통합은 다음 단계 |
 | **Gacha** | 없음 | `Modules/Gacha/` | ⬜ | A4 (퍼즐 가챠 작업 시) |
 
+**프리팹 응집:** 모든 프리팹은 `_Project/Modules/{Name}/Prefabs/` 또는 `_Project/UI/{Cat}/Prefabs/`로 정리됨 (2025). 클래스명과 1:1.
+
+**팝업 등록 패턴 (모듈 응집):**
+- 공용 팝업 (Alert/Confirm/Toast): `PopupManager.popupPrefabs` SerializeField에 등록
+- 모듈 팝업 (Save/Settings/Log 등): 각 모듈의 SerializeField → Awake에서 `PopupManager.Register(prefab)` 자동 호출
+
 **금지:** "정리만을 위한" 일괄 이동. 반드시 기능 작업과 묶어서 이주.
 
 **래퍼 → 완전 이주 기준:**
