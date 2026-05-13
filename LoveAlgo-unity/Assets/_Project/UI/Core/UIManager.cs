@@ -56,12 +56,12 @@ namespace LoveAlgo.UI
                 {
                     // 캐시를 Spawn 전에 채우면 안 되지만, Spawn 직후 즉시 대입해야
                     // 하위 컴포넌트의 OnEnable 등에서 재귀 호출이 발생하지 않는다.
-                    var inst = Spawn(dialogueUIPrefab, GroupRoot.Story);
+                    var inst = Spawn(dialogueUIPrefab, UIGroup.Story);
                     _dialogueUI = inst;
                     // DialogueShowButton 동시 생성 (대사창 항상 동반)
                     if (dialogueShowButtonPrefab != null && _dialogueShowButton == null)
                     {
-                        _dialogueShowButton = Spawn(dialogueShowButtonPrefab, GroupRoot.Story);
+                        _dialogueShowButton = Spawn(dialogueShowButtonPrefab, UIGroup.Story);
                         if (_dialogueShowButton != null)
                         {
                             _dialogueShowButton.Bind(_dialogueUI);
@@ -83,24 +83,23 @@ namespace LoveAlgo.UI
                 return _dialogueShowButton;
             }
         }
-        public ChoicePopup ChoicePopup => _choiceUI != null ? _choiceUI : (_choiceUI = Spawn(choiceUIPrefab, GroupRoot.Story));
+        public ChoicePopup ChoicePopup => _choiceUI != null ? _choiceUI : (_choiceUI = Spawn(choiceUIPrefab, UIGroup.Story));
         // PlaceNotification은 PopupManager로 이전 (모듈 응집). 호출: PopupManager.Instance.Get<PlaceNotification>()
-        public ScheduleUI ScheduleUI => _scheduleUI != null ? _scheduleUI : (_scheduleUI = Spawn(scheduleUIPrefab, GroupRoot.Simulate));
-        public ShopUI ShopUI => _shopUI != null ? _shopUI : (_shopUI = Spawn(shopUIPrefab, GroupRoot.Simulate));
-        public QuickMenu QuickMenu => _quickMenuUI != null ? _quickMenuUI : (_quickMenuUI = Spawn(quickMenuUIPrefab, GroupRoot.Simulate));
-        public TutorialOverlay TutorialOverlay => _tutorialOverlay != null ? _tutorialOverlay : (_tutorialOverlay = Spawn(tutorialOverlayPrefab, GroupRoot.Simulate));
-        public TitlePanel TitlePanel => _titleUI != null ? _titleUI : (_titleUI = Spawn(titleUIPrefab, GroupRoot.Scene));
-        public UsernameUI UsernameUI => _usernameUI != null ? _usernameUI : (_usernameUI = Spawn(usernameUIPrefab, GroupRoot.Scene));
+        public ScheduleUI ScheduleUI => _scheduleUI != null ? _scheduleUI : (_scheduleUI = Spawn(scheduleUIPrefab, UIGroup.Simulate));
+        public ShopUI ShopUI => _shopUI != null ? _shopUI : (_shopUI = Spawn(shopUIPrefab, UIGroup.Simulate));
+        public QuickMenu QuickMenu => _quickMenuUI != null ? _quickMenuUI : (_quickMenuUI = Spawn(quickMenuUIPrefab, UIGroup.Simulate));
+        public TutorialOverlay TutorialOverlay => _tutorialOverlay != null ? _tutorialOverlay : (_tutorialOverlay = Spawn(tutorialOverlayPrefab, UIGroup.Simulate));
+        public TitlePanel TitlePanel => _titleUI != null ? _titleUI : (_titleUI = Spawn(titleUIPrefab, UIGroup.Scene));
+        public UsernameUI UsernameUI => _usernameUI != null ? _usernameUI : (_usernameUI = Spawn(usernameUIPrefab, UIGroup.Scene));
 
-        enum GroupRoot { Story, Simulate, Scene }
-
-        Transform GetGroupRoot(GroupRoot group)
+        /// <summary>UI 인스턴스 부모 그룹.</summary>
+        public Transform GetGroupRoot(UIGroup group)
         {
             switch (group)
             {
-                case GroupRoot.Story:    return storyRoot    != null ? storyRoot    : EnsureGroup(ref storyRoot,    "Story",    0);
-                case GroupRoot.Simulate: return simulateRoot != null ? simulateRoot : EnsureGroup(ref simulateRoot, "Simulate", 1);
-                case GroupRoot.Scene:    return sceneRoot    != null ? sceneRoot    : EnsureGroup(ref sceneRoot,    "Scene",    2);
+                case UIGroup.Story:    return storyRoot    != null ? storyRoot    : EnsureGroup(ref storyRoot,    "Story",    0);
+                case UIGroup.Simulate: return simulateRoot != null ? simulateRoot : EnsureGroup(ref simulateRoot, "Simulate", 1);
+                case UIGroup.Scene:    return sceneRoot    != null ? sceneRoot    : EnsureGroup(ref sceneRoot,    "Scene",    2);
             }
             return transform;
         }
@@ -124,7 +123,7 @@ namespace LoveAlgo.UI
             return field;
         }
 
-        T Spawn<T>(T prefab, GroupRoot group) where T : MonoBehaviour
+        T Spawn<T>(T prefab, UIGroup group) where T : MonoBehaviour
         {
             if (prefab == null)
             {
@@ -183,6 +182,14 @@ namespace LoveAlgo.UI
                     break;
             }
         }
+    }
+
+    /// <summary>UI 인스턴스 부모 그룹 — 모듈이 자기 UI를 spawn할 때 사용.</summary>
+    public enum UIGroup
+    {
+        Story,      // DialogueUI, ChoicePopup, DialogueShowButton 등
+        Simulate,   // ScheduleUI, ShopUI, QuickMenu, TutorialOverlay 등
+        Scene       // TitlePanel, UsernameUI 등 씬 단위
     }
 
     public enum MainUIType

@@ -221,9 +221,10 @@ Services.Get<IStage>().ShowCharacter("Roa", "Default", "C");
 | **Shop** | `_Project/Modules/Shop/Code/` | (완료) | ✅ | 파일 이동 + `IShop` + `ShopModule`. Inventory 분리는 기능 작업 시 |
 | **Phone** | `_Project/Modules/Phone/Code/` | (완료) | ✅ | 파일 이동 + `IPhone` + `PhoneModule` |
 | **MiniGame** | `_Project/Modules/MiniGame/Code/` | (완료) | ✅ | 파일 이동 + `IMiniGame` + `MiniGameModule` |
-| **Title** | `_Project/Modules/Title/Code/` | (완료, Phase 1) | 🔄 | TitlePanel/UsernameUI/ExtraPopup. Phase 2에서 ITitle 도입 예정 |
+| **Title** | `_Project/Modules/Title/Code/` | (인터페이스 도입) | 🟦 | `ITitle` + `TitleModule` (TitlePanel/UsernameUI lazy spawn + ExtraPopup PopupManager 등록). UI 인스펙터 바인딩 + UIManager 정리는 별도 |
 | **Settings** | `_Project/Modules/Settings/Code/` | (완료) | ✅ | `ISettings` + `SettingsModule` (PlayerPrefs 흡수 + IAudio/INarrative 경유 적용). SettingsPopup 정적 결합 0 |
-| **Tutorial** | `_Project/Modules/Tutorial/Code/` | (완료, Phase 1) | 🔄 | TutorialOverlay 이동. Phase 2에서 ITutorial 도입 예정 |
+| **Tutorial** | `_Project/Modules/Tutorial/Code/` | (인터페이스 도입) | 🟦 | `ITutorial` + `TutorialModule` (TutorialOverlay lazy spawn). UI 인스펙터 바인딩 + UIManager 정리는 별도 |
+| **Simulation** | `_Project/Modules/Simulation/Code/` | (신규) | 🟦 | `ISimulation` + `ISimulationSubMode` + `SimulationMode` enum + `SimulationModule`. QuickMenu 호스팅, sub-mode 자기 등록 패턴. Schedule/Shop이 sub-mode 구현 + 호출자 갱신 별도 |
 | **UI 인프라** | `_Project/UI/{Core,Components,Popups,Notifications,Contextual}/` | (완료) | ✅ | Core(`UIManager`/`PopupManager`/`UISoundManager`/`PopupBase`) + Components(버튼·탭) + Popups(Alert/Confirm) + Notifications(Place/Toast) + Contextual(QuickMenu) |
 | **Narrative UI** | `_Project/Modules/Narrative/UI/` | (UI만 이동) | 🔄 | DialogueUI/ChoiceUI/LogPopup + Log entries 이동. ScriptRunner 등 코어는 추후 |
 | **Save UI** | `_Project/Modules/Save/UI/` | (완료) | ✅ | SaveLoadPopup/SaveLoadSlot 이동 |
