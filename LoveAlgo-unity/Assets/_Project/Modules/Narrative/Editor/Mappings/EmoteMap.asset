@@ -1,0 +1,53 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1cbfe023393276d429ef3f3ff6d5472b, type: 3}
+  m_Name: EmoteMap
+  m_EditorClassIdentifier: Assembly-CSharp-Editor::LoveAlgo.NarrativeEditor.Mappings.EmoteMap
+  entries:
+  - ko: "\uAE30\uBCF8"
+    id: _00
+  - ko: "\uB208\uC6C3\uC74C"
+    id: _11
+  - ko: "\uBC1D\uAC8C\uC6C3\uC74C"
+    id: _12
+  - ko: "\uD65C\uC9DD"
+    id: _13
+  - ko: "\uD589\uBCF5"
+    id: _14
+  - ko: "\uCC0C\uB9BF"
+    id: _21
+  - ko: "\uC090\uC9D0"
+    id: _22
+  - ko: "\uBA38\uC4F1"
+    id: _23
+  - ko: "\uC5B4\uC9C8\uC5B4\uC9C8"
+    id: _24
+  - ko: "\uC6B8\uBA39"
+    id: _31
+  - ko: "\uB208\uBB3C \uC8FC\uB974\uB975"
+    id: _32
+  - ko: "\uC640\uC544\uC559 \uC6B8\uAE30"
+    id: _33
+  - ko: "\uBD80\uB044\uB7EC\uC6CC"
+    id: _34
+  - ko: "\uD53C\uACE4/\uC878\uB824"
+    id: _35
+  - ko: "\uAE5C\uC9DD"
+    id: _41
+  - ko: "\uBC18\uC9DD\uBE64\uC9DD"
+    id: _42
+  - ko: "\uAD81\uAE08"
+    id: _43
+  - ko: "\uC719\uD06C"
+    id: _44
+  - ko: "\uC790\uC2E0\uB9CC\uB9CC"
+    id: _45

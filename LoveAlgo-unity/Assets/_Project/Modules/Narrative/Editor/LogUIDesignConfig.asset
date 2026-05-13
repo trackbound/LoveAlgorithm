@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp-Editor::LoveAlgo.NarrativeEditor.LogUIDesignConfig
   entryPadLeft: 50
   entryPadRight: 30
-  entryPadTop: 30
-  entryPadBottom: 30
+  entryPadTop: 35
+  entryPadBottom: 40
   entrySpacing: 36
   headerWidth: 230
   portraitSize: {x: 230, y: 229}
@@ -24,8 +24,8 @@ MonoBehaviour:
   headerPortraitToNameGap: -80.3
   dialogueColumnPadLeft: 0
   dialogueColumnPadRight: 0
-  dialogueColumnPadTop: 35
-  dialogueColumnPadBottom: 0
+  dialogueColumnPadTop: 25
+  dialogueColumnPadBottom: 15
   dialogueColumnSpacing: 19.3
   bubblePadLeft: 26
   bubblePadRight: 28
@@ -34,7 +34,7 @@ MonoBehaviour:
   bubbleMinHeight: 60
   bodyFontSize: 22.2
   nameFontSize: 16
-  narrationFontSize: 24
+  narrationFontSize: 20
   bodyCharacterSpacing: 0
   bodyLineSpacing: 40
   narrationLineSpacing: 0

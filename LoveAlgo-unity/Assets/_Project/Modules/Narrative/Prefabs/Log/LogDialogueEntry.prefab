@@ -138,8 +138,8 @@ MonoBehaviour:
   m_Padding:
     m_Left: 0
     m_Right: 0
-    m_Top: 35
-    m_Bottom: 0
+    m_Top: 25
+    m_Bottom: 15
   m_ChildAlignment: 0
   m_Spacing: 19.3
   m_ChildForceExpandWidth: 1
@@ -224,8 +224,8 @@ MonoBehaviour:
   m_Padding:
     m_Left: 50
     m_Right: 30
-    m_Top: 30
-    m_Bottom: 30
+    m_Top: 35
+    m_Bottom: 40
   m_ChildAlignment: 3
   m_Spacing: 36
   m_ChildForceExpandWidth: 0
