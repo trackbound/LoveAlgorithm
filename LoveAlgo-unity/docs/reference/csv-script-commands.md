@@ -193,6 +193,10 @@ CG 종료(Exit) 시 대사창 자동 복원.
 | `ColorTint` | `ColorTint:Sepia:0.3:0.5`, `ColorTint:Clear::0.3` |
 | `DialogueHide` | `DialogueHide` |
 | `DialogueShow` | `DialogueShow` |
+| `CharShake` | `CharShake:C:15:0.3` (슬롯:강도px:시간초) — 슬롯 생략 시 첫 활성 |
+| `CharJump` | `CharJump:C:30:0.3` (슬롯:높이px:시간초) |
+| `CharDim` | `CharDim:C:0.4:0.3` (슬롯:알파:시간초) |
+| `CharGlitch` | `CharGlitch:C:1.0:0.6` (슬롯:강도0~1:시간초) — RGB 색수차 + 블록 변위 + 스캔라인 |
 
 #### FX 매크로 (복합 연출)
 

@@ -57,6 +57,13 @@ namespace LoveAlgo.Story
         [SerializeField] float enterOffset = 40f;        // 등장 시 슬라이드 거리
         [SerializeField] float exitSlideDistance = 40f;  // 퇴장 시 슬라이드 거리
 
+        [Header("Glitch FX")]
+        [Tooltip("LoveAlgo/UI/Glitch 셰이더 사용 머티리얼. 비워두면 Shader.Find로 동적 생성")]
+        [SerializeField] Material glitchMaterial;
+
+        Material runtimeGlitchMat;       // 인스턴스 (셰이더 동적 생성 시)
+        Material savedFrontMaterial;     // GlitchAsync 시작 시 백업
+
 
 
         string currentCharacter;
@@ -503,6 +510,59 @@ namespace LoveAlgo.Story
         }
 
         /// <summary>
+        /// 캐릭터 글리치 효과 (FX,,CharGlitch:슬롯:강도:시간).
+        /// 강도 0 → peak → 0 트윈으로 한 사이클 재생.
+        /// </summary>
+        public async UniTask GlitchAsync(float peakStrength = 1.0f, float duration = 0.6f, CancellationToken ct = default)
+        {
+            if (imageFront == null) return;
+
+            var mat = EnsureGlitchMaterial();
+            if (mat == null)
+            {
+                Debug.LogWarning("[CharacterSlot] LoveAlgo/UI/Glitch 셰이더를 찾을 수 없습니다. 글리치 스킵.");
+                return;
+            }
+
+            savedFrontMaterial = imageFront.material;
+            imageFront.material = mat;
+            mat.SetFloat("_Strength", 0f);
+
+            try
+            {
+                float halfDur = duration * 0.5f;
+                // 0 → peak (빠르게 올림)
+                await DOTween.To(() => mat.GetFloat("_Strength"),
+                                 v => mat.SetFloat("_Strength", v),
+                                 peakStrength, halfDur)
+                    .SetEase(Ease.OutQuad)
+                    .ToUniTask(cancellationToken: ct);
+
+                // peak → 0 (느리게 회복)
+                await DOTween.To(() => mat.GetFloat("_Strength"),
+                                 v => mat.SetFloat("_Strength", v),
+                                 0f, halfDur)
+                    .SetEase(Ease.InQuad)
+                    .ToUniTask(cancellationToken: ct);
+            }
+            finally
+            {
+                mat.SetFloat("_Strength", 0f);
+                if (imageFront != null) imageFront.material = savedFrontMaterial;
+            }
+        }
+
+        Material EnsureGlitchMaterial()
+        {
+            if (glitchMaterial != null) return glitchMaterial;
+            if (runtimeGlitchMat != null) return runtimeGlitchMat;
+            var shader = Shader.Find("LoveAlgo/UI/Glitch");
+            if (shader == null) return null;
+            runtimeGlitchMat = new Material(shader) { name = "UIGlitch (runtime)" };
+            return runtimeGlitchMat;
+        }
+
+        /// <summary>
         /// 캐릭터 어둡게 (FX,,CharDim:슬롯:알파:시간)
         /// </summary>
         public async UniTask DimAsync(float targetAlpha = 0.4f, float duration = 0.3f, CancellationToken ct = default)
@@ -521,6 +581,7 @@ namespace LoveAlgo.Story
             DOTween.Kill(rectTransform);
             RectTransform target = imageContainer != null ? imageContainer : imageFront?.rectTransform;
             DOTween.Kill(target);
+            if (runtimeGlitchMat != null) Destroy(runtimeGlitchMat);
         }
 
         #endregion

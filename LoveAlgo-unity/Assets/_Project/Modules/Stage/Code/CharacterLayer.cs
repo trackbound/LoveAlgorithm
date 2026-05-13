@@ -518,7 +518,7 @@ namespace LoveAlgo.Story
 
         /// <summary>
         /// 캐릭터 시각 효과 실행
-        /// CSV: FX,,CharShake[:슬롯:강도:시간], FX,,CharJump[:슬롯:높이:시간], FX,,CharDim[:슬롯:알파:시간]
+        /// CSV: FX,,CharShake[:슬롯:강도:시간], FX,,CharJump[:슬롯:높이:시간], FX,,CharDim[:슬롯:알파:시간], FX,,CharGlitch[:슬롯:강도:시간]
         /// 슬롯 생략 시 화면의 첫 번째 활성 캐릭터에 적용
         /// </summary>
         public async UniTask ExecuteCharFXAsync(string effect, string[] parts, CancellationToken ct = default)
@@ -564,6 +564,13 @@ namespace LoveAlgo.Story
                     float alpha = parts.Length > paramOffset && float.TryParse(parts[paramOffset], out float a) ? a : 0.4f;
                     float duration = parts.Length > paramOffset + 1 && float.TryParse(parts[paramOffset + 1], out float d) ? d : 0.3f;
                     await slot.DimAsync(alpha, duration, ct);
+                    break;
+                }
+                case "CharGlitch":
+                {
+                    float strength = parts.Length > paramOffset && float.TryParse(parts[paramOffset], out float s) ? s : 1.0f;
+                    float duration = parts.Length > paramOffset + 1 && float.TryParse(parts[paramOffset + 1], out float d) ? d : 0.6f;
+                    await slot.GlitchAsync(strength, duration, ct);
                     break;
                 }
             }
