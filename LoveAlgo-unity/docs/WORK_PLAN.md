@@ -44,12 +44,23 @@
 ### A5. PC잠금 시스템 (신규)
 - [x] `LockScreenController` (첫시작 / 일반진입 / 재설정 모드) — `Modules/LockScreen/Code/`
 - [x] 비밀번호 저장 (PrefsKeys, 단방향 해시) — `PasswordHasher` SHA256+salt
+- [x] 비번 자유 7자 검증 (기획서: 최대 7자, 문자 제한 없음) — PIN4 → IsValidPassword
 - [x] 3회 오류 카운터 → 열쇠 아이콘 (`ShowKeyIcon`)
 - [x] 투두리스트 33개 SO + 랜덤 3개 표출 — `ToDoItemSO` + `ToDoListSO.PickRandom`
-- [x] UI 스크립트 — `LockScreenPanel`, `ClockWidget`, `ToDoWidget`+`ToDoEntry`, `RoaMessageWidget`, `PasswordInputWidget` (Modules/LockScreen/UI/)
-- [ ] UI 프리팹 (Unity 에디터 작업 — 위 스크립트들 SerializeField 연결)
-- [ ] 33개 ToDo 데이터 + 4개 로아 메시지 채움
-- [ ] TitleUI 진입 통합 + 씬 GameObject 추가
+- [x] UI 스크립트 — `LockScreenPanel` 시퀀스 통합 (5초 페이드 / 4메시지 순차 / 슬라이드아웃 / dim / 로그인 / Outro 3초+3초)
+- [x] `PasswordInputWidget` TMP_InputField 전환 + 진동 애니 + 눈 토글 + 열쇠 버튼
+- [x] `RoaMessageWidget` 4메시지 순차 출력 (슬라이드인 + alpha decay + 효과음 콜백)
+- [x] `ClockWidget` 고정/실시간 모드 (기획서: 시간 고정)
+- [x] `LockScreenContentSO` 안내 문구 5종 + 메시지 4개 + 시계 + SFX 필드
+- [x] `LockScreenHint` enum + ILockScreen.GetHint/GetClockTime/SetClockOverride/Content
+- [x] Reset 흐름 단순화 (기획서: 기존 비번 확인 X — 바로 새 비번 설정)
+- [x] 재설정 확인 ConfirmPopup 통합 (열쇠 클릭 → 예/아니오)
+- [x] CSV `LockScreen:OpenFirstSetup|OpenNormal[:Time=HH:mm]` Flow 명령
+- [x] `EntryRouter` (Core) — 첫 시작이면 잠금화면, 아니면 타이틀
+- [ ] UI 프리팹 + 씬 GameObject 추가 (Unity 에디터 작업, 가이드: `docs/HANDOFF_NOTES.md` §6)
+- [ ] 33개 ToDo Asset + LockScreenContent.asset 생성 (기획서 17페이지 목록 그대로)
+- [ ] 정식 메시지 효과음 도착 시 LockScreenPanel.messageSfx 교체 (임시: dialoguenext.mp3)
+- [ ] 디자이너 자산: 비번 입력창 / 눈 아이콘 / 열쇠 아이콘 도착 시 prefab 바인딩
 
 ---
 

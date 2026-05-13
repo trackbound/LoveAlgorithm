@@ -143,6 +143,10 @@ namespace LoveAlgo.Story.StoryEngine
                     Flow.AffinityFlowCommand.Execute(parts);
                     return true;
 
+                case "LockScreen":
+                    await Flow.LockScreenFlowCommand.ExecuteAsync(parts, ct);
+                    return true;
+
                 default:
                     Debug.LogWarning($"[Flow] 알 수 없는 Flow 명령: {command}");
                     return true;

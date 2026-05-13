@@ -48,5 +48,11 @@ namespace LoveAlgo.Phone
 
         /// <summary>외부(메시지 수신 시 등)에서 알림 뱃지 강제 갱신.</summary>
         public void RefreshNotification() => notificationButton?.UpdateBadge();
+
+        public void SetNotificationVisible(bool visible)
+        {
+            // 자기 GameObject 활성은 유지 (polling 계속), visual만 토글
+            notificationButton?.SetVisualVisible(visible);
+        }
     }
 }

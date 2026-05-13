@@ -6,46 +6,44 @@ namespace LoveAlgo.LockScreen
 {
     /// <summary>
     /// PC잠금 모듈 외부 계약.
-    /// 구현: <see cref="LockScreenModule"/>.
+    /// 구현: <see cref="LockScreenController"/> (씬 GameObject), 노출: <see cref="LockScreenModule"/>.
     /// </summary>
     public interface ILockScreen
     {
-        // ── 상태 ──────────────────────────────────────────────
+        // ── 상태 ──
         LockScreenMode CurrentMode { get; }
-
-        /// <summary>비번이 저장돼 있는지 (PrefsKeys에 해시 존재).</summary>
         bool IsPasswordSet { get; }
-
-        /// <summary>현재 세션 실패 횟수.</summary>
         int FailCount { get; }
-
-        /// <summary>3회 이상 실패 시 열쇠 아이콘 노출.</summary>
         bool ShowKeyIcon { get; }
 
-        // ── 모드 진입 ──────────────────────────────────────────
+        /// <summary>현재 콘텐츠 SO (안내 문구·시계·메시지 조회).</summary>
+        LockScreenContentSO Content { get; }
+
+        // ── 모드 진입 ──
         void OpenForFirstSetup();
         void OpenForNormal();
+        /// <summary>재설정. 기획서 §오류/분실: 기존 비번 확인 X — FirstSetup과 동일 흐름.</summary>
         void OpenForReset();
 
-        // ── 비번 처리 ──────────────────────────────────────────
-        /// <summary>4자리 PIN 신규/재설정 저장. 유효성 실패 시 false.</summary>
-        bool SetPassword(string pin4);
-
-        /// <summary>4자리 PIN 검증. 성공 시 OnUnlocked 발행.</summary>
-        bool VerifyPassword(string pin4);
-
-        /// <summary>저장된 비번 삭제 (디버그/초기화용).</summary>
+        // ── 비번 처리 ──
+        /// <summary>비밀번호(자유 문자, 1~7자) 신규/재설정 저장. 유효성 실패 시 false.</summary>
+        bool SetPassword(string pwd);
+        /// <summary>비밀번호 검증. 성공 시 OnUnlocked + FailCount 리셋. 실패 시 OnPasswordFailed.</summary>
+        bool VerifyPassword(string pwd);
         void ClearPassword();
 
-        // ── ToDo ───────────────────────────────────────────────
+        // ── ToDo / 콘텐츠 ──
         IReadOnlyList<ToDoItemSO> GetRandomToDos(int count = 3);
-
-        /// <summary>로아 메시지 (인덱스 0~3).</summary>
         string GetRoaMessage(int index);
+        string GetHint(LockScreenHint kind);
+        /// <summary>시계 표시값 (Content.fixedClockTime 비어있으면 실시간 OS 시각).</summary>
+        string GetClockTime();
+        /// <summary>시계 1회 오버라이드 (CSV Time= 인자에 사용). 빈 문자열이면 SO 기본값 복귀.</summary>
+        void SetClockOverride(string hhmm);
 
-        // ── 이벤트 ─────────────────────────────────────────────
-        event Action<int> OnPasswordFailed; // (failCount)
+        // ── 이벤트 ──
+        event Action<int> OnPasswordFailed;
         event Action OnUnlocked;
-        event Action<bool> OnPasswordSet;   // (isFirstTime)
+        event Action<bool> OnPasswordSet;
     }
 }

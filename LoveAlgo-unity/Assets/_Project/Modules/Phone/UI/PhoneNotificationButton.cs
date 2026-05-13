@@ -1,5 +1,6 @@
 using DG.Tweening;
 using LoveAlgo.Common;
+using LoveAlgo.Core;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -30,10 +31,11 @@ namespace LoveAlgo.Phone
         [SerializeField] TMP_Text labelText;
         [SerializeField] string labelDefault = "MESSAGE";
 
-        [Header("새 메시지 뱃지")]
-        [SerializeField] GameObject newBadge;
-        [SerializeField] TMP_Text newCountText;  // "N" 표시. 단순 "N"이면 안 써도 됨.
-        [SerializeField] bool showCount = false;  // false면 'N' 글자만, true면 개수 표시
+        [Header("핸들 이미지 (둘 중 하나만 활성)")]
+        [Tooltip("평상시 핸들 이미지 (말풍선 + MESSAGE)")]
+        [SerializeField] GameObject normalImage;
+        [Tooltip("새 메시지 있을 때 핸들 이미지 (N 뱃지 포함된 통합 이미지)")]
+        [SerializeField] GameObject newMessageImage;
 
         [Header("클릭 버튼")]
         [SerializeField] Button openButton;
@@ -45,8 +47,8 @@ namespace LoveAlgo.Phone
         [SerializeField] Ease slideEase = Ease.OutCubic;
 
         [Header("폴링")]
-        [Tooltip("새 메시지 카운트를 폴링할 간격 (0이면 OnEnable에서만)")]
-        [SerializeField] float pollInterval = 1f;
+        [Tooltip("새 메시지 카운트 + Stage CG/SD 가림 감지 간격 (0이면 OnEnable에서만)")]
+        [SerializeField] float pollInterval = 0.2f;
 
         float collapsedX;
         Tween currentTween;
@@ -70,8 +72,29 @@ namespace LoveAlgo.Phone
             if (pollInterval > 0f && Time.unscaledTime >= nextPollAt)
             {
                 UpdateBadge();
+                SyncStageVisibility();
                 nextPollAt = Time.unscaledTime + pollInterval;
             }
+        }
+
+        /// <summary>Stage CG/SD가 표시 중이면 자식 visual 가림 (외부 명시 제어와 별개).</summary>
+        void SyncStageVisibility()
+        {
+            bool blocked = false;
+            var sm = StageManager.Instance;
+            if (sm != null)
+            {
+                blocked = (sm.CG != null && sm.CG.IsShowing) ||
+                          (sm.SDCutscene != null && sm.SDCutscene.IsShowing);
+            }
+            SetVisualVisible(!blocked);
+        }
+
+        /// <summary>핸들 visual 자체 표시/숨김 (자기 GO는 활성 유지, polling 계속).</summary>
+        public void SetVisualVisible(bool visible)
+        {
+            if (slideContainer != null && slideContainer.gameObject.activeSelf != visible)
+                slideContainer.gameObject.SetActive(visible);
         }
 
         public void OnPointerEnter(PointerEventData _) => SetExpanded(true);
@@ -100,14 +123,12 @@ namespace LoveAlgo.Phone
             }
         }
 
-        /// <summary>새 메시지 카운트 갱신 (외부에서도 호출 가능).</summary>
+        /// <summary>새 메시지 상태 갱신 — normalImage / newMessageImage 토글.</summary>
         public void UpdateBadge()
         {
-            int unread = MessengerManager.GetTotalUnreadCount();
-            bool hasNew = unread > 0;
-            if (newBadge != null) newBadge.SetActive(hasNew);
-            if (newCountText != null)
-                newCountText.text = showCount ? unread.ToString() : "N";
+            bool hasNew = MessengerManager.GetTotalUnreadCount() > 0;
+            if (normalImage != null) normalImage.SetActive(!hasNew);
+            if (newMessageImage != null) newMessageImage.SetActive(hasNew);
         }
 
         void OnOpenClick()

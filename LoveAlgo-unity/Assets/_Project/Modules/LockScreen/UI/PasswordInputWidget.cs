@@ -1,5 +1,5 @@
 using System;
-using System.Collections.Generic;
+using System.Collections;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -7,67 +7,70 @@ using UnityEngine.UI;
 namespace LoveAlgo.LockScreen.UI
 {
     /// <summary>
-    /// 4자리 PIN 입력 위젯.
-    /// 가상 키패드(0~9 + 백스페이스) + 4개 슬롯(*/숫자) + 눈 토글 + 열쇠 아이콘.
-    /// 4자 입력 완료 시 OnPinEntered 발행.
+    /// 비밀번호 입력 위젯 (기획서 §비밀번호 입력 커스텀 시스템).
+    /// - TMP_InputField (자유 문자 1~7자, 한글 IME 지원)
+    /// - 눈 토글: 감은눈 기본(마스킹) / 뜬눈(평문). 첫 설정 모드에서는 SetMaskMode(false).
+    /// - 오류 시 빠른 진동 (코루틴, DOTween 비의존)
+    /// - 3회 이상 오류 시 우측 하단 열쇠 아이콘
     /// </summary>
     public class PasswordInputWidget : MonoBehaviour
     {
-        [Header("Slots (4개)")]
-        [Tooltip("4개 슬롯의 텍스트 (각 자리)")]
-        [SerializeField] List<TMP_Text> slotTexts = new List<TMP_Text>();
-
-        [Header("Keypad")]
-        [Tooltip("0~9 버튼 (인덱스 = 숫자)")]
-        [SerializeField] List<Button> digitButtons = new List<Button>();
-        [SerializeField] Button backspaceButton;
-        [SerializeField] Button confirmButton;     // 4자 입력 후 확정 (선택사항 — 자동 확정도 가능)
+        [Header("Input")]
+        [SerializeField] TMP_InputField inputField;
+        [Tooltip("LOGIN 또는 입력 완료 버튼")]
+        [SerializeField] Button confirmButton;
 
         [Header("Reveal Toggle")]
-        [Tooltip("눈 아이콘 토글 (켜면 숫자 표시, 끄면 *)")]
+        [Tooltip("isOn=true → 평문 노출(뜬눈), false → 마스킹(감은눈, 기본)")]
         [SerializeField] Toggle revealToggle;
 
         [Header("Key Icon")]
-        [Tooltip("3회 오류 시 표출되는 열쇠 아이콘 GameObject")]
         [SerializeField] GameObject keyIcon;
+        [Tooltip("열쇠 클릭 — LockScreenPanel가 ConfirmPopup 표시")]
+        [SerializeField] Button keyButton;
 
         [Header("Settings")]
-        [Tooltip("4자 입력 시 자동 확정 (Confirm 버튼 없을 때)")]
-        [SerializeField] bool autoConfirmOnFull = true;
-        [SerializeField] string maskChar = "●";
+        [Tooltip("최대 입력 글자수 (기획서: 7자)")]
+        [SerializeField] int maxLength = 7;
 
-        readonly char[] buffer = new char[4];
-        int cursor;
+        [Header("Shake Animation")]
+        [SerializeField] RectTransform shakeTarget;
+        [SerializeField] float shakeStrength = 10f;
+        [SerializeField] float shakeDuration = 0.35f;
 
-        /// <summary>PIN 4자 확정 시 발행. (pin4 string)</summary>
-        public event Action<string> OnPinEntered;
+        Vector2 shakeOriginalPos;
+        Coroutine shakeCo;
+
+        public event Action<string> OnPasswordEntered;
+        public event Action OnKeyClicked;
 
         void Awake()
         {
-            // 숫자 버튼 바인딩
-            for (int i = 0; i < digitButtons.Count && i < 10; i++)
+            if (inputField != null)
             {
-                int digit = i;
-                if (digitButtons[i] != null)
-                    digitButtons[i].onClick.AddListener(() => PressDigit(digit));
+                inputField.characterLimit = maxLength;
+                inputField.onSubmit.AddListener(_ => Confirm());
             }
-
-            if (backspaceButton != null) backspaceButton.onClick.AddListener(PressBackspace);
             if (confirmButton != null) confirmButton.onClick.AddListener(Confirm);
-            if (revealToggle != null) revealToggle.onValueChanged.AddListener(_ => RefreshSlots());
+            if (revealToggle != null) revealToggle.onValueChanged.AddListener(OnRevealChanged);
+            if (keyButton != null) keyButton.onClick.AddListener(() => OnKeyClicked?.Invoke());
+            if (shakeTarget != null) shakeOriginalPos = shakeTarget.anchoredPosition;
         }
 
         void OnEnable()
         {
             Clear();
             SetKeyIcon(false);
+            SetMaskMode(true); // 기본: 감은눈
         }
 
         public void Clear()
         {
-            for (int i = 0; i < 4; i++) buffer[i] = '\0';
-            cursor = 0;
-            RefreshSlots();
+            if (inputField != null)
+            {
+                inputField.SetTextWithoutNotify("");
+                inputField.ActivateInputField();
+            }
         }
 
         public void SetKeyIcon(bool show)
@@ -75,43 +78,67 @@ namespace LoveAlgo.LockScreen.UI
             if (keyIcon != null) keyIcon.SetActive(show);
         }
 
-        void PressDigit(int digit)
+        /// <summary>
+        /// 마스킹 모드. 기획서 §개발: 첫 설정 시 *로 표기되지 않음.
+        /// FirstSetup/Reset → SetMaskMode(false). Normal → SetMaskMode(true).
+        /// </summary>
+        public void SetMaskMode(bool mask)
         {
-            if (cursor >= 4) return;
-            buffer[cursor++] = (char)('0' + digit);
-            RefreshSlots();
-
-            if (autoConfirmOnFull && cursor == 4) Confirm();
-        }
-
-        void PressBackspace()
-        {
-            if (cursor == 0) return;
-            buffer[--cursor] = '\0';
-            RefreshSlots();
-        }
-
-        void Confirm()
-        {
-            if (cursor < 4) return;
-            string pin = new string(buffer);
-            OnPinEntered?.Invoke(pin);
-        }
-
-        void RefreshSlots()
-        {
-            bool reveal = revealToggle != null && revealToggle.isOn;
-            for (int i = 0; i < slotTexts.Count; i++)
+            if (inputField != null)
             {
-                if (slotTexts[i] == null) continue;
-                if (i < cursor)
-                {
-                    slotTexts[i].text = reveal ? buffer[i].ToString() : maskChar;
-                }
-                else
-                {
-                    slotTexts[i].text = "";
-                }
+                inputField.contentType = mask ? TMP_InputField.ContentType.Password : TMP_InputField.ContentType.Standard;
+                inputField.ForceLabelUpdate();
+            }
+            if (revealToggle != null) revealToggle.SetIsOnWithoutNotify(!mask);
+        }
+
+        public void PlayShake()
+        {
+            if (shakeTarget == null) return;
+            if (shakeCo != null) StopCoroutine(shakeCo);
+            shakeCo = StartCoroutine(ShakeRoutine());
+        }
+
+        public void Confirm()
+        {
+            if (inputField == null) return;
+            string pwd = inputField.text ?? "";
+            if (!PasswordHasher.IsValidPassword(pwd))
+            {
+                Debug.LogWarning($"[LockScreen] Confirm rejected — invalid length ({pwd.Length})");
+                PlayShake();
+                return;
+            }
+            OnPasswordEntered?.Invoke(pwd);
+        }
+
+        void OnRevealChanged(bool reveal)
+        {
+            if (inputField == null) return;
+            inputField.contentType = reveal ? TMP_InputField.ContentType.Standard : TMP_InputField.ContentType.Password;
+            inputField.ForceLabelUpdate();
+        }
+
+        IEnumerator ShakeRoutine()
+        {
+            float t = 0f;
+            while (t < shakeDuration)
+            {
+                t += Time.unscaledDeltaTime;
+                float damper = 1f - Mathf.Clamp01(t / shakeDuration);
+                float x = (UnityEngine.Random.value * 2f - 1f) * shakeStrength * damper;
+                float y = (UnityEngine.Random.value * 2f - 1f) * shakeStrength * damper * 0.3f;
+                shakeTarget.anchoredPosition = shakeOriginalPos + new Vector2(x, y);
+                yield return null;
+            }
+            shakeTarget.anchoredPosition = shakeOriginalPos;
+            shakeCo = null;
+
+            // 오류 후 자동 클리어
+            if (inputField != null)
+            {
+                inputField.SetTextWithoutNotify("");
+                inputField.ActivateInputField();
             }
         }
     }

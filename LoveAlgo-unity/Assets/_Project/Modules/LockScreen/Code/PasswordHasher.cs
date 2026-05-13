@@ -9,9 +9,13 @@ namespace LoveAlgo.LockScreen
     /// </summary>
     public static class PasswordHasher
     {
-        /// <summary>
-        /// 새 salt 생성 (16바이트 랜덤 → Base64).
-        /// </summary>
+        /// <summary>최소 비번 길이.</summary>
+        public const int MinLength = 1;
+
+        /// <summary>최대 비번 길이 (기획서: 7자).</summary>
+        public const int MaxLength = 7;
+
+        /// <summary>새 salt 생성 (16바이트 랜덤 → Base64).</summary>
         public static string GenerateSalt()
         {
             byte[] bytes = new byte[16];
@@ -20,22 +24,20 @@ namespace LoveAlgo.LockScreen
             return Convert.ToBase64String(bytes);
         }
 
-        /// <summary>
-        /// (salt + pin) SHA256 해시 → Base64.
-        /// </summary>
-        public static string Hash(string pin, string saltBase64)
+        /// <summary>(salt + pwd) SHA256 해시 → Base64.</summary>
+        public static string Hash(string pwd, string saltBase64)
         {
-            if (pin == null) pin = "";
+            if (pwd == null) pwd = "";
             if (saltBase64 == null) saltBase64 = "";
 
             using (var sha = SHA256.Create())
             {
                 byte[] saltBytes = Convert.FromBase64String(saltBase64);
-                byte[] pinBytes = Encoding.UTF8.GetBytes(pin);
+                byte[] pwdBytes = Encoding.UTF8.GetBytes(pwd);
 
-                byte[] combined = new byte[saltBytes.Length + pinBytes.Length];
+                byte[] combined = new byte[saltBytes.Length + pwdBytes.Length];
                 Buffer.BlockCopy(saltBytes, 0, combined, 0, saltBytes.Length);
-                Buffer.BlockCopy(pinBytes, 0, combined, saltBytes.Length, pinBytes.Length);
+                Buffer.BlockCopy(pwdBytes, 0, combined, saltBytes.Length, pwdBytes.Length);
 
                 byte[] hash = sha.ComputeHash(combined);
                 return Convert.ToBase64String(hash);
@@ -43,15 +45,13 @@ namespace LoveAlgo.LockScreen
         }
 
         /// <summary>
-        /// 4자리 PIN 형식 검증 (0-9 4자).
+        /// 비밀번호 형식 검증.
+        /// 기획서: 최대 7자, 문자 제한 없음 (한글 포함 자유 입력).
         /// </summary>
-        public static bool IsValidPin4(string pin)
+        public static bool IsValidPassword(string pwd, int minLen = MinLength, int maxLen = MaxLength)
         {
-            if (string.IsNullOrEmpty(pin) || pin.Length != 4) return false;
-            for (int i = 0; i < 4; i++)
-            {
-                if (pin[i] < '0' || pin[i] > '9') return false;
-            }
+            if (string.IsNullOrEmpty(pwd)) return false;
+            if (pwd.Length < minLen || pwd.Length > maxLen) return false;
             return true;
         }
     }

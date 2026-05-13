@@ -229,7 +229,7 @@ Services.Get<IStage>().ShowCharacter("Roa", "Default", "C");
 | **Narrative UI** | `_Project/Modules/Narrative/UI/` | (UI만 이동) | 🔄 | DialogueUI/ChoiceUI/LogPopup + Log entries 이동. ScriptRunner 등 코어는 추후 |
 | **Save UI** | `_Project/Modules/Save/UI/` | (완료) | ✅ | SaveLoadPopup/SaveLoadSlot 이동 |
 | **Affinity (신규 기능)** | — | `Modules/Affinity/` | 🔄 | 위 Affinity 항목 참조 |
-| **LockScreen** | `_Project/Modules/LockScreen/` | (코드+UI스크립트 완료) | 🟦 | `ILockScreen`/`LockScreenController`/`LockScreenModule` + UI(`LockScreenPanel`/`ClockWidget`/`ToDoWidget`/`RoaMessageWidget`/`PasswordInputWidget`). 프리팹·콘텐츠·TitleUI 통합은 다음 단계 |
+| **LockScreen** | `_Project/Modules/LockScreen/` | (본구현 완료) | ✅ | 기획서 매칭 본구현(2026-05-13): 비번 자유 7자 + 4메시지 시퀀스 + 페이드/슬라이드/dim Outro + Reset팝업 + CSV `LockScreen:Open*` + Core/EntryRouter 진입 분기. 프리팹·SO Asset은 Unity 작업(HANDOFF_NOTES §6) |
 | **Gacha** | 없음 | `Modules/Gacha/` | ⬜ | A4 (퍼즐 가챠 작업 시) |
 
 **프리팹 응집:** 모든 프리팹은 `_Project/Modules/{Name}/Prefabs/` 또는 `_Project/UI/{Cat}/Prefabs/`로 정리됨 (2025). 클래스명과 1:1.

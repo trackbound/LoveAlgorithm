@@ -17,5 +17,8 @@ namespace LoveAlgo.Phone
 
         /// <summary>폰 메인 화면 열기 (메신저 기본 진입).</summary>
         void ShowPhoneUI();
+
+        /// <summary>스토리 화면 우측 알림 버튼 가시성 제어 (SD/CG 표시 시 가림용).</summary>
+        void SetNotificationVisible(bool visible);
     }
 }
