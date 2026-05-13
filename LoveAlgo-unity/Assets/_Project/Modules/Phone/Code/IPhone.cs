@@ -14,5 +14,8 @@ namespace LoveAlgo.Phone
 
         /// <summary>현재 폰 UI가 열려있는지.</summary>
         bool IsOpen { get; }
+
+        /// <summary>폰 메인 화면 열기 (메신저 기본 진입).</summary>
+        void ShowPhoneUI();
     }
 }

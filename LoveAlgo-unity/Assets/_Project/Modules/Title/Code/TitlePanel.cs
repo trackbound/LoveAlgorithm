@@ -8,6 +8,7 @@ using LoveAlgo.Common;
 using LoveAlgo.Core;
 using LoveAlgo.Save;
 using LoveAlgo.Settings;
+using LoveAlgo.Title;
 using LoveAlgo.Story;
 
 namespace LoveAlgo.UI
@@ -290,7 +291,7 @@ namespace LoveAlgo.UI
         void OnExtraClick()
         {
             Debug.Log("[TitlePanel] Extra - 엑스트라");
-            PopupManager.Instance?.Show<ExtraPopup>();
+            Services.Get<ITitle>()?.ShowExtraUI();
         }
 
         void OnExitClick()

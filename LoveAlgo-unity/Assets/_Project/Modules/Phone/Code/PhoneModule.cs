@@ -12,6 +12,8 @@ namespace LoveAlgo.Phone
     public class PhoneModule : MonoBehaviour, IPhone
     {
         [SerializeField] PhonePopup phonePanel;
+        [Tooltip("스토리 진행 중 화면 우측 알림 버튼 (선택). 씬에 배치된 인스턴스를 드래그.")]
+        [SerializeField] PhoneNotificationButton notificationButton;
 
         void Awake() => Services.Register<IPhone>(this);
 
@@ -35,5 +37,16 @@ namespace LoveAlgo.Phone
             if (phonePanel == null) return;
             phonePanel.gameObject.SetActive(false);
         }
+
+        public void ShowPhoneUI()
+        {
+            if (phonePanel == null) return;
+            phonePanel.Show();
+            // 폰 열면 곧 읽음 처리되므로 알림 뱃지 갱신
+            notificationButton?.UpdateBadge();
+        }
+
+        /// <summary>외부(메시지 수신 시 등)에서 알림 뱃지 강제 갱신.</summary>
+        public void RefreshNotification() => notificationButton?.UpdateBadge();
     }
 }

@@ -61,10 +61,18 @@ namespace LoveAlgo.Title
 
         public void ShowExtraUI()
         {
-            var popup = _extraPopupInstance != null
-                ? _extraPopupInstance
-                : PopupManager.Instance?.Get<ExtraPopup>();
+            var popup = EnsureExtraPopup();
             popup?.Show();
+        }
+
+        ExtraPopup EnsureExtraPopup()
+        {
+            if (_extraPopupInstance != null) return _extraPopupInstance;
+            if (extraPopupPrefab == null) return null;
+            var pm = PopupManager.Instance;
+            if (pm == null) return null;
+            _extraPopupInstance = pm.Register(extraPopupPrefab);
+            return _extraPopupInstance;
         }
 
         T SpawnUI<T>(T prefab, UIGroup group) where T : MonoBehaviour

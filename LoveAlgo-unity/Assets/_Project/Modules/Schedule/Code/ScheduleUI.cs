@@ -645,7 +645,7 @@ namespace LoveAlgo.Schedule
         /// <summary>폰 열기 (행동 소비 없음)</summary>
         void OnPhoneClick()
         {
-            LoveAlgo.UI.PopupManager.Instance?.Show<Phone.PhonePopup>();
+            LoveAlgo.Common.Services.Get<Phone.IPhone>()?.ShowPhoneUI();
         }
 
         #endregion

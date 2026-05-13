@@ -150,8 +150,18 @@ namespace LoveAlgo.Narrative
         // ── UI 진입점 ────────────────────────────────
         public void ShowLogUI(IReadOnlyList<DialogueLogEntry> log)
         {
-            var popup = logPopupInstance != null ? logPopupInstance : PopupManager.Instance?.Get<LogPopup>();
+            var popup = EnsureLogPopup();
             popup?.Show(log);
+        }
+
+        LogPopup EnsureLogPopup()
+        {
+            if (logPopupInstance != null) return logPopupInstance;
+            if (logPopupPrefab == null) return null;
+            var pm = PopupManager.Instance;
+            if (pm == null) return null;
+            logPopupInstance = pm.Register(logPopupPrefab);
+            return logPopupInstance;
         }
     }
 }

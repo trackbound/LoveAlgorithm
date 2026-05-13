@@ -229,8 +229,18 @@ namespace LoveAlgo.Settings
         // ── UI 진입점 ────────────────────────────────
         public void ShowSettingsUI()
         {
-            var popup = popupInstance != null ? popupInstance : PopupManager.Instance?.Get<SettingsPopup>();
+            var popup = EnsurePopup();
             popup?.Show();
+        }
+
+        SettingsPopup EnsurePopup()
+        {
+            if (popupInstance != null) return popupInstance;
+            if (settingsPopupPrefab == null) return null;
+            var pm = PopupManager.Instance;
+            if (pm == null) return null;
+            popupInstance = pm.Register(settingsPopupPrefab);
+            return popupInstance;
         }
     }
 }

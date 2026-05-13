@@ -182,7 +182,7 @@ namespace LoveAlgo.UI
 
         void OnPhone()
         {
-            PopupManager.Instance?.Show<PhonePopup>();
+            Services.Get<IPhone>()?.ShowPhoneUI();
         }
 
         void OnSave()
