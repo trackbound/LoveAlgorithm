@@ -208,7 +208,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d17fdebbd178e724e930deb789780df0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.Title.TitleModule
+  titlePanelSceneInstance: {fileID: 0}
   titlePanelPrefab: {fileID: 0}
+  usernameUISceneInstance: {fileID: 0}
   usernameUIPrefab: {fileID: 0}
   extraPopupPrefab: {fileID: 0}
 --- !u!1 &153953600
@@ -300,8 +302,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.Narrative.NarrativeModule
   logPopupPrefab: {fileID: 0}
+  dialogueUISceneInstance: {fileID: 0}
   dialogueUIPrefab: {fileID: 0}
+  dialogueShowButtonSceneInstance: {fileID: 0}
   dialogueShowButtonPrefab: {fileID: 0}
+  choicePopupSceneInstance: {fileID: 0}
   choicePopupPrefab: {fileID: 0}
 --- !u!1 &433971053
 GameObject:
@@ -381,7 +386,7 @@ GameObject:
   m_Component:
   - component: {fileID: 476821849}
   m_Layer: 0
-  m_Name: System
+  m_Name: _Bootstrap
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -468,6 +473,7 @@ GameObject:
   - component: {fileID: 498494746}
   - component: {fileID: 498494745}
   - component: {fileID: 498494744}
+  - component: {fileID: 498494747}
   m_Layer: 0
   m_Name: EventSystem
   m_TagString: Untagged
@@ -536,6 +542,18 @@ Transform:
   m_Children: []
   m_Father: {fileID: 476821849}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &498494747
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 498494743}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1511ccae7919cfc46b603b9b337fdc94, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.EventSystems.BaseInput
 --- !u!1 &519420028
 GameObject:
   m_ObjectHideFlags: 0
@@ -953,6 +971,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4e69b87c988f9794da5fb321a0c737ee, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.Simulation.SimulationModule
+  quickMenuSceneInstance: {fileID: 0}
   quickMenuPrefab: {fileID: 0}
   mainMode: 1
 --- !u!1 &735747607
@@ -969,7 +988,7 @@ GameObject:
   - component: {fileID: 735747608}
   - component: {fileID: 735747612}
   m_Layer: 5
-  m_Name: Stage
+  m_Name: _Stage
   m_TagString: ThumbnailKeep
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1678,7 +1697,7 @@ GameObject:
   - component: {fileID: 1652115037}
   - component: {fileID: 1652115041}
   m_Layer: 5
-  m_Name: UI
+  m_Name: _UI
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1829,6 +1848,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 529fe33cf5e8a8545b6a8b6935b1d45f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.Shop.ShopModule
+  shopUISceneInstance: {fileID: 0}
   shopUIPrefab: {fileID: 0}
 --- !u!1 &1824293771
 GameObject:
@@ -1998,6 +2018,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4352d0c78adeb8b44a872b7af1966698, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.Schedule.ScheduleModule
+  scheduleUISceneInstance: {fileID: 0}
   scheduleUIPrefab: {fileID: 0}
 --- !u!1 &1973111779
 GameObject:
@@ -2406,7 +2427,7 @@ GameObject:
   - component: {fileID: 1704995238509434213}
   - component: {fileID: 2270900208533410863}
   m_Layer: 5
-  m_Name: Popup
+  m_Name: _Popup
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
