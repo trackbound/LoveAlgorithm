@@ -31,24 +31,12 @@ namespace LoveAlgo.Story
         [Header("캐릭터 목록")]
         public List<CharacterMeta> characters = new();
 
-        [Header("표정 별칭 (한글 → 영문)")]
-        [Tooltip("CSV 인라인 태그 등에서 한글 표정명을 엔진 표정 ID로 변환")]
-        public List<EmoteAlias> emoteAliases = new();
-
-        Dictionary<string, string> _emoteAliasCache;
-
-        /// <summary>표정 alias 변환. 매칭 없으면 원본 그대로.</summary>
+        /// <summary>표정 alias 변환. EmoteMap.Instance 위임 (Single Source of Truth).</summary>
         public string ResolveEmoteName(string input)
         {
             if (string.IsNullOrEmpty(input)) return input;
-            if (_emoteAliasCache == null)
-            {
-                _emoteAliasCache = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-                foreach (var a in emoteAliases)
-                    if (!string.IsNullOrEmpty(a.alias) && !string.IsNullOrEmpty(a.emoteName))
-                        _emoteAliasCache[a.alias] = a.emoteName;
-            }
-            return _emoteAliasCache.TryGetValue(input, out var r) ? r : input;
+            var em = EmoteMap.Instance;
+            return em != null ? em.Resolve(input) : input;
         }
 
         public CharacterMeta GetById(string characterId) =>
@@ -89,13 +77,4 @@ namespace LoveAlgo.Story
         public List<string> speakerAliases = new();
     }
 
-    [Serializable]
-    public class EmoteAlias
-    {
-        [Tooltip("CSV/인라인 태그에서 사용하는 별칭 (예: 깜짝)")]
-        public string alias;
-
-        [Tooltip("엔진 표정 ID (예: Surprise 또는 _41)")]
-        public string emoteName;
-    }
 }

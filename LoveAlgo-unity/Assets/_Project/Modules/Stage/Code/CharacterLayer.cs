@@ -423,14 +423,12 @@ namespace LoveAlgo.Story
 
         #region 오버레이 (로아)
 
-        /// <summary>Overlay 사용 캐릭터인지 (Stage DB에서 판별)</summary>
+        /// <summary>Overlay 사용 캐릭터인지 (VirtualOverlayDatabase에 entry가 있으면 true)</summary>
         bool IsOverlayCharacter(string characterName)
         {
             if (string.IsNullOrEmpty(characterName)) return false;
-            var stageDb = CharacterStageDatabase.Instance;
-            if (stageDb == null) return false;
-            var entry = stageDb.GetById(characterName);
-            return entry != null && entry.UseOverlay;
+            var ovDb = VirtualOverlayDatabase.Instance;
+            return ovDb?.GetById(characterName) != null;
         }
 
         /// <summary>
@@ -439,9 +437,7 @@ namespace LoveAlgo.Story
         string ResolveAutoOverlay(string characterId, string emote, string mode = null)
         {
             if (string.IsNullOrEmpty(characterId)) return null;
-            var stageDb = CharacterStageDatabase.Instance;
-            if (stageDb == null) return null;
-            var entry = stageDb.GetById(characterId);
+            var entry = VirtualOverlayDatabase.Instance?.GetById(characterId);
             return entry?.GetOverlayName(emote, mode);
         }
 
@@ -450,9 +446,8 @@ namespace LoveAlgo.Story
         {
             if (!string.IsNullOrEmpty(fifthSegment))
             {
-                var stageDb = CharacterStageDatabase.Instance;
-                var entry = stageDb?.GetById(characterId);
-                if (entry != null && entry.IsValidMode(fifthSegment) && entry.UseOverlay)
+                var entry = VirtualOverlayDatabase.Instance?.GetById(characterId);
+                if (entry != null && entry.IsValidMode(fifthSegment))
                 {
                     SetMode(characterId, fifthSegment);
                     return entry.GetOverlayName(emote, fifthSegment);
@@ -460,16 +455,15 @@ namespace LoveAlgo.Story
                 // overlayModes에 없는 값이면 명시적 overlay 이름으로 사용 (구버전 호환)
                 return fifthSegment;
             }
-            // 5번째 segment 없음 → 추적중 모드 또는 default mode로 자동
             return ResolveAutoOverlay(characterId, emote, GetCurrentMode(characterId));
         }
 
-        /// <summary>현재 추적중 모드 조회 (없으면 stage DB의 defaultOverlayMode)</summary>
+        /// <summary>현재 추적중 모드 조회 (없으면 VirtualOverlayDatabase의 defaultOverlayMode)</summary>
         string GetCurrentMode(string characterId)
         {
             if (string.IsNullOrEmpty(characterId)) return null;
             if (overlayModes.TryGetValue(characterId, out var m)) return m;
-            var entry = CharacterStageDatabase.Instance?.GetById(characterId);
+            var entry = VirtualOverlayDatabase.Instance?.GetById(characterId);
             return entry?.defaultOverlayMode;
         }
 

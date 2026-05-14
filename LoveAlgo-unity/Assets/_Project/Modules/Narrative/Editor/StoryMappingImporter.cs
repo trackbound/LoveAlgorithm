@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using LoveAlgo.NarrativeEditor.Mappings;
+using LoveAlgo.Story;
 using UnityEditor;
 using UnityEngine;
 
@@ -15,6 +16,7 @@ namespace LoveAlgo.NarrativeEditor
     {
         const string DATA_DIR = "Assets/_Project/Modules/Narrative/Data";
         const string MAP_DIR  = "Assets/_Project/Modules/Narrative/Editor/Mappings";
+        const string MAP_RUNTIME_DIR = "Assets/Resources/Data";  // 런타임 노출이 필요한 SO 전용 (EmoteMap)
 
         const string XLSX_EMOTE = DATA_DIR + "/Character_Emotion_List.xlsx";
         const string XLSX_SD    = DATA_DIR + "/SD_List.xlsx";
@@ -53,29 +55,37 @@ namespace LoveAlgo.NarrativeEditor
         static void ImportCharacterAndEmote(string path, out int charCount, out int emoteCount)
         {
             var sheets = MiniXlsx.Read(path);
-            var charMap = LoadOrCreate<CharacterMap>($"{MAP_DIR}/CharacterMap.asset");
-            var emoteMap = LoadOrCreate<EmoteMap>($"{MAP_DIR}/EmoteMap.asset");
+            EnsureDir(MAP_RUNTIME_DIR);
+            // CharacterMetaDatabase가 정전 (Single Source) — Resources/Data/에서 로드 또는 생성
+            var meta = LoadOrCreate<CharacterMetaDatabase>($"{MAP_RUNTIME_DIR}/CharacterMetaDatabase.asset");
+            var emoteMap = LoadOrCreate<EmoteMap>($"{MAP_RUNTIME_DIR}/EmoteMap.asset");
 
-            var charEntries = new List<CharacterMap.Entry>();
-            var emoteEntries = new Dictionary<string, EmoteMap.Entry>(); // 한글 감정명 dedup
+            // 기존 speakerAliases 보존
+            var existingAliases = new Dictionary<string, List<string>>();
+            foreach (var c in meta.characters)
+                if (!string.IsNullOrEmpty(c.characterId))
+                    existingAliases[c.characterId] = c.speakerAliases != null ? new List<string>(c.speakerAliases) : new();
+
+            var charEntries = new List<CharacterMeta>();
+            var emoteEntries = new Dictionary<string, EmoteMap.Entry>();
 
             foreach (var kv in sheets)
             {
                 var sheet = kv.Value;
-                // Row 0: ['캐릭터 ID', '캐릭터 이름', ...]
-                // Row 1: ['c01', '로아', ...]
                 if (sheet.Rows.Count < 2) continue;
-                string code = Cell(sheet.Rows[1], 0);
-                string ko = Cell(sheet.Rows[1], 1);
+                string code = Cell(sheet.Rows[1], 0);   // c01
+                string ko = Cell(sheet.Rows[1], 1);      // 로아
                 if (!string.IsNullOrEmpty(code) && !string.IsNullOrEmpty(ko))
                 {
-                    // ASSET_NAMING.md 정전: engineId = code (c01~c05). 기존 항목이 있으면 사용자 커스텀 보존.
-                    string existingEngine = code;
-                    foreach (var e in charMap.entries) if (e.ko == ko && !string.IsNullOrEmpty(e.engineId)) { existingEngine = e.engineId; break; }
-                    charEntries.Add(new CharacterMap.Entry { ko = ko, code = code, engineId = existingEngine });
+                    existingAliases.TryGetValue(code, out var aliases);
+                    charEntries.Add(new CharacterMeta
+                    {
+                        characterId = code,
+                        displayName = ko,
+                        speakerAliases = aliases ?? new List<string>(),
+                    });
                 }
 
-                // Row 4: ['유형', '감정', '감정 ID', '리소스명', '작업', '파일']
                 int headerRow = FindHeaderRow(sheet.Rows, "감정", "감정 ID");
                 if (headerRow < 0) continue;
                 for (int r = headerRow + 1; r < sheet.Rows.Count; r++)
@@ -88,9 +98,9 @@ namespace LoveAlgo.NarrativeEditor
                 }
             }
 
-            charMap.entries = charEntries;
+            meta.characters = charEntries;
             emoteMap.entries = new List<EmoteMap.Entry>(emoteEntries.Values);
-            EditorUtility.SetDirty(charMap);
+            EditorUtility.SetDirty(meta);
             EditorUtility.SetDirty(emoteMap);
             charCount = charEntries.Count;
             emoteCount = emoteMap.entries.Count;

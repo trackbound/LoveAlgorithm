@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4d2033298eedc254e953a1eea264f800, type: 3}
+  m_Name: LockScreenContent
+  m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.LockScreen.Data.LockScreenContentSO
+  roaMessages:
+  - "\uC5B4\uB514\uC57C?"
+  - "\uC65C \uC548 \uC640\u2026"
+  - "\uC9C0\uAE08 \uB4E4\uC5B4\uC640\uC918."
+  - "\uAE30\uB2E4\uB9AC\uACE0 \uC788\uC744\uAC8C."
+  hintFirstSetup: "\uC55E\uC73C\uB85C \uC0AC\uC6A9\uD560 \uBE44\uBC00\uBC88\uD638\uB97C
+    \uC785\uB825\uD574\uC8FC\uC138\uC694.\n\uCD5C\uB300 7\uC790\uAE4C\uC9C0 \uC785\uB825
+    \uAC00\uB2A5\uD569\uB2C8\uB2E4."
+  hintComplete: "\uBE44\uBC00\uBC88\uD638 \uC124\uC815 \uC644\uB8CC!"
+  hintNormal: "\uBE44\uBC00\uBC88\uD638\uB97C \uC785\uB825\uD574\uC8FC\uC138\uC694."
+  hintForgot: "\uBE44\uBC00\uBC88\uD638\uB97C \uC78A\uC73C\uC168\uB2E4\uBA74 \uC6B0\uCE21
+    \uD558\uB2E8 \uC5F4\uC1E0 \uBAA8\uC591 \uBC84\uD2BC\uC744 \uB20C\uB7EC\uC8FC\uC138\uC694."
+  resetConfirmTitle: "\uC0C8\uB85C\uC6B4 \uBE44\uBC00\uBC88\uD638 \uC124\uC815\uC744\n\uC9C4\uD589\uD558\uC2DC\uACA0\uC2B5\uB2C8\uAE4C?"
+  resetConfirmYes: "\uC608"
+  resetConfirmNo: "\uC544\uB2C8\uC624"
+  fixedClockTime: 23:58
+  messageSfx: {fileID: 0}

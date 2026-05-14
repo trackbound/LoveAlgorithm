@@ -1,6 +1,7 @@
 #if UNITY_EDITOR
 using System.IO;
 using LoveAlgo.NarrativeEditor.Mappings;
+using LoveAlgo.Story;
 using UnityEditor;
 using UnityEngine;
 
@@ -24,7 +25,7 @@ namespace LoveAlgo.NarrativeEditor
         bool inPlaceLineIds = true;
 
         EmoteMap emote;
-        CharacterMap character;
+        LoveAlgo.Story.CharacterMetaDatabase meta;
         BgMap bg;
         CgMap cg;
         SdMap sd;
@@ -45,8 +46,10 @@ namespace LoveAlgo.NarrativeEditor
 
         void ReloadMaps()
         {
-            emote     = AssetDatabase.LoadAssetAtPath<EmoteMap>($"{MAP_DIR}/EmoteMap.asset");
-            character = AssetDatabase.LoadAssetAtPath<CharacterMap>($"{MAP_DIR}/CharacterMap.asset");
+            // EmoteMap은 런타임 SO로 승격 → Resources/Data/에서 로드
+            emote     = AssetDatabase.LoadAssetAtPath<EmoteMap>("Assets/Resources/Data/EmoteMap.asset")
+                     ?? AssetDatabase.LoadAssetAtPath<EmoteMap>($"{MAP_DIR}/EmoteMap.asset");
+            meta      = AssetDatabase.LoadAssetAtPath<LoveAlgo.Story.CharacterMetaDatabase>("Assets/Resources/Data/CharacterMetaDatabase.asset");
             bg        = AssetDatabase.LoadAssetAtPath<BgMap>($"{MAP_DIR}/BgMap.asset");
             cg        = AssetDatabase.LoadAssetAtPath<CgMap>($"{MAP_DIR}/CgMap.asset");
             sd        = AssetDatabase.LoadAssetAtPath<SdMap>($"{MAP_DIR}/SdMap.asset");
@@ -66,8 +69,8 @@ namespace LoveAlgo.NarrativeEditor
 
             EditorGUILayout.Space(8);
             EditorGUILayout.LabelField("Mappings", EditorStyles.boldLabel);
-            emote     = (EmoteMap)    EditorGUILayout.ObjectField("Emote",     emote,     typeof(EmoteMap),     false);
-            character = (CharacterMap)EditorGUILayout.ObjectField("Character", character, typeof(CharacterMap), false);
+            emote     = (EmoteMap)EditorGUILayout.ObjectField("Emote",     emote,     typeof(EmoteMap),     false);
+            meta      = (LoveAlgo.Story.CharacterMetaDatabase)EditorGUILayout.ObjectField("Meta", meta, typeof(LoveAlgo.Story.CharacterMetaDatabase), false);
             bg        = (BgMap)       EditorGUILayout.ObjectField("BG",        bg,        typeof(BgMap),        false);
             cg        = (CgMap)       EditorGUILayout.ObjectField("CG",        cg,        typeof(CgMap),        false);
             sd        = (SdMap)       EditorGUILayout.ObjectField("SD",        sd,        typeof(SdMap),        false);
@@ -115,7 +118,7 @@ namespace LoveAlgo.NarrativeEditor
                 PatchCsvPath  = patchPath,
                 LineIdPrefix  = lineIdPrefix,
                 AssignLineIdsInPlace = inPlaceLineIds,
-                Emote = emote, Character = character, Bg = bg, Cg = cg, Sd = sd, Sound = sound,
+                Emote = emote, Meta = meta, Bg = bg, Cg = cg, Sd = sd, Sound = sound,
             };
             lastResult = StoryCsvConverter.Convert(opt);
             AssetDatabase.Refresh();

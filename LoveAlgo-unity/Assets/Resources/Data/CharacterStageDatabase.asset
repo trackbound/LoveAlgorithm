@@ -13,36 +13,6 @@ MonoBehaviour:
   m_Name: CharacterStageDatabase
   m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.Story.CharacterStageDatabase
   entries:
-  - characterId: c05
-    spriteScale: 0.95
-    offsetX: 12
-    offsetY: -1336
-    pivotY: 0
-    overlayPrefix: 
-    overlayModes: []
-    defaultOverlayMode: 
-    positiveEmotes: []
-    negativeEmotes: []
-  - characterId: c02
-    spriteScale: 1.1
-    offsetX: 40
-    offsetY: -1671
-    pivotY: 0
-    overlayPrefix: 
-    overlayModes: []
-    defaultOverlayMode: 
-    positiveEmotes: []
-    negativeEmotes: []
-  - characterId: c04
-    spriteScale: 1.1
-    offsetX: 59
-    offsetY: -1640
-    pivotY: 0
-    overlayPrefix: 
-    overlayModes: []
-    defaultOverlayMode: 
-    positiveEmotes: []
-    negativeEmotes: []
   - characterId: c01
     spriteScale: 1
     offsetX: 0
@@ -59,10 +29,40 @@ MonoBehaviour:
     - Happy
     negativeEmotes:
     - Glare
+  - characterId: c02
+    spriteScale: 1.1
+    offsetX: 40
+    offsetY: -1671
+    pivotY: 0
+    overlayPrefix: 
+    overlayModes: []
+    defaultOverlayMode: 
+    positiveEmotes: []
+    negativeEmotes: []
   - characterId: c03
     spriteScale: 1
     offsetX: 79.2
     offsetY: -1441
+    pivotY: 0
+    overlayPrefix: 
+    overlayModes: []
+    defaultOverlayMode: 
+    positiveEmotes: []
+    negativeEmotes: []
+  - characterId: c04
+    spriteScale: 1.1
+    offsetX: 59
+    offsetY: -1640
+    pivotY: 0
+    overlayPrefix: 
+    overlayModes: []
+    defaultOverlayMode: 
+    positiveEmotes: []
+    negativeEmotes: []
+  - characterId: c05
+    spriteScale: 0.95
+    offsetX: 12
+    offsetY: -1336
     pivotY: 0
     overlayPrefix: 
     overlayModes: []

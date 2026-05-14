@@ -11,9 +11,19 @@ using UnityEngine;
 
 namespace LoveAlgo.NarrativeEditor
 {
+    public enum ViolationKind { Emote, Bg, Cg, Sd, Character }
+
+    public struct Violation
+    {
+        public ViolationKind kind;
+        public string lineId;       // 기획 CSV의 LineID (있으면)
+        public string token;         // 누락 토큰 (예: "눈움음")
+        public int sourceRow;        // 기획 CSV 행 인덱스 (0-based)
+    }
+
     public class StoryConvertResult
     {
-        public List<string[]> Rows = new();          // 변환된 5컬럼 라인들 (헤더/주석 포함)
+        public List<string[]> Rows = new();          // 변환된 5컬럼 라인들
         public int NewLines, ChangedLines, RemovedLines, OrphanPatches;
         public List<string> MissingEmote = new();
         public List<string> MissingBg = new();
@@ -21,6 +31,7 @@ namespace LoveAlgo.NarrativeEditor
         public List<string> MissingSd = new();
         public List<string> MissingCharacter = new();
         public List<string> Warnings = new();
+        public List<Violation> Violations = new();   // 구조화된 위반 리스트 (Quick-fix용)
     }
 
     public class StoryConvertOptions
@@ -31,7 +42,7 @@ namespace LoveAlgo.NarrativeEditor
         public string LineIdPrefix = "pro_";
         public bool AssignLineIdsInPlace = true;
         public EmoteMap Emote;
-        public CharacterMap Character;
+        public CharacterMetaDatabase Meta;
         public BgMap Bg;
         public CgMap Cg;
         public SdMap Sd;
@@ -50,8 +61,8 @@ namespace LoveAlgo.NarrativeEditor
                 TargetCsvPath = "Assets/Resources/Story/Prologue.csv",
                 PatchCsvPath  = "Assets/Resources/Story/Prologue.patch.csv",
                 AssignLineIdsInPlace = true,
-                Emote     = AssetDatabase.LoadAssetAtPath<EmoteMap>($"{MAP}/EmoteMap.asset"),
-                Character = AssetDatabase.LoadAssetAtPath<CharacterMap>($"{MAP}/CharacterMap.asset"),
+                Emote     = AssetDatabase.LoadAssetAtPath<EmoteMap>("Assets/Resources/Data/EmoteMap.asset"),
+                Meta      = AssetDatabase.LoadAssetAtPath<CharacterMetaDatabase>("Assets/Resources/Data/CharacterMetaDatabase.asset"),
                 Bg        = AssetDatabase.LoadAssetAtPath<BgMap>($"{MAP}/BgMap.asset"),
                 Cg        = AssetDatabase.LoadAssetAtPath<CgMap>($"{MAP}/CgMap.asset"),
                 Sd        = AssetDatabase.LoadAssetAtPath<SdMap>($"{MAP}/SdMap.asset"),
@@ -153,7 +164,7 @@ namespace LoveAlgo.NarrativeEditor
                     continue;
                 }
                 if (isComment) { result.Rows.Add(new[] { lineId, "", "", "", "" }); continue; }
-                if (isBlank) { result.Rows.Add(new[] { "", "", "", "", "" }); continue; }
+                if (isBlank) continue; // 엔진 CSV에는 빈 행 출력하지 않음 (ScriptParser 경고 방지)
                 if (string.IsNullOrEmpty(typeStr)) continue; // 작가 메모 행 스킵
 
                 // Type alias 변환 (SFX → Sound)
@@ -162,13 +173,12 @@ namespace LoveAlgo.NarrativeEditor
                 // Type별 정규화
                 if (Enum.TryParse<LineType>(normalizedTypeStr, true, out var type))
                 {
-                    // SFX type이었으면 Value에 SFX: prefix 보장
                     if (type == LineType.Sound && typeStr.Equals("SFX", StringComparison.OrdinalIgnoreCase)
                         && !value.StartsWith("SFX:") && !value.StartsWith("BGM:"))
                     {
                         value = "SFX:" + value;
                     }
-                    value = NormalizeByType(type, speaker, value, opt, result, lineId);
+                    value = NormalizeByType(type, speaker, value, opt, result, lineId, i);
                     next = NormalizeNext(type, next);
                 }
                 else
@@ -208,21 +218,26 @@ namespace LoveAlgo.NarrativeEditor
         }
 
         // ─── Type별 정규화 ───────────────────────────────
-        static string NormalizeByType(LineType type, string speaker, string value, StoryConvertOptions opt, StoryConvertResult result, string lineId)
+        static string NormalizeByType(LineType type, string speaker, string value, StoryConvertOptions opt, StoryConvertResult result, string lineId, int sourceRow)
         {
             switch (type)
             {
-                case LineType.Text: return NormalizeText(value, opt, result, lineId);
-                case LineType.Char: return NormalizeChar(value, opt, result, lineId);
-                case LineType.BG: return NormalizeBg(value, opt, result, lineId);
-                case LineType.CG: return NormalizeCg(value, opt, result, lineId);
-                case LineType.SD: return NormalizeSd(value, opt, result, lineId);
+                case LineType.Text: return NormalizeText(value, opt, result, lineId, sourceRow);
+                case LineType.Char: return NormalizeChar(value, opt, result, lineId, sourceRow);
+                case LineType.BG: return NormalizeBg(value, opt, result, lineId, sourceRow);
+                case LineType.CG: return NormalizeCg(value, opt, result, lineId, sourceRow);
+                case LineType.SD: return NormalizeSd(value, opt, result, lineId, sourceRow);
                 case LineType.Sound: return NormalizeSound(value, opt, result, lineId);
                 default: return value;
             }
         }
 
-        static string NormalizeText(string value, StoryConvertOptions opt, StoryConvertResult r, string lineId)
+        static void AddViolation(StoryConvertResult r, ViolationKind k, string lineId, string token, int row)
+        {
+            r.Violations.Add(new Violation { kind = k, lineId = lineId ?? "", token = token, sourceRow = row });
+        }
+
+        static string NormalizeText(string value, StoryConvertOptions opt, StoryConvertResult r, string lineId, int sourceRow)
         {
             value = NormalizeLineBreaks(value);
             if (opt.Emote == null) return value;
@@ -232,6 +247,7 @@ namespace LoveAlgo.NarrativeEditor
                 if (opt.Emote.TryResolve(ko, out var id))
                     return $"<emote={id}/>";
                 r.MissingEmote.Add($"{ko} ({lineId})");
+                AddViolation(r, ViolationKind.Emote, lineId, ko, sourceRow);
                 return m.Value;
             });
         }
@@ -255,7 +271,7 @@ namespace LoveAlgo.NarrativeEditor
         // 알려진 VirtualOverlay 모드 토큰 (작가가 5번째 segment에 명시)
         static readonly HashSet<string> OverlayModeTokens = new(StringComparer.OrdinalIgnoreCase) { "Mob", "PC" };
 
-        static string NormalizeChar(string value, StoryConvertOptions opt, StoryConvertResult r, string lineId)
+        static string NormalizeChar(string value, StoryConvertOptions opt, StoryConvertResult r, string lineId, int sourceRow)
         {
             // 신규: C:Enter:로아:기본:Mob → C:Enter:Roa:_00:Mob (모드 토큰 보존)
             // 구버전: C:Enter:로아:활짝:Roa_Mob_1:Fade:4.0 → C:Enter:Roa:_13:Mob (모드만 추출)
@@ -277,11 +293,15 @@ namespace LoveAlgo.NarrativeEditor
                 if (p.StartsWith("Fade") || Regex.IsMatch(p, @"^\d+(\.\d+)?$"))
                     continue;
 
-                // 한글 캐릭터명 → engineId
-                if (opt.Character != null && opt.Character.TryResolve(p, out var ce))
+                // 한글 캐릭터명 → c01 (CharacterMetaDatabase 조회)
+                if (opt.Meta != null)
                 {
-                    output.Add(!string.IsNullOrEmpty(ce.engineId) ? ce.engineId : ce.code);
-                    continue;
+                    var resolved = opt.Meta.SpeakerToCharacterId(p);
+                    if (!string.IsNullOrEmpty(resolved))
+                    {
+                        output.Add(resolved);
+                        continue;
+                    }
                 }
                 // 한글 emote → _NN
                 if (opt.Emote != null && opt.Emote.TryResolve(p, out var emoteId))
@@ -294,7 +314,7 @@ namespace LoveAlgo.NarrativeEditor
             return string.Join(":", output);
         }
 
-        static string NormalizeBg(string value, StoryConvertOptions opt, StoryConvertResult r, string lineId)
+        static string NormalizeBg(string value, StoryConvertOptions opt, StoryConvertResult r, string lineId, int sourceRow)
         {
             // 작가 표기 BG: "자취방 책상:Cut" 또는 "BG_자취방_책상" 또는 "BG_Black"
             var parts = value.Split(':');
@@ -317,14 +337,17 @@ namespace LoveAlgo.NarrativeEditor
             }
 
             r.MissingBg.Add($"{head} ({lineId})");
-            return value;
+            AddViolation(r, ViolationKind.Bg, lineId, head, sourceRow);
+            // 매핑 누락이라도 transition 토큰은 부여 (ScriptParser 경고 방지)
+            if (string.IsNullOrEmpty(tail)) tail = ":Cut";
+            return head + tail;
         }
 
         // CG/SD 액션 키워드 — 리소스 ID가 아니므로 매핑 시도 안 함
         static readonly HashSet<string> ActionKeywords = new(StringComparer.OrdinalIgnoreCase)
         { "Close", "Hide", "Exit", "Off", "End" };
 
-        static string NormalizeCg(string value, StoryConvertOptions opt, StoryConvertResult r, string lineId)
+        static string NormalizeCg(string value, StoryConvertOptions opt, StoryConvertResult r, string lineId, int sourceRow)
         {
             // 'CG_Roa_01:Fade:4.0' or '로아 첫만남' or 'Close'
             if (ActionKeywords.Contains(value.Trim())) return value.Trim();
@@ -339,6 +362,7 @@ namespace LoveAlgo.NarrativeEditor
             else if (!head.StartsWith("cg_") && !head.StartsWith("CG_"))
             {
                 r.MissingCg.Add($"{head} ({lineId})");
+                AddViolation(r, ViolationKind.Cg, lineId, head, sourceRow);
             }
             // tail의 숫자만 유지
             string tail = "";
@@ -350,7 +374,7 @@ namespace LoveAlgo.NarrativeEditor
             return head + tail;
         }
 
-        static string NormalizeSd(string value, StoryConvertOptions opt, StoryConvertResult r, string lineId)
+        static string NormalizeSd(string value, StoryConvertOptions opt, StoryConvertResult r, string lineId, int sourceRow)
         {
             if (ActionKeywords.Contains(value.Trim())) return value.Trim();
             var parts = value.Split(':');
@@ -358,7 +382,10 @@ namespace LoveAlgo.NarrativeEditor
             if (opt.Sd != null && opt.Sd.TryResolve(head, out var engineId))
                 head = engineId;
             else if (!head.StartsWith("sd_") && !head.StartsWith("SD_"))
+            {
                 r.MissingSd.Add($"{head} ({lineId})");
+                AddViolation(r, ViolationKind.Sd, lineId, head, sourceRow);
+            }
             string tail = parts.Length > 1 ? ":" + string.Join(":", parts, 1, parts.Length - 1) : "";
             return head + tail;
         }
@@ -383,8 +410,21 @@ namespace LoveAlgo.NarrativeEditor
         {
             next = (next ?? "").Trim();
             if (!string.IsNullOrEmpty(next)) return next;
-            if (type == LineType.Text || type == LineType.Char) return "click";
-            return "";
+            // Type별 default — ScriptParser가 빈 Next 라인을 거부하므로 안전한 기본값 부여
+            switch (type)
+            {
+                case LineType.Text:
+                case LineType.Char:    return "click";   // 대사/캐릭터: 클릭 대기
+                case LineType.Flow:    return ">";        // Jump/If: 즉시
+                case LineType.Sound:   return ">";        // BGM/SFX: 즉시 재생
+                case LineType.FX:      return "await";    // 시각 효과: 종료 대기
+                case LineType.BG:
+                case LineType.CG:
+                case LineType.SD:      return "await";    // 전환: 완료 대기
+                case LineType.Choice:
+                case LineType.Option:  return "";          // 선택지: ScriptParser가 허용
+                default:               return ">";
+            }
         }
 
         // ─── 패치 머지 ───────────────────────────────────

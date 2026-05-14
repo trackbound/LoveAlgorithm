@@ -13,35 +13,18 @@ MonoBehaviour:
   m_Name: CharacterMetaDatabase
   m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.Story.CharacterMetaDatabase
   characters:
-  - characterId: c05
-    displayName: "\uC774\uBD04"
+  - characterId: c01
+    displayName: "\uB85C\uC544"
     speakerAliases: []
   - characterId: c02
     displayName: "\uC11C\uB2E4\uC740"
     speakerAliases: []
-  - characterId: c04
-    displayName: "\uB3C4\uD76C\uC6D0"
-    speakerAliases: []
-  - characterId: c01
-    displayName: "\uB85C\uC544"
-    speakerAliases: []
   - characterId: c03
     displayName: "\uD558\uC608\uC740"
     speakerAliases: []
-  emoteAliases:
-  - alias: "\uAE30\uBCF8"
-    emoteName: Default
-  - alias: "\uAE5C\uC9DD"
-    emoteName: Surprise
-  - alias: "\uB208\uC6C3\uC74C"
-    emoteName: EyeSmile
-  - alias: "\uBC1D\uAC8C\uC6C3\uC74C"
-    emoteName: BrightSmile
-  - alias: "\uC6B8\uBA39"
-    emoteName: Tearful
-  - alias: "\uCC0C\uB9BF"
-    emoteName: Glare
-  - alias: "\uD65C\uC9DD\uC6C3\uC74C"
-    emoteName: Happy
-  - alias: "\uBD80\uB044"
-    emoteName: Shy
+  - characterId: c04
+    displayName: "\uB3C4\uD76C\uC6D0"
+    speakerAliases: []
+  - characterId: c05
+    displayName: "\uC774\uBD04"
+    speakerAliases: []
