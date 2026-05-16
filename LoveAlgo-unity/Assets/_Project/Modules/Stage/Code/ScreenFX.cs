@@ -47,8 +47,12 @@ namespace LoveAlgo.Core
         [SerializeField] Image tintOverlay;
 
         [Header("설정")]
-        [SerializeField] float defaultFadeDuration = 0.6f;
-        [SerializeField] float defaultFlashDuration = 0.1f;
+        [Tooltip("기본 페이드 지속 — 0.8~1.0s가 시네마틱 VN 표준")]
+        [SerializeField] float defaultFadeDuration = 0.9f;
+        [Tooltip("기본 플래시 지속 — 0.12~0.18s가 자연스러운 섬광")]
+        [SerializeField] float defaultFlashDuration = 0.14f;
+        [Tooltip("FadeOut 시 끝에서 살짝 머무는 시간(s) — 검은 화면 안착감")]
+        [SerializeField] float fadeOutHoldTail = 0.05f;
 
         [Header("Shake 설정")]
         [Tooltip("흔들림 주파수 (높을수록 빠르게 진동)")]
@@ -286,7 +290,8 @@ namespace LoveAlgo.Core
         #region Fade
 
         /// <summary>
-        /// 화면 어둡게 (검은색으로 페이드)
+        /// 화면 어둡게 (검은색으로 페이드).
+        /// 부드러운 InOutCubic + 끝에서 살짝 머묾(hold tail) — VN 시네마틱 표준.
         /// </summary>
         public async UniTask FadeOutAsync(float duration, CancellationToken ct = default)
         {
@@ -296,12 +301,27 @@ namespace LoveAlgo.Core
                 return;
             }
 
+            DOTween.Kill(fadeOverlay);
             fadeOverlay.raycastTarget = true;
-            await fadeOverlay.DOFade(1f, duration).SetEase(Ease.InOutSine).ToUniTask(cancellationToken: ct);
+
+            // 색상이 흰색(Flash 직후 등)이면 검정으로 복원
+            var c = fadeOverlay.color;
+            if (c.r > 0.05f || c.g > 0.05f || c.b > 0.05f)
+            {
+                fadeOverlay.color = new Color(0f, 0f, 0f, c.a);
+            }
+
+            await fadeOverlay.DOFade(1f, duration)
+                .SetEase(Ease.InOutCubic)
+                .ToUniTask(cancellationToken: ct);
+
+            // 검은 화면 안착감 — 다음 명령으로 넘어가기 전 살짝 머묾
+            if (fadeOutHoldTail > 0f)
+                await UniTask.Delay(TimeSpan.FromSeconds(fadeOutHoldTail), cancellationToken: ct);
         }
 
         /// <summary>
-        /// 화면 밝게 (페이드 복귀)
+        /// 화면 밝게 (페이드 복귀). OutQuart로 처음엔 빠르게 밝아지다 끝에서 부드럽게 안착.
         /// </summary>
         public async UniTask FadeInAsync(float duration, CancellationToken ct = default)
         {
@@ -311,7 +331,10 @@ namespace LoveAlgo.Core
                 return;
             }
 
-            await fadeOverlay.DOFade(0f, duration).SetEase(Ease.OutSine).ToUniTask(cancellationToken: ct);
+            DOTween.Kill(fadeOverlay);
+            await fadeOverlay.DOFade(0f, duration)
+                .SetEase(Ease.OutQuart)
+                .ToUniTask(cancellationToken: ct);
             fadeOverlay.raycastTarget = false;
         }
 
@@ -363,7 +386,7 @@ namespace LoveAlgo.Core
         #region Flash
 
         /// <summary>
-        /// 화면 번쩍임
+        /// 화면 번쩍임 — 빠른 ramp-up + Expo 감쇠로 자연스러운 섬광.
         /// </summary>
         public async UniTask FlashAsync(float duration, CancellationToken ct = default)
         {
@@ -375,6 +398,8 @@ namespace LoveAlgo.Core
                 return;
             }
 
+            DOTween.Kill(overlay);
+
             // 흰색으로 설정 (flashOverlay가 없으면 fadeOverlay 사용)
             Color originalColor = overlay.color;
             if (flashOverlay == null)
@@ -382,14 +407,30 @@ namespace LoveAlgo.Core
                 overlay.color = Color.white;
             }
 
-            // 즉시 나타났다가 페이드아웃
-            SetOverlayAlpha(overlay, 1f);
-            await overlay.DOFade(0f, duration).SetEase(Ease.OutQuad).ToUniTask(cancellationToken: ct);
+            // Ramp-up: 약 20%는 빠르게 밝아짐 → 나머지 80%는 OutExpo로 자연 감쇠
+            float rampIn = Mathf.Min(0.05f, duration * 0.2f);
+            float rampOut = Mathf.Max(0.01f, duration - rampIn);
 
-            // 원래 색상 복원
-            if (flashOverlay == null)
+            SetOverlayAlpha(overlay, 0f);
+            overlay.raycastTarget = false;
+
+            try
             {
-                overlay.color = originalColor;
+                await overlay.DOFade(1f, rampIn)
+                    .SetEase(Ease.OutQuad)
+                    .ToUniTask(cancellationToken: ct);
+                await overlay.DOFade(0f, rampOut)
+                    .SetEase(Ease.OutExpo)
+                    .ToUniTask(cancellationToken: ct);
+            }
+            finally
+            {
+                // 원래 색상 복원 (fadeOverlay 공용일 때 검정으로 복귀)
+                if (overlay != null && flashOverlay == null)
+                {
+                    overlay.color = originalColor;
+                    SetOverlayAlpha(overlay, 0f);
+                }
             }
         }
 
@@ -573,7 +614,7 @@ namespace LoveAlgo.Core
             try
             {
                 await overlay.DOFade(0f, impactFlashDuration)
-                    .SetEase(Ease.OutQuad)
+                    .SetEase(Ease.OutExpo)
                     .ToUniTask(cancellationToken: ct);
             }
             finally
@@ -866,9 +907,10 @@ namespace LoveAlgo.Core
                 return;
             }
 
+            stageTransform.DOKill();
             await stageTransform
                 .DOScale(Vector3.one * targetScale, duration)
-                .SetEase(Ease.InOutSine)
+                .SetEase(Ease.InOutCubic)
                 .ToUniTask(cancellationToken: ct);
         }
 
@@ -889,22 +931,24 @@ namespace LoveAlgo.Core
                 return;
             }
 
+            stageTransform.DOKill();
             await stageTransform
                 .DOAnchorPos(new Vector2(x, y), duration)
-                .SetEase(Ease.InOutSine)
+                .SetEase(Ease.InOutCubic)
                 .ToUniTask(cancellationToken: ct);
         }
 
         /// <summary>
-        /// 줌 + 팬 동시 원점 복귀
+        /// 줌 + 팬 동시 원점 복귀 — 부드러운 OutCubic으로 자연스러운 안착
         /// CSV: FX,,CamReset:0.4,await
         /// </summary>
         public async UniTask CamResetAsync(float duration, CancellationToken ct = default)
         {
             if (stageTransform == null) return;
 
-            var scaleTween = stageTransform.DOScale(Vector3.one, duration).SetEase(Ease.InOutSine);
-            var posTween = stageTransform.DOAnchorPos(Vector2.zero, duration).SetEase(Ease.InOutSine);
+            stageTransform.DOKill();
+            var scaleTween = stageTransform.DOScale(Vector3.one, duration).SetEase(Ease.OutCubic);
+            var posTween = stageTransform.DOAnchorPos(Vector2.zero, duration).SetEase(Ease.OutCubic);
 
             var seq = DOTween.Sequence();
             _ = seq.Join(scaleTween);
@@ -934,11 +978,13 @@ namespace LoveAlgo.Core
 
             Color targetColor = ParseTintColor(preset);
 
+            DOTween.Kill(overlay);
+
             if (preset == "Clear" || alpha <= 0f)
             {
-                // 해제: 현재 색상 유지하며 알파만 0으로
+                // 해제: 현재 색상 유지하며 알파만 0으로 (OutCubic — 부드러운 안착)
                 await overlay.DOFade(0f, duration)
-                    .SetEase(Ease.OutSine)
+                    .SetEase(Ease.OutCubic)
                     .ToUniTask(cancellationToken: ct);
                 overlay.raycastTarget = false;
                 return;
@@ -947,7 +993,7 @@ namespace LoveAlgo.Core
             targetColor.a = alpha;
             overlay.raycastTarget = false; // 틴트는 입력 차단하지 않음
             await overlay.DOColor(targetColor, duration)
-                .SetEase(Ease.InOutSine)
+                .SetEase(Ease.InOutCubic)
                 .ToUniTask(cancellationToken: ct);
         }
 

@@ -6,14 +6,17 @@ using UnityEngine.UI;
 namespace LoveAlgo.Phone
 {
     /// <summary>
-    /// 개별 채팅방 컨트롤러 (ChatRoomPanel에 연결)
-    /// 
-    /// 메시지 버블을 스크롤 가능한 리스트로 표시
+    /// 개별 채팅방 컨트롤러 (ChatRoomPanel에 연결).
+    /// 메시지 버블 스크롤 + 헤더(이름/상메) + 새 메시지 동적 추가.
     /// </summary>
     public class PhoneChatRoom : MonoBehaviour
     {
-        [Header("UI")]
-        [SerializeField] TMP_Text headerText;
+        [Header("헤더")]
+        [SerializeField] TMP_Text headerNameText;
+        [SerializeField] TMP_Text headerStatusText;
+        [SerializeField] Image headerProfileImage;
+
+        [Header("메시지")]
         [SerializeField] ScrollRect scrollRect;
         [SerializeField] Transform messageContainer;
 
@@ -24,20 +27,24 @@ namespace LoveAlgo.Phone
         readonly List<ChatBubble> activeBubbles = new();
         string currentHeroineId;
 
-        /// <summary>채팅방 열기</summary>
+        public string CurrentHeroineId => currentHeroineId;
+
+        /// <summary>채팅방 열기 — 전체 메시지 로드</summary>
         public void Open(string heroineId)
         {
             currentHeroineId = heroineId;
 
-            // 헤더 설정
+            // 헤더
             var friend = MessengerManager.GetFriend(heroineId);
-            if (headerText != null)
-                headerText.text = friend?.DisplayName ?? heroineId;
+            if (headerNameText != null) headerNameText.text = friend?.DisplayName ?? heroineId;
+            if (headerStatusText != null) headerStatusText.text = friend?.StatusMessage ?? "";
+            if (headerProfileImage != null && friend != null && !string.IsNullOrEmpty(friend.ProfileImagePath))
+            {
+                var sprite = Resources.Load<Sprite>(friend.ProfileImagePath);
+                if (sprite != null) headerProfileImage.sprite = sprite;
+            }
 
-            // 메시지 표시
             PopulateMessages();
-
-            // 읽음 처리
             MessengerManager.MarkAsRead(heroineId);
         }
 
@@ -54,21 +61,37 @@ namespace LoveAlgo.Phone
             if (room == null) return;
 
             foreach (var msg in room.Messages)
-            {
-                var prefab = msg.Sender == MessageSender.Self ? selfBubblePrefab : otherBubblePrefab;
-                if (prefab == null) continue;
+                SpawnBubble(msg);
 
-                var bubble = Instantiate(prefab, messageContainer);
-                bubble.Setup(msg);
-                activeBubbles.Add(bubble);
-            }
+            ScrollToBottomDelayed();
+        }
 
-            // 스크롤 최하단
-            if (scrollRect != null)
-            {
-                Canvas.ForceUpdateCanvases();
-                scrollRect.verticalNormalizedPosition = 0f;
-            }
+        /// <summary>외부 신규 메시지 1개 추가 (PhonePopup.OnExternalNewMessage에서 호출)</summary>
+        public void AppendLatestMessage()
+        {
+            if (string.IsNullOrEmpty(currentHeroineId)) return;
+            var room = MessengerManager.GetChatRoom(currentHeroineId);
+            if (room == null || room.Messages.Count == 0) return;
+
+            var latest = room.Messages[room.Messages.Count - 1];
+            SpawnBubble(latest);
+            ScrollToBottomDelayed();
+        }
+
+        void SpawnBubble(ChatMessage msg)
+        {
+            var prefab = msg.Sender == MessageSender.Self ? selfBubblePrefab : otherBubblePrefab;
+            if (prefab == null) return;
+            var bubble = Instantiate(prefab, messageContainer);
+            bubble.Setup(msg);
+            activeBubbles.Add(bubble);
+        }
+
+        void ScrollToBottomDelayed()
+        {
+            if (scrollRect == null) return;
+            Canvas.ForceUpdateCanvases();
+            scrollRect.verticalNormalizedPosition = 0f;
         }
     }
 }

@@ -146,8 +146,9 @@ namespace LoveAlgo.Story
 
             // 크로스페이드: Back 페이드인 + Front 페이드아웃
             var sequence = DOTween.Sequence();
-            _ = sequence.Join(backCanvasGroup.DOFade(1f, duration).SetEase(Ease.InOutSine));
-            _ = sequence.Join(frontCanvasGroup.DOFade(0f, duration).SetEase(Ease.InOutSine));
+            // OutCubic 페어 — 새 BG는 부드럽게 밝아지고, 기존 BG는 처음엔 빠르게 사라지다 자연 안착
+            _ = sequence.Join(backCanvasGroup.DOFade(1f, duration).SetEase(Ease.OutCubic));
+            _ = sequence.Join(frontCanvasGroup.DOFade(0f, duration).SetEase(Ease.InCubic));
 
             try
             {

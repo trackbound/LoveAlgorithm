@@ -10,6 +10,8 @@ namespace LoveAlgo.UI
     /// </summary>
     public class AlertPopup : PopupBase
     {
+        public override PopupLayer Layer => PopupLayer.Dialog;
+
         [Header("UI 바인딩")]
         [SerializeField] TMP_Text messageText;
         [SerializeField] Button confirmButton;

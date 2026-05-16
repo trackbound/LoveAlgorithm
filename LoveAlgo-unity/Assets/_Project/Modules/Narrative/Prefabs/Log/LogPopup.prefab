@@ -943,7 +943,7 @@ GameObject:
   - component: {fileID: 6529436533760000472}
   - component: {fileID: 915690350191169628}
   m_Layer: 5
-  m_Name: Dimmer
+  m_Name: dim
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1295,8 +1295,9 @@ GameObject:
   - component: {fileID: 1998926184559892701}
   - component: {fileID: 2568872540603628344}
   - component: {fileID: 6972643899393073114}
+  - component: {fileID: 8969136903318335532}
   m_Layer: 5
-  m_Name: Panel
+  m_Name: panel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1362,6 +1363,18 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!225 &8969136903318335532
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3203367864464655758}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &3580517034003727663
 GameObject:
   m_ObjectHideFlags: 0
@@ -2500,11 +2513,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 96b0a835556802c4783d6f2b3a847fde, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.UI.LogPopup
+  rootCanvasGroup: {fileID: 2775621860878403227}
   panelRect: {fileID: 1998926184559892701}
-  canvasGroup: {fileID: 2775621860878403227}
+  canvasGroup: {fileID: 8969136903318335532}
   showDuration: 0.35
   hideDuration: 0.28
   slideOffset: 200
+  floatOffset: 15
   scrollRect: {fileID: 5716992173577756077}
   contentRoot: {fileID: 8517791398231822571}
   closeButton: {fileID: 2298639209985319376}

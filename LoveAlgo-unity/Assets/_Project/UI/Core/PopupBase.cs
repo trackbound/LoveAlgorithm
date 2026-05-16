@@ -5,21 +5,39 @@ using UnityEngine;
 namespace LoveAlgo.UI
 {
     /// <summary>
-    /// 팝업 레이어 (네이밍 컨벤션의 UI 카테고리와 1:1).
-    /// Modal: *Popup — 진행 차단 + dim / Notification: *Notification·*Tooltip — 비차단, 위에 표시.
+    /// 팝업 레이어 (z-order: Modal 뒤 ↔ Notification 앞).
+    ///   Modal:        일반 *Popup (Log/Phone/Settings/Save/Choice 등)
+    ///   Dialog:       Alert/Confirm — 모달 위 인터럽트
+    ///   Notification: Toast/Place — 가장 위, 비차단
     /// </summary>
-    public enum PopupLayer { Modal, Notification }
+    public enum PopupLayer { Modal, Dialog, Notification }
+
+    /// <summary>팝업 등장/퇴장 애니메이션 종류.</summary>
+    public enum PopupAnimation
+    {
+        FloatUp,     // 기본 — 아래에서 위로 살짝 떠오르며 fade. Alert/Confirm/일반 popup
+        Fade,        // 페이드만. 큰 popup(Log/Phone/Choice 등)에 적합
+        SlideRight,  // 우측에서 슬라이드. Notification 계열
+    }
 
     /// <summary>
     /// 모든 팝업의 공통 베이스.
-    /// 애니메이션/Stack 통보를 표준화. Layer/UseDimmer는 타입의 본질이므로 코드에서 선언.
+    /// 애니메이션/Stack 통보를 표준화. Layer는 타입의 본질이므로 코드에서 선언. Dim은 popup prefab 자체에 포함.
     /// 결과를 반환하는 팝업은 <see cref="PopupBase{TResult}"/>를 상속.
     /// </summary>
     public abstract class PopupBase : MonoBehaviour
     {
-        [Header("애니메이션 (panelRect/canvasGroup 바인딩 시 자동 적용)")]
+        [Header("바인딩 (컨벤션: Root CG = 입력 정책, Panel CG = 애니메이션)")]
+        [Tooltip("Root CanvasGroup — interactable/blocksRaycasts (popup 입력 정책). 없으면 GetComponent로 fallback.")]
+        [SerializeField] protected CanvasGroup rootCanvasGroup;
+        [Tooltip("Panel RectTransform — 이동/스케일 애니메이션 대상.")]
         [SerializeField] protected RectTransform panelRect;
+        [Tooltip("Panel CanvasGroup — fade 애니메이션 (alpha 0↔1).")]
         [SerializeField] protected CanvasGroup canvasGroup;
+
+        [Header("애니메이션 파라미터")]
+        [Tooltip("Inspector에서 선택. 코드에서 override 시 그것이 우선.")]
+        [SerializeField] protected PopupAnimation animationType = PopupAnimation.FloatUp;
         [SerializeField] protected float showDuration = 0.35f;
         [SerializeField] protected float hideDuration = 0.28f;
         [SerializeField] protected float slideOffset = 200f;
@@ -28,16 +46,34 @@ namespace LoveAlgo.UI
         Sequence currentSequence;
         UniTaskCompletionSource hideCompletionSource;
 
-        /// <summary>팝업이 속할 레이어. 기본 Modal — *Notification 계열은 override.</summary>
+        /// <summary>팝업이 속할 레이어. 기본 Modal — Dialog/Notification 계열은 override.</summary>
         public virtual PopupLayer Layer => PopupLayer.Modal;
-        /// <summary>Dimmer 사용 여부. 기본 true — *Notification 계열은 override로 false.</summary>
-        public virtual bool UseDimmer => true;
+
+        /// <summary>등장/퇴장 애니메이션 종류. 기본은 Inspector 값 사용 — 코드에서 override 시 그것이 우선.</summary>
+        public virtual PopupAnimation AnimationType => animationType;
+
+        /// <summary>FloatUp 거리 (Y+). FloatUp 모드에서만 사용.</summary>
+        [SerializeField] protected float floatOffset = 15f;
         public bool IsVisible => gameObject.activeSelf;
 
         protected virtual void Awake()
         {
+            // Root CG fallback (popup 객체 자체에 있는 CG)
+            if (rootCanvasGroup == null) rootCanvasGroup = GetComponent<CanvasGroup>();
+            // Panel CG가 비어있으면 Root CG를 fade에 재사용 (단일 CG 구조 호환)
+            if (canvasGroup == null) canvasGroup = rootCanvasGroup;
+
             if (panelRect != null)
                 originalPosition = panelRect.anchoredPosition;
+        }
+
+        /// <summary>입력 정책 토글 — Root CG의 interactable/blocksRaycasts 컨트롤.</summary>
+        protected void SetInteractive(bool on)
+        {
+            var cg = rootCanvasGroup ?? canvasGroup;
+            if (cg == null) return;
+            cg.interactable = on;
+            cg.blocksRaycasts = on;
         }
 
         public virtual void Show()
@@ -66,31 +102,34 @@ namespace LoveAlgo.UI
             return tcs.Task;
         }
 
-        /// <summary>Show 애니메이션: 우측에서 슬라이드 + 스케일 + 페이드.</summary>
+        /// <summary>Show 애니메이션 — AnimationType에 따라 분기.</summary>
         protected virtual void PlayShowAnimation()
         {
             if (panelRect == null || canvasGroup == null) return;
-
             canvasGroup.alpha = 0f;
-            canvasGroup.interactable = false;
-            canvasGroup.blocksRaycasts = false;
-            panelRect.anchoredPosition = originalPosition + new Vector2(slideOffset, 0);
-            panelRect.localScale = new Vector3(0.97f, 0.97f, 1f);
+            SetInteractive(false);
+
+            Vector2 offset = AnimationType switch
+            {
+                PopupAnimation.SlideRight => new Vector2(slideOffset, 0),
+                PopupAnimation.FloatUp    => new Vector2(0, -floatOffset),
+                _                          => Vector2.zero,
+            };
+            panelRect.anchoredPosition = originalPosition + offset;
+            panelRect.localScale = AnimationType == PopupAnimation.Fade ? Vector3.one : new Vector3(0.97f, 0.97f, 1f);
 
             var seq = DOTween.Sequence();
             seq.Append(canvasGroup.DOFade(1f, showDuration * 0.6f).SetEase(Ease.OutCubic));
-            seq.Join(panelRect.DOAnchorPos(originalPosition, showDuration).SetEase(Ease.OutCubic));
-            seq.Join(panelRect.DOScale(1f, showDuration).SetEase(Ease.OutCubic));
-            seq.OnComplete(() =>
-            {
-                canvasGroup.interactable = true;
-                canvasGroup.blocksRaycasts = true;
-            });
+            if (offset != Vector2.zero)
+                seq.Join(panelRect.DOAnchorPos(originalPosition, showDuration).SetEase(Ease.OutCubic));
+            if (AnimationType != PopupAnimation.Fade)
+                seq.Join(panelRect.DOScale(1f, showDuration).SetEase(Ease.OutCubic));
+            seq.OnComplete(() => SetInteractive(true));
             seq.SetUpdate(true);
             currentSequence = seq;
         }
 
-        /// <summary>Hide 애니메이션: 우측으로 빠르게 빠져나감.</summary>
+        /// <summary>Hide 애니메이션 — AnimationType 대칭.</summary>
         protected virtual void PlayHideAnimation()
         {
             if (panelRect == null || canvasGroup == null)
@@ -100,16 +139,22 @@ namespace LoveAlgo.UI
                 return;
             }
 
-            canvasGroup.interactable = false;
-            canvasGroup.blocksRaycasts = false;
+            SetInteractive(false);
+
+            Vector2 offset = AnimationType switch
+            {
+                PopupAnimation.SlideRight => new Vector2(slideOffset, 0),
+                PopupAnimation.FloatUp    => new Vector2(0, -floatOffset),
+                _                          => Vector2.zero,
+            };
 
             var seq = DOTween.Sequence();
-            seq.Append(panelRect.DOAnchorPos(
-                originalPosition + new Vector2(slideOffset, 0),
-                hideDuration).SetEase(Ease.InCubic));
-            seq.Join(panelRect.DOScale(0.97f, hideDuration).SetEase(Ease.InCubic));
-            seq.Insert(hideDuration * 0.7f,
-                canvasGroup.DOFade(0f, hideDuration * 0.3f).SetEase(Ease.InQuad));
+            if (offset != Vector2.zero)
+                seq.Append(panelRect.DOAnchorPos(originalPosition + offset, hideDuration).SetEase(Ease.InCubic));
+            if (AnimationType != PopupAnimation.Fade)
+                seq.Join(panelRect.DOScale(0.97f, hideDuration).SetEase(Ease.InCubic));
+            seq.Insert(hideDuration * 0.5f,
+                canvasGroup.DOFade(0f, hideDuration * 0.5f).SetEase(Ease.InQuad));
             seq.SetUpdate(true);
             seq.OnComplete(() =>
             {

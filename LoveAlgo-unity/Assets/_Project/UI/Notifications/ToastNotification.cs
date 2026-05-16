@@ -10,36 +10,33 @@ namespace LoveAlgo.UI
 {
     /// <summary>
     /// 토스트 팝업 (자동 사라짐). 순차 메시지 지원.
-    /// PopupBase 통합 흐름 사용 (Layer=Notification, UseDimmer=false).
+    /// PopupBase 통합 흐름 사용 (Layer=Notification).
     /// </summary>
     public class ToastNotification : PopupBase
     {
         public override PopupLayer Layer => PopupLayer.Notification;
-        public override bool UseDimmer => false;
+        public override PopupAnimation AnimationType => PopupAnimation.SlideRight;
 
         [Header("UI 바인딩")]
         [SerializeField] TMP_Text titleText;
         [SerializeField] TMP_Text messageText;
-        [SerializeField] CanvasGroup toastCg; // base.canvasGroup과 별개 (자체 fade용)
 
         [Header("설정")]
         [SerializeField] float fadeInDuration = 0.3f;
         [SerializeField] float fadeOutDuration = 0.4f;
-        [SerializeField] float toastSlideOffset = 15f;   // 아래에서 위로 슬라이드 (px)
-        [SerializeField] float textSwapDuration = 0.15f; // 텍스트 교체 페이드 시간
+        [SerializeField] float toastSlideOffset = 15f;   // 아래→위 슬라이드(px)
+        [SerializeField] float textSwapDuration = 0.15f; // 텍스트 교체 페이드
 
         CancellationTokenSource cts;
-        RectTransform rectTransform;
-        Vector2 originalPos;
 
         protected override void Awake()
         {
             base.Awake();
-            if (toastCg == null)
-                toastCg = GetComponent<CanvasGroup>();
-            rectTransform = GetComponent<RectTransform>();
-            if (rectTransform != null)
-                originalPos = rectTransform.anchoredPosition;
+            // base.canvasGroup / panelRect / originalPosition 사용 (PopupBase가 캐싱)
+            if (canvasGroup == null) canvasGroup = GetComponent<CanvasGroup>();
+            if (panelRect == null) panelRect = GetComponent<RectTransform>();
+            if (panelRect != null && originalPosition == Vector2.zero)
+                originalPosition = panelRect.anchoredPosition;
         }
 
         /// <summary>
@@ -149,20 +146,20 @@ namespace LoveAlgo.UI
         /// <summary>토스트 프레임 슬라이드+페이드 등장</summary>
         async UniTask FadeInFrameAsync(CancellationToken ct)
         {
-            if (toastCg == null) return;
+            if (canvasGroup == null) return;
 
-            toastCg.alpha = 0f;
-            if (rectTransform != null)
+            canvasGroup.alpha = 0f;
+            if (panelRect != null)
             {
-                rectTransform.anchoredPosition = originalPos + new Vector2(0, -toastSlideOffset);
+                panelRect.anchoredPosition = originalPosition + new Vector2(0, -toastSlideOffset);
                 var seq = DOTween.Sequence();
-                _ = seq.Join(toastCg.DOFade(1f, fadeInDuration).SetEase(Ease.OutCubic));
-                _ = seq.Join(rectTransform.DOAnchorPos(originalPos, fadeInDuration).SetEase(Ease.OutCubic));
+                _ = seq.Join(canvasGroup.DOFade(1f, fadeInDuration).SetEase(Ease.OutCubic));
+                _ = seq.Join(panelRect.DOAnchorPos(originalPosition, fadeInDuration).SetEase(Ease.OutCubic));
                 await seq.ToUniTask(cancellationToken: ct);
             }
             else
             {
-                await toastCg.DOFade(1f, fadeInDuration)
+                await canvasGroup.DOFade(1f, fadeInDuration)
                     .SetEase(Ease.OutCubic)
                     .ToUniTask(cancellationToken: ct);
             }
@@ -171,19 +168,19 @@ namespace LoveAlgo.UI
         /// <summary>토스트 프레임 슬라이드+페이드 퇴장</summary>
         async UniTask FadeOutFrameAsync(CancellationToken ct)
         {
-            if (toastCg == null) return;
+            if (canvasGroup == null) return;
 
-            if (rectTransform != null)
+            if (panelRect != null)
             {
                 var seq = DOTween.Sequence();
-                _ = seq.Join(toastCg.DOFade(0f, fadeOutDuration).SetEase(Ease.InCubic));
-                _ = seq.Join(rectTransform.DOAnchorPosY(originalPos.y + toastSlideOffset, fadeOutDuration).SetEase(Ease.InCubic));
+                _ = seq.Join(canvasGroup.DOFade(0f, fadeOutDuration).SetEase(Ease.InCubic));
+                _ = seq.Join(panelRect.DOAnchorPosY(originalPosition.y + toastSlideOffset, fadeOutDuration).SetEase(Ease.InCubic));
                 await seq.ToUniTask(cancellationToken: ct);
-                rectTransform.anchoredPosition = originalPos;
+                panelRect.anchoredPosition = originalPosition;
             }
             else
             {
-                await toastCg.DOFade(0f, fadeOutDuration)
+                await canvasGroup.DOFade(0f, fadeOutDuration)
                     .SetEase(Ease.InCubic)
                     .ToUniTask(cancellationToken: ct);
             }

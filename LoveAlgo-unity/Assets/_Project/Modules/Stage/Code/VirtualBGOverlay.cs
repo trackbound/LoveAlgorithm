@@ -167,7 +167,7 @@ namespace LoveAlgo.Story
             if (duration > 0f)
             {
                 await canvasGroup.DOFade(targetAlpha, duration)
-                    .SetEase(Ease.OutQuad)
+                    .SetEase(Ease.OutCubic)
                     .ToUniTask(cancellationToken: ct);
             }
             else
@@ -187,7 +187,7 @@ namespace LoveAlgo.Story
             if (duration > 0f)
             {
                 await canvasGroup.DOFade(0f, duration)
-                    .SetEase(Ease.InQuad)
+                    .SetEase(Ease.InCubic)
                     .ToUniTask(cancellationToken: ct);
             }
             else

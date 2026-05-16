@@ -147,6 +147,10 @@ namespace LoveAlgo.Story.StoryEngine
                     await Flow.LockScreenFlowCommand.ExecuteAsync(parts, ct);
                     return true;
 
+                case "Message":
+                    await Flow.MessageFlowCommand.ExecuteAsync(parts, ct);
+                    return true;
+
                 default:
                     Debug.LogWarning($"[Flow] 알 수 없는 Flow 명령: {command}");
                     return true;

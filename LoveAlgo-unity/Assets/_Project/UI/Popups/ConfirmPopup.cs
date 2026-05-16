@@ -27,6 +27,8 @@ namespace LoveAlgo.UI
     /// </summary>
     public class ConfirmPopup : PopupBase<bool>
     {
+        public override PopupLayer Layer => PopupLayer.Dialog;
+
         [Header("텍스트 슬롯")]
         [FormerlySerializedAs("messageText")]
         [SerializeField] TMP_Text mainTextField;

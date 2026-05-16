@@ -12,4 +12,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 74ac9da86b1139a4897b9a359d0c6182, type: 3}
   m_Name: VirtualOverlayDatabase
   m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.Story.VirtualOverlayDatabase
-  entries: []
+  entries:
+  - characterId: c01
+    overlayPrefix: Roa
+    overlayModes:
+    - Mob
+    - PC
+    defaultOverlayMode: PC
+    positiveEmotes:
+    - 
+    - 
+    - 
+    negativeEmotes:
+    - 
+    - 
+    - 

@@ -51,11 +51,13 @@ namespace LoveAlgo.Story
         [SerializeField] RectTransform imageContainer;  // 이미지들의 부모 (스케일/오프셋 적용용)
 
         [Header("설정")]
-        [SerializeField] float fadeDuration = 0.4f;
-        [SerializeField] float exitDuration = 0.3f;
-        [SerializeField] float emoteFadeDuration = 0.2f;
+        [SerializeField] float fadeDuration = 0.5f;
+        [SerializeField] float exitDuration = 0.4f;
+        [SerializeField] float emoteFadeDuration = 0.25f;
         [SerializeField] float enterOffset = 40f;        // 등장 시 슬라이드 거리
         [SerializeField] float exitSlideDistance = 40f;  // 퇴장 시 슬라이드 거리
+        [Tooltip("등장 시 미세 스케일 펀치 시작값 (1.0 = 비활성)")]
+        [SerializeField] float enterScalePunch = 0.97f;
 
         [Header("Glitch FX")]
         [Tooltip("LoveAlgo/UI/Glitch 셰이더 사용 머티리얼. 비워두면 Shader.Find로 동적 생성")]
@@ -108,15 +110,26 @@ namespace LoveAlgo.Story
 
             if (!PrepareEnter(characterName, resolvedEmote)) return;
 
-            // 원래 위치에서 페이드인만
+            // 원래 위치에서 페이드인 + 미세 스케일 펀치 (생기 부여)
             if (rectTransform != null)
                 rectTransform.anchoredPosition = originalPosition;
             SetSlotAlpha(0f);
 
+            RectTransform punchTarget = imageContainer != null ? imageContainer : imageFront?.rectTransform;
+            Vector3 savedScale = punchTarget != null ? punchTarget.localScale : Vector3.one;
+            if (punchTarget != null && enterScalePunch < 1f)
+                punchTarget.localScale = savedScale * enterScalePunch;
+
+            var seq = DOTween.Sequence();
             if (slotCanvasGroup != null)
-                await slotCanvasGroup.DOFade(1f, fadeDuration).SetEase(Ease.OutCubic).ToUniTask(cancellationToken: ct);
+                _ = seq.Join(slotCanvasGroup.DOFade(1f, fadeDuration).SetEase(Ease.OutQuart));
             else
                 SetSlotAlpha(1f);
+
+            if (punchTarget != null && enterScalePunch < 1f)
+                _ = seq.Join(punchTarget.DOScale(savedScale, fadeDuration).SetEase(Ease.OutCubic));
+
+            await seq.ToUniTask(cancellationToken: ct);
 
             AudioManager.Instance?.OnCharacterEnter(characterName);
         }
@@ -145,9 +158,9 @@ namespace LoveAlgo.Story
 
             var sequence = DOTween.Sequence();
             if (rectTransform != null)
-                _ = sequence.Join(rectTransform.DOAnchorPos(originalPosition, fadeDuration).SetEase(Ease.OutBack, 1.05f));
+                _ = sequence.Join(rectTransform.DOAnchorPos(originalPosition, fadeDuration).SetEase(Ease.OutQuart));
             if (slotCanvasGroup != null)
-                _ = sequence.Join(slotCanvasGroup.DOFade(1f, fadeDuration * 0.7f).SetEase(Ease.OutCubic));
+                _ = sequence.Join(slotCanvasGroup.DOFade(1f, fadeDuration * 0.75f).SetEase(Ease.OutCubic));
 
             await sequence.ToUniTask(cancellationToken: ct);
 
@@ -211,8 +224,9 @@ namespace LoveAlgo.Story
             // 크로스페이드: Front 위에 Back을 페이드인 (Front는 유지)
             // Front를 페이드아웃하면 Back이 아직 불투명하지 않을 때 빈 곳이 보여 깜빡임 발생
             // → Back만 올려서 자연스럽게 덮기
+            // InOutCubic — Sine보다 곡률이 풍부해 표정 전환이 더 자연스러움
             await backCanvasGroup.DOFade(1f, emoteFadeDuration)
-                .SetEase(Ease.InOutSine)
+                .SetEase(Ease.InOutCubic)
                 .ToUniTask(cancellationToken: ct);
 
             // 스왑: Back이 완전히 덮은 상태에서 Front를 교체
@@ -236,7 +250,7 @@ namespace LoveAlgo.Story
             string exitingCharacter = currentCharacter;
 
             if (slotCanvasGroup != null)
-                await slotCanvasGroup.DOFade(0f, exitDuration).SetEase(Ease.InCubic).ToUniTask(cancellationToken: ct);
+                await slotCanvasGroup.DOFade(0f, exitDuration).SetEase(Ease.InQuart).ToUniTask(cancellationToken: ct);
             else
                 SetSlotAlpha(0f);
 
@@ -267,7 +281,7 @@ namespace LoveAlgo.Story
                     originalPosition + new Vector2(0, -exitSlideDistance), exitDuration)
                     .SetEase(Ease.InCubic));
             if (slotCanvasGroup != null)
-                _ = sequence.Join(slotCanvasGroup.DOFade(0f, exitDuration).SetEase(Ease.InQuad));
+                _ = sequence.Join(slotCanvasGroup.DOFade(0f, exitDuration).SetEase(Ease.InCubic));
 
             await sequence.ToUniTask(cancellationToken: ct);
 
@@ -487,10 +501,18 @@ namespace LoveAlgo.Story
             if (target == null) return;
 
             var saved = target.anchoredPosition;
-            await target.DOShakeAnchorPos(duration, strength, vibrato: 14, randomness: 60f)
-                .SetEase(Ease.OutCubic)
-                .ToUniTask(cancellationToken: ct);
-            target.anchoredPosition = saved;
+            DOTween.Kill(target);
+            // vibrato 살짝 낮춤 + randomness 상향 + fadeOut=true → 끝에서 자연 감쇠
+            try
+            {
+                await target.DOShakeAnchorPos(duration, strength, vibrato: 11, randomness: 85f, fadeOut: true)
+                    .SetEase(Ease.OutCubic)
+                    .ToUniTask(cancellationToken: ct);
+            }
+            finally
+            {
+                if (target != null) target.anchoredPosition = saved;
+            }
         }
 
         /// <summary>
@@ -502,11 +524,21 @@ namespace LoveAlgo.Story
             if (target == null) return;
 
             var saved = target.anchoredPosition;
+            DOTween.Kill(target);
+
+            // 상승: OutCubic — 빠르게 솟구쳤다 정점에서 부드럽게 멈춤
+            // 하강: OutBounce — 착지 시 자연스러운 반동
             var seq = DOTween.Sequence();
-            _ = seq.Append(target.DOAnchorPosY(saved.y + height, duration * 0.4f).SetEase(Ease.OutQuad));
+            _ = seq.Append(target.DOAnchorPosY(saved.y + height, duration * 0.4f).SetEase(Ease.OutCubic));
             _ = seq.Append(target.DOAnchorPosY(saved.y, duration * 0.6f).SetEase(Ease.OutBounce));
-            await seq.ToUniTask(cancellationToken: ct);
-            target.anchoredPosition = saved;
+            try
+            {
+                await seq.ToUniTask(cancellationToken: ct);
+            }
+            finally
+            {
+                if (target != null) target.anchoredPosition = saved;
+            }
         }
 
         /// <summary>
@@ -530,19 +562,22 @@ namespace LoveAlgo.Story
 
             try
             {
-                float halfDur = duration * 0.5f;
-                // 0 → peak (빠르게 올림)
+                // 비대칭 분배: 짧고 폭발적인 상승 + 길고 자연스러운 감쇠
+                float riseDur = duration * 0.35f;
+                float fallDur = duration * 0.65f;
+
+                // 0 → peak (날카로운 충격감)
                 await DOTween.To(() => mat.GetFloat("_Strength"),
                                  v => mat.SetFloat("_Strength", v),
-                                 peakStrength, halfDur)
-                    .SetEase(Ease.OutQuad)
+                                 peakStrength, riseDur)
+                    .SetEase(Ease.OutExpo)
                     .ToUniTask(cancellationToken: ct);
 
-                // peak → 0 (느리게 회복)
+                // peak → 0 (자연 감쇠)
                 await DOTween.To(() => mat.GetFloat("_Strength"),
                                  v => mat.SetFloat("_Strength", v),
-                                 0f, halfDur)
-                    .SetEase(Ease.InQuad)
+                                 0f, fallDur)
+                    .SetEase(Ease.InOutQuart)
                     .ToUniTask(cancellationToken: ct);
             }
             finally
@@ -568,8 +603,9 @@ namespace LoveAlgo.Story
         public async UniTask DimAsync(float targetAlpha = 0.4f, float duration = 0.3f, CancellationToken ct = default)
         {
             if (slotCanvasGroup == null) return;
+            DOTween.Kill(slotCanvasGroup);
             await slotCanvasGroup.DOFade(targetAlpha, duration)
-                .SetEase(Ease.OutQuad)
+                .SetEase(Ease.InOutCubic)
                 .ToUniTask(cancellationToken: ct);
         }
 

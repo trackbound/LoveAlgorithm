@@ -1,10 +1,8 @@
 using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
-using DG.Tweening;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.UI;
 using LoveAlgo.Common;
 using LoveAlgo.Core;
 
@@ -13,20 +11,16 @@ namespace LoveAlgo.UI
     /// <summary>
     /// 통합 팝업 매니저.
     /// - 모든 팝업은 <see cref="PopupBase"/>의 자식. Type 기반 registry.
-    /// - <see cref="PopupBase.Layer"/>로 Modal/Top 구분 (Modal 위에 Top 가능).
+    /// - <see cref="PopupBase.Layer"/>로 Modal/Dialog/Notification 구분.
     /// - 베이스가 Show/Hide 시 <see cref="NotifyOpened"/>/<see cref="NotifyClosed"/>를 호출 → openStack 관리.
-    /// - ESC / Dimmer 클릭 / dimmer 표시 정책 모두 Stack 기준으로 자동.
+    /// - Dim은 각 popup prefab 자체에 포함 (중앙 dimmer 없음).
     /// </summary>
     public class PopupManager : SingletonMonoBehaviour<PopupManager>
     {
         [Header("Layer Roots (비워두면 자동 생성)")]
         [SerializeField] Transform layerModal;
+        [SerializeField] Transform layerDialog;
         [SerializeField] Transform layerNotification;
-
-        [Header("Dimmer")]
-        [SerializeField] GameObject dimmer;
-        [SerializeField] CanvasGroup dimmerCanvasGroup;
-        [SerializeField] float dimmerFadeDuration = 0.2f;
 
         [Header("팝업 프리팹 (모든 PopupBase 인스턴스)")]
         [Tooltip("Layer에 따라 자동으로 layerModal/layerNotification 아래에 생성됨")]
@@ -41,14 +35,14 @@ namespace LoveAlgo.UI
         protected override void OnSingletonAwake()
         {
             EnsureLayerRoots();
-            InitDimmer();
             PreWarm();
         }
 
         void EnsureLayerRoots()
         {
             if (layerModal == null) layerModal = CreateLayerRoot("Modal", 0);
-            if (layerNotification == null) layerNotification = CreateLayerRoot("Notification", 1);
+            if (layerDialog == null) layerDialog = CreateLayerRoot("Dialog", 1);
+            if (layerNotification == null) layerNotification = CreateLayerRoot("Notification", 2);
         }
 
         Transform CreateLayerRoot(string name, int siblingIndex)
@@ -62,17 +56,6 @@ namespace LoveAlgo.UI
             rt.offsetMax = Vector2.zero;
             rt.SetSiblingIndex(siblingIndex);
             return rt;
-        }
-
-        void InitDimmer()
-        {
-            if (dimmer == null) return;
-            dimmer.SetActive(false);
-
-            var btn = dimmer.GetComponent<Button>();
-            if (btn == null) btn = dimmer.AddComponent<Button>();
-            btn.transition = Selectable.Transition.None;
-            btn.onClick.AddListener(OnDimmerClicked);
         }
 
         /// <summary>등록된 모든 프리팹 인스턴스 사전 생성 (첫 표시 시 렉 방지).</summary>
@@ -91,19 +74,18 @@ namespace LoveAlgo.UI
             var type = prefab.GetType();
             if (cache.TryGetValue(type, out var existing)) return existing;
 
-            var parent = prefab.Layer == PopupLayer.Notification ? layerNotification : layerModal;
+            var parent = prefab.Layer switch
+            {
+                PopupLayer.Notification => layerNotification,
+                PopupLayer.Dialog       => layerDialog,
+                _                        => layerModal,
+            };
             var instance = Instantiate(prefab, parent);
             instance.name = prefab.name; // (Clone) 제거
             instance.gameObject.SetActive(false);
             cache[type] = instance;
             UISoundManager.Instance?.BindButtonsInTransform(instance.transform);
             return instance;
-        }
-
-        protected override void OnDestroy()
-        {
-            base.OnDestroy();
-            if (dimmerCanvasGroup != null) dimmerCanvasGroup.DOKill();
         }
 
         // ── 공개 API ──────────────────────────────────────────
@@ -185,28 +167,15 @@ namespace LoveAlgo.UI
             if (popup == null) return;
             openStack.Remove(popup); // 중복 방지
             openStack.Add(popup);
-            UpdateDimmer();
         }
 
         internal void NotifyClosed(PopupBase popup)
         {
             if (popup == null) return;
             openStack.Remove(popup);
-            UpdateDimmer();
         }
 
-        /// <summary>openStack에 useDimmer=true인 팝업이 있으면 dimmer ON, 아니면 OFF.</summary>
-        void UpdateDimmer()
-        {
-            bool needDimmer = false;
-            for (int i = 0; i < openStack.Count; i++)
-            {
-                if (openStack[i] != null && openStack[i].UseDimmer) { needDimmer = true; break; }
-            }
-            ShowDimmer(needDimmer);
-        }
-
-        // ── ESC / Dimmer 클릭 ────────────────────────────────
+        // ── ESC ─────────────────────────────────────────────
 
         void Update()
         {
@@ -220,13 +189,6 @@ namespace LoveAlgo.UI
             top?.Close();
         }
 
-        void OnDimmerClicked()
-        {
-            // 최상위가 Modal이면 닫기 시도 (Top 팝업은 디머 클릭 시 닫지 않음 — 기존 정책 유지)
-            var top = PeekTop();
-            if (top != null && top.Layer == PopupLayer.Modal) top.Close();
-        }
-
         PopupBase PeekTop()
         {
             for (int i = openStack.Count - 1; i >= 0; i--)
@@ -234,44 +196,6 @@ namespace LoveAlgo.UI
                 if (openStack[i] != null && openStack[i].IsVisible) return openStack[i];
             }
             return null;
-        }
-
-        // ── Dimmer 애니메이션 ────────────────────────────────
-
-        void ShowDimmer(bool show)
-        {
-            if (dimmer == null) return;
-            dimmerCanvasGroup?.DOKill();
-
-            if (show)
-            {
-                dimmer.SetActive(true);
-                if (dimmerCanvasGroup != null)
-                {
-                    dimmerCanvasGroup.alpha = 0f;
-                    dimmerCanvasGroup.DOFade(1f, dimmerFadeDuration).SetEase(Ease.OutQuad);
-                }
-            }
-            else
-            {
-                if (dimmerCanvasGroup != null)
-                {
-                    dimmerCanvasGroup.DOFade(0f, dimmerFadeDuration)
-                        .SetEase(Ease.InQuad)
-                        .OnKill(() => { if (dimmer != null && !IsAnyDimmerPopupOpen()) dimmer.SetActive(false); });
-                }
-                else
-                {
-                    dimmer.SetActive(false);
-                }
-            }
-        }
-
-        bool IsAnyDimmerPopupOpen()
-        {
-            for (int i = 0; i < openStack.Count; i++)
-                if (openStack[i] != null && openStack[i].UseDimmer && openStack[i].IsVisible) return true;
-            return false;
         }
 
         // ── 유틸 ───────────────────────────────────────────

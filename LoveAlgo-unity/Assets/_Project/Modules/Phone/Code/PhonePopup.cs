@@ -53,7 +53,8 @@ namespace LoveAlgo.Phone
         readonly List<PhoneFriendSlot> activeFriendSlots = new();
         readonly List<PhoneChatSlot> activeChatSlots = new();
 
-        int currentTab; // 0=친구, 1=채팅, 2=테마
+        int currentTab; // 0=친구, 1=채팅 (Theme 탭은 데모 제외)
+        string openedChatRoomId;
 
         protected override void Awake()
         {
@@ -63,6 +64,30 @@ namespace LoveAlgo.Phone
                 tabGroup.OnTabChanged += SwitchTab;
             if (backButton != null) backButton.onClick.AddListener(OnBackClick);
             if (profileCloseButton != null) profileCloseButton.onClick.AddListener(HideProfile);
+
+            // 메신저 이벤트 구독
+            MessengerManager.OnNewMessage += OnExternalNewMessage;
+        }
+
+        protected override void OnDestroy()
+        {
+            MessengerManager.OnNewMessage -= OnExternalNewMessage;
+            base.OnDestroy();
+        }
+
+        /// <summary>외부에서 새 메시지 도착 시 — 채팅창 열려있으면 자동 추가, 아니면 리스트 갱신</summary>
+        void OnExternalNewMessage(string heroineId)
+        {
+            // 채팅창 열려있고 같은 캐릭터면 새 메시지 동적 추가
+            if (chatRoomPanel != null && chatRoomPanel.activeSelf
+                && string.Equals(openedChatRoomId, heroineId, System.StringComparison.OrdinalIgnoreCase))
+            {
+                chatRoom?.AppendLatestMessage();
+                MessengerManager.MarkAsRead(heroineId);
+                return;
+            }
+            // 채팅 탭 활성이면 리스트 갱신 (New 뱃지 등)
+            if (currentTab == 1) PopulateChatList();
         }
 
         public override void Show()
@@ -161,21 +186,19 @@ namespace LoveAlgo.Phone
         {
             if (chatRoom == null) return;
 
-            // 목록 패널 숨기기
-            if (chatListPanel != null) chatListPanel.SetActive(false);
-            if (friendListPanel != null) friendListPanel.SetActive(false);
-
-            // 채팅방 표시
+            // 우측 영역: ChatRoom만 보이도록 (Profile 가림)
             if (chatRoomPanel != null) chatRoomPanel.SetActive(true);
-            chatRoom.Open(heroineId);
+            if (profilePanel != null) profilePanel.SetActive(false);
 
-            // 읽음 처리
+            chatRoom.Open(heroineId);
+            openedChatRoomId = heroineId;
             MessengerManager.MarkAsRead(heroineId);
         }
 
         void HideChatRoom()
         {
             if (chatRoomPanel != null) chatRoomPanel.SetActive(false);
+            openedChatRoomId = null;
         }
 
         #endregion
