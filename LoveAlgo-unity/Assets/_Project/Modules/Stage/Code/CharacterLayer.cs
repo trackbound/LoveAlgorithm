@@ -574,33 +574,44 @@ namespace LoveAlgo.Story
                 return;
             }
 
+            // 기본값은 FXDefaultsConfig (SO)에서 — CharLayer/CharSlot 간 불일치 제거
+            var cfg = FXDefaultsConfig.Instance;
+            float defShakeStr   = cfg != null ? cfg.charShakeStrength  : 18f;
+            float defShakeDur   = cfg != null ? cfg.charShakeDuration  : 0.3f;
+            float defJumpH      = cfg != null ? cfg.charJumpHeight     : 35f;
+            float defJumpDur    = cfg != null ? cfg.charJumpDuration   : 0.3f;
+            float defDimAlpha   = cfg != null ? cfg.charDimAlpha       : 0.4f;
+            float defDimDur     = cfg != null ? cfg.charDimDuration    : 0.3f;
+            float defGlitchStr  = cfg != null ? cfg.charGlitchStrength : 1.0f;
+            float defGlitchDur  = cfg != null ? cfg.charGlitchDuration : 0.6f;
+
             switch (effect)
             {
                 case "CharShake":
                 {
-                    float strength = parts.Length > paramOffset && float.TryParse(parts[paramOffset], out float s) ? s : 15f;
-                    float duration = parts.Length > paramOffset + 1 && float.TryParse(parts[paramOffset + 1], out float d) ? d : 0.3f;
+                    float strength = parts.Length > paramOffset && float.TryParse(parts[paramOffset], out float s) ? s : defShakeStr;
+                    float duration = parts.Length > paramOffset + 1 && float.TryParse(parts[paramOffset + 1], out float d) ? d : defShakeDur;
                     await slot.ShakeAsync(strength, duration, ct);
                     break;
                 }
                 case "CharJump":
                 {
-                    float height = parts.Length > paramOffset && float.TryParse(parts[paramOffset], out float h) ? h : 30f;
-                    float duration = parts.Length > paramOffset + 1 && float.TryParse(parts[paramOffset + 1], out float d) ? d : 0.3f;
+                    float height = parts.Length > paramOffset && float.TryParse(parts[paramOffset], out float h) ? h : defJumpH;
+                    float duration = parts.Length > paramOffset + 1 && float.TryParse(parts[paramOffset + 1], out float d) ? d : defJumpDur;
                     await slot.JumpAsync(height, duration, ct);
                     break;
                 }
                 case "CharDim":
                 {
-                    float alpha = parts.Length > paramOffset && float.TryParse(parts[paramOffset], out float a) ? a : 0.4f;
-                    float duration = parts.Length > paramOffset + 1 && float.TryParse(parts[paramOffset + 1], out float d) ? d : 0.3f;
+                    float alpha = parts.Length > paramOffset && float.TryParse(parts[paramOffset], out float a) ? a : defDimAlpha;
+                    float duration = parts.Length > paramOffset + 1 && float.TryParse(parts[paramOffset + 1], out float d) ? d : defDimDur;
                     await slot.DimAsync(alpha, duration, ct);
                     break;
                 }
                 case "CharGlitch":
                 {
-                    float strength = parts.Length > paramOffset && float.TryParse(parts[paramOffset], out float s) ? s : 1.0f;
-                    float duration = parts.Length > paramOffset + 1 && float.TryParse(parts[paramOffset + 1], out float d) ? d : 0.6f;
+                    float strength = parts.Length > paramOffset && float.TryParse(parts[paramOffset], out float s) ? s : defGlitchStr;
+                    float duration = parts.Length > paramOffset + 1 && float.TryParse(parts[paramOffset + 1], out float d) ? d : defGlitchDur;
                     await slot.GlitchAsync(strength, duration, ct);
                     break;
                 }

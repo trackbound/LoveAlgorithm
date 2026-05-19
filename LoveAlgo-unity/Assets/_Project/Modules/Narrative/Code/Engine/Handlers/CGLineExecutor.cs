@@ -18,8 +18,8 @@ namespace LoveAlgo.Story.StoryEngine.Handlers
         public async UniTask<bool> ExecuteAsync(ScriptLine line, CancellationToken ct)
         {
             var parts = line.Value.Split(':');
-            bool isExit = parts[0].Equals("Exit", System.StringComparison.OrdinalIgnoreCase)
-                       || parts[0].Equals("Close", System.StringComparison.OrdinalIgnoreCase);
+            // Exit/Close/Hide 모두 Exit canonical로 정규화
+            bool isExit = CommandAliases.NormalizeCGAction(parts[0]) == "Exit";
 
             if (!isExit)
             {

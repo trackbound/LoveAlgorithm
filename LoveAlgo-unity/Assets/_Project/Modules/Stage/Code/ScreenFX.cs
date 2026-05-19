@@ -175,25 +175,39 @@ namespace LoveAlgo.Core
         public async UniTask ExecuteAsync(string value, CancellationToken ct = default)
         {
             var parts = value.Split(':');
+            // FXLineExecutor가 진입 시 alias/case 정규화하므로 ScreenFX는 PascalCase canonical 토큰만 받음.
             string effect = parts[0];
 
-        
+            // SO 기본값 (없으면 코드 기본값 폴백)
+            var cfg = FXDefaultsConfig.Instance;
+            float dFade   = cfg != null ? cfg.fadeDuration       : defaultFadeDuration;
+            float dFlash  = cfg != null ? cfg.flashDuration      : defaultFlashDuration;
+            float dZoom   = cfg != null ? cfg.camZoomDuration    : 0.5f;
+            float dPan    = cfg != null ? cfg.camPanDuration     : 0.5f;
+            float dReset  = cfg != null ? cfg.camResetDuration   : 0.4f;
+            float dTintA  = cfg != null ? cfg.tintAlpha          : 0.25f;
+            float dTintD  = cfg != null ? cfg.tintDuration       : 0.5f;
+            float dEyeO   = cfg != null ? cfg.eyeOpenDuration    : 0.8f;
+            float dEyeC   = cfg != null ? cfg.eyeCloseDuration   : 0.8f;
+            float dBlinkC = cfg != null ? cfg.eyeBlinkClose      : 0.1f;
+            float dBlinkO = cfg != null ? cfg.eyeBlinkOpen       : 0.15f;
+            float dBlinkH = cfg != null ? cfg.eyeBlinkHold       : 0.05f;
 
             // 2. 기본 내장 효과 (DOTween 기반)
             switch (effect)
             {
                 case "FadeOut":
-                    float fadeOutDuration = parts.Length > 1 && float.TryParse(parts[1], out float fo) ? fo : defaultFadeDuration;
+                    float fadeOutDuration = parts.Length > 1 && float.TryParse(parts[1], out float fo) ? fo : dFade;
                     await FadeOutAsync(fadeOutDuration, ct);
                     break;
 
                 case "FadeIn":
-                    float fadeInDuration = parts.Length > 1 && float.TryParse(parts[1], out float fi) ? fi : defaultFadeDuration;
+                    float fadeInDuration = parts.Length > 1 && float.TryParse(parts[1], out float fi) ? fi : dFade;
                     await FadeInAsync(fadeInDuration, ct);
                     break;
 
                 case "Flash":
-                    float flashDuration = parts.Length > 1 && float.TryParse(parts[1], out float fl) ? fl : defaultFlashDuration;
+                    float flashDuration = parts.Length > 1 && float.TryParse(parts[1], out float fl) ? fl : dFlash;
                     await FlashAsync(flashDuration, ct);
                     break;
 
@@ -215,7 +229,7 @@ namespace LoveAlgo.Core
                 case "CamZoom":
                     // CSV: CamZoom[:zoomLevel[:duration]] (zoomLevel 1.0=기본, 1.5=확대)
                     float zoomLevel = parts.Length > 1 && float.TryParse(parts[1], out float zl) ? zl : 1f;
-                    float zoomDuration = parts.Length > 2 && float.TryParse(parts[2], out float zd) ? zd : 0.5f;
+                    float zoomDuration = parts.Length > 2 && float.TryParse(parts[2], out float zd) ? zd : dZoom;
                     await CamZoomAsync(zoomLevel, zoomDuration, ct);
                     break;
 
@@ -223,33 +237,33 @@ namespace LoveAlgo.Core
                     // CSV: CamPan:x:y[:duration]  (x,y = 픽셀 오프셋, 0:0=원점 복귀)
                     float panX = parts.Length > 1 && float.TryParse(parts[1], out float px) ? px : 0f;
                     float panY = parts.Length > 2 && float.TryParse(parts[2], out float py) ? py : 0f;
-                    float panDuration = parts.Length > 3 && float.TryParse(parts[3], out float pd) ? pd : 0.5f;
+                    float panDuration = parts.Length > 3 && float.TryParse(parts[3], out float pd) ? pd : dPan;
                     await CamPanAsync(panX, panY, panDuration, ct);
                     break;
 
                 case "CamReset":
                     // CSV: CamReset[:duration]  줌+팬 동시 원점 복귀
-                    float resetDur = parts.Length > 1 && float.TryParse(parts[1], out float rd) ? rd : 0.4f;
+                    float resetDur = parts.Length > 1 && float.TryParse(parts[1], out float rd) ? rd : dReset;
                     await CamResetAsync(resetDur, ct);
                     break;
 
                 case "ColorTint":
                     // CSV: ColorTint:색상프리셋[:alpha[:duration]]  (Clear=해제)
                     string tintName = parts.Length > 1 ? parts[1] : "Clear";
-                    float tintAlpha = parts.Length > 2 && float.TryParse(parts[2], out float ta) ? ta : 0.25f;
-                    float tintDur = parts.Length > 3 && float.TryParse(parts[3], out float td) ? td : 0.5f;
+                    float tintAlpha = parts.Length > 2 && float.TryParse(parts[2], out float ta) ? ta : dTintA;
+                    float tintDur = parts.Length > 3 && float.TryParse(parts[3], out float td) ? td : dTintD;
                     await ColorTintAsync(tintName, tintAlpha, tintDur, ct);
                     break;
 
                 case "EyeOpen":
                     // 눈 뜨는 효과: EyeOpen[:duration]
-                    float eyeOpenDuration = parts.Length > 1 && float.TryParse(parts[1], out float eod) ? eod : 0.8f;
+                    float eyeOpenDuration = parts.Length > 1 && float.TryParse(parts[1], out float eod) ? eod : dEyeO;
                     await EyeOpenAsync(eyeOpenDuration, ct);
                     break;
 
                 case "EyeClose":
                     // 눈 감는 효과: EyeClose[:duration]
-                    float eyeCloseDuration = parts.Length > 1 && float.TryParse(parts[1], out float ecd) ? ecd : 0.8f;
+                    float eyeCloseDuration = parts.Length > 1 && float.TryParse(parts[1], out float ecd) ? ecd : dEyeC;
                     await EyeCloseAsync(eyeCloseDuration, ct);
                     break;
 
@@ -260,9 +274,9 @@ namespace LoveAlgo.Core
 
                 case "EyeBlink":
                     // 눈 깜빡임: EyeBlink[:closeDuration:openDuration[:holdTime]]
-                    float blinkClose = parts.Length > 1 && float.TryParse(parts[1], out float bc) ? bc : 0.1f;
-                    float blinkOpen = parts.Length > 2 && float.TryParse(parts[2], out float bo) ? bo : 0.15f;
-                    float blinkHold = parts.Length > 3 && float.TryParse(parts[3], out float bh) ? bh : 0.05f;
+                    float blinkClose = parts.Length > 1 && float.TryParse(parts[1], out float bc) ? bc : dBlinkC;
+                    float blinkOpen = parts.Length > 2 && float.TryParse(parts[2], out float bo) ? bo : dBlinkO;
+                    float blinkHold = parts.Length > 3 && float.TryParse(parts[3], out float bh) ? bh : dBlinkH;
                     await EyeBlinkAsync(blinkClose, blinkOpen, blinkHold, ct);
                     break;
 
@@ -316,8 +330,10 @@ namespace LoveAlgo.Core
                 .ToUniTask(cancellationToken: ct);
 
             // 검은 화면 안착감 — 다음 명령으로 넘어가기 전 살짝 머묾
-            if (fadeOutHoldTail > 0f)
-                await UniTask.Delay(TimeSpan.FromSeconds(fadeOutHoldTail), cancellationToken: ct);
+            var cfgFade = FXDefaultsConfig.Instance;
+            float hold = cfgFade != null ? cfgFade.fadeOutHoldTail : fadeOutHoldTail;
+            if (hold > 0f)
+                await UniTask.Delay(TimeSpan.FromSeconds(hold), cancellationToken: ct);
         }
 
         /// <summary>
@@ -457,8 +473,9 @@ namespace LoveAlgo.Core
         /// </summary>
         void ParseShakeArgs(string[] parts, out float duration, out float strength)
         {
-            duration = 0.3f;
-            strength = shakePresetMedium;
+            var cfg = FXDefaultsConfig.Instance;
+            duration = cfg != null ? cfg.shakeDuration : 0.3f;
+            strength = cfg != null ? cfg.shakeMedium   : shakePresetMedium;
 
             if (parts.Length <= 1) return;
 
@@ -491,22 +508,16 @@ namespace LoveAlgo.Core
         /// </summary>
         bool TryParseShakePreset(string token, out float strength)
         {
-            if (token.Equals("weak", StringComparison.OrdinalIgnoreCase))
-            {
-                strength = shakePresetWeak;
-                return true;
-            }
-            if (token.Equals("medium", StringComparison.OrdinalIgnoreCase))
-            {
-                strength = shakePresetMedium;
-                return true;
-            }
-            if (token.Equals("strong", StringComparison.OrdinalIgnoreCase))
-            {
-                strength = shakePresetStrong;
-                return true;
-            }
-            strength = shakePresetMedium;
+            var cfg = FXDefaultsConfig.Instance;
+            float weak   = cfg != null ? cfg.shakeWeak   : shakePresetWeak;
+            float medium = cfg != null ? cfg.shakeMedium : shakePresetMedium;
+            float strong = cfg != null ? cfg.shakeStrong : shakePresetStrong;
+
+            if (token.Equals("weak",   StringComparison.OrdinalIgnoreCase)) { strength = weak;   return true; }
+            if (token.Equals("medium", StringComparison.OrdinalIgnoreCase)) { strength = medium; return true; }
+            if (token.Equals("strong", StringComparison.OrdinalIgnoreCase)) { strength = strong; return true; }
+
+            strength = medium;
             return false;
         }
 

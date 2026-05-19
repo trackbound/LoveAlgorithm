@@ -16,8 +16,11 @@ namespace LoveAlgo.Story.StoryEngine.Handlers
         {
             var parts = line.Value.Split(':');
             string bgName = parts[0];
-            bool isCut = parts.Length >= 2 && parts[1].Equals("Cut", System.StringComparison.OrdinalIgnoreCase);
-            bool isFade = parts.Length >= 2 && parts[1].Equals("Fade", System.StringComparison.OrdinalIgnoreCase);
+            string transition = parts.Length >= 2
+                ? CommandAliases.NormalizeBGTransition(parts[1])
+                : "CrossFade";
+            bool isCut = transition == "Cut";
+            bool isFade = transition == "Fade";
             bool isCrossFade = !isCut && !isFade;
 
             var background = ExecutionDependencies.Stage?.Background;

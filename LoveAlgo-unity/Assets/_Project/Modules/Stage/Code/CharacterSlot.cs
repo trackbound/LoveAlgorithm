@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
+using LoveAlgo.Core;
 using LoveAlgo.Modules.Audio;
 using UnityEngine.UI;
 using DG.Tweening;
@@ -495,10 +496,15 @@ namespace LoveAlgo.Story
         /// <summary>
         /// 캐릭터 흔들기 효과 (FX,,CharShake:슬롯:강도:시간)
         /// </summary>
-        public async UniTask ShakeAsync(float strength = 20f, float duration = 0.4f, CancellationToken ct = default)
+        public async UniTask ShakeAsync(float strength = -1f, float duration = -1f, CancellationToken ct = default)
         {
             RectTransform target = imageContainer != null ? imageContainer : imageFront?.rectTransform;
             if (target == null) return;
+
+            // SO 기본값 사용 (음수 시) — CharLayer와 통일
+            var cfg = FXDefaultsConfig.Instance;
+            if (strength < 0f) strength = cfg != null ? cfg.charShakeStrength : 18f;
+            if (duration < 0f) duration = cfg != null ? cfg.charShakeDuration : 0.3f;
 
             var saved = target.anchoredPosition;
             DOTween.Kill(target);
@@ -518,10 +524,14 @@ namespace LoveAlgo.Story
         /// <summary>
         /// 캐릭터 점프 효과 (FX,,CharJump:슬롯:높이:시간)
         /// </summary>
-        public async UniTask JumpAsync(float height = 40f, float duration = 0.3f, CancellationToken ct = default)
+        public async UniTask JumpAsync(float height = -1f, float duration = -1f, CancellationToken ct = default)
         {
             RectTransform target = imageContainer != null ? imageContainer : imageFront?.rectTransform;
             if (target == null) return;
+
+            var cfg = FXDefaultsConfig.Instance;
+            if (height < 0f)   height   = cfg != null ? cfg.charJumpHeight   : 35f;
+            if (duration < 0f) duration = cfg != null ? cfg.charJumpDuration : 0.3f;
 
             var saved = target.anchoredPosition;
             DOTween.Kill(target);
@@ -545,9 +555,13 @@ namespace LoveAlgo.Story
         /// 캐릭터 글리치 효과 (FX,,CharGlitch:슬롯:강도:시간).
         /// 강도 0 → peak → 0 트윈으로 한 사이클 재생.
         /// </summary>
-        public async UniTask GlitchAsync(float peakStrength = 1.0f, float duration = 0.6f, CancellationToken ct = default)
+        public async UniTask GlitchAsync(float peakStrength = -1f, float duration = -1f, CancellationToken ct = default)
         {
             if (imageFront == null) return;
+
+            var cfg = FXDefaultsConfig.Instance;
+            if (peakStrength < 0f) peakStrength = cfg != null ? cfg.charGlitchStrength : 1.0f;
+            if (duration < 0f)     duration     = cfg != null ? cfg.charGlitchDuration : 0.6f;
 
             var mat = EnsureGlitchMaterial();
             if (mat == null)
@@ -600,9 +614,14 @@ namespace LoveAlgo.Story
         /// <summary>
         /// 캐릭터 어둡게 (FX,,CharDim:슬롯:알파:시간)
         /// </summary>
-        public async UniTask DimAsync(float targetAlpha = 0.4f, float duration = 0.3f, CancellationToken ct = default)
+        public async UniTask DimAsync(float targetAlpha = -1f, float duration = -1f, CancellationToken ct = default)
         {
             if (slotCanvasGroup == null) return;
+
+            var cfg = FXDefaultsConfig.Instance;
+            if (targetAlpha < 0f) targetAlpha = cfg != null ? cfg.charDimAlpha    : 0.4f;
+            if (duration < 0f)    duration    = cfg != null ? cfg.charDimDuration : 0.3f;
+
             DOTween.Kill(slotCanvasGroup);
             await slotCanvasGroup.DOFade(targetAlpha, duration)
                 .SetEase(Ease.InOutCubic)

@@ -15,7 +15,10 @@ namespace LoveAlgo.Story.StoryEngine.Macros
     {
         public static async UniTask ExecuteAsync(string[] parts, CancellationToken ct)
         {
-            float fadeDuration = parts.Length > 1 && float.TryParse(parts[1], out float fd) ? fd : 0.8f;
+            var cfg = FXDefaultsConfig.Instance;
+            float defFadeOut = cfg != null ? cfg.dayEndFadeOut : 0.8f;
+            float defFadeIn  = cfg != null ? cfg.dayEndFadeIn  : 0.3f;
+            float fadeDuration = parts.Length > 1 && float.TryParse(parts[1], out float fd) ? fd : defFadeOut;
             float totalDuration = 5.0f;
             float startTime = Time.time;
             Debug.Log($"[Macro] DayEnd (fade={fadeDuration}s, total={totalDuration}s)");
@@ -44,7 +47,7 @@ namespace LoveAlgo.Story.StoryEngine.Macros
             fx?.EyeCloseImmediate();
 
             if (fx != null)
-                await fx.FadeInAsync(0.3f, ct);
+                await fx.FadeInAsync(defFadeIn, ct);
 
             if (GameManager.Instance != null)
                 await GameManager.Instance.AutoSaveAsync();

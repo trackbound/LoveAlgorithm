@@ -16,50 +16,56 @@ namespace LoveAlgo.Story.StoryEngine.Handlers
         public async UniTask<bool> ExecuteAsync(ScriptLine line, CancellationToken ct)
         {
             var parts = line.Value.Split(':');
-            var command = parts[0].ToLowerInvariant();
+            // alias + 대소문자 정규화 → PascalCase canonical 토큰
+            var command = CommandAliases.NormalizeFX(parts[0]);
             var dialogueUI = ExecutionDependencies.DialogueUI;
 
             switch (command)
             {
-                case "dayend":
+                case "DayEnd":
                     await Macros.DayEndMacroExecutor.ExecuteAsync(parts, ct);
                     return true;
-                case "daystart":
+                case "DayStart":
                     await Macros.DayStartMacroExecutor.ExecuteAsync(parts, ct);
                     return true;
-                case "sceneend":
+                case "SceneEnd":
                     await Macros.SceneEndMacroExecutor.ExecuteAsync(parts, ct);
                     return true;
-                case "scenestart":
+                case "SceneStart":
                     await Macros.SceneStartMacroExecutor.ExecuteAsync(parts, ct);
                     return true;
-                case "setup":
+                case "Setup":
                     await Macros.SetupMacroExecutor.ExecuteAsync(line.Value, ct);
                     return true;
-                case "wait":
+                case "Wait":
                     float waitSec = parts.Length > 1 && float.TryParse(parts[1], out float ws) ? ws : 1.0f;
                     await UniTask.Delay(TimeSpan.FromSeconds(waitSec), cancellationToken: ct);
                     return true;
-                case "dialoguehide":
+                case "DialogueHide":
                     dialogueUI?.Hide();
                     return true;
-                case "dialogueshow":
+                case "DialogueShow":
                     dialogueUI?.Clear();
                     dialogueUI?.Show();
                     return true;
             }
 
+            // 정규화된 명령을 ScreenFX에 그대로 전달 (parts[0]만 교체)
+            string normalizedValue = parts.Length > 1
+                ? command + ":" + string.Join(":", parts, 1, parts.Length - 1)
+                : command;
+
             var fx = ScreenFX.Instance;
             if (fx != null)
             {
-                await fx.ExecuteAsync(line.Value, ct);
+                await fx.ExecuteAsync(normalizedValue, ct);
             }
             else
             {
-                Debug.Log($"[FX] {line.Value}");
+                Debug.Log($"[FX] {normalizedValue}");
             }
 
-            if (command == "fadeout")
+            if (command == "FadeOut")
                 dialogueUI?.HideImmediate();
 
             return true;
