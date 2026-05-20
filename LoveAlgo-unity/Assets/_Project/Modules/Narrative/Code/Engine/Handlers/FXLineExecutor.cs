@@ -47,6 +47,9 @@ namespace LoveAlgo.Story.StoryEngine.Handlers
                     float waitSec = parts.Length > 1 && float.TryParse(parts[1], out float ws) ? ws : 1.0f;
                     await UniTask.Delay(TimeSpan.FromSeconds(waitSec), cancellationToken: ct);
                     return true;
+                case "Video":
+                    await ExecuteVideoAsync(parts, ct);
+                    return true;
                 case "DialogueHide":
                     dialogueUI?.Hide();
                     return true;
@@ -75,6 +78,40 @@ namespace LoveAlgo.Story.StoryEngine.Handlers
                 dialogueUI?.HideImmediate();
 
             return true;
+        }
+
+        /// <summary>
+        /// Video 명령: Video:파일명[:Loop|:Skippable|:NoSkip]
+        /// 파일은 Resources/Animation/{파일명}. 기본: 1회 재생, 스킵 가능.
+        /// </summary>
+        static async UniTask ExecuteVideoAsync(string[] parts, CancellationToken ct)
+        {
+            if (parts.Length < 2 || string.IsNullOrWhiteSpace(parts[1]))
+            {
+                // Video:Stop
+                VideoLayer.Instance?.Stop();
+                return;
+            }
+
+            string name = parts[1].Trim();
+            if (name.Equals("Stop", StringComparison.OrdinalIgnoreCase))
+            {
+                VideoLayer.Instance?.Stop();
+                return;
+            }
+
+            bool loop = false;
+            bool skippable = true;
+            for (int i = 2; i < parts.Length; i++)
+            {
+                var opt = parts[i].Trim();
+                if (opt.Equals("Loop", StringComparison.OrdinalIgnoreCase)) loop = true;
+                else if (opt.Equals("NoSkip", StringComparison.OrdinalIgnoreCase)) skippable = false;
+                else if (opt.Equals("Skippable", StringComparison.OrdinalIgnoreCase)) skippable = true;
+            }
+
+            var layer = VideoLayer.EnsureInstance();
+            await layer.PlayAsync(name, loop, skippable, ct);
         }
     }
 }

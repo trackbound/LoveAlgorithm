@@ -22,7 +22,12 @@ namespace LoveAlgo.Story.StoryEngine.Macros
             bool eyeClose = false;
 
             if (parts.Length > 1 && !string.IsNullOrWhiteSpace(parts[1]))
+            {
                 bgPath = parts[1];
+                // 한글/별칭 → 실제 BG 파일 ID (예: 자취방 책상 → bg_10_06)
+                if (StoryMappings.TryResolveBg(bgPath, out var resolved))
+                    bgPath = resolved;
+            }
 
             if (parts.Length > 2 && parts[2].Equals("EyeClose", StringComparison.OrdinalIgnoreCase))
                 eyeClose = true;

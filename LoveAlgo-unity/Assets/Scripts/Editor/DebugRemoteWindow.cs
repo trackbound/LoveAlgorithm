@@ -16,7 +16,7 @@ namespace LoveAlgo.Editor
         int setMoney = 100000;
         int setActions = 2;
 
-        [MenuItem("Window/LoveAlgo/Debug Remote")]
+        [MenuItem("Tools/LoveAlgo/Debug/Remote")]
         static void Open()
         {
             var w = GetWindow<DebugRemoteWindow>("Debug Remote");

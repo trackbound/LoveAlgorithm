@@ -173,14 +173,33 @@ namespace LoveAlgo.Story
                     break;
 
                 case "emote":
-                    // 형식: 슬롯:Emote:표정[:오버레이명]  — 모드는 현재 추적값 유지
+                    // 형식: 슬롯:Emote:표정[:모드 또는 오버레이명]
+                    // - 4번째가 Modes(Mob/PC) 중 하나면 모드 전환 + 새 모드로 오버레이 재계산
+                    // - 그 외는 명시적 오버레이 이름으로 사용 (구버전 호환)
+                    // - 생략 시 현재 추적 모드 유지하며 표정만 반영
                     if (parts.Length >= 3)
                     {
                         string emote = parts[2];
-                        string overlay = parts.Length >= 4 ? parts[3] : null;
+                        string fourth = parts.Length >= 4 ? parts[3] : null;
+                        string overlay;
 
-                        if (string.IsNullOrEmpty(overlay))
+                        if (!string.IsNullOrEmpty(fourth))
+                        {
+                            var entry = StoryMappings.GetOverlay(slot.CurrentCharacter);
+                            if (entry != null && entry.IsValidMode(fourth))
+                            {
+                                SetMode(slot.CurrentCharacter, fourth);
+                                overlay = entry.GetOverlayName(emote, fourth);
+                            }
+                            else
+                            {
+                                overlay = fourth; // literal overlay
+                            }
+                        }
+                        else
+                        {
                             overlay = ResolveAutoOverlay(slot.CurrentCharacter, emote, GetCurrentMode(slot.CurrentCharacter));
+                        }
 
                         // 표정 + 오버레이 동시 전환
                         if (!string.IsNullOrEmpty(overlay))

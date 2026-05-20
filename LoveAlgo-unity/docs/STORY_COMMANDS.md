@@ -90,6 +90,72 @@ FX,,Loading:2.0,await                         # = Flow,,LoadingScene:2.0
 FX,,DayStart:BG_Cafe_Day:Cut,await
 ```
 
+## PC 잠금 화면 (LockScreen)
+
+기획서 §진입 정보: 게임 첫 시작 시 타이틀 대신 잠금 화면이 5초 페이드인으로 등장.
+그 후 스토리 진행 중에도 비번 입력 연출이 필요할 때 호출.
+
+### Flow 명령 시그니처
+
+```
+Flow,,LockScreen:<mode>[:Time=HH:mm][:FadeOut|NoFadeOut],await
+```
+
+| 모드 | 설명 |
+|---|---|
+| `FirstSetup` | 비번 첫 설정 (이름 입력 직후) — 평문 입력, 마스킹 없음 |
+| `Normal` | 평상 잠금화면 — 저장된 비번 검증, * 마스킹 |
+| `Reset` | 재설정 — 기존 비번 확인 없이 새 비번 입력 (FirstSetup 흐름) |
+| `Auto` | 비번 설정 여부 자동 판별 — 있으면 Normal, 없으면 FirstSetup |
+| `GameStart` | 게임 첫 시작 sugar — 5초 페이드인 강제 + Auto |
+
+**옵션 토큰** (순서 자유, 케이스 무시):
+- `Time=HH:mm` — 시계 1회 오버라이드
+- `FadeOut` — Outro에 페이드아웃(black→0)까지 포함 → 완료 시 화면 노출됨
+- `NoFadeOut` — 페이드아웃 생략 (기본 — 검은 화면으로 끝남, 다음 라인이 FadeIn 처리)
+
+### 사용 패턴
+
+#### A — 게임 첫 시작 (EntryRouter가 자동 호출, 보통 CSV 불필요)
+```
+# 거의 사용 안 함 — EntryRouter가 GameStart를 자동 실행
+Flow,,LockScreen:GameStart:FadeOut,await
+```
+
+#### B — 이름 입력 직후 비번 설정 (튜토리얼)
+```
+Text,로아,이름이 뭐야?,click
+Flow,,Username,await                          # 이름 입력
+Text,로아,이제 비밀번호도 설정하자.,click
+Flow,,LockScreen:FirstSetup,await             # 비번 첫 설정 — 다음 라인이 검은 상태에서 시작
+FX,,FadeIn:3,await                             # 검은 화면 페이드아웃
+Text,로아,비밀번호 잘 기억해.,click
+```
+
+#### C — 스토리 중 재로그인 (다른 날 시작 등)
+```
+Flow,,LockScreen:Normal:Time=07:30:FadeOut,await
+Text,로아,일어났어?,click
+```
+
+#### D — 비번 자동 판별 (이미 설정됐는지 모를 때)
+```
+Flow,,LockScreen:Auto:Time=23:58,await        # IsPasswordSet ? Normal : FirstSetup
+```
+
+### 분기 흐름 요약
+
+```
+게임 실행
+├─ 비번 없음 (첫 실행) ──→ EntryRouter → LockScreen:GameStart (5s 페이드인) → FirstSetup → 비번 저장 → Title
+└─ 비번 있음 (재실행)   ──→ EntryRouter → Title (LockScreen 우회)
+
+스토리 진행 중
+├─ 이름 입력 직후      ──→ Flow,,LockScreen:FirstSetup,await
+├─ 하루 시작 연출      ──→ Flow,,LockScreen:Normal:Time=07:30:FadeOut,await
+└─ 비번 분실 흐름       ──→ Flow,,LockScreen:Reset,await
+```
+
 ## Char 액션
 
 ```

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using LoveAlgo.Story;
 using UnityEngine;
 using UnityEngine.Audio;
 using DG.Tweening;
@@ -140,6 +141,10 @@ namespace LoveAlgo.Modules.Audio
 
         async UniTask HandleBGMAsync(string name, string[] parts, CancellationToken ct)
         {
+            // 한글/alias(예: 백색소음1, SeoDaEun) → 엔진 파일명(white_noise, Daeun) 변환
+            if (StoryMappings.TryResolveBgm(name, out var resolved))
+                name = resolved;
+
             // BGM:Stop or BGM:Stop:Fade:1.0
             if (name.Equals("Stop", StringComparison.OrdinalIgnoreCase))
             {

@@ -177,7 +177,9 @@ namespace LoveAlgo.Story
             var sprite = LoadSprite(characterName, resolvedEmote);
             if (sprite == null)
             {
-                Debug.LogWarning($"[CharacterSlot] 스프라이트 없음: {characterName}/{resolvedEmote}");
+                var c = StoryMappings.SpeakerToCharacterId(characterName) ?? characterName;
+                var e = StoryMappings.ResolveEmote(resolvedEmote);
+                Debug.LogWarning($"[CharacterSlot] 스프라이트 없음: {characterName}/{resolvedEmote} → Resources/Characters/{c}_{e}");
                 return false;
             }
 
@@ -214,7 +216,9 @@ namespace LoveAlgo.Story
             var sprite = LoadSprite(currentCharacter, currentEmote);
             if (sprite == null)
             {
-                Debug.LogWarning($"[CharacterSlot] 스프라이트 없음: {currentCharacter}/{currentEmote}");
+                var c = StoryMappings.SpeakerToCharacterId(currentCharacter) ?? currentCharacter;
+                var e = StoryMappings.ResolveEmote(currentEmote);
+                Debug.LogWarning($"[CharacterSlot] 스프라이트 없음: {currentCharacter}/{currentEmote} → Resources/Characters/{c}_{e}");
                 return;
             }
 
@@ -356,7 +360,8 @@ namespace LoveAlgo.Story
             // 한글 표정명 → 영문/ID 변환 (예: 기본 → _00, Default → _00)
             var resolvedEmote = StoryMappings.ResolveEmote(emote);
 
-            string path = $"Characters/{resolvedChar}_{resolvedEmote}";
+            // emote ID는 "_00" 처럼 이미 underscore prefix를 포함 → 구분자 없이 합성 (예: c01_00)
+            string path = $"Characters/{resolvedChar}{resolvedEmote}";
 
             if (spriteCache.TryGetValue(path, out var cached))
             {
@@ -454,11 +459,12 @@ namespace LoveAlgo.Story
             float offsetY = 0f;
             float pivotY = 0f;
 
-            // Stage 시각 표현 DB
+            // Stage 시각 표현 DB — DB는 characterId(c01~c05) 기준이라 alias/displayName 정규화 필수
             var stageDb = StageModule.Instance?.CharacterStage;
             if (stageDb != null)
             {
-                var entry = stageDb.GetById(characterName);
+                var id = StoryMappings.SpeakerToCharacterId(characterName) ?? characterName;
+                var entry = stageDb.GetById(id);
                 if (entry != null)
                 {
                     entry.GetTransform(out scale, out offsetX, out offsetY, out pivotY);
