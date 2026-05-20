@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using UnityEngine;
 using LoveAlgo.Modules.Affinity;
 using LoveAlgo.Modules.Audio;
@@ -18,6 +19,8 @@ namespace LoveAlgo.Story.SaveSystem
     {
         const string SaveFolder = "Saves";
         const string SaveExtension = ".json";
+        const string TmpSuffix = ".tmp";
+        const string BackupSuffix = ".bak";
 
         /// <summary>
         /// 세이브 파일 경로 반환
@@ -31,15 +34,17 @@ namespace LoveAlgo.Story.SaveSystem
         }
 
         /// <summary>
-        /// SaveData를 JSON으로 직렬화하여 파일에 저장
+        /// SaveData를 JSON으로 직렬화하여 파일에 저장 (atomic write + .bak 1세대 백업).
+        /// 부분 실패 시 원본은 보존되며, 백업에서 복구 가능.
         /// </summary>
         public static void SaveToFile(SaveData data, int slot)
         {
             try
             {
+                data.Version = SaveData.CurrentVersion;
                 string json = JsonConvert.SerializeObject(data, Formatting.Indented);
-                File.WriteAllText(GetSavePath(slot), json, System.Text.Encoding.UTF8);
-                Debug.Log($"[SaveDataSerializer] 슬롯 {slot} 저장 완료");
+                AtomicWriteAllText(GetSavePath(slot), json, Encoding.UTF8);
+                Debug.Log($"[SaveDataSerializer] 슬롯 {slot} 저장 완료 (v{SaveData.CurrentVersion})");
             }
             catch (Exception e)
             {
@@ -48,25 +53,100 @@ namespace LoveAlgo.Story.SaveSystem
         }
 
         /// <summary>
-        /// JSON 파일에서 SaveData 역직렬화하여 로드
+        /// JSON 파일에서 SaveData 역직렬화하여 로드. 본 파일 손상 시 .bak에서 복구 시도.
         /// </summary>
         public static SaveData LoadFromFile(int slot)
         {
             string path = GetSavePath(slot);
-            if (!File.Exists(path))
-                return null;
 
-            try
+            var data = TryLoadJson(path);
+            if (data != null)
             {
-                string json = File.ReadAllText(path, System.Text.Encoding.UTF8);
-                var data = JsonConvert.DeserializeObject<SaveData>(json);
+                MigrateIfNeeded(data, slot);
                 Debug.Log($"[SaveDataSerializer] 슬롯 {slot} 로드 완료");
                 return data;
             }
+
+            string bak = path + BackupSuffix;
+            if (File.Exists(bak))
+            {
+                Debug.LogWarning($"[SaveDataSerializer] 슬롯 {slot} 본 파일 손상/없음 — 백업({Path.GetFileName(bak)})에서 복구 시도");
+                data = TryLoadJson(bak);
+                if (data != null)
+                {
+                    MigrateIfNeeded(data, slot);
+                    try { File.Copy(bak, path, overwrite: true); }
+                    catch (Exception e) { Debug.LogWarning($"[SaveDataSerializer] 백업 복원 카피 실패: {e.Message}"); }
+                    return data;
+                }
+            }
+            return null;
+        }
+
+        static SaveData TryLoadJson(string path)
+        {
+            if (!File.Exists(path)) return null;
+            try
+            {
+                string json = File.ReadAllText(path, Encoding.UTF8);
+                return JsonConvert.DeserializeObject<SaveData>(json);
+            }
             catch (Exception e)
             {
-                Debug.LogError($"[SaveDataSerializer] 슬롯 {slot} 로드 실패: {e.Message}");
+                Debug.LogError($"[SaveDataSerializer] 파일 로드 실패 ({Path.GetFileName(path)}): {e.Message}");
                 return null;
+            }
+        }
+
+        /// <summary>
+        /// 옛 버전 세이브를 현재 포맷으로 변환. 필드 추가/이름 변경 시 단계별 분기 추가.
+        /// </summary>
+        static void MigrateIfNeeded(SaveData data, int slot)
+        {
+            if (data.Version == SaveData.CurrentVersion) return;
+
+            if (data.Version > SaveData.CurrentVersion)
+            {
+                Debug.LogWarning(
+                    $"[SaveDataSerializer] 슬롯 {slot}: 미래 버전 세이브(v{data.Version}) — 현재 게임은 v{SaveData.CurrentVersion}, 호환 안 될 수 있음");
+                return;
+            }
+
+            int from = data.Version;
+            // v0 (버전 도입 전) → v1: 추가 변환 없음. 새 필드는 기본값 유지.
+            // (향후 v1 → v2 변환 시 여기에 단계별 분기 추가)
+            data.Version = SaveData.CurrentVersion;
+            Debug.Log($"[SaveDataSerializer] 슬롯 {slot}: 세이브 마이그레이션 v{from} → v{SaveData.CurrentVersion}");
+        }
+
+        /// <summary>
+        /// tmp 파일에 쓴 뒤 원본을 .bak로 보존하면서 교체. 부분 실패 시 원본 손상 방지.
+        /// </summary>
+        internal static void AtomicWriteAllText(string path, string contents, Encoding encoding)
+        {
+            string tmp = path + TmpSuffix;
+            File.WriteAllText(tmp, contents, encoding);
+            ReplaceWithBackup(tmp, path);
+        }
+
+        internal static void AtomicWriteAllBytes(string path, byte[] bytes)
+        {
+            string tmp = path + TmpSuffix;
+            File.WriteAllBytes(tmp, bytes);
+            ReplaceWithBackup(tmp, path);
+        }
+
+        static void ReplaceWithBackup(string tmp, string target)
+        {
+            string bak = target + BackupSuffix;
+            if (File.Exists(target))
+            {
+                // File.Replace: 원본 → bak, tmp → 원본 위치. 같은 볼륨 내에서 원자적.
+                File.Replace(tmp, target, bak);
+            }
+            else
+            {
+                File.Move(tmp, target);
             }
         }
 

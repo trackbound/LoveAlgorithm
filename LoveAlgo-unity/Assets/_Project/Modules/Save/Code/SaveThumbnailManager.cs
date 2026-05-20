@@ -93,8 +93,8 @@ namespace LoveAlgo.Story.SaveSystem
         }
 
         /// <summary>
-        /// 임시 파일을 실제 슬롯 썸네일로 확정
-        /// 성공 시 true, 없으면 false
+        /// 임시 파일을 실제 슬롯 썸네일로 확정. atomic copy 후 pending 삭제.
+        /// 성공 시 true, 없으면 false.
         /// </summary>
         public static bool TryCommitPendingScreenshot(int slot)
         {
@@ -104,7 +104,8 @@ namespace LoveAlgo.Story.SaveSystem
                 string pending = Path.Combine(folder, "save_pending_thumb.png");
                 if (File.Exists(pending))
                 {
-                    File.Copy(pending, GetScreenshotPath(slot), overwrite: true);
+                    byte[] data = File.ReadAllBytes(pending);
+                    SaveDataSerializer.AtomicWriteAllBytes(GetScreenshotPath(slot), data);
                     File.Delete(pending);
                     return true;
                 }
@@ -126,7 +127,7 @@ namespace LoveAlgo.Story.SaveSystem
                 var tex = CaptureStageOnlyTextureSync();
                 var thumb = CropAndScaleTexture(tex, ThumbnailWidth, ThumbnailHeight);
                 byte[] png = thumb.EncodeToPNG();
-                File.WriteAllBytes(GetScreenshotPath(slot), png);
+                SaveDataSerializer.AtomicWriteAllBytes(GetScreenshotPath(slot), png);
 
                 UnityEngine.Object.Destroy(tex);
                 UnityEngine.Object.Destroy(thumb);
@@ -161,13 +162,16 @@ namespace LoveAlgo.Story.SaveSystem
         }
 
         /// <summary>
-        /// 스크린샷 삭제
+        /// 스크린샷 삭제 (본 파일 + .bak 백업)
         /// </summary>
         public static void DeleteScreenshot(int slot)
         {
             string path = GetScreenshotPath(slot);
             if (File.Exists(path))
                 File.Delete(path);
+            string bak = path + ".bak";
+            if (File.Exists(bak))
+                File.Delete(bak);
         }
 
         /// <summary>
