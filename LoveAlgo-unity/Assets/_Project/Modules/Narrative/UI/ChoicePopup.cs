@@ -236,7 +236,7 @@ namespace LoveAlgo.Story
                     // Stat:StatName:Value
                     if (parts.Length >= 3 && int.TryParse(parts[2], out int statValue))
                     {
-                        var stats = Services.Get<IStats>();
+                        var stats = Services.TryGet<IStats>();
                         if (stats != null) stats.Add(parts[1], statValue);
                         else GameState.Instance.AddStat(parts[1], statValue);
                     }

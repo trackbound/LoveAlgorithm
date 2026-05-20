@@ -29,7 +29,7 @@ namespace LoveAlgo.Story.StoryEngine.Flow
                 return;
             }
 
-            var aff = Services.Get<IAffinity>();
+            var aff = Services.TryGet<IAffinity>();
             if (aff == null)
             {
                 Debug.LogError("[Affinity] IAffinity 서비스 미등록 — 씬에 AffinityModule이 있는지 확인");

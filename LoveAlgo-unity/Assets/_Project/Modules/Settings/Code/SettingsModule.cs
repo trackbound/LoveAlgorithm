@@ -56,8 +56,8 @@ namespace LoveAlgo.Settings
         void Awake()
         {
             Services.Register<ISettings>(this);
-            audioSvc = Services.Get<IAudio>();
-            narrative = Services.Get<INarrative>();
+            audioSvc = Services.TryGet<IAudio>();
+            narrative = Services.TryGet<INarrative>();
             if (settingsPopupPrefab != null && PopupManager.Instance != null)
                 popupInstance = PopupManager.Instance.Register(settingsPopupPrefab);
             Load();

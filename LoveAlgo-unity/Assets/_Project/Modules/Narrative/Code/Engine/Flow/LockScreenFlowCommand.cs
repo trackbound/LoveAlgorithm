@@ -42,7 +42,7 @@ namespace LoveAlgo.Story.StoryEngine.Flow
                 return;
             }
 
-            var ls = Services.Get<ILockScreen>();
+            var ls = Services.TryGet<ILockScreen>();
             if (ls == null)
             {
                 Debug.LogError("[Flow][LockScreen] ILockScreen 서비스 미등록 — 씬에 LockScreenModule 확인");

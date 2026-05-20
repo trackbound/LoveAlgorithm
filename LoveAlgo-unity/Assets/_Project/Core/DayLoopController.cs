@@ -55,7 +55,7 @@ namespace LoveAlgo.Core
                 }
                 else
                 {
-                    var stats = Services.Get<IStats>();
+                    var stats = Services.TryGet<IStats>();
                     AddStat(stats, gs, "Str", effect.strengthChange);
                     AddStat(stats, gs, "Int", effect.intelligenceChange);
                     AddStat(stats, gs, "Soc", effect.socialChange);

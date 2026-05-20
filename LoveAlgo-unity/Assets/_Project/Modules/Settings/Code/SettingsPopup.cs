@@ -68,7 +68,7 @@ namespace LoveAlgo.UI
         protected override void Awake()
         {
             base.Awake();
-            settings = Services.Get<ISettings>();
+            settings = Services.TryGet<ISettings>();
 
             SetupButtons();
             SetupSliders();

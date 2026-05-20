@@ -191,22 +191,22 @@ namespace LoveAlgo.UI
 
         void OnPhone()
         {
-            Services.Get<IPhone>()?.ShowPhoneUI();
+            Services.TryGet<IPhone>()?.ShowPhoneUI();
         }
 
         void OnSave()
         {
-            Services.Get<ISave>()?.ShowSaveUI();
+            Services.TryGet<ISave>()?.ShowSaveUI();
         }
 
         void OnLoad()
         {
-            Services.Get<ISave>()?.ShowLoadUI();
+            Services.TryGet<ISave>()?.ShowLoadUI();
         }
 
         void OnConfig()
         {
-            Services.Get<ISettings>()?.ShowSettingsUI();
+            Services.TryGet<ISettings>()?.ShowSettingsUI();
         }
 
         void OnExit()

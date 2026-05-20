@@ -44,7 +44,7 @@ namespace LoveAlgo.Schedule
         void Awake()
         {
             Services.Register<ISchedule>(this);
-            Services.Get<ISimulation>()?.RegisterSubMode(this);
+            Services.TryGet<ISimulation>()?.RegisterSubMode(this);
         }
 
         void OnDestroy()

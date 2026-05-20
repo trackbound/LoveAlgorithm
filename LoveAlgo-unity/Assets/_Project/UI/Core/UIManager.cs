@@ -28,15 +28,16 @@ namespace LoveAlgo.UI
 
         // ── UI 인스턴스 호환성 wrapper (모듈 위임) ───────────────────
         // 옛 호출자(UIManager.Instance.X)를 위한 1줄 wrapper. 새 코드는 Services.Get<I*>() 직접 사용.
-        public DialogueUI DialogueUI => Services.Get<INarrative>()?.DialogueUI;
-        public DialogueShowButton DialogueShowButton => Services.Get<INarrative>()?.DialogueShowButton;
-        public ChoicePopup ChoicePopup => Services.Get<INarrative>()?.ChoicePopup;
-        public ScheduleUI ScheduleUI => Services.Get<ISchedule>()?.ScheduleUI;
-        public ShopUI ShopUI => Services.Get<IShop>()?.ShopUI;
-        public TitlePanel TitlePanel => Services.Get<ITitle>()?.TitlePanel;
-        public UsernameUI UsernameUI => Services.Get<ITitle>()?.UsernameUI;
-        public TutorialOverlay TutorialOverlay => Services.Get<ITutorial>()?.Overlay;
-        public QuickMenu QuickMenu => Services.Get<ISimulation>()?.QuickMenu;
+        // 모듈이 아직 등록 안 됐을 수 있으므로 TryGet 사용 (Get은 throw).
+        public DialogueUI DialogueUI => Services.TryGet<INarrative>()?.DialogueUI;
+        public DialogueShowButton DialogueShowButton => Services.TryGet<INarrative>()?.DialogueShowButton;
+        public ChoicePopup ChoicePopup => Services.TryGet<INarrative>()?.ChoicePopup;
+        public ScheduleUI ScheduleUI => Services.TryGet<ISchedule>()?.ScheduleUI;
+        public ShopUI ShopUI => Services.TryGet<IShop>()?.ShopUI;
+        public TitlePanel TitlePanel => Services.TryGet<ITitle>()?.TitlePanel;
+        public UsernameUI UsernameUI => Services.TryGet<ITitle>()?.UsernameUI;
+        public TutorialOverlay TutorialOverlay => Services.TryGet<ITutorial>()?.Overlay;
+        public QuickMenu QuickMenu => Services.TryGet<ISimulation>()?.QuickMenu;
 
         /// <summary>UI 인스턴스 부모 그룹 — 모듈이 자기 UI를 spawn할 때 사용.</summary>
         public Transform GetGroupRoot(UIGroup group)
@@ -75,19 +76,19 @@ namespace LoveAlgo.UI
         /// <summary>모든 메인 UI 숨기기 + 시뮬레이션 컨텍스트 종료 (QuickMenu 비활성 포함).</summary>
         public void HideAll()
         {
-            var narr = Services.Get<INarrative>();
+            var narr = Services.TryGet<INarrative>();
             SetActiveIfExists(narr?.DialogueUI, false);
 
             // 시뮬레이션 컨텍스트 종료 — ScheduleUI/ShopUI/QuickMenu 모두 정리
-            var sim = Services.Get<ISimulation>();
+            var sim = Services.TryGet<ISimulation>();
             if (sim != null && sim.IsActive) sim.ExitSimulation();
             else
             {
-                SetActiveIfExists(Services.Get<ISchedule>()?.ScheduleUI, false);
-                SetActiveIfExists(Services.Get<IShop>()?.ShopUI, false);
+                SetActiveIfExists(Services.TryGet<ISchedule>()?.ScheduleUI, false);
+                SetActiveIfExists(Services.TryGet<IShop>()?.ShopUI, false);
             }
 
-            var title = Services.Get<ITitle>();
+            var title = Services.TryGet<ITitle>();
             SetActiveIfExists(title?.TitlePanel, false);
             SetActiveIfExists(title?.UsernameUI, false);
             PopupManager.Instance?.Get<PlaceNotification>()?.HideImmediate();
@@ -105,7 +106,7 @@ namespace LoveAlgo.UI
                     break;
                 case MainUIType.Schedule:
                     // 시뮬레이션 컨텍스트 진입 — SimulationModule이 ScheduleUI + QuickMenu 활성
-                    var sim = Services.Get<ISimulation>();
+                    var sim = Services.TryGet<ISimulation>();
                     if (sim != null) sim.EnterSimulation();
                     else SetActiveIfExists(ScheduleUI, true); // 폴백
                     break;

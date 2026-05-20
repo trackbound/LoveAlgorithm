@@ -900,17 +900,17 @@ namespace LoveAlgo.Story
 
         void OnSaveClick()
         {
-            Services.Get<ISave>()?.ShowSaveUI();
+            Services.TryGet<ISave>()?.ShowSaveUI();
         }
 
         void OnLoadClick()
         {
-            Services.Get<ISave>()?.ShowLoadUI();
+            Services.TryGet<ISave>()?.ShowLoadUI();
         }
 
         void OnConfigClick()
         {
-            Services.Get<ISettings>()?.ShowSettingsUI();
+            Services.TryGet<ISettings>()?.ShowSettingsUI();
         }
 
         void OnAutoClick()
@@ -927,7 +927,7 @@ namespace LoveAlgo.Story
 
         void OnLogClick()
         {
-            Services.Get<INarrative>()?.ShowLogUI(dialogueLog);
+            Services.TryGet<INarrative>()?.ShowLogUI(dialogueLog);
         }
 
         void OnHideClick()

@@ -45,7 +45,7 @@ namespace LoveAlgo.Story.StoryEngine.Flow
             // 확인 필수 메시지: 폰 자동 오픈 + 사용자 응답 대기
             if (waitForResponse)
             {
-                var phone = Services.Get<IPhone>();
+                var phone = Services.TryGet<IPhone>();
                 if (phone == null)
                 {
                     Debug.LogWarning("[Flow] Message:wait — IPhone 서비스 없음, 대기 스킵");

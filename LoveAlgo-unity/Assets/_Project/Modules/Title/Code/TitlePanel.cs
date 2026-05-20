@@ -281,19 +281,19 @@ namespace LoveAlgo.UI
         void OnLoadClick()
         {
             Debug.Log("[TitlePanel] Load - 불러오기");
-            Services.Get<ISave>()?.ShowLoadUI();
+            Services.TryGet<ISave>()?.ShowLoadUI();
         }
 
         void OnSettingsClick()
         {
             Debug.Log("[TitlePanel] Settings - 설정");
-            Services.Get<ISettings>()?.ShowSettingsUI();
+            Services.TryGet<ISettings>()?.ShowSettingsUI();
         }
 
         void OnExtraClick()
         {
             Debug.Log("[TitlePanel] Extra - 엑스트라");
-            Services.Get<ITitle>()?.ShowExtraUI();
+            Services.TryGet<ITitle>()?.ShowExtraUI();
         }
 
         void OnExitClick()
