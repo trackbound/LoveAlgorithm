@@ -68,11 +68,9 @@ namespace LoveAlgo.Shop
             if (iconImage != null)
                 iconImage.sprite = item.GetSaleIcon();
 
-            // 마키 효과 (긴 이름 스크롤)
-            if (item.UseMarquee && nameText != null)
-                TextMarquee.GetOrAdd(nameText).Play();
-            else
-                nameText?.GetComponent<TextMarquee>()?.Stop();
+            // 마키는 호버 시에만 — 그리드 정적 상태 유지 (시선 집중도 ↑)
+            // 평상시 긴 이름은 RectMask2D가 자동 잘림 처리
+            nameText?.GetComponent<TextMarquee>()?.Stop();
 
             // 배경 스프라이트 초기화
             ApplyBgSprite();
@@ -100,6 +98,11 @@ namespace LoveAlgo.Shop
         {
             isHovered = true;
             ApplyBgSprite();
+
+            // 긴 이름이면 호버 진입 시에만 마키 시작 (부드럽게 가속 후 정속)
+            if (itemData != null && itemData.UseMarquee && nameText != null)
+                TextMarquee.GetOrAdd(nameText).Play();
+
             onHovered?.Invoke(this, true);
         }
 
@@ -107,6 +110,10 @@ namespace LoveAlgo.Shop
         {
             isHovered = false;
             ApplyBgSprite();
+
+            // 호버 이탈 시 부드럽게 감속 후 원위치 복원
+            nameText?.GetComponent<TextMarquee>()?.Stop();
+
             onHovered?.Invoke(this, false);
         }
 

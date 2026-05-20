@@ -377,9 +377,6 @@ namespace LoveAlgo.Shop
 
             if (!confirmed) return;
 
-            // 구매 직전 합계 (피드백용; BuyBatch 후엔 cart가 비기 전 캡처)
-            int totalCost = GetCartTotal();
-
             // 일괄 구매 + 즉시 효과 적용 (원자적 트랜잭션)
             //   기획: "구매 = 즉시 적용" — 선물(Gift) 제외하고 Consumable/SessionBuff는 구매 시점에 바로 소진·적용
             //     · Consumable(피로회복): 피로 즉시 감소 (중복 패널티 그대로 적용, 인벤토리에 남지 않음)
@@ -401,13 +398,9 @@ namespace LoveAlgo.Shop
 
             UISoundManager.Instance?.PlayClick();
 
-            // 효과 피드백 토스트 (스케줄과 동일한 순차 표시)
-            //   순서: 합계 → (아이템별) 이름 → 효과("체력 +3", "피로 -5" 등)
-            var toastLines = new List<string>();
-            toastLines.Add($"합계 {MoneyFormat.SignedCurrency(-totalCost)}");
-            toastLines.AddRange(feedbackParts);
-
-            PopupManager.Instance?.ToastSequence("구매 완료", toastLines, 0.8f);
+            // 효과 피드백 토스트 — 아이템별로 "이름\n효과들" 블록을 차례로 표시
+            //   예) "오렌지사탕\n체력 +1 지성 +2" → "딸기사탕\n체력 +2 지성 +1"
+            PopupManager.Instance?.ToastSequence("구매 완료", feedbackParts, 1.2f);
         }
 
         #endregion

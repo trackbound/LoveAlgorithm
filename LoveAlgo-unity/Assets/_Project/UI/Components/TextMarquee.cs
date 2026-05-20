@@ -5,9 +5,9 @@ using UnityEngine.UI;
 namespace LoveAlgo.UI
 {
     /// <summary>
-    /// LED 전광판 스타일 텍스트 스크롤 — TMP_Text에 부착
-    /// 텍스트가 영역을 초과하면 좌로 끊김 없이 무한 루프 스크롤
-    /// 부모에 RectMask2D 자동 생성 (마스크 컨테이너)
+    /// 텍스트 마키 — TMP_Text에 부착해 영역을 초과하면 좌로 부드럽게 스크롤
+    /// 부모에 RectMask2D 자동 생성. 시작/정지 시 ease-in/out으로 가속·감속해
+    /// 끊김 없는 느낌을 준다 (호버 진입/이탈 UX에 적합).
     /// </summary>
     [RequireComponent(typeof(TMP_Text))]
     public class TextMarquee : MonoBehaviour
@@ -17,32 +17,33 @@ namespace LoveAlgo.UI
         RectTransform _maskRT;
         GameObject _maskGO;
 
-        // 두 번째 복사본 (연속 루핑용) — 첫 복사본을 뒤따라 위치해 우측에서 재진입
         TMP_Text _textClone;
         RectTransform _textCloneRT;
 
-        /// <summary>루프 간 여백 (px). 텍스트 길이와 무관하게 항상 일정.</summary>
         float _gap;
-
         bool _initialized;
         bool _scrolling;
         bool _pendingPlay;
 
-        float _speed;
+        float _maxSpeed;
         float _initialPause;
+        float _accelTime;
+
         float _maskWidth;
         float _textWidth;
-        float _cycleLength; // textWidth + gap — 한 사이클 거리
+        float _cycleLength;
 
-        // 원본 텍스트 설정 저장
         TextWrappingModes _origWrapMode;
         TextOverflowModes _origOverflow;
+        HorizontalAlignmentOptions _origHorizAlign;
 
         float _offset;
-        float _pauseTimer;
-        bool _pausing; // 최초 정지 상태
+        float _currentSpeed;
+        float _phaseTimer;
 
-        /// <summary>TMP_Text에서 TextMarquee 가져오거나 추가</summary>
+        enum Phase { Idle, InitialPause, Accel, Cruise, Decel }
+        Phase _phase;
+
         public static TextMarquee GetOrAdd(TMP_Text text)
         {
             var m = text.GetComponent<TextMarquee>();
@@ -50,7 +51,6 @@ namespace LoveAlgo.UI
             return m;
         }
 
-        /// <summary>마스크 컨테이너 생성 및 텍스트 리페어런트 (최초 1회)</summary>
         void Init()
         {
             if (_initialized) return;
@@ -61,8 +61,8 @@ namespace LoveAlgo.UI
 
             _origWrapMode = _text.textWrappingMode;
             _origOverflow = _text.overflowMode;
+            _origHorizAlign = _text.horizontalAlignment;
 
-            // 마스크 컨테이너 생성 — 텍스트의 원래 자리를 대신 차지
             var parent = _textRT.parent;
             int sibIndex = _textRT.GetSiblingIndex();
 
@@ -72,53 +72,70 @@ namespace LoveAlgo.UI
             _maskRT.SetParent(parent, false);
             _maskRT.SetSiblingIndex(sibIndex);
 
-            // 텍스트의 원본 레이아웃을 마스크로 복사
             CopyRect(_textRT, _maskRT);
-
-            // 텍스트를 마스크 자식으로 이동
             _textRT.SetParent(_maskRT, false);
 
-            // 스크롤용 두 번째 복사본 생성 (비활성 상태로 준비)
             var cloneGO = Instantiate(_text.gameObject, _maskRT);
             cloneGO.name = "_MarqueeClone";
-            // 클론에서는 TextMarquee 자기참조/중복 초기화 방지
             var dupMarquee = cloneGO.GetComponent<TextMarquee>();
             if (dupMarquee != null) Destroy(dupMarquee);
             _textClone = cloneGO.GetComponent<TMP_Text>();
             _textCloneRT = cloneGO.GetComponent<RectTransform>();
             cloneGO.SetActive(false);
 
-            // 기본 상태: 마스크를 꽉 채움
             ResetTextToFill();
         }
 
         /// <summary>
-        /// 스크롤 시작
+        /// 스크롤 시작 — 초기 정지 → ease-in 가속 → 정속 순환 (호버 이탈 시 Stop()으로 감속)
         /// </summary>
-        /// <param name="speed">스크롤 속도 (px/s)</param>
-        /// <param name="initialPause">처음 텍스트 보여주고 대기 (초)</param>
-        /// <param name="gap">
-        /// 루프 간 여백 (px). 텍스트 길이와 무관하게 항상 일정하게 유지된다.
-        /// 값이 마스크 폭보다 작으면 원본이 아직 보이는 동안 클론이 우측에서 진입 (끊김 없는 느낌).
-        /// 값이 마스크 폭보다 크면 원본이 완전히 사라진 뒤 빈 구간 후 클론 등장.
-        /// </param>
-        public void Play(float speed = 50f, float initialPause = 1.5f, float gap = 40f)
+        /// <param name="speed">정속 구간 속도 (px/s)</param>
+        /// <param name="initialPause">시작 전 텍스트를 보여주는 대기 (초)</param>
+        /// <param name="gap">루프 간 여백 (px, 텍스트 길이와 무관하게 일정)</param>
+        /// <param name="accelTime">가속/감속에 걸리는 시간 (초)</param>
+        public void Play(float speed = 40f, float initialPause = 0.7f, float gap = 48f, float accelTime = 0.35f)
         {
             Init();
-            Stop();
-            _speed = speed;
-            _initialPause = initialPause;
+            // 이미 재생 중이면 무시 — 호버 깜박임 시 재설정 방지
+            if (_scrolling && (_phase == Phase.Accel || _phase == Phase.Cruise || _phase == Phase.InitialPause))
+                return;
+
+            _maxSpeed = speed;
+            _initialPause = Mathf.Max(0f, initialPause);
             _gap = Mathf.Max(0f, gap);
+            _accelTime = Mathf.Max(0.01f, accelTime);
             _pendingPlay = true;
             enabled = true;
         }
 
-        /// <summary>스크롤 정지 및 위치 초기화</summary>
+        /// <summary>
+        /// 스크롤 정지 — 정속 또는 가속 중이면 부드럽게 감속 후 원위치, 그 외엔 즉시 초기화
+        /// </summary>
         public void Stop()
         {
+            if (!_initialized)
+            {
+                _pendingPlay = false;
+                return;
+            }
+
+            if (_scrolling && (_phase == Phase.Accel || _phase == Phase.Cruise))
+            {
+                _phase = Phase.Decel;
+                _phaseTimer = 0f;
+                return;
+            }
+
+            InstantReset();
+        }
+
+        void InstantReset()
+        {
+            _phase = Phase.Idle;
             _scrolling = false;
             _pendingPlay = false;
-            _pausing = false;
+            _offset = 0f;
+            _currentSpeed = 0f;
 
             if (!_initialized) return;
 
@@ -126,6 +143,7 @@ namespace LoveAlgo.UI
             ResetTextToFill();
             _text.textWrappingMode = _origWrapMode;
             _text.overflowMode = _origOverflow;
+            _text.horizontalAlignment = _origHorizAlign;
         }
 
         void Update()
@@ -139,20 +157,53 @@ namespace LoveAlgo.UI
 
             if (!_scrolling) return;
 
-            // 최초 정지 구간 — 텍스트를 잠깐 보여준 뒤 스크롤 시작
-            if (_pausing)
+            float dt = Time.unscaledDeltaTime;
+            _phaseTimer += dt;
+
+            switch (_phase)
             {
-                _pauseTimer += Time.unscaledDeltaTime;
-                if (_pauseTimer >= _initialPause)
-                    _pausing = false;
-                return;
+                case Phase.InitialPause:
+                    if (_phaseTimer >= _initialPause)
+                    {
+                        _phase = Phase.Accel;
+                        _phaseTimer = 0f;
+                    }
+                    break;
+
+                case Phase.Accel:
+                {
+                    float t = Mathf.Clamp01(_phaseTimer / _accelTime);
+                    _currentSpeed = _maxSpeed * SmoothStep(t);
+                    AdvanceOffset(dt);
+                    if (t >= 1f)
+                    {
+                        _phase = Phase.Cruise;
+                        _phaseTimer = 0f;
+                    }
+                    break;
+                }
+
+                case Phase.Cruise:
+                    _currentSpeed = _maxSpeed;
+                    AdvanceOffset(dt);
+                    break;
+
+                case Phase.Decel:
+                {
+                    float t = Mathf.Clamp01(_phaseTimer / _accelTime);
+                    _currentSpeed = _maxSpeed * (1f - SmoothStep(t));
+                    AdvanceOffset(dt);
+                    if (t >= 1f)
+                        InstantReset();
+                    break;
+                }
             }
+        }
 
-            // 연속 좌 스크롤 + 심리스 랩
-            _offset += _speed * Time.unscaledDeltaTime;
-
-            // 한 사이클 완료 시 랩 (끊김 없음 — 연속 위치 유지)
-            if (_offset >= _cycleLength)
+        void AdvanceOffset(float dt)
+        {
+            _offset += _currentSpeed * dt;
+            if (_cycleLength > 0f && _offset >= _cycleLength)
                 _offset -= _cycleLength;
 
             _textRT.anchoredPosition = new Vector2(-_offset, 0f);
@@ -160,11 +211,14 @@ namespace LoveAlgo.UI
                 _textCloneRT.anchoredPosition = new Vector2(-_offset + _cycleLength, 0f);
         }
 
-        /// <summary>측정 후 스크롤 시작 여부 결정</summary>
+        static float SmoothStep(float t) => t * t * (3f - 2f * t);
+
         void StartScroll()
         {
             _text.textWrappingMode = TextWrappingModes.NoWrap;
             _text.overflowMode = TextOverflowModes.Overflow;
+            // 가운데/오른쪽 정렬이면 글리프가 rect 중앙/우측으로 모여 좌이동 마키가 안 보임 → Left 강제
+            _text.horizontalAlignment = HorizontalAlignmentOptions.Left;
             _text.ForceMeshUpdate();
 
             _maskWidth = _maskRT.rect.width;
@@ -172,28 +226,23 @@ namespace LoveAlgo.UI
 
             if (_textWidth <= _maskWidth || _maskWidth <= 0f)
             {
-                // 스크롤 불필요 — 원본 상태로 복원
                 _scrolling = false;
+                _phase = Phase.Idle;
                 ResetTextToFill();
                 _text.textWrappingMode = _origWrapMode;
                 _text.overflowMode = _origOverflow;
+                _text.horizontalAlignment = _origHorizAlign;
                 return;
             }
 
-            // 사이클 거리 = textWidth + gap
-            // → 원본 꼬리와 클론 머리 사이 간격은 항상 gap (텍스트 길이와 무관하게 일정)
             _cycleLength = _textWidth + _gap;
 
-            // 텍스트를 좌측 고정, 콘텐츠 너비에 맞춤
             _textRT.anchorMin = new Vector2(0f, 0f);
             _textRT.anchorMax = new Vector2(0f, 1f);
             _textRT.pivot = new Vector2(0f, 0.5f);
-            // 폭을 cycleLength 두 배로 잡아 랩 시에도 텍스트가 보이도록
-            // TMP는 실제 글리프만 렌더하므로 넓어도 문제 없음
             _textRT.sizeDelta = new Vector2(_textWidth, 0f);
             _textRT.anchoredPosition = Vector2.zero;
 
-            // 클론 동기화 — 같은 내용을 cycleLength만큼 뒤에 배치해 우측에서 연속 진입
             if (_textClone != null)
             {
                 _textClone.text = _text.text;
@@ -203,6 +252,7 @@ namespace LoveAlgo.UI
                 _textClone.alignment = _text.alignment;
                 _textClone.textWrappingMode = TextWrappingModes.NoWrap;
                 _textClone.overflowMode = TextOverflowModes.Overflow;
+                _textClone.horizontalAlignment = HorizontalAlignmentOptions.Left;
 
                 _textCloneRT.anchorMin = new Vector2(0f, 0f);
                 _textCloneRT.anchorMax = new Vector2(0f, 1f);
@@ -214,11 +264,11 @@ namespace LoveAlgo.UI
 
             _scrolling = true;
             _offset = 0f;
-            _pauseTimer = 0f;
-            _pausing = _initialPause > 0f;
+            _currentSpeed = 0f;
+            _phaseTimer = 0f;
+            _phase = _initialPause > 0f ? Phase.InitialPause : Phase.Accel;
         }
 
-        /// <summary>텍스트를 마스크 크기에 맞게 리셋</summary>
         void ResetTextToFill()
         {
             if (_textRT == null) return;
@@ -242,9 +292,7 @@ namespace LoveAlgo.UI
 
         void OnDisable()
         {
-            _scrolling = false;
-            _pendingPlay = false;
-            _pausing = false;
+            InstantReset();
         }
     }
 }

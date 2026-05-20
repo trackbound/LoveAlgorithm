@@ -157,31 +157,53 @@ namespace LoveAlgo.Shop
                 int qty = kv.Value;
                 if (item == null || qty <= 0) continue;
 
+                string header = qty > 1 ? $"{item.Name} x{qty}" : item.Name;
+
                 switch (item.Category)
                 {
                     case ItemCategory.Gift:
                         // 선물은 기존대로 인벤토리에 적재 (사용은 2차/3차 이벤트에서)
                         AddItem(item.Id, qty);
-                        appliedEffects.Add(qty > 1 ? $"{item.Name} x{qty}" : item.Name);
+                        appliedEffects.Add(header);
                         break;
 
                     case ItemCategory.Consumable:
-                        appliedEffects.Add(qty > 1 ? $"{item.Name} x{qty}" : item.Name);
+                    {
+                        int fatigueTotal = 0;
                         for (int i = 0; i < qty; i++)
                         {
                             int effect = ItemEffectSystem.ApplyDuplicatePenalty(
                                 item.GetDuplicateTag(), item.EffectValue, currentDay);
                             AddStat(gs, "Fatigue", -effect);
-                            appliedEffects.Add($"피로 -{effect}");
+                            fatigueTotal += -effect;
                         }
+                        string effectLine = fatigueTotal != 0
+                            ? $"피로 {FormatSigned(fatigueTotal)}"
+                            : "";
+                        appliedEffects.Add(BuildItemBlock(header, effectLine));
                         Debug.Log($"[ShopManager] 즉시적용 Consumable: {item.Name} x{qty}");
                         break;
+                    }
 
                     case ItemCategory.SessionBuff:
-                        appliedEffects.Add(qty > 1 ? $"{item.Name} x{qty}" : item.Name);
+                    {
+                        // 스탯별 합산 (qty 반복 + 주/보조 효과)
+                        var statOrder = new List<string>();
+                        var statTotals = new Dictionary<string, int>();
+
+                        void Accumulate(string stat, int val)
+                        {
+                            if (string.IsNullOrEmpty(stat) || val == 0) return;
+                            if (!statTotals.ContainsKey(stat))
+                            {
+                                statOrder.Add(stat);
+                                statTotals[stat] = 0;
+                            }
+                            statTotals[stat] += val;
+                        }
+
                         for (int i = 0; i < qty; i++)
                         {
-                            // 주 효과
                             if (!string.IsNullOrEmpty(item.EffectStat))
                             {
                                 int mainVal = ItemEffectSystem.ApplyDuplicatePenalty(
@@ -189,10 +211,9 @@ namespace LoveAlgo.Shop
                                 if (mainVal != 0)
                                 {
                                     AddStat(gs, item.EffectStat, mainVal);
-                                    appliedEffects.Add($"{StatDisplayName(item.EffectStat)} {FormatSigned(mainVal)}");
+                                    Accumulate(item.EffectStat, mainVal);
                                 }
                             }
-                            // 보조 효과 (중복 패널티 동일 태그 적용)
                             if (!string.IsNullOrEmpty(item.SubEffectStat) && item.SubEffectValue != 0)
                             {
                                 int subVal = ItemEffectSystem.ApplyDuplicatePenalty(
@@ -200,12 +221,19 @@ namespace LoveAlgo.Shop
                                 if (subVal != 0)
                                 {
                                     AddStat(gs, item.SubEffectStat, subVal);
-                                    appliedEffects.Add($"{StatDisplayName(item.SubEffectStat)} {FormatSigned(subVal)}");
+                                    Accumulate(item.SubEffectStat, subVal);
                                 }
                             }
                         }
+
+                        var parts = new List<string>();
+                        foreach (var stat in statOrder)
+                            parts.Add($"{StatDisplayName(stat)} {FormatSigned(statTotals[stat])}");
+
+                        appliedEffects.Add(BuildItemBlock(header, string.Join(" ", parts)));
                         Debug.Log($"[ShopManager] 즉시적용 SessionBuff: {item.Name} x{qty}");
                         break;
+                    }
                 }
             }
 
@@ -228,6 +256,12 @@ namespace LoveAlgo.Shop
         }
 
         static string FormatSigned(int value) => value > 0 ? $"+{value}" : value.ToString();
+
+        /// <summary>토스트 한 블록: "아이템명\n효과들" (효과 없으면 헤더만)</summary>
+        static string BuildItemBlock(string header, string effectLine)
+        {
+            return string.IsNullOrEmpty(effectLine) ? header : $"{header}\n{effectLine}";
+        }
 
         #endregion
 

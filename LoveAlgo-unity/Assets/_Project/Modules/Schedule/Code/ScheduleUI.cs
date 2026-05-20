@@ -530,7 +530,7 @@ namespace LoveAlgo.Schedule
             if (gm.DayLoop.IsInlineSchedule)
             {
                 bool proceed = await LoveAlgo.UI.PopupManager.Instance.ConfirmAsync(
-                    "스토리를 진행하시겠습니까?");
+                    "일정을 진행하지 않고 돌아가시겠습니까?");
                 if (!proceed) return;
 
                 gm.DayLoop.CompleteInlineSchedule();
@@ -550,7 +550,7 @@ namespace LoveAlgo.Schedule
             }
 
             bool proceedStory = await LoveAlgo.UI.PopupManager.Instance.ConfirmAsync(
-                "스토리를 진행하시겠습니까?");
+                "일정을 진행하지 않고 돌아가시겠습니까?");
             if (!proceedStory) return;
             gm.RemainingActions = 0;
             await HideAsync(destroyCancellationToken);
