@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
+using LoveAlgo.Common;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -73,10 +74,11 @@ namespace LoveAlgo.Shop
         /// <summary>탭 인덱스 → 카테고리 매핑 (0=전체, 1=소모품, 2=세션버프)</summary>
         static readonly ItemCategory?[] TabCategories = { null, ItemCategory.Gift, ItemCategory.Consumable, ItemCategory.SessionBuff };
 
+        readonly ListenerBag _listeners = new();
+
         void Awake()
         {
-            if (purchaseButton != null)
-                purchaseButton.onClick.AddListener(OnPurchaseClick);
+            _listeners.Bind(purchaseButton, OnPurchaseClick);
 
             if (categoryTabs != null)
                 categoryTabs.OnTabChanged += OnCategoryTabChanged;
@@ -87,6 +89,12 @@ namespace LoveAlgo.Shop
                 itemFilter = GetComponentInChildren<ShopItemFilter>(true);
 
             EnsureSaleSlotPool();
+        }
+
+        void OnDestroy()
+        {
+            _listeners.Dispose();
+            if (categoryTabs != null) categoryTabs.OnTabChanged -= OnCategoryTabChanged;
         }
 
         void OnEnable()

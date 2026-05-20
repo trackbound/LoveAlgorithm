@@ -3,6 +3,7 @@ using System.Threading;
 using UnityEngine;
 using UnityEngine.UI;
 using Cysharp.Threading.Tasks;
+using LoveAlgo.Common;
 using LoveAlgo.Story;
 
 namespace LoveAlgo.UI
@@ -43,11 +44,12 @@ namespace LoveAlgo.UI
         string lastCharId;           // 마지막 그룹의 캐릭터ID
         LogEntryBase lastGroup;      // 마지막 그룹 (연속 대사 추가용)
         CancellationTokenSource buildCts;  // 중복 빌드 방지용
+        readonly ListenerBag _listeners = new();
 
         protected override void Awake()
         {
             base.Awake();
-            closeButton?.onClick.AddListener(Close);
+            _listeners.Bind(closeButton, Close);
 
             if (portraits != null)
             {
@@ -162,6 +164,7 @@ namespace LoveAlgo.UI
 
         protected override void OnDestroy()
         {
+            _listeners.Dispose();
             buildCts?.Cancel();
             buildCts?.Dispose();
             buildCts = null;

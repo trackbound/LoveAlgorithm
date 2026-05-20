@@ -65,10 +65,12 @@ namespace LoveAlgo.Phone
         float nextPollAt;
         int lastUnreadCount;
 
+        readonly ListenerBag _listeners = new();
+
         void Awake()
         {
             if (slideContainer != null) collapsedX = slideContainer.anchoredPosition.x;
-            if (openButton != null) openButton.onClick.AddListener(OnOpenClick);
+            _listeners.Bind(openButton, OnOpenClick);
             SetExpanded(false, instant: true);
         }
 
@@ -167,6 +169,7 @@ namespace LoveAlgo.Phone
 
         void OnDestroy()
         {
+            _listeners.Dispose();
             currentTween?.Kill();
             shakeTween?.Kill();
         }

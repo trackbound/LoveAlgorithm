@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
+using LoveAlgo.Common;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -87,6 +88,8 @@ namespace LoveAlgo.Schedule
         Shop.ShopUI shopPanel => LoveAlgo.UI.UIManager.Instance?.ShopUI;
         CanvasGroup shopContent => shopPanel != null ? shopPanel.CanvasGroup : null;
 
+        readonly ListenerBag _listeners = new();
+
         /// <summary>오늘 상하차를 이미 했는지 (하루 1회 제한)</summary>
         public bool UsedLoadingToday { get; set; }
 
@@ -120,12 +123,9 @@ namespace LoveAlgo.Schedule
                 tabGroup.OnTabChanged += OnTabChanged;
 
             // 상점/폰 버튼 (행동 소비 없음)
-            if (shopButton != null)
-                shopButton.onClick.AddListener(OnShopClick);
-            if (phoneButton != null)
-                phoneButton.onClick.AddListener(OnPhoneClick);
-            if (helpButton != null)
-                helpButton.onClick.AddListener(() => helpPanel?.Open());
+            _listeners.Bind(shopButton, OnShopClick);
+            _listeners.Bind(phoneButton, OnPhoneClick);
+            _listeners.Bind(helpButton, OnHelpClick);
 
             // 퀵메뉴 돌아가기 — UIManager가 관리하는 공용 인스턴스
             var quickMenu = LoveAlgo.UI.UIManager.Instance?.QuickMenu;
@@ -659,6 +659,8 @@ namespace LoveAlgo.Schedule
 
         void OnDestroy()
         {
+            _listeners.Dispose();
+            if (tabGroup != null) tabGroup.OnTabChanged -= OnTabChanged;
             if (canvasGroup != null)
                 canvasGroup.DOKill();
             if (scheduleContent != null)
@@ -670,5 +672,7 @@ namespace LoveAlgo.Schedule
             if (quickMenu != null)
                 quickMenu.OnBackRequested -= OnBackPressed;
         }
+
+        void OnHelpClick() => helpPanel?.Open();
     }
 }

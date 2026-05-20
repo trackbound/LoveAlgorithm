@@ -1,4 +1,5 @@
 using System;
+using LoveAlgo.Common;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -25,10 +26,16 @@ namespace LoveAlgo.UI
         bool isAutoSaveSlot;
         Action<int> onClick;
 
+        readonly ListenerBag _listeners = new();
+
         void Awake()
         {
-            button?.onClick.AddListener(() => onClick?.Invoke(slotIndex));
+            _listeners.Bind(button, RaiseClick);
         }
+
+        void OnDestroy() => _listeners.Dispose();
+
+        void RaiseClick() => onClick?.Invoke(slotIndex);
 
         /// <summary>
         /// 슬롯 초기화

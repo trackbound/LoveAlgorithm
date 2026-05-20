@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using LoveAlgo.Common;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -42,6 +43,8 @@ namespace LoveAlgo.LockScreen.UI
         Coroutine shakeCo;
         bool _loginOnly;
 
+        readonly ListenerBag _listeners = new();
+
         public event Action<string> OnPasswordEntered;
         public event Action OnKeyClicked;
 
@@ -50,13 +53,22 @@ namespace LoveAlgo.LockScreen.UI
             if (inputField != null)
             {
                 inputField.characterLimit = maxLength;
-                inputField.onSubmit.AddListener(_ => Confirm());
+                _listeners.Bind(inputField.onSubmit, ConfirmFromSubmit);
             }
-            if (confirmButton != null) confirmButton.onClick.AddListener(Confirm);
-            if (revealToggle != null) revealToggle.onValueChanged.AddListener(OnRevealChanged);
-            if (keyButton != null) keyButton.onClick.AddListener(() => OnKeyClicked?.Invoke());
+            _listeners.Bind(confirmButton, Confirm);
+            if (revealToggle != null) _listeners.Bind(revealToggle.onValueChanged, OnRevealChanged);
+            _listeners.Bind(keyButton, RaiseKeyClicked);
             if (shakeTarget != null) shakeOriginalPos = shakeTarget.anchoredPosition;
         }
+
+        void OnDestroy()
+        {
+            _listeners.Dispose();
+        }
+
+        void ConfirmFromSubmit(string _) => Confirm();
+
+        void RaiseKeyClicked() => OnKeyClicked?.Invoke();
 
         void OnEnable()
         {

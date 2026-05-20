@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
+using LoveAlgo.Common;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -56,14 +57,16 @@ namespace LoveAlgo.Phone
         int currentTab; // 0=친구, 1=채팅 (Theme 탭은 데모 제외)
         string openedChatRoomId;
 
+        readonly ListenerBag _listeners = new();
+
         protected override void Awake()
         {
             base.Awake();
 
             if (tabGroup != null)
                 tabGroup.OnTabChanged += SwitchTab;
-            if (backButton != null) backButton.onClick.AddListener(OnBackClick);
-            if (profileCloseButton != null) profileCloseButton.onClick.AddListener(HideProfile);
+            _listeners.Bind(backButton, OnBackClick);
+            _listeners.Bind(profileCloseButton, HideProfile);
 
             // 메신저 이벤트 구독
             MessengerManager.OnNewMessage += OnExternalNewMessage;
@@ -71,7 +74,9 @@ namespace LoveAlgo.Phone
 
         protected override void OnDestroy()
         {
+            _listeners.Dispose();
             MessengerManager.OnNewMessage -= OnExternalNewMessage;
+            if (tabGroup != null) tabGroup.OnTabChanged -= SwitchTab;
             base.OnDestroy();
         }
 

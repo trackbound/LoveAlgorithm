@@ -5,6 +5,7 @@ using TMPro;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
+using LoveAlgo.Common;
 using LoveAlgo.Core;
 using LoveAlgo.Story;
 
@@ -39,6 +40,8 @@ namespace LoveAlgo.UI
         /// <summary>인라인 모드 여부 (Flow,,Username으로 열린 경우 true)</summary>
         public bool IsInline => _inlineMode;
 
+        readonly ListenerBag _listeners = new();
+
         void Start()
         {
             SetupInputField();
@@ -58,8 +61,8 @@ namespace LoveAlgo.UI
             if (inputField == null) return;
 
             inputField.characterLimit = NameValidator.MaxLengthEnglish;
-            inputField.onValueChanged.AddListener(OnInputChanged);
-            inputField.onSubmit.AddListener(OnInputSubmit);
+            _listeners.Bind(inputField.onValueChanged, OnInputChanged);
+            _listeners.Bind(inputField.onSubmit, OnInputSubmit);
 
             // 기본 이름 플레이스홀더
             if (inputField.placeholder is TMP_Text placeholder)
@@ -70,8 +73,8 @@ namespace LoveAlgo.UI
 
         void SetupButtons()
         {
-            confirmButton?.onClick.AddListener(OnConfirmClick);
-            backButton?.onClick.AddListener(OnBackClick);
+            _listeners.Bind(confirmButton, OnConfirmClick);
+            _listeners.Bind(backButton, OnBackClick);
         }
 
         #endregion
@@ -226,6 +229,7 @@ namespace LoveAlgo.UI
 
         void OnDestroy()
         {
+            _listeners.Dispose();
             if (inputBox != null) DOTween.Kill(inputBox);
         }
 

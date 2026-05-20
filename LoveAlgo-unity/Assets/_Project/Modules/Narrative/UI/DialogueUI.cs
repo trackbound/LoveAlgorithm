@@ -131,6 +131,8 @@ namespace LoveAlgo.Story
         // 로그용: 모든 인라인 태그 제거
         static readonly Regex StripTagsRegex = new(@"<(wait|sfx|emote|speed)=[^>]+>|</speed>", RegexOptions.Compiled);
 
+        readonly ListenerBag _listeners = new();
+
         void Awake()
         {
             // 슬라이드 대상: 인스펙터에서 별도 바인딩했으면 그것, 아니면 root
@@ -148,13 +150,13 @@ namespace LoveAlgo.Story
 
         void SetupButtons()
         {
-            titleButton?.onClick.AddListener(OnTitleClick);
-            saveButton?.onClick.AddListener(OnSaveClick);
-            loadButton?.onClick.AddListener(OnLoadClick);
-            configButton?.onClick.AddListener(OnConfigClick);
-            autoButton?.onClick.AddListener(OnAutoClick);
-            logButton?.onClick.AddListener(OnLogClick);
-            hideButton?.onClick.AddListener(OnHideClick);
+            _listeners.Bind(titleButton, OnTitleClick);
+            _listeners.Bind(saveButton, OnSaveClick);
+            _listeners.Bind(loadButton, OnLoadClick);
+            _listeners.Bind(configButton, OnConfigClick);
+            _listeners.Bind(autoButton, OnAutoClick);
+            _listeners.Bind(logButton, OnLogClick);
+            _listeners.Bind(hideButton, OnHideClick);
         }
 
         /// <summary>
@@ -523,6 +525,7 @@ namespace LoveAlgo.Story
 
         void OnDestroy()
         {
+            _listeners.Dispose();
             StopDotsAnimation();
             KillAnimations();
             StopBlinkAnimation();

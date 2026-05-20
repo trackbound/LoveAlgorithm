@@ -54,6 +54,8 @@ namespace LoveAlgo.UI
         /// <summary>비동기 버튼 처리 중 재진입 방지</summary>
         bool isBusy;
 
+        readonly ListenerBag _listeners = new();
+
         void Start()
         {
             // 초기 호버 텍스트 비활성화
@@ -88,12 +90,12 @@ namespace LoveAlgo.UI
 
         void SetupButtons()
         {
-            startButton?.onClick.AddListener(OnStartClick);
-            continueButton?.onClick.AddListener(OnContinueClick);
-            loadButton?.onClick.AddListener(OnLoadClick);
-            extraButton?.onClick.AddListener(OnExtraClick);
-            settingsButton?.onClick.AddListener(OnSettingsClick);
-            exitButton?.onClick.AddListener(OnExitClick);
+            _listeners.Bind(startButton, OnStartClick);
+            _listeners.Bind(continueButton, OnContinueClick);
+            _listeners.Bind(loadButton, OnLoadClick);
+            _listeners.Bind(extraButton, OnExtraClick);
+            _listeners.Bind(settingsButton, OnSettingsClick);
+            _listeners.Bind(exitButton, OnExitClick);
         }
 
         void SetupHoverEvents()
@@ -375,6 +377,8 @@ namespace LoveAlgo.UI
 
         void OnDestroy()
         {
+            _listeners.Dispose();
+
             // 데코 CanvasGroup DOTween 정리
             GameObject[] decos = { decoNormal, decoStart, decoContinue, decoLoad, decoExtra, decoSettings, decoExit };
             foreach (var d in decos)

@@ -57,6 +57,7 @@ namespace LoveAlgo.UI
 
         // Service cache
         ISave save;
+        readonly ListenerBag _listeners = new();
 
         protected override void Awake()
         {
@@ -64,17 +65,17 @@ namespace LoveAlgo.UI
 
             save = Services.Get<ISave>();
 
-            closeButton?.onClick.AddListener(Close);
-            prevButton?.onClick.AddListener(PrevPage);
-            nextButton?.onClick.AddListener(NextPage);
+            _listeners.Bind(closeButton, Close);
+            _listeners.Bind(prevButton, PrevPage);
+            _listeners.Bind(nextButton, NextPage);
 
             // 이름 입력 panel — Inspector 바인딩 시에만 wire (없으면 폴백)
             if (nameInputPanel != null)
             {
                 nameInputPanel.SetActive(false);
                 if (nameInputField != null) nameInputField.characterLimit = nameInputMaxLength;
-                if (nameInputConfirm != null) nameInputConfirm.onClick.AddListener(OnNameInputConfirm);
-                if (nameInputCancel != null)  nameInputCancel.onClick.AddListener(OnNameInputCancel);
+                _listeners.Bind(nameInputConfirm, OnNameInputConfirm);
+                _listeners.Bind(nameInputCancel, OnNameInputCancel);
             }
 
             // 슬롯 콜백 설정
@@ -86,6 +87,12 @@ namespace LoveAlgo.UI
             // 자동저장 슬롯(1) + 유저 슬롯(userSlots)
             int totalSlots = 1 + userSlots;
             totalPages = Mathf.CeilToInt((float)totalSlots / slotsPerPage);
+        }
+
+        protected override void OnDestroy()
+        {
+            _listeners.Dispose();
+            base.OnDestroy();
         }
 
         #region Show/Hide

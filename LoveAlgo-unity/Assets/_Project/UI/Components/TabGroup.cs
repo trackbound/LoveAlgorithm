@@ -1,4 +1,5 @@
 using System;
+using LoveAlgo.Common;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -22,6 +23,8 @@ namespace LoveAlgo.UI
         /// <summary>탭 변경 시 콜백 (새 인덱스)</summary>
         public event Action<int> OnTabChanged;
 
+        readonly ListenerBag _listeners = new();
+
         void Awake()
         {
             if (tabs == null) return;
@@ -33,9 +36,11 @@ namespace LoveAlgo.UI
 
                 var btn = tabs[i].GetComponent<Button>();
                 if (btn != null)
-                    btn.onClick.AddListener(() => Select(idx));
+                    _listeners.Bind(btn, () => Select(idx));
             }
         }
+
+        void OnDestroy() => _listeners.Dispose();
 
         void Start()
         {

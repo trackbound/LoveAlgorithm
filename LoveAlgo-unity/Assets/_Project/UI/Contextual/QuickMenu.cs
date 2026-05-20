@@ -43,6 +43,8 @@ namespace LoveAlgo.UI
         float shownY;    // 펼친 상태 Y
         Sequence activeSeq;
 
+        readonly ListenerBag _listeners = new();
+
         void Awake()
         {
             if (menuPanel != null)
@@ -53,23 +55,30 @@ namespace LoveAlgo.UI
 
             SetClosed(immediate: true);
 
-            toggleButton?.onClick.AddListener(Toggle);
-
-            backButton?.onClick.AddListener(() => { Close(); OnBackRequested?.Invoke(); });
-
-            titleButton?.onClick.AddListener(() => { Close(); OnTitle(); });
-            phoneButton?.onClick.AddListener(() => { Close(); OnPhone(); });
-            saveButton?.onClick.AddListener(() => { Close(); OnSave(); });
-            loadButton?.onClick.AddListener(() => { Close(); OnLoad(); });
-            configButton?.onClick.AddListener(() => { Close(); OnConfig(); });
-            exitButton?.onClick.AddListener(() => { Close(); OnExit(); });
+            _listeners.Bind(toggleButton, Toggle);
+            _listeners.Bind(backButton, CloseAndBack);
+            _listeners.Bind(titleButton, CloseAndTitle);
+            _listeners.Bind(phoneButton, CloseAndPhone);
+            _listeners.Bind(saveButton, CloseAndSave);
+            _listeners.Bind(loadButton, CloseAndLoad);
+            _listeners.Bind(configButton, CloseAndConfig);
+            _listeners.Bind(exitButton, CloseAndExit);
         }
 
         void OnDestroy()
         {
+            _listeners.Dispose();
             activeSeq?.Kill();
             menuPanel?.DOKill();
         }
+
+        void CloseAndBack() { Close(); OnBackRequested?.Invoke(); }
+        void CloseAndTitle() { Close(); OnTitle(); }
+        void CloseAndPhone() { Close(); OnPhone(); }
+        void CloseAndSave() { Close(); OnSave(); }
+        void CloseAndLoad() { Close(); OnLoad(); }
+        void CloseAndConfig() { Close(); OnConfig(); }
+        void CloseAndExit() { Close(); OnExit(); }
 
         // ── 토글 ──────────────────────────────────
 
