@@ -106,6 +106,11 @@ namespace LoveAlgo.Story
 
         protected override void OnDestroy()
         {
+            // ScriptRunner가 Start에서 등록한 OnEmoteTag 콜백 해제.
+            // DialogueUI가 더 오래 살아남는 경우 죽은 람다 호출 방지.
+            var dialogueUI = ExecutionDependencies.DialogueUI;
+            if (dialogueUI != null) dialogueUI.OnEmoteTag = null;
+
             base.OnDestroy();
             Stop();
         }
@@ -116,6 +121,7 @@ namespace LoveAlgo.Story
             lineIndex = ScriptParser.BuildLineIndex(lines);
             currentIndex = 0;
             currentScriptName = asset.name;
+            StoryEngine.LineHandlerRegistry.ResetAllExecutorState();
         }
 
         public void LoadScript(string csv, string scriptName = null)
@@ -125,6 +131,7 @@ namespace LoveAlgo.Story
             currentIndex = 0;
             if (!string.IsNullOrEmpty(scriptName))
                 currentScriptName = scriptName;
+            StoryEngine.LineHandlerRegistry.ResetAllExecutorState();
         }
 
         public async UniTask StartScript(string scriptName)
@@ -266,6 +273,8 @@ namespace LoveAlgo.Story
             }
 
             Stop();
+            // CG enter→exit 등 페어 상태가 점프 사이로 새지 않도록 폐기
+            StoryEngine.LineHandlerRegistry.ResetAllExecutorState();
             currentIndex = index;
             cts = new CancellationTokenSource();
             isRunning = true;

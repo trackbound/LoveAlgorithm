@@ -8,12 +8,17 @@ namespace LoveAlgo.Story.StoryEngine.Handlers
     /// <summary>
     /// CG 라인 실행기 — CG 표시/종료. CG 표시 시 오토모드 일시정지.
     /// </summary>
-    public class CGLineExecutor : ILineExecutor
+    public class CGLineExecutor : ILineExecutor, IResettableExecutor
     {
         public LineType Type => LineType.CG;
 
-        /// <summary>CG 표시 전 오토모드 상태 보존용</summary>
-        static bool _wasAutoMode;
+        /// <summary>CG 표시 전 오토모드 상태 보존용 (인스턴스 필드 — 같은 ScriptRunner 내 enter/exit 페어).</summary>
+        bool _wasAutoMode;
+
+        /// <summary>
+        /// 점프/스크립트 로드 시 stale 상태 폐기. LineHandlerRegistry.ResetAllExecutorState가 호출.
+        /// </summary>
+        public void ResetState() => _wasAutoMode = false;
 
         public async UniTask<bool> ExecuteAsync(ScriptLine line, CancellationToken ct)
         {

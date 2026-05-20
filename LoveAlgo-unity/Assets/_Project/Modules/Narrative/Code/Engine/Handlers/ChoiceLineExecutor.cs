@@ -66,25 +66,34 @@ namespace LoveAlgo.Story.StoryEngine.Handlers
                 var result = await choiceUI.ShowAndWaitAsync(options, ct);
                 if (result != null && !string.IsNullOrEmpty(result.JumpTarget))
                 {
-                    GameState.Instance?.AddChoice(result.JumpTarget);
+                    // 라벨 검증을 먼저 — 미존재 라벨이면 ChoiceHistory를 dirty화하지 않음
                     if (_lineIndex().TryGetValue(result.JumpTarget, out int targetIndex))
                     {
+                        GameState.Instance?.AddChoice(result.JumpTarget);
                         _setCurrentIndex(targetIndex - 1);
                         Debug.Log($"[Choice] 선택 -> {result.JumpTarget}");
                     }
                     else
                     {
-                        Debug.LogError($"[Choice] 점프 대상 '{result.JumpTarget}'을 찾을 수 없습니다.");
+                        Debug.LogError($"[Choice] 점프 대상 '{result.JumpTarget}'을 찾을 수 없습니다. (ChoiceHistory 기록 안 함)");
                     }
                 }
             }
             else
             {
-                Debug.Log($"[Choice] {options.Count}개 선택지 (첫 번째 자동 선택)");
+                // UI 없음(헤드리스/테스트) → 첫 선택지 자동 선택. 라벨 검증 후에만 인덱스 이동·기록.
+                Debug.Log($"[Choice] {options.Count}개 선택지 (UI 없음 → 첫 번째 자동 선택)");
                 if (options.Count > 0 && !string.IsNullOrEmpty(options[0].JumpTarget))
                 {
                     if (_lineIndex().TryGetValue(options[0].JumpTarget, out int targetIndex))
+                    {
+                        GameState.Instance?.AddChoice(options[0].JumpTarget);
                         _setCurrentIndex(targetIndex - 1);
+                    }
+                    else
+                    {
+                        Debug.LogError($"[Choice] 자동 선택 대상 '{options[0].JumpTarget}'을 찾을 수 없습니다.");
+                    }
                 }
             }
 
