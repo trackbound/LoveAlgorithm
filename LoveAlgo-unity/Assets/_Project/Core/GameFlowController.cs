@@ -6,6 +6,7 @@ using LoveAlgo.Story;
 using LoveAlgo.UI;
 using LoveAlgo.Schedule;
 using LoveAlgo.Core;
+using LoveAlgo.Stage;
 
 namespace LoveAlgo.Core
 {
@@ -125,7 +126,7 @@ namespace LoveAlgo.Core
         void ShowScheduleUI()
         {
             // 배경이 없으면 기본 배경 설정 (디버그 점프 등으로 배경이 클리어된 경우)
-            var bg = StageManager.Instance?.Background;
+            var bg = StageModule.Instance?.Background;
             if (bg != null && string.IsNullOrEmpty(bg.CurrentBackground))
             {
                 bg.ChangeBackgroundAsync("BG_Title", Story.BGTransition.Cut, 0f).Forget();
@@ -138,6 +139,9 @@ namespace LoveAlgo.Core
 
         void EnterEnding()
         {
+            // 회차 카운터 증가 (머신-와이드, PlayerPrefs). CSV에서 If:EndingCount>=N으로 분기 가능.
+            GameState.IncrementEndingCount();
+
             string endingHeroine = _gm.DetermineEndingHeroine();
             string scriptName;
 

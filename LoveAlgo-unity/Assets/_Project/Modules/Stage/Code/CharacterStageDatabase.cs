@@ -6,27 +6,12 @@ namespace LoveAlgo.Story
 {
     /// <summary>
     /// 캐릭터 시각 표현 DB — 트랜스폼만 담당.
-    /// VirtualOverlay(가상 캐릭터, 로아 등)는 VirtualOverlayDatabase 분리.
+    /// 씬의 StageManager에 SerializeField로 바인딩 (Resources 의존 없음).
+    /// VirtualOverlay(가상 캐릭터, 로아 등)는 StoryMappings.Overlays 분리.
     /// </summary>
     [CreateAssetMenu(fileName = "CharacterStageDatabase", menuName = "LoveAlgo/Character Stage Database")]
     public class CharacterStageDatabase : ScriptableObject
     {
-        static CharacterStageDatabase _instance;
-
-        public static CharacterStageDatabase Instance
-        {
-            get
-            {
-                if (_instance == null)
-                {
-                    _instance = Resources.Load<CharacterStageDatabase>("Data/CharacterStageDatabase");
-                    if (_instance == null)
-                        Debug.LogError("[CharacterStageDatabase] Resources/Data/CharacterStageDatabase.asset 을 찾을 수 없습니다");
-                }
-                return _instance;
-            }
-        }
-
         [Header("캐릭터 표현 목록")]
         public List<CharacterStageEntry> entries = new();
 
@@ -37,7 +22,7 @@ namespace LoveAlgo.Story
     [Serializable]
     public class CharacterStageEntry
     {
-        [Tooltip("캐릭터 ID (CharacterMetaDatabase와 동일)")]
+        [Tooltip("캐릭터 ID (StoryMappings.Characters와 동일)")]
         public string characterId = "";
 
         [Header("스프라이트 트랜스폼")]

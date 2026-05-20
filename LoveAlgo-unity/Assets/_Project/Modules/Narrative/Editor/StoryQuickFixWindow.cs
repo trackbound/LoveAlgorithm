@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using LoveAlgo.NarrativeEditor.Mappings;
 using LoveAlgo.Story;
 using UnityEditor;
 using UnityEngine;
@@ -18,11 +17,9 @@ namespace LoveAlgo.NarrativeEditor
     /// </summary>
     public class StoryQuickFixWindow : EditorWindow
     {
-        const string MAP_DIR = "Assets/_Project/Modules/Narrative/Editor/Mappings";
         const string DEFAULT_SRC = "Assets/_Project/Modules/Narrative/Art/Story/프롤로그(기획).csv";
 
         string sourcePath = DEFAULT_SRC;
-        EmoteMap emote; LoveAlgo.Story.CharacterMetaDatabase meta; BgMap bg; CgMap cg; SdMap sd; SoundMap sound;
         List<Violation> violations = new();
         int selectedIdx = -1;
         int selectedCandidateIdx;
@@ -35,17 +32,6 @@ namespace LoveAlgo.NarrativeEditor
             var w = GetWindow<StoryQuickFixWindow>("Story Quick Fix");
             w.minSize = new Vector2(600, 500);
             w.Show();
-        }
-
-        void OnEnable()
-        {
-            emote     = AssetDatabase.LoadAssetAtPath<EmoteMap>("Assets/Resources/Data/EmoteMap.asset")
-                     ?? AssetDatabase.LoadAssetAtPath<EmoteMap>($"{MAP_DIR}/EmoteMap.asset");
-            meta      = AssetDatabase.LoadAssetAtPath<LoveAlgo.Story.CharacterMetaDatabase>("Assets/Resources/Data/CharacterMetaDatabase.asset");
-            bg        = AssetDatabase.LoadAssetAtPath<BgMap>($"{MAP_DIR}/BgMap.asset");
-            cg        = AssetDatabase.LoadAssetAtPath<CgMap>($"{MAP_DIR}/CgMap.asset");
-            sd        = AssetDatabase.LoadAssetAtPath<SdMap>($"{MAP_DIR}/SdMap.asset");
-            sound     = AssetDatabase.LoadAssetAtPath<SoundMap>($"{MAP_DIR}/SoundMap.asset");
         }
 
         void OnGUI()
@@ -154,7 +140,6 @@ namespace LoveAlgo.NarrativeEditor
                 TargetCsvPath = tmpTarget,
                 PatchCsvPath  = null,
                 AssignLineIdsInPlace = false,  // 스캔만 — 원본 건드리지 않음
-                Emote = emote, Meta = meta, Bg = bg, Cg = cg, Sd = sd, Sound = sound,
             };
             var result = StoryCsvConverter.Convert(opt);
             File.Delete(tmpTarget);
@@ -171,23 +156,14 @@ namespace LoveAlgo.NarrativeEditor
         // ─── 후보 (Levenshtein 거리 순) ───────────────────
         string[] GetCandidates(Violation v)
         {
-            IEnumerable<string> pool;
-            switch (v.kind)
+            IEnumerable<string> pool = v.kind switch
             {
-                case ViolationKind.Emote:
-                    pool = emote != null ? emote.entries.Select(e => e.ko) : Array.Empty<string>();
-                    break;
-                case ViolationKind.Bg:
-                    pool = bg != null ? bg.entries.Select(e => e.ko) : Array.Empty<string>();
-                    break;
-                case ViolationKind.Cg:
-                    pool = cg != null ? cg.entries.Select(e => e.ko) : Array.Empty<string>();
-                    break;
-                case ViolationKind.Sd:
-                    pool = sd != null ? sd.entries.Select(e => e.ko) : Array.Empty<string>();
-                    break;
-                default: return Array.Empty<string>();
-            }
+                ViolationKind.Emote => StoryMappings.Emote.Keys,
+                ViolationKind.Bg    => StoryMappings.BG.Keys,
+                ViolationKind.Cg    => StoryMappings.CG.Keys,
+                ViolationKind.Sd    => StoryMappings.SD.Keys,
+                _                   => Array.Empty<string>(),
+            };
             return pool
                 .Where(s => !string.IsNullOrEmpty(s))
                 .OrderBy(s => Levenshtein(v.token ?? "", s))

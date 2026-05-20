@@ -1,6 +1,7 @@
 using DG.Tweening;
 using LoveAlgo.Common;
 using LoveAlgo.Core;
+using LoveAlgo.Stage;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -92,7 +93,7 @@ namespace LoveAlgo.Phone
         void SyncStageVisibility()
         {
             bool blocked = false;
-            var sm = StageManager.Instance;
+            var sm = StageModule.Instance;
             if (sm != null)
             {
                 blocked = (sm.CG != null && sm.CG.IsShowing) ||

@@ -85,9 +85,9 @@ namespace LoveAlgo.Save
         {
             await CapturePendingScreenshotAsync();
             var popup = EnsurePopup();
-            popup?.ShowSave(slot =>
+            popup?.ShowSave((slot, customLabel) =>
             {
-                GameManager.Instance?.Save(slot);
+                GameManager.Instance?.Save(slot, customLabel: customLabel);
                 UISoundManager.Instance?.PlaySaveComplete();
                 PopupManager.Instance?.Toast("저장 완료", $"슬롯 {slot}에 저장했습니다.");
             });
@@ -96,7 +96,7 @@ namespace LoveAlgo.Save
         public void ShowLoadUI()
         {
             var popup = EnsurePopup();
-            popup?.ShowLoad(slot =>
+            popup?.ShowLoad((slot, _) =>
             {
                 GameManager.Instance?.LoadGame(slot);
                 UISoundManager.Instance?.PlayLoadComplete();

@@ -5,6 +5,7 @@ using Cysharp.Threading.Tasks;
 using UnityEngine;
 using LoveAlgo.Core;
 using LoveAlgo.Modules.Audio;
+using LoveAlgo.Stage;
 using UnityEngine.UI;
 using DG.Tweening;
 
@@ -344,17 +345,18 @@ namespace LoveAlgo.Story
         }
 
         /// <summary>
-        /// 스프라이트 로드 (캐시 지원, Default 폴백)
-        /// 경로: Characters/Char_{character}_{emote}
+        /// 스프라이트 로드 (캐시 지원, _00 폴백)
+        /// 경로: Characters/{characterId}_{emoteId}  (예: c01_00)
         /// </summary>
         Sprite LoadSprite(string character, string emote)
         {
-            // 한글 표정명 → 영문 변환 (Narrative 메타 DB)
-            var meta = CharacterMetaDatabase.Instance;
-            if (meta != null)
-                emote = meta.ResolveEmoteName(emote);
+            // displayName/alias(예: 로아, Roa) → characterId(c01)
+            var resolvedChar = StoryMappings.SpeakerToCharacterId(character) ?? character;
 
-            string path = $"Characters/Char_{character}_{emote}";
+            // 한글 표정명 → 영문/ID 변환 (예: 기본 → _00, Default → _00)
+            var resolvedEmote = StoryMappings.ResolveEmote(emote);
+
+            string path = $"Characters/{resolvedChar}_{resolvedEmote}";
 
             if (spriteCache.TryGetValue(path, out var cached))
             {
@@ -364,10 +366,10 @@ namespace LoveAlgo.Story
 
             var sprite = Resources.Load<Sprite>(path);
 
-            // Default로 폴백
-            if (sprite == null && emote != "Default")
+            // _00(기본)으로 폴백
+            if (sprite == null && resolvedEmote != "_00")
             {
-                string fallback = $"Characters/Char_{character}_Default";
+                string fallback = $"Characters/{resolvedChar}_00";
                 if (spriteCache.TryGetValue(fallback, out cached))
                 {
                     TouchCache(fallback);
@@ -453,7 +455,7 @@ namespace LoveAlgo.Story
             float pivotY = 0f;
 
             // Stage 시각 표현 DB
-            var stageDb = CharacterStageDatabase.Instance;
+            var stageDb = StageModule.Instance?.CharacterStage;
             if (stageDb != null)
             {
                 var entry = stageDb.GetById(characterName);

@@ -113,11 +113,39 @@ namespace LoveAlgo.Core
 
         #endregion
 
+        #region 회차 카운터 (머신-와이드, PlayerPrefs)
+
+        const string EndingCountKey = "GameState.EndingCount";
+
+        /// <summary>
+        /// 엔딩 진입 누적 횟수. 첫 엔딩 도달 시 1, 두 번째 2 ...
+        /// PlayerPrefs 저장 → New Game·세이브 슬롯과 무관하게 머신 단위로 누적.
+        /// </summary>
+        public static int EndingCount => PlayerPrefs.GetInt(EndingCountKey, 0);
+
+        /// <summary>EnterEnding 진입 시점에 1회 호출.</summary>
+        public static void IncrementEndingCount()
+        {
+            int next = EndingCount + 1;
+            PlayerPrefs.SetInt(EndingCountKey, next);
+            PlayerPrefs.Save();
+            Debug.Log($"[GameState] EndingCount → {next}");
+        }
+
+        /// <summary>디버그·치트용. 게임 진행 중에는 호출하지 말 것.</summary>
+        public static void ResetEndingCount()
+        {
+            PlayerPrefs.DeleteKey(EndingCountKey);
+            PlayerPrefs.Save();
+        }
+
+        #endregion
+
         #region 조건 체크
 
         /// <summary>
         /// 조건 문자열 평가
-        /// 형식: Love:Roa>=30, Stat:Int>=20, Flag:Met_Roa, !Flag:Confessed
+        /// 형식: Love:Roa>=30, Stat:Int>=20, Flag:Met_Roa, !Flag:Confessed, EndingCount>=2
         /// </summary>
         public bool EvaluateCondition(string condition)
         {
@@ -154,6 +182,12 @@ namespace LoveAlgo.Core
             if (condition.StartsWith("Stat:"))
             {
                 return EvaluateComparison(condition.Substring(5), GetStat);
+            }
+
+            // 머신-와이드 카운터: EndingCount>=N (PlayerPrefs)
+            if (condition.StartsWith("EndingCount"))
+            {
+                return EvaluateComparison(condition, _ => EndingCount);
             }
 
             // 직접 스탯 비교: Int>=20, Fatigue>=50

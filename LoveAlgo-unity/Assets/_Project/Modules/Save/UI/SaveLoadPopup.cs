@@ -37,12 +37,23 @@ namespace LoveAlgo.UI
         [SerializeField] int slotsPerPage = 6;
         [SerializeField] int userSlots = 29;  // 슬롯 1~29 (0은 자동저장)
 
+        [Header("이름 입력 Sub-Panel (옵션)")]
+        [Tooltip("프리팹에 배치되어 있으면 슬롯 클릭 시 이름 입력 흐름 사용. 미배치면 Confirm 폴백.")]
+        [SerializeField] GameObject nameInputPanel;
+        [SerializeField] TMP_Text nameInputTitle;
+        [SerializeField] TMP_InputField nameInputField;
+        [SerializeField] Button nameInputConfirm;
+        [SerializeField] Button nameInputCancel;
+        [Tooltip("최대 글자수 (한글/공백 포함)")]
+        [SerializeField] int nameInputMaxLength = 24;
+
         bool isSaveMode = true;
         int currentPage = 1;
         int totalPages = 1;
 
-        // 콜백
-        System.Action<int> onSlotSelected;
+        // 콜백 — slot index + 사용자 입력 라벨 (null 또는 빈 문자열이면 자동값 사용)
+        System.Action<int, string> onSlotSelected;
+        UniTaskCompletionSource<string> nameInputTcs;
 
         // Service cache
         ISave save;
@@ -56,6 +67,15 @@ namespace LoveAlgo.UI
             closeButton?.onClick.AddListener(Close);
             prevButton?.onClick.AddListener(PrevPage);
             nextButton?.onClick.AddListener(NextPage);
+
+            // 이름 입력 panel — Inspector 바인딩 시에만 wire (없으면 폴백)
+            if (nameInputPanel != null)
+            {
+                nameInputPanel.SetActive(false);
+                if (nameInputField != null) nameInputField.characterLimit = nameInputMaxLength;
+                if (nameInputConfirm != null) nameInputConfirm.onClick.AddListener(OnNameInputConfirm);
+                if (nameInputCancel != null)  nameInputCancel.onClick.AddListener(OnNameInputCancel);
+            }
 
             // 슬롯 콜백 설정
             for (int i = 0; i < slotItems.Count; i++)
@@ -86,13 +106,14 @@ namespace LoveAlgo.UI
         #endregion
 
         /// <summary>
-        /// 세이브 모드로 열기
+        /// 세이브 모드로 열기. 콜백 시그니처: (slotIndex, customLabel) — customLabel은
+        /// null/빈값이면 자동 chapterName 사용.
         /// </summary>
-        public void ShowSave(System.Action<int> onSelect = null)
+        public void ShowSave(System.Action<int, string> onSelect = null)
         {
             isSaveMode = true;
             onSlotSelected = onSelect;
-            
+
             if (titleText != null)
                 titleText.text = "저장";
 
@@ -102,13 +123,13 @@ namespace LoveAlgo.UI
         }
 
         /// <summary>
-        /// 로드 모드로 열기
+        /// 로드 모드로 열기. customLabel은 무시됨.
         /// </summary>
-        public void ShowLoad(System.Action<int> onSelect = null)
+        public void ShowLoad(System.Action<int, string> onSelect = null)
         {
             isSaveMode = false;
             onSlotSelected = onSelect;
-            
+
             if (titleText != null)
                 titleText.text = "불러오기";
 
@@ -116,6 +137,13 @@ namespace LoveAlgo.UI
             RefreshSlots();
             Show();
         }
+
+        // ── 하위 호환 (기존 Action<int> 시그니처) ───────────────────
+        public void ShowSave(System.Action<int> onSelect)
+            => ShowSave(onSelect != null ? (System.Action<int, string>)((s, _) => onSelect(s)) : null);
+
+        public void ShowLoad(System.Action<int> onSelect)
+            => ShowLoad(onSelect != null ? (System.Action<int, string>)((s, _) => onSelect(s)) : null);
 
         void OnSlotClicked(int localIndex)
         {
@@ -151,17 +179,23 @@ namespace LoveAlgo.UI
             }
 
             bool hasData = save.Exists(slotIndex);
+            string customLabel = null;
 
-            if (hasData)
+            // 이름 입력 panel이 wire되어 있으면 입력 흐름 사용, 아니면 Confirm 폴백
+            if (nameInputPanel != null)
             {
-                // 덮어쓰기 확인
-                bool confirm = await PopupManager.Instance.ConfirmAsync("슬롯의 기존 데이터는 사라집니다.\n저장을 계속하시겠습니까?");
-                if (!confirm) return;
+                string prefill = hasData ? (save.Load(slotIndex)?.ChapterName ?? "") : "";
+                customLabel = await ShowNameInputAsync(
+                    hasData ? "저장 이름 (덮어쓰기)" : "저장 이름",
+                    prefill);
+                if (customLabel == null) return;  // 사용자 취소
             }
             else
             {
-                // 새 슬롯에 저장 확인
-                bool confirm = await PopupManager.Instance.ConfirmAsync("해당 슬롯에 저장하시겠습니까?");
+                string confirmMsg = hasData
+                    ? "슬롯의 기존 데이터는 사라집니다.\n저장을 계속하시겠습니까?"
+                    : "해당 슬롯에 저장하시겠습니까?";
+                bool confirm = await PopupManager.Instance.ConfirmAsync(confirmMsg);
                 if (!confirm) return;
             }
 
@@ -173,8 +207,47 @@ namespace LoveAlgo.UI
             await save.CapturePendingScreenshotAsync();
 
             // 저장 실행 + 슬롯 갱신 (팝업은 유지)
-            onSlotSelected?.Invoke(slotIndex);
+            onSlotSelected?.Invoke(slotIndex, customLabel);
             RefreshSlots();
+        }
+
+        /// <summary>
+        /// 이름 입력 sub-panel을 표시하고 사용자 입력값을 await.
+        /// 반환: 입력된 라벨(빈 값이면 ""로 반환 → 자동값 사용). 취소 시 null.
+        /// </summary>
+        async UniTask<string> ShowNameInputAsync(string title, string prefill)
+        {
+            if (nameInputPanel == null) return "";
+
+            if (nameInputTitle != null) nameInputTitle.text = title;
+            if (nameInputField != null)
+            {
+                nameInputField.SetTextWithoutNotify(prefill ?? "");
+                nameInputField.ActivateInputField();
+            }
+
+            nameInputTcs = new UniTaskCompletionSource<string>();
+            nameInputPanel.SetActive(true);
+
+            string result;
+            try { result = await nameInputTcs.Task; }
+            finally
+            {
+                nameInputPanel.SetActive(false);
+                nameInputTcs = null;
+            }
+            return result;
+        }
+
+        void OnNameInputConfirm()
+        {
+            string value = nameInputField != null ? (nameInputField.text ?? "") : "";
+            nameInputTcs?.TrySetResult(value.Trim());
+        }
+
+        void OnNameInputCancel()
+        {
+            nameInputTcs?.TrySetResult(null);
         }
 
         async UniTaskVoid OnLoadSlotClicked(int slotIndex)
@@ -187,10 +260,10 @@ namespace LoveAlgo.UI
                 "이 부분부터 시작할까요?", "예", "아니오");
             if (!confirm) return;
 
-            // 로드는 씬 전환이므로 팝업 닫고 실행
+            // 로드는 씬 전환이므로 팝업 닫고 실행 (customLabel은 로드에서 무시)
             await HideAsync();
             await UniTask.Delay(150);
-            onSlotSelected?.Invoke(slotIndex);
+            onSlotSelected?.Invoke(slotIndex, null);
         }
 
         #region Pagination

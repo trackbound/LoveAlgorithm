@@ -6,6 +6,7 @@ using LoveAlgo.Modules.Affinity;
 using LoveAlgo.Modules.Audio;
 using Newtonsoft.Json;
 using LoveAlgo.Core;
+using LoveAlgo.Stage;
 using LoveAlgo.UI;
 
 namespace LoveAlgo.Story.SaveSystem
@@ -74,7 +75,7 @@ namespace LoveAlgo.Story.SaveSystem
         /// </summary>
         public static void CaptureStageState(SaveData data)
         {
-            var stage = StageManager.Instance;
+            var stage = StageModule.Instance;
 
             // 배경
             data.CurrentBG = stage?.Background?.CurrentBackground ?? "";

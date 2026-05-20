@@ -46,12 +46,17 @@ namespace LoveAlgo.Story.StoryEngine
             // 매크로
             { "DayStart",    "DayStart" },
             { "DayEnd",      "DayEnd" },
+            { "NextDay",     "NextDay" },
             { "SceneStart",  "SceneStart" },
             { "SceneEnd",    "SceneEnd" },
             { "Setup",       "Setup" },
             { "Wait",        "Wait" },
             { "DialogueHide","DialogueHide" },
             { "DialogueShow","DialogueShow" },
+
+            // Flow → FX 별칭
+            { "Loading",      "LoadingScene" },
+            { "LoadingScene", "LoadingScene" },
         };
 
         /// <summary>FX/매크로 명령 토큰 정규화. 알 수 없으면 입력 그대로 반환(런타임에서 워닝).</summary>

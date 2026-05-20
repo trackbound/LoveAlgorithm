@@ -50,16 +50,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 141cae5f53d085549b0c774ec8223890, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.UI.PlaceUI
+  rootCanvasGroup: {fileID: 6671150754279760470}
   panelRect: {fileID: 7385772719448708536}
   canvasGroup: {fileID: 6632803175741831760}
+  animationType: 1
   showDuration: 0.35
   hideDuration: 0.28
   slideOffset: 200
-  placeCg: {fileID: 0}
+  floatOffset: 15
+  placeCg: {fileID: 6632803175741831760}
   bannerRect: {fileID: 5963167582685652068}
   eventText: {fileID: 165250166852598273}
   placeText: {fileID: 2232309024507220636}
-  eventLine: {fileID: 0}
+  eventLine: {fileID: 1634107568159172389}
   enterDuration: 0.4
   exitDuration: 0.35
   defaultHoldDuration: 2

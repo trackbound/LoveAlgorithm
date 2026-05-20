@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using LoveAlgo.Stage;
 using LoveAlgo.Story;
 using UnityEngine;
 using UnityEngine.UI;
@@ -107,7 +108,7 @@ namespace LoveAlgo.Core
         public bool IsFadeBlack => fadeOverlay != null && fadeOverlay.color.a >= 0.95f;
 
         /// <summary>눈 감기 효과가 활성 상태인지 (세이브용)</summary>
-        public bool IsEyeClosed => StageManager.Instance?.EyeMask?.IsClosed ?? false;
+        public bool IsEyeClosed => StageModule.Instance?.EyeMask?.IsClosed ?? false;
 
         protected override void OnSingletonAwake()
         {
@@ -147,7 +148,7 @@ namespace LoveAlgo.Core
         {
             if (stageCanvas == null)
             {
-                stageCanvas = LoveAlgo.Core.StageManager.Instance?.StageCanvas;
+                stageCanvas = StageModule.Instance?.StageCanvas;
             }
             if (stageCanvas == null) return;
 
@@ -284,7 +285,7 @@ namespace LoveAlgo.Core
                 case "CharJump":
                 case "CharDim":
                     // 캐릭터 효과는 CharacterLayer를 통해 처리
-                    var charLayer = StageManager.Instance?.Character;
+                    var charLayer = StageModule.Instance?.Character;
                     if (charLayer != null)
                     {
                         await charLayer.ExecuteCharFXAsync(effect, parts, ct);
@@ -1032,7 +1033,7 @@ namespace LoveAlgo.Core
 
         public async UniTask EyeOpenAsync(float duration = 1f, CancellationToken ct = default)
         {
-            var mask = StageManager.Instance?.EyeMask;
+            var mask = StageModule.Instance?.EyeMask;
             if (mask == null)
             {
                 Debug.LogWarning("[ScreenFX] EyeMask가 없어 FadeIn으로 폴백");
@@ -1044,7 +1045,7 @@ namespace LoveAlgo.Core
 
         public async UniTask EyeCloseAsync(float duration = 1f, CancellationToken ct = default)
         {
-            var mask = StageManager.Instance?.EyeMask;
+            var mask = StageModule.Instance?.EyeMask;
             if (mask == null)
             {
                 Debug.LogWarning("[ScreenFX] EyeMask가 없어 FadeOut으로 폴백");
@@ -1057,7 +1058,7 @@ namespace LoveAlgo.Core
         public async UniTask EyeBlinkAsync(float closeDuration = 0.1f, float openDuration = 0.15f,
             float holdTime = 0.05f, CancellationToken ct = default)
         {
-            var mask = StageManager.Instance?.EyeMask;
+            var mask = StageModule.Instance?.EyeMask;
             if (mask == null)
             {
                 await FadeOutAsync(closeDuration, ct);
@@ -1067,8 +1068,23 @@ namespace LoveAlgo.Core
             await mask.BlinkAsync(closeDuration, openDuration, holdTime, ct);
         }
 
-        public void EyeCloseImmediate() => StageManager.Instance?.EyeMask?.CloseImmediate();
-        public void EyeOpenImmediate() => StageManager.Instance?.EyeMask?.OpenImmediate();
+        public void EyeCloseImmediate() => StageModule.Instance?.EyeMask?.CloseImmediate();
+        public void EyeOpenImmediate() => StageModule.Instance?.EyeMask?.OpenImmediate();
+
+        /// <summary>
+        /// 매크로 진입 시 안전망 — 잔존 eye/tint 상태를 즉시 초기화.
+        /// fade alpha는 호출자가 의도적으로 유지/변경하므로 건드리지 않음.
+        /// </summary>
+        public void ResetAll()
+        {
+            EyeOpenImmediate();
+            if (tintOverlay != null)
+            {
+                DOTween.Kill(tintOverlay);
+                SetOverlayAlpha(tintOverlay, 0f);
+                tintOverlay.raycastTarget = false;
+            }
+        }
 
         #endregion
 

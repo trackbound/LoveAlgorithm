@@ -32,6 +32,9 @@ namespace LoveAlgo.Story.StoryEngine.Macros
 
             var fx = ScreenFX.Instance;
 
+            // 안전망 — 잔존 eye/tint 정리. eyeClose 모드면 직후 다시 설정.
+            fx?.ResetAll();
+
             if (bgPath != null)
             {
                 var background = ExecutionDependencies.Stage?.Background;
@@ -42,12 +45,6 @@ namespace LoveAlgo.Story.StoryEngine.Macros
 
                 if (eyeClose)
                     fx?.EyeCloseImmediate();
-                else
-                    fx?.EyeOpenImmediate();
-            }
-            else
-            {
-                fx?.EyeOpenImmediate();
             }
 
             float fadeDuration = eyeClose ? 0.3f : 0.6f;

@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
-using LoveAlgo.NarrativeEditor.Mappings;
 using LoveAlgo.Story;
 using UnityEditor;
 using UnityEngine;
@@ -41,12 +40,8 @@ namespace LoveAlgo.NarrativeEditor
         public string PatchCsvPath;
         public string LineIdPrefix = "pro_";
         public bool AssignLineIdsInPlace = true;
-        public EmoteMap Emote;
-        public CharacterMetaDatabase Meta;
-        public BgMap Bg;
-        public CgMap Cg;
-        public SdMap Sd;
-        public SoundMap Sound;
+        /// <summary>Violations 발생 시 대상 CSV에 쓰지 않고 변환 중단 (기본 on).</summary>
+        public bool Strict = true;
     }
 
     public static class StoryCsvConverter
@@ -54,19 +49,12 @@ namespace LoveAlgo.NarrativeEditor
         [MenuItem("Tools/LoveAlgo/Story/Convert 기획 CSV (Default Paths)")]
         public static void ConvertWithDefaults()
         {
-            const string MAP = "Assets/_Project/Modules/Narrative/Editor/Mappings";
             var opt = new StoryConvertOptions
             {
                 SourceCsvPath = "Assets/_Project/Modules/Narrative/Art/Story/프롤로그(기획).csv",
                 TargetCsvPath = "Assets/Resources/Story/Prologue.csv",
                 PatchCsvPath  = "Assets/Resources/Story/Prologue.patch.csv",
                 AssignLineIdsInPlace = true,
-                Emote     = AssetDatabase.LoadAssetAtPath<EmoteMap>("Assets/Resources/Data/EmoteMap.asset"),
-                Meta      = AssetDatabase.LoadAssetAtPath<CharacterMetaDatabase>("Assets/Resources/Data/CharacterMetaDatabase.asset"),
-                Bg        = AssetDatabase.LoadAssetAtPath<BgMap>($"{MAP}/BgMap.asset"),
-                Cg        = AssetDatabase.LoadAssetAtPath<CgMap>($"{MAP}/CgMap.asset"),
-                Sd        = AssetDatabase.LoadAssetAtPath<SdMap>($"{MAP}/SdMap.asset"),
-                Sound     = AssetDatabase.LoadAssetAtPath<SoundMap>($"{MAP}/SoundMap.asset"),
             };
             var r = Convert(opt);
             AssetDatabase.Refresh();
@@ -196,6 +184,13 @@ namespace LoveAlgo.NarrativeEditor
             }
 
             // 5) 백업 + 쓰기
+            if (opt.Strict && result.Violations.Count > 0)
+            {
+                Debug.LogError($"[StoryCsvConverter] Strict 모드: Violations {result.Violations.Count}건 — 출력 중단. Report에서 누락 토큰 수정 후 재시도.");
+                result.Warnings.Add($"strict: {result.Violations.Count} violation(s) — target not written");
+                return result;
+            }
+
             EnsureDir(Path.GetDirectoryName(opt.TargetCsvPath));
             try
             {
@@ -240,11 +235,10 @@ namespace LoveAlgo.NarrativeEditor
         static string NormalizeText(string value, StoryConvertOptions opt, StoryConvertResult r, string lineId, int sourceRow)
         {
             value = NormalizeLineBreaks(value);
-            if (opt.Emote == null) return value;
             return EmoteRx.Replace(value, m =>
             {
                 var ko = m.Groups[1].Value;
-                if (opt.Emote.TryResolve(ko, out var id))
+                if (StoryMappings.Emote.TryGetValue(ko, out var id))
                     return $"<emote={id}/>";
                 r.MissingEmote.Add($"{ko} ({lineId})");
                 AddViolation(r, ViolationKind.Emote, lineId, ko, sourceRow);
@@ -293,18 +287,15 @@ namespace LoveAlgo.NarrativeEditor
                 if (p.StartsWith("Fade") || Regex.IsMatch(p, @"^\d+(\.\d+)?$"))
                     continue;
 
-                // 한글 캐릭터명 → c01 (CharacterMetaDatabase 조회)
-                if (opt.Meta != null)
+                // 한글 캐릭터명 → c01
+                var resolvedChar = StoryMappings.SpeakerToCharacterId(p);
+                if (!string.IsNullOrEmpty(resolvedChar))
                 {
-                    var resolved = opt.Meta.SpeakerToCharacterId(p);
-                    if (!string.IsNullOrEmpty(resolved))
-                    {
-                        output.Add(resolved);
-                        continue;
-                    }
+                    output.Add(resolvedChar);
+                    continue;
                 }
                 // 한글 emote → _NN
-                if (opt.Emote != null && opt.Emote.TryResolve(p, out var emoteId))
+                if (StoryMappings.Emote.TryGetValue(p, out var emoteId))
                 {
                     output.Add(emoteId);
                     continue;
@@ -330,7 +321,7 @@ namespace LoveAlgo.NarrativeEditor
             }
 
             // 한글 BG 룩업
-            if (opt.Bg != null && opt.Bg.TryResolve(head, out var engineId))
+            if (StoryMappings.TryResolveBg(head, out var engineId))
             {
                 if (string.IsNullOrEmpty(tail)) tail = ":Cut";
                 return engineId + tail;
@@ -355,7 +346,7 @@ namespace LoveAlgo.NarrativeEditor
             string head = parts[0];
             // duration만 남기고 Fade 같은 키워드 strip (작가가 :Fade:4.0이라 쓰면 :4.0만 유지하면 엔진이 default duration 사용)
             // 단순화: head만 매핑, tail은 첫 숫자만 남김
-            if (opt.Cg != null && opt.Cg.TryResolve(head, out var engineId))
+            if (StoryMappings.TryResolveCg(head, out var engineId))
             {
                 head = engineId;
             }
@@ -379,7 +370,7 @@ namespace LoveAlgo.NarrativeEditor
             if (ActionKeywords.Contains(value.Trim())) return value.Trim();
             var parts = value.Split(':');
             string head = parts[0];
-            if (opt.Sd != null && opt.Sd.TryResolve(head, out var engineId))
+            if (StoryMappings.TryResolveSd(head, out var engineId))
                 head = engineId;
             else if (!head.StartsWith("sd_") && !head.StartsWith("SD_"))
             {
@@ -397,10 +388,15 @@ namespace LoveAlgo.NarrativeEditor
             if (parts.Length < 2) return value;
             string kindStr = parts[0]; // BGM or SFX
             string id = parts[1];
-            if (Enum.TryParse<SoundMap.Kind>(kindStr, true, out var kind) && opt.Sound != null
-                && opt.Sound.TryResolve(kind, id, out var engineId))
+            if (kindStr.Equals("BGM", StringComparison.OrdinalIgnoreCase)
+                && StoryMappings.TryResolveBgm(id, out var bgmId))
             {
-                id = engineId;
+                id = bgmId;
+            }
+            else if (kindStr.Equals("SFX", StringComparison.OrdinalIgnoreCase)
+                && StoryMappings.TryResolveSfx(id, out var sfxId))
+            {
+                id = sfxId;
             }
             // Fade:N 파라미터 strip
             return $"{kindStr}:{id}";

@@ -6,6 +6,7 @@ using UnityEngine;
 using LoveAlgo.Modules.Audio;
 using LoveAlgo.UI;
 using LoveAlgo.Core;
+using LoveAlgo.Stage;
 
 namespace LoveAlgo.Story.StoryEngine
 {
@@ -15,7 +16,7 @@ namespace LoveAlgo.Story.StoryEngine
     public static class ExecutionDependencies
     {
         static DialogueUI _dialogueUI;
-        static StageManager _stage;
+        static IStage _stage;
         static AudioManager _audio;
 
         public static DialogueUI DialogueUI
@@ -28,12 +29,12 @@ namespace LoveAlgo.Story.StoryEngine
             }
         }
 
-        public static StageManager Stage
+        public static IStage Stage
         {
             get
             {
                 if (_stage == null)
-                    _stage = StageManager.Instance;
+                    _stage = StageModule.Instance;
                 return _stage;
             }
         }

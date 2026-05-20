@@ -80,6 +80,36 @@ namespace LoveAlgo.Story.StoryEngine
                 }
             }
 
+            // Flow 검증 — LockScreen 서브명령 확인 (다른 Flow는 자유 형식)
+            else if (line.Type == LineType.Flow && !string.IsNullOrEmpty(line.Value))
+            {
+                var parts = line.Value.Split(':');
+                if (string.Equals(parts[0], "LockScreen", System.StringComparison.OrdinalIgnoreCase))
+                {
+                    if (parts.Length < 2)
+                    {
+                        Add(result, line, "Error",
+                            "LockScreen 서브명령 부족 — FirstSetup/Normal/Reset/Auto/GameStart 중 하나 필요");
+                    }
+                    else
+                    {
+                        string sub = parts[1];
+                        bool known =
+                            string.Equals(sub, "FirstSetup",     System.StringComparison.OrdinalIgnoreCase) ||
+                            string.Equals(sub, "OpenFirstSetup", System.StringComparison.OrdinalIgnoreCase) ||
+                            string.Equals(sub, "Normal",         System.StringComparison.OrdinalIgnoreCase) ||
+                            string.Equals(sub, "OpenNormal",     System.StringComparison.OrdinalIgnoreCase) ||
+                            string.Equals(sub, "Reset",          System.StringComparison.OrdinalIgnoreCase) ||
+                            string.Equals(sub, "OpenReset",      System.StringComparison.OrdinalIgnoreCase) ||
+                            string.Equals(sub, "Auto",           System.StringComparison.OrdinalIgnoreCase) ||
+                            string.Equals(sub, "GameStart",      System.StringComparison.OrdinalIgnoreCase);
+                        if (!known)
+                            Add(result, line, "Error",
+                                $"LockScreen 서브명령 불명: '{sub}'. 사용 가능: FirstSetup/Normal/Reset/Auto/GameStart.");
+                    }
+                }
+            }
+
             // Char 검증 — 첫 토큰이 슬롯이거나 액션 키워드여야 함
             else if (line.Type == LineType.Char && !string.IsNullOrEmpty(line.Value))
             {

@@ -229,20 +229,25 @@ namespace LoveAlgo.Story
         }
 
         /// <summary>
-        /// 이름으로 스프라이트 찾기 (Inspector 바인딩에서 정확 매칭)
+        /// 이름으로 스프라이트 찾기.
+        /// 1차: Inspector overlayEntries 정확 매칭 (수동 오버라이드 용).
+        /// 2차: Resources/Overlay/{name}.png 동적 로드 (기본 경로).
         /// </summary>
         Sprite FindSprite(string name)
         {
-            if (overlayEntries == null) return null;
-
-            foreach (var entry in overlayEntries)
+            if (overlayEntries != null)
             {
-                if (string.Equals(entry.name, name, StringComparison.OrdinalIgnoreCase))
-                    return entry.sprite;
+                foreach (var entry in overlayEntries)
+                {
+                    if (string.Equals(entry.name, name, StringComparison.OrdinalIgnoreCase))
+                        return entry.sprite;
+                }
             }
 
-            Debug.LogWarning($"[VirtualBGOverlay] 등록되지 않은 오버레이: {name} (Inspector에서 overlayEntries에 추가하세요)");
-            return null;
+            var sprite = Resources.Load<Sprite>($"Overlay/{name}");
+            if (sprite == null)
+                Debug.LogWarning($"[VirtualBGOverlay] 스프라이트 없음: {name} (Resources/Overlay/{name}.png)");
+            return sprite;
         }
 
         /// <summary>

@@ -18,7 +18,7 @@ namespace LoveAlgo.Story.StoryEngine.Flow
     ///   Flow,,Message:c01:안녕! 뭐해?,>
     ///   Flow,,Message:c03:중요한 얘기 있어:wait,await
     ///
-    /// characterId는 CharacterMetaDatabase의 정전 ID(c01~c05). MessengerManager 친구 ID로 매핑됨.
+    /// characterId는 StoryMappings의 정전 ID(c01~c05). MessengerManager 친구 ID로 매핑됨.
     /// </summary>
     public static class MessageFlowCommand
     {

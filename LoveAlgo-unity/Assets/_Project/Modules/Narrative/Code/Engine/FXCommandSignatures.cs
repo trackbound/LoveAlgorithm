@@ -52,14 +52,16 @@ namespace LoveAlgo.Story.StoryEngine
             { "CharGlitch", new Sig(0, 3, "[slot[:strength[:duration]]]") },
 
             // 매크로
-            { "DayStart",     new Sig(0, 2, "[bgPath[:actionCount]]") },
-            { "DayEnd",       new Sig(0, 1, "[fadeDuration]") },
-            { "SceneStart",   new Sig(0, 3, "[fadeDuration[:eyeClosed[:pauseAfter]]]") },
+            { "DayStart",     new Sig(0, 3, "[bgPath][:Wake|Cut|Reveal][:actionCount]") },
+            { "DayEnd",       new Sig(0, 2, "[fadeDuration][:Wake|Cut]") },
+            { "NextDay",      new Sig(0, 3, "[Wake|Cut][:bgPath][:actionCount]") },
+            { "SceneStart",   new Sig(0, 2, "[bgPath[:EyeClose]]") },
             { "SceneEnd",     new Sig(0, 1, "[fadeDuration]") },
             { "Setup",        new Sig(1, int.MaxValue, "BG=...|BGM=...|Char=...|Overlay=...") },
             { "Wait",         new Sig(0, 1, "[seconds]") },
             { "DialogueHide", new Sig(0, 0, "(인자 없음)") },
             { "DialogueShow", new Sig(0, 0, "(인자 없음)") },
+            { "LoadingScene", new Sig(0, 1, "[displayTime]") },
         };
 
         /// <summary>주어진 canonical 명령과 인자 개수가 시그니처에 부합하는지.</summary>

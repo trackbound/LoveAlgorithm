@@ -28,11 +28,17 @@ namespace LoveAlgo.Story.StoryEngine.Handlers
                 case "DayStart":
                     await Macros.DayStartMacroExecutor.ExecuteAsync(parts, ct);
                     return true;
+                case "NextDay":
+                    await Macros.NextDayMacroExecutor.ExecuteAsync(parts, ct);
+                    return true;
                 case "SceneEnd":
                     await Macros.SceneEndMacroExecutor.ExecuteAsync(parts, ct);
                     return true;
                 case "SceneStart":
                     await Macros.SceneStartMacroExecutor.ExecuteAsync(parts, ct);
+                    return true;
+                case "LoadingScene":
+                    await Flow.LoadingSceneFlowCommand.ExecuteAsync(parts, ct);
                     return true;
                 case "Setup":
                     await Macros.SetupMacroExecutor.ExecuteAsync(line.Value, ct);

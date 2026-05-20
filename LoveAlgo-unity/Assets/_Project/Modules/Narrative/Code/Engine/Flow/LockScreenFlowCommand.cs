@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using LoveAlgo.Common;
@@ -9,18 +10,27 @@ namespace LoveAlgo.Story.StoryEngine.Flow
 {
     /// <summary>
     /// CSV에서 PC잠금 화면을 호출하는 Flow 명령.
-    /// 기획서 §진입 정보: "스크립트 시트에서 필요한 타이밍에 따로 표기".
+    /// 기획서 §진입 정보 + §비밀번호 입력 커스텀 시스템 통합.
     ///
-    /// 형식:
-    ///   LockScreen:OpenFirstSetup                  비번 첫 설정 (이름 입력 직후 호출)
-    ///   LockScreen:OpenNormal                      평상 잠금화면 (재로그인 연출)
-    ///   LockScreen:OpenNormal:Time=23:58           시계 1회 오버라이드
+    /// 서브명령 (case-insensitive):
+    ///   FirstSetup / OpenFirstSetup     비번 첫 설정 (이름 입력 직후) — 평문 입력
+    ///   Normal     / OpenNormal         평상 잠금화면 (재로그인 연출) — 마스킹
+    ///   Reset      / OpenReset          재설정 — FirstSetup과 동일 흐름
+    ///   Auto                            비번 설정 여부 자동 판별 (있으면 Normal, 없으면 FirstSetup)
+    ///   GameStart                       게임 첫 시작 sugar (5초 페이드인 강제 + Auto)
+    ///
+    /// 옵션 토큰 (순서 자유):
+    ///   Time=HH:mm                       시계 1회 오버라이드
+    ///   FadeOut                          Outro에 페이드아웃까지 포함 → 완료 시 화면 노출 상태
+    ///   NoFadeOut                        명시적으로 페이드아웃 생략 (기본값과 동일)
     ///
     /// 동작: LockScreenPanel 표시 → OnFlowComplete까지 await → 스토리 진행 복귀.
     ///
     /// 예시 CSV:
-    ///   ,Flow,,LockScreen:OpenFirstSetup,>
-    ///   ,Flow,,LockScreen:OpenNormal:Time=07:30,>
+    ///   ,Flow,,LockScreen:FirstSetup,>
+    ///   ,Flow,,LockScreen:Normal:Time=07:30,>
+    ///   ,Flow,,LockScreen:Auto:FadeOut:Time=23:58,await
+    ///   ,Flow,,LockScreen:GameStart,await
     /// </summary>
     public static class LockScreenFlowCommand
     {
@@ -28,7 +38,7 @@ namespace LoveAlgo.Story.StoryEngine.Flow
         {
             if (parts.Length < 2)
             {
-                Debug.LogWarning("[Flow][LockScreen] 인자 부족 — LockScreen:OpenFirstSetup | LockScreen:OpenNormal[:Time=HH:mm]");
+                Debug.LogWarning("[Flow][LockScreen] 인자 부족 — LockScreen:<FirstSetup|Normal|Reset|Auto|GameStart>[:Time=HH:mm][:FadeOut]");
                 return;
             }
 
@@ -52,33 +62,44 @@ namespace LoveAlgo.Story.StoryEngine.Flow
                 return;
             }
 
-            // 시계 오버라이드 파싱 (parts[2..]에서 Time=HH:mm 검색)
+            // ── 옵션 토큰 파싱 (parts[2..]) ──
+            bool? withFadeOut = null;
             for (int i = 2; i < parts.Length; i++)
             {
                 if (string.IsNullOrEmpty(parts[i])) continue;
-                if (parts[i].StartsWith("Time="))
+                string token = parts[i];
+
+                if (token.StartsWith("Time=", StringComparison.OrdinalIgnoreCase))
                 {
-                    string hhmm = parts[i].Substring(5);
+                    string hhmm = token.Substring(5);
                     ls.SetClockOverride(hhmm);
                     Debug.Log($"[Flow][LockScreen] 시계 오버라이드: {hhmm}");
                 }
+                else if (string.Equals(token, "FadeOut", StringComparison.OrdinalIgnoreCase))
+                    withFadeOut = true;
+                else if (string.Equals(token, "NoFadeOut", StringComparison.OrdinalIgnoreCase))
+                    withFadeOut = false;
             }
 
-            // 모드별 진입
-            switch (parts[1])
+            // ── outro fade-out 옵션 적용 ──
+            panel.SetFadeOutAfter(withFadeOut);
+
+            // ── 모드별 진입 (case-insensitive) ──
+            string sub = parts[1];
+            if (Equals(sub, "FirstSetup") || Equals(sub, "OpenFirstSetup"))
+                panel.OpenFirstSetup();
+            else if (Equals(sub, "Normal") || Equals(sub, "OpenNormal"))
+                panel.OpenNormal();
+            else if (Equals(sub, "Reset") || Equals(sub, "OpenReset"))
+                panel.OpenReset();
+            else if (Equals(sub, "Auto"))
+                panel.OpenAuto();
+            else if (Equals(sub, "GameStart"))
+                panel.OpenForGameStart();
+            else
             {
-                case "OpenFirstSetup":
-                    panel.OpenFirstSetup();
-                    break;
-                case "OpenNormal":
-                    panel.OpenNormal();
-                    break;
-                case "OpenReset":
-                    panel.OpenReset();
-                    break;
-                default:
-                    Debug.LogWarning($"[Flow][LockScreen] 알 수 없는 서브명령: {parts[1]}");
-                    return;
+                Debug.LogWarning($"[Flow][LockScreen] 알 수 없는 서브명령: {sub}");
+                return;
             }
 
             // OnFlowComplete까지 대기
@@ -101,5 +122,8 @@ namespace LoveAlgo.Story.StoryEngine.Flow
 
             Debug.Log("[Flow][LockScreen] 완료 — 스토리 복귀");
         }
+
+        static bool Equals(string a, string b) =>
+            string.Equals(a, b, StringComparison.OrdinalIgnoreCase);
     }
 }

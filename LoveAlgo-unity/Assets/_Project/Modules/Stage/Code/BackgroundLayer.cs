@@ -184,11 +184,11 @@ namespace LoveAlgo.Story
         }
 
         /// <summary>
-        /// 스프라이트 로드 — Backgrounds/{bgName} 경로로 직접 로드
+        /// 스프라이트 로드 — BG/{bgName} 경로로 직접 로드
         /// </summary>
         Sprite LoadSprite(string bgName)
         {
-            return Resources.Load<Sprite>($"Backgrounds/{bgName}");
+            return Resources.Load<Sprite>($"BG/{bgName}");
         }
 
         /// <summary>

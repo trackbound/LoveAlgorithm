@@ -76,17 +76,25 @@ namespace LoveAlgo.LockScreen.UI
         [SerializeField] float beforeMessagesDelaySec = 5f;
         [Tooltip("마지막 메시지 후 클릭 가능까지 (기획서: 3초)")]
         [SerializeField] float afterLastMessageDelaySec = 3f;
-        [Tooltip("Outro 패널 페이드아웃 (기획서: 3초)")]
-        [SerializeField] float outroPanelFadeSec = 3f;
-        [Tooltip("Outro 검은 오버레이 페이드인 (기획서: 3초)")]
-        [SerializeField] float outroBlackFadeSec = 3f;
+        [Tooltip("Outro 페이드인 — 패널 사라지며 검은 화면으로 (기획서: 3초). panel↓ + black↑ 동시.")]
+        [SerializeField] float outroFadeToBlackSec = 3f;
+        [Tooltip("Outro 페이드아웃 — 검은 화면이 사라짐 (기획서: 3초). withFadeOut=true일 때만.")]
+        [SerializeField] float outroFadeFromBlackSec = 3f;
+        [Tooltip("기본 outro에 fade-out까지 포함할지. true면 흐름 종료 시 화면이 완전히 노출됨.\n외부에서 SetFadeOutAfter(bool)로 1회 override 가능 (CSV :FadeOut 옵션).")]
+        [SerializeField] bool defaultWithFadeOut = false;
 
         ILockScreen lockScreen;
         Coroutine seqCo;
         Vector2[] leftWidgetOriginalPos;
+        bool? withFadeOutOverride;     // null = defaultWithFadeOut 사용
 
-        /// <summary>잠금 흐름 정상 완료. 외부(EntryRouter/CSV)가 다음 화면 전환에 사용.</summary>
+        /// <summary>잠금 흐름 정상 완료 (페이드아웃까지 끝남 — withFadeOut 적용 시).
+        /// CSV 다음 라인 또는 caller가 다음 화면 전환에 사용.</summary>
         public event Action OnFlowComplete;
+
+        /// <summary>화면이 완전히 검정에 도달한 순간 (Outro Phase 1 끝).
+        /// EntryRouter가 Title 활성화 시점으로 사용 — 그 후 fade-out reveal.</summary>
+        public event Action OnBlackoutReached;
 
         void Awake()
         {
@@ -125,6 +133,35 @@ namespace LoveAlgo.LockScreen.UI
         public void OpenFirstSetup() => Begin(LockScreenMode.FirstSetup, fadeIn: useFirstStartFadeIn);
         public void OpenNormal()     => Begin(LockScreenMode.Normal,     fadeIn: false);
         public void OpenReset()      => Begin(LockScreenMode.Reset,      fadeIn: false);
+
+        /// <summary>
+        /// 게임 첫 시작 sugar — 5초 페이드인 강제 + 비번 자동 판별(FirstSetup/Normal).
+        /// EntryRouter / CSV GameStart 모드에서 호출.
+        /// </summary>
+        public void OpenForGameStart()
+        {
+            if (lockScreen != null && lockScreen.IsPasswordSet)
+                Begin(LockScreenMode.Normal, fadeIn: true);
+            else
+                Begin(LockScreenMode.FirstSetup, fadeIn: true);
+        }
+
+        /// <summary>
+        /// CSV Auto sugar — 비번 자동 판별, 페이드인 없음.
+        /// </summary>
+        public void OpenAuto()
+        {
+            if (lockScreen != null && lockScreen.IsPasswordSet)
+                Begin(LockScreenMode.Normal, fadeIn: false);
+            else
+                Begin(LockScreenMode.FirstSetup, fadeIn: false);
+        }
+
+        /// <summary>이번 1회 outro에 fade-out(black→0)까지 포함할지 override. null=defaultWithFadeOut.</summary>
+        public void SetFadeOutAfter(bool? value)
+        {
+            withFadeOutOverride = value;
+        }
 
         public void Close()
         {
@@ -310,11 +347,29 @@ namespace LoveAlgo.LockScreen.UI
 
         IEnumerator OutroSequence()
         {
-            if (rootCanvasGroup != null)
-                yield return FadeCanvas(rootCanvasGroup, rootCanvasGroup.alpha, 0f, outroPanelFadeSec);
+            // ── Phase 1: 페이드인 (panel↓ ‖ black↑, 동시 3초) — 기획서 §구성 ──
+            if (rootCanvasGroup != null && blackOverlay != null)
+            {
+                // 동시 진행 — panel이 사라지며 검정 오버레이가 올라옴
+                Coroutine panelCo = StartCoroutine(FadeCanvas(rootCanvasGroup, rootCanvasGroup.alpha, 0f, outroFadeToBlackSec));
+                Coroutine blackCo = StartCoroutine(FadeCanvas(blackOverlay, blackOverlay.alpha, 1f, outroFadeToBlackSec));
+                yield return panelCo;
+                yield return blackCo;
+            }
+            else if (rootCanvasGroup != null)
+                yield return FadeCanvas(rootCanvasGroup, rootCanvasGroup.alpha, 0f, outroFadeToBlackSec);
+            else if (blackOverlay != null)
+                yield return FadeCanvas(blackOverlay, blackOverlay.alpha, 1f, outroFadeToBlackSec);
 
-            if (blackOverlay != null)
-                yield return FadeCanvas(blackOverlay, 0f, 1f, outroBlackFadeSec);
+            // 검은 화면 도달 — EntryRouter/외부가 다음 화면을 검은 뒤에서 셋업할 수 있는 순간
+            OnBlackoutReached?.Invoke();
+
+            // ── Phase 2 (옵션): 페이드아웃 (black↓, 3초) ──
+            bool withFadeOut = withFadeOutOverride ?? defaultWithFadeOut;
+            withFadeOutOverride = null; // 1회용 override 리셋
+
+            if (withFadeOut && blackOverlay != null)
+                yield return FadeCanvas(blackOverlay, 1f, 0f, outroFadeFromBlackSec);
 
             OnFlowComplete?.Invoke();
             gameObject.SetActive(false);

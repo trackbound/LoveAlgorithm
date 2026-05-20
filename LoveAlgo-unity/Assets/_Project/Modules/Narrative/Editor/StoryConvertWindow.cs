@@ -1,6 +1,6 @@
 #if UNITY_EDITOR
+using System.Collections.Generic;
 using System.IO;
-using LoveAlgo.NarrativeEditor.Mappings;
 using LoveAlgo.Story;
 using UnityEditor;
 using UnityEngine;
@@ -9,11 +9,11 @@ namespace LoveAlgo.NarrativeEditor
 {
     /// <summary>
     /// 시나리오 CSV 변환 디자이너 (기획 CSV → 엔진 CSV + 패치 머지 + diff 리포트).
+    /// 매핑 데이터는 StoryMappings.cs 정전 — 별도 SO 슬롯 없음.
     /// 메뉴: Tools > LoveAlgo > Story > Convert 기획 CSV
     /// </summary>
     public class StoryConvertWindow : EditorWindow
     {
-        const string MAP_DIR = "Assets/_Project/Modules/Narrative/Editor/Mappings";
         const string DEFAULT_SRC = "Assets/_Project/Modules/Narrative/Art/Story/프롤로그(기획).csv";
         const string DEFAULT_DST = "Assets/Resources/Story/Prologue.csv";
         const string DEFAULT_PATCH = "Assets/Resources/Story/Prologue.patch.csv";
@@ -23,15 +23,10 @@ namespace LoveAlgo.NarrativeEditor
         string patchPath = DEFAULT_PATCH;
         string lineIdPrefix = "pro_";
         bool inPlaceLineIds = true;
-
-        EmoteMap emote;
-        LoveAlgo.Story.CharacterMetaDatabase meta;
-        BgMap bg;
-        CgMap cg;
-        SdMap sd;
-        SoundMap sound;
+        bool strictMode = true;
 
         StoryConvertResult lastResult;
+        List<CsvUtility.CsvRecord> lastSourceRecords;
         Vector2 reportScroll;
 
         [MenuItem("Tools/LoveAlgo/Story/Convert 기획 CSV")]
@@ -40,20 +35,6 @@ namespace LoveAlgo.NarrativeEditor
             var w = GetWindow<StoryConvertWindow>("Story Convert");
             w.minSize = new Vector2(520, 600);
             w.Show();
-        }
-
-        void OnEnable() => ReloadMaps();
-
-        void ReloadMaps()
-        {
-            // EmoteMap은 런타임 SO로 승격 → Resources/Data/에서 로드
-            emote     = AssetDatabase.LoadAssetAtPath<EmoteMap>("Assets/Resources/Data/EmoteMap.asset")
-                     ?? AssetDatabase.LoadAssetAtPath<EmoteMap>($"{MAP_DIR}/EmoteMap.asset");
-            meta      = AssetDatabase.LoadAssetAtPath<LoveAlgo.Story.CharacterMetaDatabase>("Assets/Resources/Data/CharacterMetaDatabase.asset");
-            bg        = AssetDatabase.LoadAssetAtPath<BgMap>($"{MAP_DIR}/BgMap.asset");
-            cg        = AssetDatabase.LoadAssetAtPath<CgMap>($"{MAP_DIR}/CgMap.asset");
-            sd        = AssetDatabase.LoadAssetAtPath<SdMap>($"{MAP_DIR}/SdMap.asset");
-            sound     = AssetDatabase.LoadAssetAtPath<SoundMap>($"{MAP_DIR}/SoundMap.asset");
         }
 
         void OnGUI()
@@ -66,22 +47,14 @@ namespace LoveAlgo.NarrativeEditor
             PathField("Patch (윤문)",       ref patchPath,  "csv");
             lineIdPrefix = EditorGUILayout.TextField("LineID Prefix", lineIdPrefix);
             inPlaceLineIds = EditorGUILayout.ToggleLeft("LineID 자동 발급 (원본 CSV 갱신)", inPlaceLineIds);
+            strictMode = EditorGUILayout.ToggleLeft("Strict 모드 (Violations 발생 시 출력 중단)", strictMode);
 
             EditorGUILayout.Space(8);
-            EditorGUILayout.LabelField("Mappings", EditorStyles.boldLabel);
-            emote     = (EmoteMap)EditorGUILayout.ObjectField("Emote",     emote,     typeof(EmoteMap),     false);
-            meta      = (LoveAlgo.Story.CharacterMetaDatabase)EditorGUILayout.ObjectField("Meta", meta, typeof(LoveAlgo.Story.CharacterMetaDatabase), false);
-            bg        = (BgMap)       EditorGUILayout.ObjectField("BG",        bg,        typeof(BgMap),        false);
-            cg        = (CgMap)       EditorGUILayout.ObjectField("CG",        cg,        typeof(CgMap),        false);
-            sd        = (SdMap)       EditorGUILayout.ObjectField("SD",        sd,        typeof(SdMap),        false);
-            sound     = (SoundMap)    EditorGUILayout.ObjectField("Sound",     sound,     typeof(SoundMap),     false);
+            EditorGUILayout.HelpBox("매핑(한글↔ID)은 StoryMappings.cs 한 파일에서 관리합니다.", MessageType.Info);
 
             EditorGUILayout.Space(8);
             using (new EditorGUILayout.HorizontalScope())
             {
-                if (GUILayout.Button("Import Mappings from xlsx", GUILayout.Height(26)))
-                { StoryMappingImporter.ImportAll(); ReloadMaps(); }
-
                 GUI.backgroundColor = new Color(0.5f, 0.9f, 0.5f);
                 if (GUILayout.Button("Convert ▶", GUILayout.Height(30))) RunConvert();
                 GUI.backgroundColor = Color.white;
@@ -118,39 +91,92 @@ namespace LoveAlgo.NarrativeEditor
                 PatchCsvPath  = patchPath,
                 LineIdPrefix  = lineIdPrefix,
                 AssignLineIdsInPlace = inPlaceLineIds,
-                Emote = emote, Meta = meta, Bg = bg, Cg = cg, Sd = sd, Sound = sound,
+                Strict = strictMode,
             };
             lastResult = StoryCsvConverter.Convert(opt);
+            lastSourceRecords = File.Exists(sourcePath)
+                ? CsvUtility.SplitRecords(File.ReadAllText(sourcePath))
+                : null;
             AssetDatabase.Refresh();
-            Debug.Log($"[StoryConvert] 완료 — {lastResult.Rows.Count} rows. Missing: emote={lastResult.MissingEmote.Count}, bg={lastResult.MissingBg.Count}, cg={lastResult.MissingCg.Count}, sd={lastResult.MissingSd.Count}, orphan patch={lastResult.OrphanPatches}");
+            Debug.Log($"[StoryConvert] 완료 — {lastResult.Rows.Count} rows. Violations={lastResult.Violations.Count}, orphan patch={lastResult.OrphanPatches}");
+        }
+
+        void OpenSourceCsv()
+        {
+            if (!File.Exists(sourcePath)) { EditorUtility.DisplayDialog("Open", $"파일 없음:\n{sourcePath}", "OK"); return; }
+            EditorUtility.RevealInFinder(sourcePath);
         }
 
         void DrawReport()
         {
-            EditorGUILayout.LabelField("Report", EditorStyles.boldLabel);
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                EditorGUILayout.LabelField("Report", EditorStyles.boldLabel);
+                if (GUILayout.Button("Open Source CSV", GUILayout.Width(140))) OpenSourceCsv();
+            }
+
             if (lastResult == null) { EditorGUILayout.HelpBox("아직 변환 실행 안 됨.", MessageType.Info); return; }
 
             EditorGUILayout.LabelField($"행 수: {lastResult.Rows.Count}");
             EditorGUILayout.LabelField($"Orphan patches: {lastResult.OrphanPatches}");
 
+            if (lastResult.Violations.Count == 0 && (lastResult.Warnings == null || lastResult.Warnings.Count == 0))
+            {
+                var prev = GUI.backgroundColor;
+                GUI.backgroundColor = new Color(0.6f, 0.95f, 0.6f);
+                EditorGUILayout.HelpBox("✓ 누락 없음 — 변환 결과 깨끗함.", MessageType.Info);
+                GUI.backgroundColor = prev;
+                return;
+            }
+
             reportScroll = EditorGUILayout.BeginScrollView(reportScroll, GUILayout.MinHeight(200));
 
-            DrawMissingSection("Missing Emote", lastResult.MissingEmote);
-            DrawMissingSection("Missing BG", lastResult.MissingBg);
-            DrawMissingSection("Missing CG", lastResult.MissingCg);
-            DrawMissingSection("Missing SD", lastResult.MissingSd);
-            DrawMissingSection("Missing Character", lastResult.MissingCharacter);
-            DrawMissingSection("Warnings", lastResult.Warnings);
+            DrawViolationsSection("Missing Emote",     ViolationKind.Emote);
+            DrawViolationsSection("Missing BG",        ViolationKind.Bg);
+            DrawViolationsSection("Missing CG",        ViolationKind.Cg);
+            DrawViolationsSection("Missing SD",        ViolationKind.Sd);
+            DrawViolationsSection("Missing Character", ViolationKind.Character);
+
+            if (lastResult.Warnings != null && lastResult.Warnings.Count > 0)
+            {
+                EditorGUILayout.LabelField($"▼ Warnings ({lastResult.Warnings.Count})", EditorStyles.boldLabel);
+                foreach (var s in lastResult.Warnings) EditorGUILayout.SelectableLabel("  " + s, GUILayout.Height(EditorGUIUtility.singleLineHeight));
+                EditorGUILayout.Space(4);
+            }
 
             EditorGUILayout.EndScrollView();
         }
 
-        static void DrawMissingSection(string title, System.Collections.Generic.List<string> list)
+        void DrawViolationsSection(string title, ViolationKind kind)
         {
-            if (list == null || list.Count == 0) return;
-            EditorGUILayout.LabelField($"▼ {title} ({list.Count})", EditorStyles.boldLabel);
-            foreach (var s in list) EditorGUILayout.LabelField("  " + s);
+            int count = 0;
+            foreach (var v in lastResult.Violations) if (v.kind == kind) count++;
+            if (count == 0) return;
+
+            EditorGUILayout.LabelField($"▼ {title} ({count})", EditorStyles.boldLabel);
+            foreach (var v in lastResult.Violations)
+            {
+                if (v.kind != kind) continue;
+                string excerpt = LookupExcerpt(v.sourceRow);
+                int fileLine = (lastSourceRecords != null && v.sourceRow >= 0 && v.sourceRow < lastSourceRecords.Count)
+                    ? lastSourceRecords[v.sourceRow].StartLine
+                    : v.sourceRow + 1;
+                string lineLabel = string.IsNullOrEmpty(v.lineId) ? $"행 {fileLine}" : $"행 {fileLine} ({v.lineId})";
+                EditorGUILayout.SelectableLabel(
+                    $"  [{lineLabel}] {v.token}    — {excerpt}",
+                    GUILayout.Height(EditorGUIUtility.singleLineHeight));
+            }
             EditorGUILayout.Space(4);
+        }
+
+        string LookupExcerpt(int sourceRow)
+        {
+            if (lastSourceRecords == null || sourceRow < 0 || sourceRow >= lastSourceRecords.Count) return "";
+            var text = lastSourceRecords[sourceRow].Text ?? "";
+            text = text.Replace("\r", " ").Replace("\n", " ⏎ ");
+            const int max = 80;
+            if (text.Length > max) text = text.Substring(0, max) + "…";
+            return "\"" + text + "\"";
         }
     }
 }

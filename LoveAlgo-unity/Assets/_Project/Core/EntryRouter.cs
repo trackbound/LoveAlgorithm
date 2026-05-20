@@ -98,18 +98,27 @@ namespace LoveAlgo.Core
                 return;
             }
 
-            // 흐름 완료 시 타이틀로 전환
+            // Blackout(Outro Phase 1 끝) 시점에 타이틀 셋업 → fade-out으로 자연스러운 reveal
+            // OnFlowComplete는 추가 정리만.
+            System.Action onBlackout = null;
             System.Action onComplete = null;
+            onBlackout = () =>
+            {
+                panel.OnBlackoutReached -= onBlackout;
+                Debug.Log("[EntryRouter] LockScreen blackout — 타이틀 셋업 (fade-out에서 reveal)");
+                ShowTitle(Services.TryGet<ITitle>());
+            };
             onComplete = () =>
             {
                 panel.OnFlowComplete -= onComplete;
-                Debug.Log("[EntryRouter] 첫 시작 잠금 해제 완료 → 타이틀");
-                ShowTitle(Services.TryGet<ITitle>());
+                Debug.Log("[EntryRouter] 첫 시작 잠금 해제 완료");
             };
+            panel.OnBlackoutReached += onBlackout;
             panel.OnFlowComplete += onComplete;
 
-            // useFirstStartFadeIn은 Panel 인스펙터에서 true 설정 권장
-            panel.OpenFirstSetup();
+            // 게임 첫 시작: 5초 페이드인 + fade-out reveal (타이틀이 자연스럽게 등장)
+            panel.SetFadeOutAfter(true);
+            panel.OpenForGameStart();
         }
     }
 }

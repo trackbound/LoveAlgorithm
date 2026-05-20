@@ -4,6 +4,7 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using LoveAlgo.Core;
+using LoveAlgo.Stage;
 using UnityEngine;
 using LoveAlgo.Modules.Audio;
 
@@ -311,7 +312,7 @@ namespace LoveAlgo.Story
 
             if (shouldHideOverlay)
             {
-                var overlay = StageManager.Instance?.VirtualBG;
+                var overlay = StageModule.Instance?.VirtualBG;
                 overlay?.HideImmediate();
             }
 
@@ -362,8 +363,7 @@ namespace LoveAlgo.Story
         /// </summary>
         string SpeakerToCharacterId(string speaker)
         {
-            var meta = CharacterMetaDatabase.Instance;
-            return meta?.SpeakerToCharacterId(speaker);
+            return StoryMappings.SpeakerToCharacterId(speaker);
         }
 
         /// <summary>
@@ -423,12 +423,11 @@ namespace LoveAlgo.Story
 
         #region 오버레이 (로아)
 
-        /// <summary>Overlay 사용 캐릭터인지 (VirtualOverlayDatabase에 entry가 있으면 true)</summary>
+        /// <summary>Overlay 사용 캐릭터인지 (StoryMappings에 Overlay entry가 있으면 true)</summary>
         bool IsOverlayCharacter(string characterName)
         {
             if (string.IsNullOrEmpty(characterName)) return false;
-            var ovDb = VirtualOverlayDatabase.Instance;
-            return ovDb?.GetById(characterName) != null;
+            return StoryMappings.GetOverlay(characterName) != null;
         }
 
         /// <summary>
@@ -437,34 +436,34 @@ namespace LoveAlgo.Story
         string ResolveAutoOverlay(string characterId, string emote, string mode = null)
         {
             if (string.IsNullOrEmpty(characterId)) return null;
-            var entry = VirtualOverlayDatabase.Instance?.GetById(characterId);
+            var entry = StoryMappings.GetOverlay(characterId);
             return entry?.GetOverlayName(emote, mode);
         }
 
-        /// <summary>Enter 5번째 segment 해석 — overlayModes 등록 모드면 모드, 그 외엔 명시적 overlay 이름.</summary>
+        /// <summary>Enter 5번째 segment 해석 — Modes 등록 모드면 모드, 그 외엔 명시적 overlay 이름.</summary>
         string ResolveEnterOverlay(string characterId, string emote, string fifthSegment)
         {
             if (!string.IsNullOrEmpty(fifthSegment))
             {
-                var entry = VirtualOverlayDatabase.Instance?.GetById(characterId);
+                var entry = StoryMappings.GetOverlay(characterId);
                 if (entry != null && entry.IsValidMode(fifthSegment))
                 {
                     SetMode(characterId, fifthSegment);
                     return entry.GetOverlayName(emote, fifthSegment);
                 }
-                // overlayModes에 없는 값이면 명시적 overlay 이름으로 사용 (구버전 호환)
+                // Modes에 없는 값이면 명시적 overlay 이름으로 사용 (구버전 호환)
                 return fifthSegment;
             }
             return ResolveAutoOverlay(characterId, emote, GetCurrentMode(characterId));
         }
 
-        /// <summary>현재 추적중 모드 조회 (없으면 VirtualOverlayDatabase의 defaultOverlayMode)</summary>
+        /// <summary>현재 추적중 모드 조회 (없으면 Overlay의 DefaultMode)</summary>
         string GetCurrentMode(string characterId)
         {
             if (string.IsNullOrEmpty(characterId)) return null;
             if (overlayModes.TryGetValue(characterId, out var m)) return m;
-            var entry = VirtualOverlayDatabase.Instance?.GetById(characterId);
-            return entry?.defaultOverlayMode;
+            var entry = StoryMappings.GetOverlay(characterId);
+            return entry?.DefaultMode;
         }
 
         /// <summary>모드 설정 (Enter/Mode action에서 호출)</summary>
@@ -479,7 +478,7 @@ namespace LoveAlgo.Story
         /// </summary>
         async UniTask ShowOverlayAsync(string overlayName, CancellationToken ct)
         {
-            var overlay = StageManager.Instance?.VirtualBG;
+            var overlay = StageModule.Instance?.VirtualBG;
             if (overlay != null)
             {
                 await overlay.ShowAsync(overlayName, ct: ct);
@@ -492,7 +491,7 @@ namespace LoveAlgo.Story
         /// </summary>
         async UniTask HideOverlayAsync(CancellationToken ct)
         {
-            var overlay = StageManager.Instance?.VirtualBG;
+            var overlay = StageModule.Instance?.VirtualBG;
             if (overlay != null && overlay.IsShowing)
             {
                 await overlay.HideAsync(ct: ct);
@@ -505,7 +504,7 @@ namespace LoveAlgo.Story
         /// </summary>
         async UniTask SwitchOverlayAsync(string overlayName, CancellationToken ct)
         {
-            var overlay = StageManager.Instance?.VirtualBG;
+            var overlay = StageModule.Instance?.VirtualBG;
             if (overlay != null)
             {
                 await overlay.SwitchAsync(overlayName, ct: ct);
@@ -514,7 +513,7 @@ namespace LoveAlgo.Story
 
         bool ShouldHideOverlayOnExit(CharacterSlot slot)
         {
-            var overlay = StageManager.Instance?.VirtualBG;
+            var overlay = StageModule.Instance?.VirtualBG;
             if (overlay == null || !overlay.IsShowing)
                 return false;
 

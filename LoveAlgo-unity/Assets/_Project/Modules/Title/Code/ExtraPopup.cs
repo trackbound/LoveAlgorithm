@@ -38,17 +38,7 @@ namespace LoveAlgo.UI
             BindHoverEffect(collectionButton);
         }
 
-        public override void Show()
-        {
-            gameObject.SetActive(true);
-            PlayShowAnimation();
-        }
-
-        public override void Hide()
-        {
-            KillSequence();
-            PlayHideAnimation();
-        }
+        // Show/Hide는 PopupBase 기본 구현 사용 (NotifyOpened/Closed·사운드·KillSequence 포함)
 
         #region 호버 이펙트
 

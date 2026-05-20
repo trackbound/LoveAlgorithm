@@ -8,6 +8,7 @@ using LoveAlgo.Story.SaveSystem;
 using LoveAlgo.UI;
 using LoveAlgo.Schedule;
 using LoveAlgo.Core;
+using LoveAlgo.Stage;
 
 namespace LoveAlgo.Core
 {
@@ -196,9 +197,10 @@ namespace LoveAlgo.Core
         }
 
         /// <summary>
-        /// 수동저장 (슬롯 1~29)
+        /// 수동저장 (슬롯 1~29).
+        /// customLabel: 사용자가 직접 입력한 슬롯 이름. null/공백이면 자동값(GetSaveChapterName) 사용.
         /// </summary>
-        public void Save(int slot, bool usePendingThumbnail = true)
+        public void Save(int slot, bool usePendingThumbnail = true, string customLabel = null)
         {
             // 스크립트 위치 정보 (실행 중일 때만 저장)
             var runner = ScriptRunner.Instance;
@@ -213,6 +215,10 @@ namespace LoveAlgo.Core
                 lineIndex = runner.CurrentIndex;
             }
 
+            string chapterName = !string.IsNullOrWhiteSpace(customLabel)
+                ? customLabel
+                : GetSaveChapterName(scriptName);
+
             SaveManager.Save(
                 slot,
                 _gm.CurrentPhase,
@@ -221,7 +227,7 @@ namespace LoveAlgo.Core
                 scriptName,
                 lineId,
                 lineIndex,
-                GetSaveChapterName(scriptName)
+                chapterName
             );
 
             // 스크린샷 저장
@@ -259,13 +265,13 @@ namespace LoveAlgo.Core
         public void CleanupStage()
         {
             // 레이어 정리
-            StageManager.Instance?.Character?.SetVisibleImmediate(true);  // SD 숨김 상태 복원
-            StageManager.Instance?.Character?.ClearAll();
-            StageManager.Instance?.Background?.Clear();
-            StageManager.Instance?.VirtualBG?.HideImmediate();
-            StageManager.Instance?.CG?.Clear();
-            StageManager.Instance?.SDCutscene?.Clear();
-            StageManager.Instance?.MonologueDim?.HideImmediate();
+            StageModule.Instance?.Character?.SetVisibleImmediate(true);  // SD 숨김 상태 복원
+            StageModule.Instance?.Character?.ClearAll();
+            StageModule.Instance?.Background?.Clear();
+            StageModule.Instance?.VirtualBG?.HideImmediate();
+            StageModule.Instance?.CG?.Clear();
+            StageModule.Instance?.SDCutscene?.Clear();
+            StageModule.Instance?.MonologueDim?.HideImmediate();
 
             // 화면 효과 정리
             if (ScreenFX.Instance != null)
@@ -296,7 +302,7 @@ namespace LoveAlgo.Core
             // 배경 복원 (즉시 전환)
             if (!string.IsNullOrEmpty(data.CurrentBG))
             {
-                var bg = StageManager.Instance?.Background;
+                var bg = StageModule.Instance?.Background;
                 if (bg != null)
                 {
                     await bg.ChangeBackgroundAsync(data.CurrentBG, Story.BGTransition.Cut, 0f);
@@ -306,7 +312,7 @@ namespace LoveAlgo.Core
             // 캐릭터 복원
             if (data.Characters != null && data.Characters.Count > 0)
             {
-                var charLayer = StageManager.Instance?.Character;
+                var charLayer = StageModule.Instance?.Character;
                 if (charLayer != null)
                 {
                     foreach (var charInfo in data.Characters)
@@ -330,7 +336,7 @@ namespace LoveAlgo.Core
             // CG 복원
             if (!string.IsNullOrEmpty(data.CurrentCG))
             {
-                var cg = StageManager.Instance?.CG;
+                var cg = StageModule.Instance?.CG;
                 if (cg != null)
                 {
                     await cg.ShowAsync(data.CurrentCG, 0f);
@@ -340,10 +346,10 @@ namespace LoveAlgo.Core
             // SD 컷씬 복원
             if (!string.IsNullOrEmpty(data.CurrentSD))
             {
-                var sd = StageManager.Instance?.SDCutscene;
+                var sd = StageModule.Instance?.SDCutscene;
                 if (sd != null)
                 {
-                    StageManager.Instance?.Character?.SetVisibleImmediate(false);
+                    StageModule.Instance?.Character?.SetVisibleImmediate(false);
                     await sd.ShowAsync(data.CurrentSD, 0f);
                 }
             }
@@ -351,7 +357,7 @@ namespace LoveAlgo.Core
             // VirtualBG 오버레이 복원
             if (!string.IsNullOrEmpty(data.CurrentOverlay))
             {
-                var overlay = StageManager.Instance?.VirtualBG;
+                var overlay = StageModule.Instance?.VirtualBG;
                 if (overlay != null)
                 {
                     await overlay.ShowAsync(data.CurrentOverlay, 0f);
@@ -361,7 +367,7 @@ namespace LoveAlgo.Core
             // 독백 딤 복원
             if (data.IsMonologueDimShowing)
             {
-                StageManager.Instance?.MonologueDim?.ShowImmediate();
+                StageModule.Instance?.MonologueDim?.ShowImmediate();
             }
 
             // 화면 효과 복원

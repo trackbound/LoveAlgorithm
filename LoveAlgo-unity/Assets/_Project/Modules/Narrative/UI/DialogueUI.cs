@@ -992,11 +992,7 @@ namespace LoveAlgo.Story
         void AddToLog(string speaker, string text)
         {
             // Speaker 이름을 CharacterId로 변환 (썸네일 로드용)
-            string charId = null;
-            if (!string.IsNullOrEmpty(speaker) && CharacterMetaDatabase.Instance != null)
-            {
-                charId = CharacterMetaDatabase.Instance.SpeakerToCharacterId(speaker);
-            }
+            string charId = StoryMappings.SpeakerToCharacterId(speaker);
 
             dialogueLog.Add(new DialogueLogEntry
             {

@@ -114,6 +114,7 @@ namespace LoveAlgo.Core
         public void OnScheduleCompleted() => DayLoop.OnScheduleCompleted();
         public void SkipToDayLoop() => Session.SkipToDayLoop();
         public UniTask AutoSaveAsync() => Session.AutoSaveAsync();
-        public void Save(int slot, bool usePendingThumbnail = true) => Session.Save(slot, usePendingThumbnail);
+        public void Save(int slot, bool usePendingThumbnail = true, string customLabel = null)
+            => Session.Save(slot, usePendingThumbnail, customLabel);
     }
 }

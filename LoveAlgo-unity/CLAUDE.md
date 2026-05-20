@@ -77,6 +77,7 @@
 
 - 현재 작업 리스트: [`docs/WORK_PLAN.md`](docs/WORK_PLAN.md)
 - 리소스 요청: [`docs/ASSET_REQUESTS.md`](docs/ASSET_REQUESTS.md)
+- 스토리 CSV 작성 규칙: [`docs/STORY_CSV_GUIDE.md`](docs/STORY_CSV_GUIDE.md)
 - 작업 완료 / 새 작업 발견 시 두 문서 갱신.
 
 ## 7. 커밋 / 변경
