@@ -29,6 +29,24 @@
 
 세부 폴더/하이어라키 구조, 책임 경계, 통신 패턴: [`docs/NAMING.md`](docs/NAMING.md) 참조.
 
+## 2.5 Obsolete API 금지
+
+Unity/TMP/패키지 API 중 `[Obsolete]` 마크된 것은 **절대 새로 쓰지 말 것**. 본 프로젝트 Unity 버전(6+) 기준 빈출 교체표:
+
+| 옛 (사용 금지) | 신규 (이걸로) |
+|---|---|
+| `Object.FindObjectOfType<T>()` | `Object.FindAnyObjectByType<T>()` (또는 `FindFirstObjectByType<T>()`) |
+| `Object.FindObjectsOfType<T>()` | `Object.FindObjectsByType<T>(FindObjectsSortMode.None)` |
+| `TMP_Text.enableWordWrapping = true/false` | `TMP_Text.textWrappingMode = TextWrappingModes.Normal/NoWrap` |
+| `WWW` / `UnityWebRequest.Get(...).Send()` | `UnityWebRequest.SendWebRequest()` (UniTask 권장) |
+| `Resources.LoadAsync` 같은 deprecated coroutine 패턴 | `Addressables` 또는 동기 `Resources.Load` |
+| `OnLevelWasLoaded` | `SceneManager.sceneLoaded += ...` |
+
+규칙:
+- 새 코드 작성 시 IDE가 strikethrough 경고 → **다른 API 검색 후 채택**.
+- 기존 코드에서 obsolete 경고가 보고되면 **그 PR에서 같이 고침** (별도 작업 안 미룸).
+- 잘 모르는 API는 Unity 문서에서 "obsolete" 키워드로 그 클래스 페이지 검색.
+
 ## 3. 토큰 효율
 
 - **수정 범위 = 그 기능 폴더만**. 의도치 않은 다른 파일 수정 금지.

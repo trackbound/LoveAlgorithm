@@ -12,6 +12,9 @@ namespace LoveAlgo.LockScreen
         Normal,
 
         /// <summary>재설정 — 기존 비번 확인 후 새 비번 입력.</summary>
-        Reset
+        Reset,
+
+        /// <summary>게임 설치 후 최초 진입 — 비번/입력 없이 LOGIN 버튼만으로 통과 (시각 연출).</summary>
+        GameStart
     }
 }

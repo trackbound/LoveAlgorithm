@@ -24,6 +24,8 @@ namespace LoveAlgo.LockScreen
         void OpenForNormal();
         /// <summary>재설정. 기획서 §오류/분실: 기존 비번 확인 X — FirstSetup과 동일 흐름.</summary>
         void OpenForReset();
+        /// <summary>게임 설치 후 최초 진입 — 비번 입력 없이 LOGIN 버튼만으로 통과 (시각 연출).</summary>
+        void OpenForGameStart();
 
         // ── 비번 처리 ──
         /// <summary>비밀번호(자유 문자, 1~7자) 신규/재설정 저장. 유효성 실패 시 false.</summary>

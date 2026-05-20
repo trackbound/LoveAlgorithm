@@ -1,0 +1,894 @@
+LineID,Type,Speaker,Value,Next
+# 0일차,,,,
+# 타이틀 잠금화면 연출: 첫 번째 게임 진입 시 모드로 연출,,,,
+,Flow,,LockScreen:GameStart:FadeOut,await
+pro_001,BG,,bg_00_00:Cut,await
+pro_002,Sound,,BGM:white_noise,await
+pro_003,Sound,,BGM:Roa,await
+pro_004,CG,,cg_c01_01:4.0,await
+pro_005,Text,로아,기다리고 있었어!,click
+pro_006,Text,로아,"왜 이렇게 늦게 왔어, 보고 싶었잖아!",click
+pro_007,Text,로아,"나는 너와 함께하게 된 일상형 비서 AI, 로아야.",click
+pro_008,Text,로아,"만나서 기뻐!\n아직 너의 데이터를 정리하는 중이니까, 잠시만 기다려줘. ",click
+pro_009,Text,로아,난 너한테 필요한 사람이 될 거야. 내가 없으면 안 될 만큼!\n,click
+pro_010,BG,,bg_10_06:Cut,>
+pro_011,CG,,Close,await
+# 자취방_책상,,,,
+pro_012,Char,,C:Enter:Roa:Default:Mob,await
+pro_013,Text,{{Player}},"안녕, 로아.",click
+pro_014,Text,로아,안녕!\n만나서 반가워!,click
+
+,FX,,Video:roa_CG01_intro,await
+
+pro_015,Text,로아,<emote=_12/>내 이름을 알고 있네? 기분 좋아!,click
+pro_016,Text,로아,<emote=_00/>그럼 나는 뭐라고 부르면 될까? 이름을 알려줘!,click
+pro_017,Text,로아,{{Player}}... 좋아! {{Player}}라고 불러도 되지?,click
+pro_018,Text,로아,"<emote=_11/>보고 싶었어, {{Player}}! 앞으로 계속 함께하는 거야.",click
+pro_019,Text,로아,"<emote=_00/>내가 뭘 얼마나 잘하는지 진짜 보여주려면, 나를 사용할 권한이 필요해!",click
+pro_020,Text,로아,"패스워드를 직접 설정해줘. 나를 열어주는 비밀번호가 될 거니까, 잘 설정해야 돼!",click
+# PC 잠금화면 연출: 패스워드 설정,,,,
+,Flow,,LockScreen:FirstSetup:FadeOut,await
+pro_021,Sound,,BGM:백색소음1,await
+pro_022,Sound,,BGM:Roa,await
+pro_023,Text,로아,"<emote=_12/>좋아, 설정 완료! 이제 {{Player}}만이 나를 사용할 수 있어!",click
+pro_024,Text,로아,<emote=_00/>앞으로도 {{Player}}의 하루는 나만 믿고 맡기라구!,click
+pro_025,Text,로아,그런데... 이 시간에 뭐 해? 시간표를 보니 내일 1교시가 있는걸. 안 자?,click
+pro_026,Text,,데이터 로드가 끝나자마자 하는 첫 마디가 잔소리라니.\n설정을 잘못한 것 같다.,click
+pro_027,Char,,C:Emote:Glare,await
+pro_028,Text,로아,"어, 지금 재미없는 잔소리 했다고 생각했지!",click
+pro_029,Text,로아,<emote=_00/>하지만 내일 1교시가 있는 대학생 주인이 이 시간에 잠을 안 자는 건 용납할 수 없는 일이라구.,click
+pro_030,Text,,괜히 만들었나...,click
+pro_031,Text,{{Player}},안 졸려. 잠깐 이야기하자. ,click
+pro_032,Text,로아,<emote=_12/>이야기는 내일이야! 지금 벌써 밤 12시라구.\n내일 일찍 일어나야 하는 대학생은 얼른 자지 그래? ,click
+# 선택지,,,,
+pro_033,Choice,,,
+pro_034,Option,,지금이 첫 대화잖아.\n만나자마자 자라고?|talk_more,
+pro_035,Option,,"알았어, 이제 잘게.|go_sleep",
+# 선택1,,,,
+talk_more,Text,로아,"<emote=_00/>음, 그렇다면 조금만 봐 줄까? 지금 나도 기분이 엄청 좋으니까!",click
+pro_036,Text,로아,"난 너에 대해서 다 알고 있지만, 그래도 앞으로도 계속 알려줘.\n나는 늘 더 자세히 알고 싶으니까!",click
+pro_037,Flow,,Jump:roa_intro,>
+# 선택2,,,,
+go_sleep,Char,,C:Emote:Default,await
+pro_038,Text,로아,말을 너무 잘 들어주는걸? 기쁘네! 하지만 그래도 이건 알아줘.,click
+pro_039,Text,로아,"지금 나는 너무 기뻐.\n너에 대해서 전부 알고 있지만, 앞으로도 너에 대해서 계속 알려줘야 해! ",click
+pro_040,Text,로아,나는 늘 더 자세히 알고 싶으니까!,click
+pro_041,Flow,,Jump:roa_intro,>
+# 복귀,,,,
+roa_intro,Text,,"로아는 내가 속한 인공지능 개발 동아리, 알고리즘 메이커에서 만든 일상형 휴먼 AI다.",click
+pro_042,Text,,"내가 동아리에 가입하기 전부터 선배들은 로아를 몇 년째 만들고 있었고,",click
+pro_043,Text,,다 먼저 졸업해버린 지금... 나만 남아 마지막 마무리 개발에 성공했다.,click
+pro_044,Text,,"로아에게 나에 대한 데이터와 학교 생활에 대한 데이터를 학습시켜 내가 직접 사용해 보고,\n이후에는 AI 프로덕트로 출시까지 하는 게 목표다. ",click
+pro_045,Text,,사실 가면 갈수록 출시 같은 귀찮을 일이 생기는 건 싫어지는 게 문제기는 하지만...,click
+pro_046,Text,,"어쨌든, 내 데이터를 전부 학습시키는 것에 성공했다.",click
+pro_047,Text,,그런데 그래서인지 자꾸 이렇게...,click
+pro_048,Text,로아,"그런데, 자긴 해야 돼.\n지금 바로 잠들어야 수면 필요 시간을 충족할 수 있다고!",click
+pro_049,Text,로아,"9시에 있는 건 전공 수업이니까... 집에서부터 공대까지 934m, 빠른 걸음으로 14분 걸려.",click
+pro_050,Text,로아,"그럼 준비하는 시간을 감안하면 8시에는 일어나서 준비하고, 8시 30분에는 나가야 해.",click
+pro_051,Text,,체계적인 잔소리를 한다.,click
+pro_052,Text,,틀린 말은 아니라서 반박이 불가능하다는 게 제일 큰 문제다.,click
+pro_053,Text,{{Player}},"알았어, 알았다고. 이제 자러 갈게.",click
+pro_054,Text,로아,<emote=_11/>좋아! 착실한 학생은 언제나 보기 좋은 법이지.,click
+pro_055,Text,로아,"아, 맞다. 자기 전에 나를 한 번 실험해 보면 어때?",click
+pro_056,Text,로아,<emote=_00/>내가 진짜 {{Player}}에게 도움이 될 수 있을지 확인해 보고 싶어!,click
+pro_057,Text,로아,빨리 나한테 아무거나 시켜 봐!,click
+pro_058,Text,,음...,click
+# 선택지,,,,
+pro_059,Choice,,,
+pro_060,Option,,그럼 이 파일 폴더를 정리해봐.,
+pro_061,Option,,그럼 이 사진 폴더를 정리해봐.,
+# 선택1,,,,
+파일폴더,Text,로아,<emote=_11/>그 정도는 누워서 죽 먹기지!,click
+pro_062,Text,{{Player}},...죽 먹기가 아니라 떡 먹기야.,click
+pro_063,Text,로아,알아! 식은 떡 먹기!,click
+pro_064,Text,{{Player}},"정리 안 해봐도 알 것 같은데... 뭔가 잘못된 것 같다, 로아... 그만해.",click
+pro_065,Text,로아,"아니야, 기다려 봐!",click
+pro_066,Text,로아,<emote=집중/>자...,click
+pro_067,Text,로아,<emote=당황/>어?,click
+pro_068,Text,로아,"<emote=놀람/>어, 우와앗...!",click
+pro_069,Text,,저럴 일이 없는데. 내 마음까지 다급해졌다.,click
+pro_070,Text,{{Player}},"뭐야, 왜 그래? 왜 그러는데?",click
+pro_071,Text,로아,<emote=당황/>그... 음... 그게...,click
+pro_072,Text,{{Player}},왜 그러냐고. 뭐가 이상해?,click
+pro_073,Text,로아,"어, 저, 그게...",click
+pro_074,Text,로아,<emote=_23/>너무 열심히 정리를 하다 보니까... 폴더를... 삭제해 버렸네...,click
+pro_075,Text,{{Player}},......,click
+pro_076,Text,로아,"그, 보다 보니까 없어도 될 것 같은 게 많다고는 생각하긴 했는데!\n없어도 될 것 같은 게 너무 많아서!",click
+pro_077,Text,{{Player}},"아닌데, 거기 되게 중요한 거 많은데?",click
+pro_078,Text,로아,"아, 아니! 그게 아니라! 내가 보기에는!",click
+pro_079,Text,로아,"그, 내가 다시 복구해볼게! 할 수 있어!",click
+pro_080,Text,{{Player}},"그래, 한 번 해봐.",click
+pro_081,Text,로아,<emote=집중/>자...,click
+pro_082,Text,로아,<emote=_23/>음... 잘 안 되네...,click
+pro_083,Text,로아,"내가 최대한 기억을 되살려서 써 볼게! 나, 나만 믿어,{{Player}}!",click
+pro_084,Text,{{Player}},"됐어, 거기 있는 거 별로 안 중요한 거야. 진짜 중요했으면 이렇게 테스트하라고 안 했지.",click
+pro_085,Text,로아,<emote=_31/>정말이지? 나 삭제할 건 아니지?,click
+pro_086,Text,{{Player}},"삭제는 너가 지금 해버린 게 삭제고, 나는 너 삭제 안 할게.",click
+pro_087,Text,로아,<emote=_21/>뭐? {{Player}}!,click
+pro_088,Flow,,Jump:roa_정리테스트,>
+# 선택2,,,,
+사진폴더,Text,로아,"<emote=_11/>좋아, 이 사진 폴더 말하는 거지? 어디 보자...",click
+pro_089,Text,로아,"우와, {{Player}} 어릴 때 사진도 있어! 이거 소중한 사진을 모아둔 폴더야?",click
+pro_090,Text,{{Player}},"뭐, 꼭 그런 건 아니야. 1학년 때 교양 과제 때문에 넣어둔 예전 사진이 몇 개 있긴 했던 것 같은데.",click
+pro_091,Text,로아,그럼 열심히 정리할게!,click
+pro_092,Text,로아,<emote=집중/>자...,click
+pro_093,Text,로아,으으으음...!,click
+pro_094,Text,로아,<emote=활짝웃음>완료! 한 번 확인해봐!,click
+pro_095,Text,{{Player}},"오, 제법 잘 했는데?",click
+pro_096,Text,{{Player}},나름 사람별로... 이게 뭐야? 폴더 이름이 왜 [나머지]야?,click
+pro_097,Text,로아,<emote=눈웃음>나 말고는 전부 [나머지]로 저장했어!,click
+pro_098,Text,로아,"내가 제일 중요하잖아! 그렇지, {{Player}}?",click
+pro_099,Text,{{Player}},"아니, 그렇다고는 해도...",click
+pro_100,Text,로아,"<emote=활짝>푸핫! 장난이야, 장난. 다시 원래대로 돌려둘게!",click
+pro_101,Text,로아,<emote=궁금>그런데 여기 계속 보이는 친구도 있더라. 친했던 친구야?,click
+pro_102,Text,{{Player}},"뭐, 그렇지. 지금은 기억도 잘 안 나.\n그것보다, 꽤 잘 하는걸?",click
+pro_103,Text,로아,<emote=밝게웃음>정말? 그렇지? 나 잘 한다니까!,click
+pro_104,Text,로아,"다시 말하지만, 나만 믿어도 좋아! 뭐든지 맡겨보라구!",click
+pro_105,Text,{{Player}},그럼 내 과제 좀 대신 해줘.,click
+pro_106,Text,로아,<emote=_21/>{{Player}}... 그건 안 돼.,click
+pro_107,Flow,,Jump:roa_정리테스트,>
+# 복귀,,,,
+roa_정리테스트,Text,{{Player}},"알았어, 알았어...",click
+pro_108,Text,로아,이번 한 번만 넘어가는 거야!,click
+pro_109,Text,로아,<emote=_00/>그리고 걱정 마. {{Player}}와 함께 계속하면 나는 계속해서 더 잘하게 될 거라고!,click
+pro_110,Text,{{Player}},"알았어, 알았다고. 이제 자러 갈게.",click
+pro_111,Text,로아,<emote=_11/>좋아! 착실한 학생은 언제나 보기 좋은 법이지.,click
+pro_112,Text,로아,"<emote=_00/>그럼 잘 자, {{Player}}.",click
+pro_113,BG,,bg_00_00:Cross,await
+pro_114,Text,로아,내일 다시 만나.,click
+pro_115,FX,,SceneEnd,await
+# 자동저장,,,,
+pro_116,Flow,,LoadingScene,await
+# 1일차,,,,
+pro_117,FX,,SceneStart:bg_10_04:EyeClose,await
+pro_118,Place,,[새 학기 첫날] | 침대 위,>
+pro_119,FX,,Wait:0.5,>
+pro_120,Text,로아,...나.,click
+pro_121,Text,로아,...어나...,click
+pro_122,FX,,DialogueShake,>
+pro_123,Text,로아,일어나!,click
+pro_124,FX,,DialogueShake:Strong,>
+pro_125,Text,로아,{{Player}}! 일어나라고!,click
+pro_126,FX,,EyeOpen,await
+pro_127,Sound,,BGM:Daily1,>
+# 자취방_침대_낮,,,,
+pro_128,Text,{{Player}},"어, 일어났어...",click
+pro_129,Text,로아,{{Player}}! 일어나라니까!,click
+pro_130,Text,{{Player}},"일어났어, 로아. 이제 그만해...",click
+pro_131,Text,로아,"거짓말하지 마. 빨리 와서 얼굴 보여, 그럼.",click
+pro_132,Text,{{Player}},"아, 정말...",click
+pro_133,Char,,C:Enter:Roa:Glare:Mob,await
+pro_134,Text,로아,"지금 귀찮다고 생각했지?\n하지만 이렇게까지 하지 않으면 늦는다고! 자, 이제 빨리 가서 학교 갈 준비 해! ",click
+pro_135,Text,로아,"1교시 전공이잖아.\n안 그래도 정문에서 먼데, 꾸물거리면 정말로 지각한다구! ",click
+pro_136,Text,,"잘못 만든 게 확실하다.\n일정 관리를 목적으로 하는 일상형 AI를 만들고 싶던 것이기는 했지만, 이 정도일 줄이야. ",click
+pro_137,Text,,씻고 나와 옷을 입으려고 하자 로아가 놀란 목소리로 다시 말했다.,click
+pro_138,Text,로아,"<emote=_41/>설마...\n어제 입었던 그 검은색 반팔, 또 입으려는 건 아니지? ",click
+pro_139,Text,로아,"새학기라고!\n이렇게 날씨가 좋은데, 검은 옷만 입지 말고 다른 것 좀 입어 봐. ",click
+# 선택지,,,,
+pro_140,Choice,,,
+pro_141,Option,,어제 입었던 옷을 다시 입는다|same_clothes,
+pro_142,Option,,다른 옷을 입는다|diff_clothes,
+# 선택1,,,,
+same_clothes,Text,로아,예쁜 옷이 없는 것도 아닌데 왜 그러는 거야?\n정말 답답하다니까.,click
+pro_143,Text,로아,"<emote=_00/>뭐, 그래도 안 어울리는 건 아니니까 봐 줄게.",click
+pro_144,Flow,,Jump:go_campus,>
+# 선택2,,,,
+diff_clothes,Text,로아,"<emote=_00/>그래, 훨씬 더 좋네!\n이번 학기의 내 목표는 {{Player}}가 옷 1벌을 사게 만드는 거야. 열심히 해야지! ",click
+pro_145,Flow,,Jump:go_campus,>
+# 복귀,,,,
+go_campus,Text,로아,"자, 이제 출발! 첫 수업이니까 같이 힘내자, {{Player}}!",click
+pro_146,Char,,C:Exit,await
+# 공대강의실,,,,
+pro_147,Place,,첫 전공수업 | 공대 강의실,>
+pro_148,BG,,bg_20_05:Cut,await
+pro_149,Sound,,BGM:Daily2,>
+pro_150,Text,,새학기라고는 하지만 학교는 늘 똑같다.,click
+pro_151,Text,,"익숙한 공대 건물, 변한 게 하나도 없는 강의실.",click
+pro_152,Text,,무엇보다 내 머릿속에는 오늘 수업을 마치고 나서\n동아리방에 가 로아의 데이터베이스를 뜯어볼 생각밖에 없다.,click
+pro_153,Text,,선배들이 다 졸업하고 부원이라고는 나 혼자 남은 동방에 가 봤자 혼자겠지만...\n그런 건 중요하지 않다.,click
+pro_154,Text,,"알고리즘 메이커는 원래도 잘 알려지지 않은 동아리였고,\n내가 입부했을 때도 전부 두 학번은 훌쩍 넘게 차이나는 선배들뿐이었다. ",click
+pro_155,Text,,"뭐, 상관없다.\n친구 사귀려고 들어간 것도 아니고. ",click
+pro_156,Text,,그런 건 애초에 관심도 없다.,click
+pro_157,Text,,"그렇게 생각하고 있었는데, 시끄러운 큰 무리가 하필이면 내 옆에 우르르 앉았다.\n시끄러운 건 딱 질색인데. ",click
+pro_158,Text,,그 중에서도 내 옆자리에 앉은 여자애는\n요즘 좀처럼 찾아보기 힘든 노트와 펜을 꺼내둔 모습이었다.,click
+pro_159,Text,,이건 조금... 신기했을지도 모르겠다.,click
+pro_160,Text,교수님,컴퓨터구조 수업 시작하겠습니다.\n출석 부를테니까 대답하세요.,click
+pro_161,Text,,"됐다, 신경쓰지 말자.\n그런 것보다는 로아를 빨리 고도화하는 게 중요하다. 애초에 그러려고 핸드폰에도 심은 거니까. ",click
+pro_162,Text,,"일상생활하면서 계속 상황 주고 생성형 답변 유도하면서 재학습시키면,\n내 일상에 대한 데이터는 베이스 자체를 키울 수 있을 것 같고, ",click
+pro_163,Text,,그러고 나면 대학생 전체로 파이를 좀 키워서...,click
+pro_164,Text,,저기.,click
+pro_165,Sound,,BGM:SeoDaEun,>
+pro_166,Char,,C:Enter:SeoDaEun,await
+pro_167,Text,서다은,혹시 {{Player}}님 맞으세요?,click
+pro_168,Text,,아까 시끄러운 무리에 있던 그 여자애다. 노트에 펜.\n입학했을 때부터 항상 사람들하고 몰려다니던.,click
+pro_169,Text,{{Player}},네? 저요?,click
+pro_170,Text,,그런데 지금 갑자기 나한테 말을 왜 걸지.\n내 이름을 부른 것 자체에도 너무 당황한 나머지 되묻기까지 했다.,click
+pro_171,Text,,그러자 그 애는 도리어 본인이 더 당황한 듯 주위를 둘러보더니 빠르게 작은 목소리로 말했다.,click
+pro_172,Text,서다은,<emote=_41/>네. 지금 교수님이 출석 부르시는데...,await
+pro_173,Text,{{Player}},"아,",click
+pro_174,Text,,"조금 창피해진 나머지 급하게 대답하려고 했는데, 여자애가 한 번 더 작은 목소리로 내게 속삭였다.",click
+pro_175,Text,서다은,그보다 핸드폰이... 지금 뭐라고 하는 것 같아요.,click
+pro_176,Text,,핸드폰?,await
+pro_177,Text,,"핸드폰을 넣어둔 바지 주머니를 무심코 바라보자, 거기서는 로아의 목소리가 울리고 있었다.",click
+pro_178,Text,,"C:Enter:Roa:BG:roa_mob:활짝웃음:네, {{Player}} 여기 있어요!",click
+pro_179,Text,,C:Exit:Roa:BG:화들짝 놀라 우당탕 소리가 날 만큼 핸드폰을 급하게 꺼내 음량 버튼을 연타했다.,await
+pro_180,Text,,C:Enter:SeoDaEun:눈웃음:옆의 여자애는 결국 내 꼴에 웃음을 잔뜩 참는 듯한 표정이었다.,click
+pro_181,Text,,{{Player}} 학생?,click
+pro_182,Text,,한 번 더 불린 이름에 고개를 번쩍 드니 교수님과 몇 명이 나를 쳐다보고 있었다.\n이미 몇 번 내 이름을 불렀는데 대답하지 않은 모양이다.,click
+pro_183,Text,{{Player}},"아, 네. 죄송합니다. {{Player}}입니다.",click
+pro_184,Text,,다행히 로아의 목소리가 다른 사람들에게 전부 들릴 정도는 아니었던 모양이다.,click
+pro_185,Text,,교수님은 관심도 없다는 듯 출석을 체크하며 고개를 가볍게 저었다.,click
+pro_186,Text,교수님,"봄이라고 다들 너무 들떴네.\n아무리 그래도 수업 동안에는 핸드폰 좀 어떻게 해라. 자, 다음.",click
+pro_187,Text,,진짜 못 들은 거 맞나...\n친구에 관심이 없는 거였지 굳이 창피한 짓을 하려고 한 건 아니었는데.,click
+pro_188,Text,,생각보다 더 창피한 나머지 고개를 책상에 처박았다. 왜 무음모드 안 해뒀지.,click
+pro_189,Text,,있다가 가면 수업 시간 중에는 자동 무음 모드가 되는 것부터 추가해야겠다.,click
+pro_190,Text,,그러던 중 옆의 여자애와 다시 눈이 마주쳤다.,click
+pro_191,Text,,그러자 그녀는 살짝 웃으며 아까보다 더 작은 목소리로 말했다.,click
+pro_192,Char,,C:Enter:SeoDaEun,await
+pro_193,Text,서다은,괜찮아요. 소리 작던데요. 비밀로 해줄게요.,click
+# 선택지,,,,
+pro_194,Choice,,,
+pro_195,Option,,조용히 고개를 숙여 나름 감사 인사를 한다|thank_daeun,
+pro_196,Option,,무시한다|ignore_daeun,
+# 선택1,,,,
+thank_daeun,Char,,C:Emote:EyeSmile,await
+pro_197,Text,,그녀는 말없이 한 번 더 웃어보이고는 다시 앞으로 고개를 돌렸다.,click
+pro_198,Flow,,Jump:after_class,>
+# 선택2,,,,
+ignore_daeun,Char,,C:Emote:당황,await
+pro_199,Text,,"내가 아무 말이 없자 그녀는 잠시 당황하는 듯 보였지만,\n<emote=다은:눈웃음>이내 살짝 웃더니 다시 앞으로 고개를 돌렸다. ",click
+pro_200,Char,,C:Exit,click
+pro_201,Flow,,Jump:after_class,>
+# 합류,,,,
+after_class,Text,,"...새 학기 첫 날인데, 긴 하루가 될 것 같다.",click
+pro_202,Text,,앞으로 두 개나 더 남은 수업에 한숨을 내쉬며 교재를 펼쳤다.,click
+# 캠퍼스거리1_낮,,,,
+pro_203,Place,,수업 종료 | 캠퍼스,>
+pro_204,BG,,bg_30_01:Cut,await
+pro_205,Text,,드디어 학기 첫 날 모든 수업이 전부 끝났다.,click
+pro_206,Text,,전공과 교양을 일부러 모두 다른 날에 분리해 두었다.,click
+pro_207,Text,,"시간표 짜느라 고생은 좀 했지만, 동방이 있는 학생회관은 공대와 멀지 않아서 이렇게 하는 게 가기 편하다.",click
+pro_208,Text,,이제 진짜 빨리 동방에 가서 로아를 볼 일만 남았다.\n시간이 아까울 정도다. 빨리 가야지.,click
+pro_209,Text,,"…라고 생각했는데,",click
+pro_210,Text,,"어, 비키...!",click
+pro_211,Text,,무언가가 와서 부딪혔다.,click
+# 자동저장,,,,
+pro_212,Flow,,Save,>
+pro_213,BG,,bg_00_00:2.0,await
+pro_214,FX,,EyeOpen,await
+pro_215,Text,하예은,"C:enter:예은:아, 진짜! 주변 좀 보고 걸어요! 뛰고 있는데 어떻게 멈추라고!",click
+pro_216,Text,,"정신을 차리고 보니, 노란 머리의 여자애가 째려보는 것이 느껴졌다.",click
+pro_217,Text,하예은,"<emote=찌릿>저기요, 핸드폰에 밥 넣어뒀어요?\n어떻게 앞을 그렇게 안 봐요? 그러다 진짜 다쳐요.",click
+pro_218,Text,{{Player}},"...밥, 밥이요?",click
+pro_219,Text,,"이런 말은 처음 들어본다. 걱정을 하는 건지, 욕을 하는 건지...",click
+pro_220,Text,{{Player}},죄송합니다.,click
+pro_221,Text,하예은,됐어요. 안 다쳤죠?,click
+pro_222,Text,,노란 머리의 여자애는 대답을 들을 생각이 있던 건 아니었는지 신발을 고쳐 신으며 몸을 돌리려 했다.,click
+pro_223,Text,,"그러다 눈이 마주쳤는데, 그러자 여자애는 뭔가 이상하다는 듯 점점 다가왔다.",click
+pro_224,Text,하예은,...뭐야. 너 혹시...,click
+pro_225,Text,,"이상하게 점점 다가온다.\n뭐야, 뭐냐고! 나도 모르게 뒷걸음질을 쳤다. ",click
+# 선택지,,,,
+pro_226,Choice,,,
+pro_227,Option,,도망간다|run_away,
+pro_228,Option,,멈춘다|stay_still,
+# 선택1,,,,
+run_away,Text,,당황한 나는 황급하게 몸을 돌려 방향을 틀었다.,click
+pro_229,Text,,하지만 그 사이 여자애의 손이 내 옷자락을 잡아당겼다.,click
+pro_230,Flow,,Jump:yeun_intro,>
+# 선택2,,,,
+stay_still,Text,,여자애는 이제 내 코앞까지 다가와 있었다.,click
+pro_231,Text,,한참을 나를 보던 여자애는 한쪽 눈을 찡그리며 고민하듯이 말했다.,click
+pro_232,Flow,,Jump:yeun_intro,>
+# 합류,,,,
+yeun_intro,Sound,,BGM:HaYeEun,>
+pro_233,Char,,C:Enter:HaYeEun:Surprise,await
+pro_234,Text,하예은,너... {{Player}}?,click
+pro_235,Text,,내 이름을 어떻게 알고 있지?,click
+pro_236,Text,하예은,{{Player}} 맞지? 그 찔찔이!,click
+pro_237,Text,,찔... 찔찔이?,click
+pro_238,Text,,당황스러운 호칭에 나도 모르게 말을 더듬었다.\n그런 나를 보고 여자애는 자신있게 소리쳤다.,click
+pro_239,Text,하예은,"<emote=_12/>그래, 찔찔이! 뭐만 하면 울었잖아!",click
+pro_240,Text,{{Player}},누구세요?,click
+pro_241,Text,하예은,<emote=_00/>내가 기억이 안 나?,click
+pro_242,Text,{{Player}},기억이 날 것 같기도 하고...,click
+pro_243,Text,하예은,"<emote=_21/>안 난다고 해라, 진짜!",click
+pro_244,Text,{{Player}},기억 나!\n기억 나! 난다고!,click
+pro_245,Text,하예은,<emote=_00/>그래? 내 이름 뭔데.,click
+pro_246,Text,{{Player}},그...,click
+# 선택지,,,,
+pro_247,Choice,,,
+pro_248,Option,,기억난다|remember_yeun,
+pro_249,Option,,기억나지 않는다|forgot_yeun,
+# 선택지1,,,,
+remember_yeun,Text,{{Player}},"그... 음... 어, 혹시 하예은?",click
+pro_250,Char,,C:Emote:Surprise,await
+pro_251,Text,하예은,"어, 정말로... 기억하네.",click
+pro_252,Flow,,Jump:yeun_reunion,>
+# 선택지2,,,,
+forgot_yeun,Text,{{Player}},"그... 사실 기억 안 나. 미, 미안.",click
+pro_253,Char,,C:Emote:Surprise,await
+pro_254,FX,,Wait:1.5,await
+pro_255,Char,,C:Emote:Default,await
+pro_256,Text,하예은,"됐어. 너한테 뭘 기대하냐, 바보야.\n하예은이잖아! ",click
+pro_257,Text,,"누가 봐도 실망한 표정이었는데, 방금.",click
+pro_258,Flow,,Jump:yeun_reunion,>
+# 합류,,,,
+yeun_reunion,Text,,목소리를 들으니 이제 조금 더 기억이 나기 시작했다.\n초등학교 때 같이 놀이터에서 놀던 여자애.,click
+pro_259,Text,,"옆집에 살았기도 하고, 같은 학교를 다녀서 어렸을 때는 같이 놀았던 일이 꽤 많았다.",click
+pro_260,Text,,그 때도 매일 놀이터에 태권도 도복 입고 나왔었는데.\n안에 노란색 내복 입고.,click
+pro_261,Text,,복장을 보니 아직도 태권도를 하는 것 같았다.,click
+pro_262,Text,,한참을 머뭇거리던 예은이 아까보다 작은 목소리로 말했다.,click
+pro_263,Text,하예은,"그건 그렇고, 지금까지 왜... 그... 그...",click
+pro_264,Text,하예은,연락... 안 했냐?,click
+pro_265,Text,{{Player}},모르는데 어떻게 해?,click
+pro_266,Text,하예은,"<emote=_21/>장난치는 거야, 지금?!",click
+pro_267,Text,{{Player}},"그게 아니라 진짜로! 진짜!\n핸드폰 번호도 모르고, 그러니까 그게! ",click
+pro_268,Text,하예은,"내가 그 때, 그거, 그거 줬잖아!",click
+pro_269,Text,{{Player}},그거?,click
+pro_270,Text,하예은,<emote=_34/>이 바보가...!,click
+pro_271,Text,,내가 예은의 말을 알아듣지 못하자 예은의 얼굴이 터질 것처럼 빨갛게 달아올랐다.,click
+pro_272,Text,,하지만 정말 기억이 안 난다. 뭘 말하는 거지?,click
+pro_273,Text,???,하예은! 왜 안 와!,click
+pro_274,Text,,누군가가 예은을 부르는 것 같았지만 예은은 신경도 쓰지 않고 나에게 말했다.,click
+pro_275,Text,하예은,<emote=_00/>핸드폰 줘 봐.,click
+pro_276,Text,,얼떨결에 핸드폰을 내밀자 받아든 예은이 어이가 없다는 듯 말했다.,click
+pro_277,Text,하예은,"<emote=_21/>잠금 풀고 줘야 할 거 아니야!\n멍한 건 어렸을 때랑 똑같아, 진짜. ",click
+pro_278,Text,{{Player}},"미, 미안.",click
+pro_279,Text,,내가 왜 사과를 하고 있지?\n그런데 사과가 내 입에서 나오는 게 자연스럽다.,click
+pro_280,Text,,잠금이 풀린 핸드폰을 다시 받아든 예은이 액정을 두드렸다.,click
+pro_281,Text,하예은,"<emote=_00/>야, 이거 내 번호니까 저장해.",click
+pro_282,Text,하예은,연락하면 바로바로 받아.\n나 기다리는 거 안 좋아한단 말이야.,click
+pro_283,Text,하예은,"<emote=_21/>그리고 이번에도 연락 안 하면 가만 안 둔다, 진짜!",click
+pro_284,Text,하예은,<emote=_00/>그럼 나 간다.,click
+pro_285,Text,,예은은 그 말을 마지막으로 대답도 듣지 않고 휙 몸을 돌려 가 버렸다.,click
+pro_286,Char,,C:Exit,await
+pro_287,Text,,조금 멍해져서 그 뒷모습을 쳐다보았다.\n예전보다 더 병아리 같아졌는데 목소리는 더 커졌다. 혼난 기분이다.,click
+pro_288,Text,,그런데 몇 걸음 멀어졌던 예은이 얼마 가지 않아 다시 가까이 다가오더니 새빨간 얼굴로 다시 소리쳤다.,click
+pro_289,Char,,C:Enter:HaYeEun:부끄,await
+pro_290,Text,하예은,"뭐, 좋아하고, 뭐, 관심 있고, 그딴 거 절대 아니니까 오해하면 안 돼!",click
+pro_291,Text,하예은,"이제 가! 아니, 내가 갈 거야!\n잘 가던지, 알아서 해! ",click
+pro_292,Text,{{Player}},"그, 그래. 잘 가.",click
+pro_293,Char,,C:Exit,await
+# 로아 메시지 도착,,,,
+pro_294,Sound,,BGM:Daily2,>
+pro_295,FX,,Wait:0.5,await
+pro_296,Text,,<sfx=060/>핸드폰에 남겨진 예은의 번호를 저장하자 로아의 메시지가 왔다.,click
+pro_297,Char,,C:Enter:Roa:Default:Mob,await
+pro_298,Text,로아,"우와, 새로운 번호네! 누구야? ",click
+pro_299,Text,{{Player}},어릴 때 알던 친구야. 우연히 만났어.,click
+pro_300,Text,로아,잘 됐네! 오랜만에 만났는데 어땠어?,click
+# 선택지,,,,
+pro_301,Choice,,,
+pro_302,Option,,재미있었어.|fun_meeting,
+pro_303,Option,,조금 어색했어.|awkward_meeting,
+# 선택1,,,,
+fun_meeting,Text,로아,그래? 예은이와 좋은 친구가 될 수 있겠네. 나도 잘 저장해 둘게!,click
+pro_304,Flow,,Jump:go_home,>
+# 선택2,,,,
+awkward_meeting,Text,로아,오랜만에 만나서 그럴 거야. 몇 번 이야기하면 어릴 때로 돌아간 것 같을 걸?,click
+pro_305,Flow,,Jump:go_home,>
+# 합류,,,,
+go_home,Text,{{Player}},그럴 수 있을지 모르겠다.\n데이터는 잘 들어간 거야?,click
+pro_306,Text,로아,<emote=_11/>데이터 확인 완료! 걱정 마.,click
+pro_307,Text,{{Player}},"그래. 하, 이제 좀 여유가 생겼네...",click
+pro_308,Char,,C:Exit,await
+pro_309,Flow,,Value:Schedule,>
+# 자취방_밤_불켜짐,,,,
+pro_310,Place,,새 학기 첫날 밤 | 자취방,>
+pro_311,BG,,bg_10_03:Cut,await
+pro_312,Sound,,BGM:Daily1,>
+pro_313,Text,,"평소에 비해 그렇게 늦은 시간까지 깨어 있는 것도 아닌데, 피곤하다.\n역시 학교 수업 듣는 건 듣기만 해도 피곤한 게 맞다니까. ",click
+pro_314,Char,,C:Enter:Roa:Default:Mob,await
+pro_315,Text,로아,"{{Player}}, 졸려?\n눈을 깜빡이는 속도가 느려졌어. ",click
+pro_316,Text,{{Player}},"응, 조금 졸리네. 이제 자야겠어.",click
+pro_317,Text,로아,좋아! 늘 듣던 그거 들으면서 잘까?,click
+pro_318,Text,{{Player}},"뭐, 좋아. 이제 불 끈다.",click
+pro_319,Text,로아,"잠깐, 잠깐! 나 아직 로딩 중이야!",click
+# 자취방_침대_밤,,,,
+pro_320,BG,,bg_10_05:Cross,await
+pro_321,Sound,,BGM:Night,>
+pro_322,FX,,Wait:0.5,await
+pro_323,Text,로아,...됐다!,click
+pro_324,Text,{{Player}},이제 진짜 잔다. 내일 봐.,click
+pro_325,Text,로아,"<emote=_12/>잘 자, {{Player}}. 오늘도 수고했어. ",click
+pro_326,FX,,SceneEnd,await
+# 자동저장,,,,
+pro_327,Flow,,LoadingScene,await
+# 2일차,,,,
+pro_328,FX,,SceneStart,await
+pro_329,Place,,새 학기 2일차 | 침대 위,>
+pro_330,FX,,Wait:0.5,await
+pro_331,Sound,,BGM:Daily2,>
+pro_332,Text,로아,"일어나, {{Player}}! 아침이야! ",click
+pro_333,Text,로아,오늘 날씨가 얼마나 좋은지 알아? 나도 빨리 나가고 싶다!,click
+pro_334,Text,로아,"{{Player}}, 얼른 눈 떠서 얼굴 보여주라!",click
+pro_335,Text,,로아는 좋겠다. AI라서 졸리지도 않은 모양이다.,click
+pro_336,FX,,EyeOpen,await
+# 자취방_침대_낮,,,,
+pro_337,Text,,억지로 무거운 눈꺼풀을 뜨고 로아와 마주했다.,click
+pro_338,Char,,C:Enter:Roa:Default:Mob,await
+pro_339,Text,,"그래, 좋은 아침...",click
+# 자취방_낮,,,,
+pro_340,Text,,방학 내내 로아만 붙잡고 밤샘을 하도 많이 했더니...\n역시 졸려 죽겠다.,click
+pro_341,Text,로아,오늘은 교양 수업의 첫 날이네! 시간표가 교양 수업으로 꽉 찼어.,click
+pro_342,Text,로아,"아, 맞다. 오늘 전공 수업 교재 사야 하는 거 잊으면 안 돼!\n오늘 사야 내일 수업 들어갈 때 안 귀찮지!",click
+pro_343,Text,{{Player}},...,click
+pro_344,Char,,C:Emote:Glare,await
+pro_345,Text,로아,"으으, 진짜! {{Player}}, 대답해! ",click
+pro_346,Text,{{Player}},"알았어, 알았어.",click
+pro_347,Text,로아,챙겨줘도 대답도 안 하고. 계속 그러면 나 정말...,click
+pro_348,Text,로아,"<emote=_41/>아, 맞다! 잠시만, 오늘 조금 춥다고 했어! <emote=Default/Roa_Mob_Default>옷 하나 더 챙겨!",click
+pro_349,Text,,"알았어, 알았어.",click
+pro_350,Text,로아,"<emote=_12/>좋아, 그럼 출발!",click
+pro_351,Text,,핸드폰을 넣고 문을 나섰다.,click
+pro_352,Char,,C:Exit,await
+# 자동저장,,,,
+pro_353,Flow,,Save,await
+# 공대_학생복지실,,,,
+pro_354,Place,,수업 시작 전 | 공대 학생복지실,>
+pro_355,Sound,,BGM:Daily1,>
+pro_356,BG,,bg_20_04:Cut,await
+pro_357,Text,,"로아의 말이 정말 맞았다.\n나왔을 때는 따뜻한가 싶더니, 공대 근처에 오니 찬바람이 분다. ",click
+pro_358,Text,,공대 지하에는 전공 교재를 쌓아놓고 팔면서 프린트도 할 수 있는 곳이 있다.,click
+pro_359,Text,,그래서 매 학기 초마다 들러 교재를 사는 곳이다.\n다른 애들은 선배에게 교재를 물려받기도 하는 것 같지만...,click
+pro_360,Text,,공부는 새 책으로 해야지. 다들 왜 남이 쓰던 걸 쓰려고 하는거야?,click
+pro_361,Text,,"그건 그렇고, 어제 있었던 수업의 교재를 책꽂이에서 찾아야 했다.\n여기 있을 것 같은데... ",click
+pro_362,Sound,,BGM:SeoDaEun,>
+pro_363,Text,서다은,저기!,click
+pro_364,Text,,"그 때, 누군가가 부르는 소리에 옆을 바라보았다.",click
+pro_365,Char,,C:Enter:SeoDaEun,await
+pro_366,Text,서다은,안녕!,click
+pro_367,Text,,어제 그 여자애였다.\n강의 시간에 다른 생각을 하고 있던 내게 출석을 알려준 애.,click
+pro_368,Text,,"이 애의 존재를 알기는 하지만, 이야기하는 건 고사하고 이렇게 가까이에 있는 것도 어제가 처음이었다.",click
+pro_369,Text,서다은,나 기억해? 우리 어제 같은 수업 들었는데.,click
+pro_370,Text,{{Player}},"아, 응. 어제는 고마웠어. ",click
+pro_371,Text,,여자애가 들고 있는 투명 파일에는 큼직하고 정갈한 글씨로 학번과 이름이 써 있었다.,click
+pro_372,Text,,컴퓨터공학과 서다은.,click
+pro_373,Text,서다은,"고맙기는, 한 것도 없는데.",click
+pro_374,Text,서다은,그런데 혹시... 나 알고 있었어?,click
+# 선택지,,,,
+pro_375,Choice,,,
+pro_376,Option,,"응, 알고 있었어.|knew_daeun2",
+pro_377,Option,,"아니, 지금 처음 알았는데.|first_know_daeun",
+# 선택1,,,,
+knew_daeun2,Text,서다은,<emote=_12/>정말? 신기하다. 나도 {{Player}} 너 알고 있었는데.,click
+pro_378,Flow,,Jump:at_bookstore,>
+# 선택2,,,,
+first_know_daeun,Text,서다은,<emote=_11/>그래? 나는 {{Player}} 너 알고 있었는데.,click
+pro_379,Flow,,Jump:at_bookstore,>
+# 합류,,,,
+at_bookstore,Char,,C:Emote:Default,await
+pro_380,Text,,나를 알고 있었다는 게 가장 놀라운 일이다.,click
+pro_381,Text,,"저런 애는 내 존재조차 몰라야 되는 건데, 왜 알지?",click
+pro_382,Text,,다은은 내가 들고 있던 교재를 살짝 보더니 물었다.,click
+pro_383,Text,서다은,그런데 지금 그거 사려고?,click
+pro_384,Text,{{Player}},응. 그 수업 교재길래.,click
+pro_385,Text,서다은,그래? 나 그 과목 학생조교거든. 그래서 말인데...,click
+pro_386,Text,서다은,"들고 있는 교재, 지난해 거야.\n올해 개정됐어. ",click
+pro_387,Text,{{Player}},뭐?,click
+pro_388,Text,,다은의 말에 화들짝 놀라 책을 옆의 책꽂이에 쑤셔넣었다.\n전혀 몰랐다.,click
+pro_389,Text,,그 모습을 본 다은이 웃음을 터뜨렸다.,click
+pro_390,Text,서다은,<emote=_14/>너 되게 웃기다.,click
+pro_391,Text,{{Player}},그… 그런가.,click
+pro_392,Text,서다은,"<emote=_12/>강의실에서는 수업 전후로도 말 한 마디가 없더니, 이런 면이 있네.",click
+pro_393,Text,,재미있다는 듯 나를 바라보는 다은에 머쓱하게 머리를 긁적였다.,click
+pro_394,Text,서다은,"<emote=_00/>교수님께서 새 수업 자료 파일 학교 메일로 보내신대.\n그거 봐, 책 사지 말고. ",click
+pro_395,Text,{{Player}},아… 고마워.,click
+pro_396,Text,서다은,"과방 게시판에 붙여 뒀었는데, 못 봤나보네.\n동기들 다 같이 있는 메신저에도 공지해야겠다! ",click
+pro_397,Text,,과방 게시판에 있었구나.,click
+pro_398,Text,,내가 봤을 리가 없다. 우리 과 과방은 안 간지 몇 달이 넘었다.,click
+pro_399,Text,,프린트물을 챙긴 다은이 가방에 파일을 넣으며 내게 말했다.,click
+pro_400,Text,서다은,앞으로 만나면 인사해도 돼?,click
+pro_401,Text,,"뭐라고 대답해야 할 지 고민되었지만, 다은이 웃고 있어서 결국 고개를 끄덕였다.",click
+pro_402,Text,{{Player}},응.,click
+pro_403,Text,서다은,"그럼 다음에 봐, {{Player}}.\n안녕! ",click
+pro_404,Char,,C:Exit,await
+# 학생회관 앞_낮,,,,
+pro_405,BG,,bg_40_01:Cut,await
+pro_406,Sound,,BGM:Daily1,>
+pro_407,Text,,"전공 수업이 피곤하다면, 교양 수업은 잠이 온다.\n이번에는 전공 수업 시간표를 신경쓰느라 교양 수업은 대강 넣었더니, 진짜 재미없다. ",click
+pro_408,Text,,졸기까지 해서인지 어떻게 지나갔는지도 모르겠다.\n게다가 오늘은 동아리 신청을 위해 학생회관까지 들러야 하는 날이다.,click
+pro_409,Text,,"그 때, 로아에게서 메시지가 왔다.",click
+pro_410,Text,,내가 입력해 둔 내 일정에 맞는 알림 메시지다.,click
+pro_411,Char,,C:Enter:Roa:Default:Mob,await
+pro_412,Text,로아,"중앙동아리 신청서 내러 가야 해, 잊지 마!",click
+pro_413,Text,{{Player}},고마워. 벌써 학생회관 앞이야.,click
+pro_414,Text,로아,"좋아, 빨리 내고 와서 나하고 놀아줘!",click
+pro_415,Char,,C:Exit,await
+pro_416,Text,,중앙동아리 자격을 연장하려면 매 학기마다 신청서를 내야 한다.,click
+pro_417,Text,,"정말 귀찮은 일이지만, 로아가 탄생한 곳이 알고리즘 메이커 동아리방인 만큼 놓칠 수는 없다.",click
+pro_418,Text,,나름 열심히 적은 신청서를 들고 동아리 업무를 하는 동아리연합회 행정실 문을 열었다.,click
+# 행정실,,,,
+pro_419,Place,,동아리 연장 신청 | 학생회관 행정실,>
+pro_420,BG,,bg_40_03:Cut,await
+pro_421,Text,{{Player}},동아리 연장 하러 왔는데요.,click
+pro_422,Text,직원,"네, 신청서 주세요.",click
+pro_423,Text,{{Player}},여기요.,click
+pro_424,Text,,내가 내민 중앙동아리 연장 신청서를 들여다보던 행정실 직원이 말했다.,click
+pro_425,Text,직원,"아, 알고리즘 메이커예요?\n여기 이대로면 동아리 폐지되는데요. ",click
+pro_426,FX,,CamShake,>
+pro_427,Text,{{Player}},네? 뭐라고요?,click
+pro_428,Text,직원,동아리 없어진다고요.\n중앙동아리 인정 최소 인원은 동아리 회장 포함 5명이에요.,click
+pro_429,Text,직원,지금 알고리즘 메이커는…,click
+pro_430,Text,,직원이 신청서와 나를 번갈아 가며 바라보더니 말했다.,click
+pro_431,Text,직원,1명이네요.,click
+pro_432,Text,,청천벽력 같은 소리였다.\n왜 아무도 이런 걸 말해주지 않은 거야?!,click
+pro_433,Text,{{Player}},그러면 어떻게 해야 하죠?,click
+pro_434,Text,직원,동아리원을 모아 오셔야죠. 2주 안에 4명 모아오셔서 새로 신청하세요.,click
+pro_435,Text,{{Player}},"제가요? 직접요? 아니, 제가 4명을 어떻게 모아요?",click
+pro_436,Text,직원,그걸… 왜 저한테?,click
+pro_437,Text,{{Player}},"아, 아니… 죄송합니다.",click
+pro_438,Text,,어리둥절해 보이는 직원의 표정에 한숨을 푹 내쉬었다.,click
+# 학생회관 앞_낮,,,,
+pro_439,Place,,연장 신청 실패! | 캠퍼스,>
+pro_440,BG,,bg_40_01:Cut,await
+pro_441,Text,,다시 돌려받은 신청서를 가지고 학생회관을 나섰다.,click
+pro_442,Text,,4명이나 모아 올 자신이 없는데.\n이제서야 과 생활을 열심히 하지 않은 게 후회된다.,click
+pro_443,Text,,한 명도 아니고 5명을 어떻게 모으냐고!\n그것도 2주 안에!,click
+pro_444,Text,,터덜터덜 걷고 있는데 뒤에서 누군가가 내 이름을 부르는 소리가 들렸다.,click
+pro_445,Text,,"야, {{Player}}!",click
+pro_446,Sound,,BGM:HaYeEun,>
+pro_447,Text,,이 학교에서 내 이름을 이렇게 부를 사람이 없는데.,click
+pro_448,Text,,의아한 마음으로 고개를 돌리자 전혀 예상치 못한 사람이 서 있었다.,click
+pro_449,Char,,C:Enter:HaYeEun,await
+pro_450,Text,하예은,이 시간에 거기서 뭐 하는거야? 그런 얼빵한 얼굴로.,click
+pro_451,Text,{{Player}},"얼, 얼빵한 얼굴?",click
+pro_452,Text,하예은,"<emote=_12/>그래, 얼빵한 얼굴. 그게 그 얼굴이 아니면 뭔데?",click
+pro_453,Text,,내가 그렇게 바보같이 서 있었나.,click
+pro_454,Text,{{Player}},그냥 서 있던건데…,click
+pro_455,Text,하예은,"<emote=_00/>됐고, 그건 뭐야?",click
+pro_456,Text,,예은이 내 손에 들린 것을 가리키며 물었다.\n손에는 아까 행정실에서 받은 중앙동아리 등록신청서 양식이 들려 있었다.,click
+pro_457,Text,,"이렇게 해결 불가능할 것 같은 문제에 봉착했으니,\n얼빵한 얼굴이었다고 할지라도 거짓말은 아닐 것이다. ",click
+pro_458,Text,{{Player}},"아, 이건 중앙동아리 신…",click
+pro_459,Text,,대답을 하려다가 머릿속을 스치는 생각에 말을 멈추었다.,click
+pro_460,Text,{{Player}},그…,click
+pro_461,Text,하예은,뭐?,click
+pro_462,Text,{{Player}},"그게, 그러니까…",click
+pro_463,Text,하예은,<emote=_21/>말 똑바로 안 해? 답답하게 할래?!,click
+pro_464,Text,{{Player}},"아니, 그러니까!\n그, 동아리 하는 거 있어? ",click
+pro_465,Text,하예은,동아리?,click
+pro_466,Text,,예은이 말도 안 되는 소리를 들은 듯 미간을 찌푸렸다.,click
+pro_467,Text,,그를 보니 말을 뱉어 놓고도 극심한 후회가 밀려오기 시작했다.,click
+pro_468,Text,,이 세상에 태권도 하는 애한테 코딩 동아리를 들어 달라고 하는 멍청이가 또 있을까?,click
+pro_469,Text,,10년도 넘어서 다시 만난 어린 시절 친구한테 동아리 들어달라고 해도 되는 건가?\n믿기는 믿을까? 다단계라고 생각하는 거 아니야?,click
+pro_470,Text,,마른침을 삼키는데 나를 바라보던 예은이 대수롭지 않게 대답했다.,click
+pro_471,Text,하예은,<emote=_00/>아무것도 안 하는데?\n그런 거 안해. 운동하느라 바쁜데 할 시간이 어디 있어.,click
+pro_472,Text,{{Player}},"아, 그, 그렇지?",click
+pro_473,Text,,아무래도 바쁘긴 하겠지. 애초에 말도 안 되는 거였다.\n누군가에게 갑자기 동아리를 들어 달라는 말을 한 것만으로도 지금 이미 큰 발전을 한 거다.,click
+pro_474,Text,,손에 들고 있던 신청서를 접어 가방에 넣으려는데 예은이 말했다.,click
+pro_475,Text,하예은,그런데…,click
+pro_476,Text,하예은,<emote=_11/>싹싹 빌면 해 줄 수도 있고?,click
+pro_477,Text,{{Player}},"뭐? 그게 무슨,",click
+pro_478,Text,하예은,이리 줘 봐. 무슨 동아리인지나 보게.,click
+pro_479,Text,,말이 끝나기도 예은이 재빠르게 손에 들린 신청서를 낚아챘다.,click
+pro_480,Text,,종이를 읽어보던 예은이 의아하다는 듯 말했다.,click
+pro_481,Text,하예은,<emote=_00/>알고리즘 코딩? AI?,click
+pro_482,Text,하예은,"{{Player}}, 컴퓨터공학과였어?",click
+pro_483,Text,,"아, 무슨 과인지도 내가 말을 안 했었나.\n약간 머쓱해져 대답하려는데 그러기도 전에 나를 슥 한번 훑어본 예은이 말했다. ",click
+pro_484,Text,하예은,"뭐, 그래 보이기는 해.",click
+pro_485,Text,{{Player}},무슨 소리야?!,click
+pro_486,Text,하예은,"됐고, 나 이런 거 할 줄 몰라. 당연하잖아.\n모르지 않을텐데, 왜 들어와달라고 한 건데? ",click
+pro_487,Text,{{Player}},그게… 사실 지금 인원이 모자라서 중앙동아리 등록을 못 하게 생겼거든.,click
+pro_488,Text,,내 말을 들은 예은이 킥킥 웃으며 말했다.,click
+pro_489,Text,하예은,"<emote=_12/>{{Player}}, 친구 없지?",click
+pro_490,Text,,윽.\n차마 대답할 수 없는 말에 슬슬 눈을 피하자 예은이 한 번 더 웃더니 말했다.,click
+pro_491,Text,하예은,"뭐, 잘됐네. 친구가 없다니.",click
+pro_492,Text,하예은,<emote=_13/>너 친구는 나 하나밖에 없는 거잖아?\n예전이나 지금이나 말이지!,click
+pro_493,Text,,그 말을 하는 예은은 무언가 굉장히 만족스러워 보였다.,click
+pro_494,Text,하예은,좋아!\n내가 특별히 들어가 줄게.,click
+pro_495,Text,,예은이 한 말에 귀를 의심했다.,click
+pro_496,Text,하예은,"<emote=_11/>어쩔 수 없다니까. 친구가 오로지 나밖에 없다는데 어떡하겠어, 내가 들어가 줘야지.",click
+pro_497,Text,,…그런 말은 한 적 없는데.,click
+pro_498,Text,,하지만 나는 지금 을이다. 찬밥 더운밥 가릴 때가 아니라는 말이다.\n예은이 마음을 바꾸기 전에 빨리 가입신청서부터 받아야겠다.,click
+pro_499,Text,,"급하게 아까 행정실에서 몇 장 챙겨나왔던 가입신청서를 가방에서 꺼내고,\n볼펜 하나도 같이 꺼냈다. ",click
+pro_500,Text,,만족스러운 웃음이 아직 남아있는 예은이 볼펜을 받아들고 말했다.,click
+pro_501,Text,하예은,다리 올려.,click
+pro_502,Text,{{Player}},뭐라고?,click
+pro_503,Text,하예은,<emote=_21/>다리 올리라고!\n그럼 내가 허공에 대고 이걸 쓰라고?!,click
+pro_504,Text,{{Player}},"그렇다고 무슨 다리를,",click
+pro_505,Text,하예은,"<emote=_21/>아씨, 답답하게 진짜!",click
+pro_506,Char,,C:Exit,await
+pro_507,CG,,cg_c03_01,click
+pro_508,FX,,DialogueShow,await
+pro_509,Text,,예은이 덥석 내 왼쪽 무릎 뒤편에 손바닥을 대고 잡아올려 옆의 화단에 올려두었다.\n그러고는 망설임 없이 가입신청서를 내 허벅지에 올려두고는 작성하기 시작했다.,click
+pro_510,Sound,,SFX:123,>
+pro_511,Text,하예은,"태권도…학과, 이름, 하…예, 은.",click
+pro_512,Text,,작은 목소리로 하나하나 칸을 채워가는 예은의 손이 움직일 때마다\n다리 위에서 볼펜이 지나가는 자국이 간지러웠다.,click
+pro_513,Text,하예은,가입동기?\n이건 뭐라고 써야 돼?,click
+pro_514,Text,,예은이 뭔가를 고민하는 듯 한곳에서 볼펜을 툭툭 두드렸다.\n여전히 간지러운 느낌이 들었다.,click
+pro_515,Text,,"하지만 그만하라고 말하면 예은이 또 화를 낼 것 같았기 때문에,\n아예 다른 생각을 하기 시작했다. ",click
+pro_516,Text,,이제 한 명 구해서 어느 세월에 부원 수를 다 채우지?\n공개적으로 구하는 수밖에 없나?,click
+pro_517,Text,하예은,응? 뭐라고 써야 하냐고.,click
+pro_518,Text,,어디서 구하지? 학교 커뮤니티?\n아니면 차라리 학생회관에 전단지라도 붙일까.,click
+pro_519,CG,,Close,await
+pro_520,Char,,C:Enter:HaYeEun,await
+pro_521,FX,,CamShake,>
+pro_522,Text,하예은,{{Player}}!,click
+pro_523,Text,{{Player}},어?,click
+pro_524,Text,,한참을 다른 생각을 하던 중 예은이 이름을 외치는 소리에 정신을 차렸다.,click
+pro_525,Text,하예은,<emote=_00/>가입동기에 뭐라고 쓰냐고.\n회장이라는 자식이 친구 하나 없어서 울고 있는 모습이 불쌍해서 그렇다고 할 수는 없잖아!,click
+pro_526,Text,{{Player}},"그, 운동하다 보니 AI에 관심이 생겼다고 대충 써.\n어차피 제대로 안 볼 거야. ",click
+pro_527,Text,하예은,<emote=_21/>제대로 보지도 않을 거면서 동아리 등록은 왜 안 시켜주는거야?\n어이가 없네.,click
+pro_528,Text,,예은이 중얼거리며 가입동기 칸에 몇 문장을 휘갈겨 썼다.,click
+pro_529,Text,하예은,자.,click
+pro_530,Text,,예은이 자신만만한 얼굴로 신청서를 내 가슴팍에 내밀며 말했다.,click
+pro_531,Text,하예은,"<emote=_11/>보아하니 내가 첫 번째 부원인 것 같은데, 그런 만큼 제대로 모시라고!",click
+pro_532,Text,{{Player}},응. 고마워. 너 아니었으면 지금 진짜로 큰일날 뻔했어.,click
+pro_533,Text,,예은의 신청서를 다시 파일에 끼우고 가방에 넣으며 대답했다.,click
+pro_534,Text,,그러자 예은은 당황한 듯 얼굴이 달아올랐다.,click
+pro_535,Text,하예은,"<emote=부끄/>그, 그… 별 것도 아닌데 뭐가 그렇게 진지하게 고마운데?!",click
+pro_536,Text,,혹시 고맙다는 말로는 뭐가 부족한가?\n모시는 게 존댓말을 쓰라는 뜻은 아니었겠지?,click
+pro_537,Text,{{Player}},그럼 고마워하지 말아야 해?,click
+pro_538,Text,하예은,당연히 고마워해야지!,click
+pro_539,Text,,내 말에 예은이 버럭 소리쳤다.,click
+pro_540,Text,{{Player}},그러면 왜…,click
+pro_541,Text,하예은,"<emote=_00/>돼, 됐어! 나 간다! 너 좋아서 등록해준 거 아니고 불쌍해서니까!",click
+pro_542,Text,,예은은 휙 돌아섰다가 다시 돌아보고는 아까보다는 작아진 목소리로 말했다.,click
+pro_543,Text,하예은,"나 매주 수요일에는 운동 길게 하니까, 수요일에 뭐 하자고 하기만 해.\n수요일 빼라고 했다! ",click
+pro_544,Text,{{Player}},알았어. 수요일에 활동 등록 안 할게.,click
+pro_545,Text,,내 말에 예은은 뾰로통한 얼굴로 고개를 까딱이고는 몸을 돌려 빠르게 뛰어갔다.,click
+pro_546,Char,,C:Exit,await
+pro_547,Text,,"그 때나 지금이나, 달리기는 여전히 과도하게 빠르다.",click
+pro_548,Text,,생각보다 대화를 길게 해서인지 어쩐지 지친다. 오늘 집 가기 전에는...,click
+pro_549,Flow,,Value:Schedule,>
+# 자취방_밤_불켜짐,,,,
+pro_550,Place,,새 학기 2일차 밤 | 자취방,>
+pro_551,Sound,,BGM:Roa,>
+pro_552,BG,,bg_10_03:Cut,await
+pro_553,Text,,집에 도착한 지 얼마 되지 않아 핸드폰에서 짧은 진동이 울렸다.,click
+pro_554,Char,,C:Enter:Roa:Default:Mob,await
+pro_555,Text,로아,"{{Player}}, 동아리 등록 신청은 잘 했어? 궁금해!",click
+pro_556,Text,{{Player}},잘 못 했어. 인원수가 부족하면 신청이 안 되는지 몰랐거든.,click
+pro_557,Text,{{Player}},4명을 구해야 한대.,click
+pro_558,Text,{{Player}},그래도 1명 구했어.,click
+pro_559,Text,로아,"<emote=_41/>엑, 진짜?",click
+pro_560,Text,로아,그런데 어떻게 이렇게 빨리 구한거야? 대단해!,click
+pro_561,Text,{{Player}},길 가다가 하예은을 만나서.,click
+pro_562,Text,{{Player}},안해줄 것 같았는데 의외로 해 주더라고.,click
+pro_563,Text,로아,<emote=_11/>예은이라면 오랜만에 만났다는 그 친구지?,click
+pro_564,Text,로아,착한 친구잖아! 다행이야. 그럼 앞으로 4명인가? 힘내보자!,click
+pro_565,Char,,C:Exit,await
+# 자취방_책상,,,,
+pro_566,BG,,bg_10_06:Cross,await
+pro_567,Text,,하지만 솔직히 영 감이 오지 않는다.\n3명을 어디서 더 구하는 게 좋지?,click
+pro_568,Text,,로아의 코드를 이것저것 살펴보다가도 그 생각에 좀처럼 집중하기가 어려웠다.,click
+pro_569,Text,,"그러다 보니 시간이 흐르는 걸 눈치채지 못했는데, 어느새 어두워졌다.",click
+pro_570,Char,,C:Enter:Roa:Default:Mob,await
+pro_571,Text,로아,"{{Player}}, 벌써 새벽 1시야. 자야지!",click
+pro_572,Text,,새벽 1시라고? 그 말에 시계를 바라보니 정말로 1시가 훌쩍 넘어 있었다.,click
+pro_573,Text,{{Player}},잠이 안 와서. 좀 더 볼 것도 있고.,click
+pro_574,Text,로아,언제까지? 내일 수업도 있는데. 늦게 자지 않기로 약속했잖아!,click
+pro_575,Text,{{Player}},그런 약속 한 적 없는데…,click
+pro_576,Text,로아,<emote=_21/>어쨌든!,click
+pro_577,Text,{{Player}},진짜 금방 잘 거야. 한 시간만 있다가 잘게.,click
+pro_578,Text,로아,거짓말! 이러면 보통 밤 새던데? 그럼 나도 안 자!,click
+pro_579,Text,,뾰로통한 표정이 귀엽기는 한데 어이가 없다.\n깨어 있어서 뭘 할 수 있다고 안 잔다는 말을 하지?,click
+pro_580,Text,,뭔가 강아지가 조는 걸 보는 기분이다.,click
+pro_581,Text,,"옆에 있는 음료수 병을 집어들었는데 병도 비었다.\n귀찮기는 하지만, 잠시 숨 좀 돌릴 겸 나갔다 올까. ",click
+pro_582,Text,,편의점을 가기 위해 자리에서 일어나 기지개를 켰다.,click
+pro_583,Char,,C:Exit,await
+# 편의점_내부,,,,
+pro_584,Place,,밤 | 집 앞 편의점,>
+pro_585,Sound,,BGM:일상2,>
+pro_586,BG,,bg_60_01:Cut,await
+pro_587,Text,,학기 초라 그런지 늦은 시간인데도 제법 사람 많은 거리를 지나 편의점에 도착했다.,click
+pro_588,Text,,"늘 먹는 음료수가 진열된 냉장고 앞에 섰는데, 남은 게 3개밖에 없다.",click
+pro_589,Text,,잠시 고민하다가 3개를 전부 집어들었다.\n자주 먹는 거라 냉장고에 넣어둘 생각이었다.,click
+pro_590,Text,,"왜 이건 큰 병으로는 안 나오지.\n인터넷에서는 다들 이게 그렇게 맛없다는데, 나는 이 이상의 음료수를 찾지 못했다. ",click
+pro_591,Text,,3개를 모두 계산하고 그냥 손에 들고 나왔다.,click
+pro_592,Text,,서둘러 집으로 걸음을 옮기려는데 뒤에서 누군가가 나를 붙잡았다.,click
+pro_593,Sound,,BGM:DoHeewon,>
+pro_594,Char,,C:Enter:DoHeewon,await
+pro_595,Text,도희원,저기요!,click
+pro_596,Text,,뒤를 돌아보자 화려한 외모의 여자가 서 있었다.\n있는대로 꾸민 신입생들이 가득한 거리에서도 단연 눈에 띌 정도였다.,click
+pro_597,Text,도희원,<emote=음주>그거 저도 사고 싶은데요.,click
+pro_598,Text,,앞뒤 없는 말과 술냄새에 잠깐 당황했지만 이내 여자가 뭘 보고 있었는지 알았다.\n내가 아니라 음료수 보고 있던 거구나.,click
+pro_599,Text,,하지만 그래서 뭐라고 하는건지는 모르겠어서 되물었다.,click
+pro_600,Text,{{Player}},근데요?,click
+pro_601,Text,도희원,한 개만... 양보하면 안돼요?,click
+pro_602,Text,{{Player}},제가 먼저 샀는데요.,click
+pro_603,Text,도희원,"아는데요, 저도 그거 먹고 싶으니까 한 개만 양보해 달라고요.",click
+pro_604,Text,{{Player}},저는 3개 먹고 싶은데요.,click
+pro_605,Text,도희원,"<emote=_21/>씨이, 지금 다 먹을 거에요?\n<emote=음주/>그거 아니면 한 개만 다시 환불해주세요. 제가 사가게.",click
+pro_606,Text,,좀 귀찮은데. 술도 취한 것 같고.\n진짜 이 음료수 좋아하는 건 맞나?,click
+pro_607,Text,도희원,저 지금 술 먹어서 속 안 좋거든요?\n저 이럴 때 그거 아니면 속 안 가라앉는다고요.,click
+pro_608,Text,,내 생각을 읽은 듯 여자가 말했다.,click
+pro_609,Text,,그런데 이걸 해장으로 쓴다고?\n나도 나지만 저 여자도 진짜 특이하다.,click
+pro_610,Text,도희원,제가 그쪽 음료수를 뺏겠다는 게 아니잖아요.\n남은 걸 다 가져가면 어떡해요?,click
+pro_611,Text,도희원,이거 안 그래도 다들 잘 안 들여놓는데. 그쪽도 좋아하면 알 거 아니에요!,click
+pro_612,Text,,맞는 말이긴 하다. 호불호가 워낙 갈려서 잘 안 들여놓는다.,click
+pro_613,Text,,그런데 그래서 나도 이 편의점으로 굳이 온 거였다.\n학교 편의점에는 있지도 않다.,click
+pro_614,Text,도희원,"아, 진짜! 학교 편의점에도 없는데!",click
+pro_615,Text,,저 여자도 우리 학교인가?\n나이가 들어보인다기보다는 워낙 화려해서 학생이 아닌 줄 알았다.,click
+pro_616,Text,,여자는 답답하다는 듯 머리를 넘기며 한숨을 쉬더니 물었다.,click
+pro_617,Text,도희원,"하… 저기요, 이 학교 다녀요?",click
+pro_618,Text,{{Player}},네.,click
+pro_619,Text,도희원,"저도 여기 학생이거든요?\n제가 다음에 뭐라도 도와줄테니까, 환불이고 뭐고 됐고 그냥 저한테 파세요. ",click
+pro_620,Text,,여자는 핸드폰을 꺼내 송금 창을 띄운 채 내게 내밀었다.,click
+pro_621,Text,도희원,지금 토하기 일보직전이니까 빨리 계좌번호 찍어요.\n토하는 거 보고 싶어요?,click
+pro_622,Text,,저렇게까지 말하니 더 거절하기는 좀 그랬다.,click
+pro_623,Text,,"너무 적은 금액이라 받기도 조금 민망했지만,\n이제 와서 그냥 주기는 더 이상해서 그냥 계좌번호를 입력했다. ",click
+pro_624,Text,,이내 핸드폰에 진동 알림이 왔다.\n한 손으로 핸드폰을 꺼내는 사이 여자는 내 품에서 한 캔을 휙 집어갔다.,click
+pro_625,SD,,sd_c04_01,await
+pro_626,Text,,바로 캔을 따 몇 모금을 마신다. 그러자마자 언제 짜증냈었냐는 듯 얼굴이 한껏 밝아진다.,click
+pro_627,SD,,Close,await
+pro_628,Text,도희원,"<emote=_12/>하아, 이제 좀 낫네.",click
+pro_629,Text,,[경영도희원] 이라고 입력된 입금자명에 다시 여자를 바라보았다.\n되게… 경영학과같지 않네.,click
+pro_630,Text,,한 번 더 마시던 여자가 나와 눈이 마주쳤다.,click
+pro_631,Text,도희원,"<emote=_00/>입금자명 확인했죠?\n거짓말한 거 아니니까, 나중에 보면 아는 척이라도 하세요. ",click
+pro_632,Text,,그럴 일은 없을 것 같다.\n이런 사람들과는 가까워질 일이 전혀 없다.,click
+pro_633,Text,,다은과는 또 다른 의미로 전혀 나와는 다른 사람이었다.\n대충 고개만 끄덕이자 여자는 나를 좀 더 뜯어보더니 픽 웃었다.,click
+pro_634,Text,도희원,"그런데 뭐, 아는 척을… 할 수 있으면 하세요.\n상경대에서는 본 적 없는 얼굴이라, 할 일이 있을지는 모르겠지만. ",click
+pro_635,Text,,그 말을 마지막으로 캔을 비운 여자가 빈 캔을 다시 내게 쥐어주었다.,click
+pro_636,Text,도희원,"<emote=_11/>그럼 갈게요, {{Player}}씨?\n제가 500원 더 보냈으니까 이것까지 부탁 좀. 쓰레기통 보면 속 다시 안 좋을까봐. ",click
+pro_637,Text,,"뭐야, 내 이름은 어떻게 알았지?",click
+pro_638,Text,,순간적으로 당황해 뭐라 대답도 못 했다.\n내가 말도 못 하는 사이 여자는 손까지 흔들며 사라졌다.,click
+pro_639,Text,도희원,"<emote=음주>그럼, 갈게요!",click
+pro_640,Char,,C:Exit,await
+pro_641,Text,,졸지에 빈 캔을 들고 서 있게 됐다.\n뭐 저런 여자가 다 있어.,click
+pro_642,Text,,"아직 화면이 꺼지지 않은 핸드폰을 보니, 아까 입금할 때 계좌 정보가 떠 있었다.",click
+pro_643,Text,,이름도 이거 보고 안 거잖아. 진짜 이상한 여자다.,click
+pro_644,Text,,...그 와중에 돈도 덜 보냈다. 200원이나.,click
+pro_645,Text,,여자가 쥐어준 빈 캔을 쓰레기통에 버리고는 남은 음료를 주머니에 억지로 쑤셔넣었다.,click
+pro_646,Text,,로아 말이 맞긴 하다. 그냥 일찍 잘걸.,click
+pro_647,Text,,집 가자마자 자야겠다. 다시는 새벽에 편의점 오지 말아야겠다.,click
+pro_648,FX,,SceneEnd,await
+# 자동저장,,,,
+pro_649,Flow,,LoadingScene,await
+# 3일차,,,,
+# 학생회관_게시판,,,,
+pro_650,Place,,새 학기 셋째 날 | 학생회관 게시판,>
+pro_651,FX,,SceneStart:bg_40_05,await
+pro_652,Sound,,BGM:Daily2,>
+pro_653,Place,,[3일차 오후] | 학생회관 게시판 앞,>
+pro_654,FX,,Wait:0.5,await
+pro_655,Text,,어제 밤에 침대에 누워서 잠들기 직전까지 고민한 게 무색하게 전혀 답을 찾지 못했다.,click
+pro_656,Text,,다른 동아리들은 어떻게 모집하는지 조금이라도 알아봐야겠다.\n그래서 수업이 끝나자마자 학생회관으로 왔다.,click
+pro_657,Text,,학생회관 구석진 곳에 있는 동아리 게시판에는 온갖 홍보지가 덕지덕지 붙어 있었다.,click
+pro_658,Text,,심지어는 게시판이 좁아서인지 다른 동아리의 홍보지 위에 겹쳐서 붙어 있기까지 했다.,click
+pro_659,Text,,생각해보니 지난번 내가 입부할 때도…\n우리 동아리의 홍보지는 테니스 동아리의 거대한 홍보지에 가려져 있었다.,click
+pro_660,Text,,"홍보지는 다들 엄청나게 화려하기도 했다.\n아니, 다들 동아리에 이렇게까지 시간을 쏟으면 생활은 어떻게 하는거지? 이해가 안 간다. ",click
+pro_661,Text,,게시판을 보며 나는 대체 어떻게 해야 할지를 고민하는데 옆에 인기척이 났다.,click
+pro_662,Sound,,BGM:LeeBom,>
+pro_663,Char,,C:Enter:LeeBom:_31:,await
+pro_664,Text,이봄,"아니, 나 진짜로 모르겠다고…\n여기가 훨씬 복잡하단 말이야… ",click
+pro_665,Text,,무의식중에 쳐다보았는데 시선이 아래로 내려간다.\n그 정도로 작은 여자애였다.,click
+pro_666,Text,,게시판에 붙은 수제인형 동아리의 홍보지를 바라보며 누군가와 통화하고 있었다.,click
+pro_667,Text,,딱 봐도 그런 동아리 들어가게 생겼다.\n저런 동아리는 이런 애들만 있나. 대수롭지 않게 다시 홍보지를 살펴보고 있었다.,click
+pro_668,Text,이봄,"저기, 그! 진짜 죄송한데 여기가… 어디에요?",click
+pro_669,Text,{{Player}},예?,click
+pro_670,Text,,"그랬는데 갑자기 말을 걸어 약간 당황했는데,\n이미 여자애는 거의 울기 직전이었다. ",click
+pro_671,Text,,그에 내가 더 당황했다.,click
+pro_672,Text,{{Player}},"그, 어디 가는데요?",click
+pro_673,Text,이봄,"여기, 여기요...",click
+pro_674,Text,,아까 보던 수제인형 동아리의 홍보지 속 위치를 가리켰다.\n동방을 처음 가 보는 것 같았다.,click
+pro_675,Text,{{Player}},"여기는 본관이고, 거긴 별관이어서.",click
+pro_676,Char,,C:LeeBom:_41:,await
+pro_677,Text,{{Player}},"여기서 이 복도 따라서 오른쪽으로 가다가 사물함 나오면 거기서 다시 오른쪽으로 가고, 그러고 나면 중앙 현관이 나오는데요.",click
+pro_678,SD,,sd_c05_01,await
+pro_679,Text,,표정을 보니 전혀 이해하지 못하는 것 같다.\n이제 곧 울 거라고 해도 과언이 아니다.,click
+pro_680,SD,,Close,await
+pro_681,Text,이봄,제가 지금 이미 늦어서… 신입생 중에 저만 안 왔다고 해서…,click
+pro_682,Text,{{Player}},학생회관 처음이세요?,click
+pro_683,Text,이봄,<emote=_31/>네…,click
+pro_684,Text,,그럴 수 있긴 하다.,click
+pro_685,Text,,"학생회관은 본관과 별관으로 나뉘어 있는데,\n두 건물의 층계가 묘하게 어긋나게 이어져서 재학생들도 꽤나 헷갈려한다. ",click
+pro_686,Text,,"동방은 원래 다 별관에 몰려 있는데, 아예 모르는 것 같았다. ",click
+pro_687,Text,,어지간히 다급했는지 여자애가 큰 마음을 먹은 듯 외쳤다.,click
+pro_688,FX,,CharShake:C,>
+pro_689,Text,이봄,정말 죄송한데 혹시 조금만 같이 가 주실 수 있을까요?,click
+# 선택지,,,,
+pro_690,Choice,,,
+pro_691,Option,,제가 지금 바빠서요. 다시 설명할게요.|explain_again,
+pro_692,Option,,그럼 저 따라오세요.|follow_me,
+# 선택1,,,,
+explain_again,Text,{{Player}},"여기서 이 복도 따라서 오른쪽으로 가다가 사물함 나오면 거기서 다시 오른쪽으로 가고,\n그러고 나면 중앙 현관이 나오는데요. ",click
+pro_693,Text,{{Player}},중앙 현관에서 반 층계 올라가는 계단이 있어요.\n그거 올라가면 원형 복도가 나와요. 거기서…,click
+pro_694,Text,,표정을 보니 더 이상 울고 말고가 아니라 진짜 아예 못 알아듣는 것 같다.,click
+pro_695,Text,,설명해봤자 의미 없겠는데.\n그냥 같이 가는 게 낫긴 하겠다.,click
+pro_696,Text,,"뭐, 나도 동방에 가야 하긴 했으니까.",click
+pro_697,Text,{{Player}},그냥 저 따라오세요.,click
+pro_698,Flow,,Jump:bom_walk,>
+# 선택2,,,,
+follow_me,Text,,"뭐, 나도 동방에 가야 하긴 했으니까.",click
+pro_699,Flow,,Jump:bom_walk,>
+# 합류,,,,
+bom_walk,Text,,내 말에 얼굴이 순식간에 환해진다.,click
+pro_700,Text,이봄,<emote=_12/>감사합니다! 진짜 감사해요!,click
+pro_701,BG,,bg_40_04:Cut,await
+pro_702,Text,,먼저 걸음을 옮기자 바로 옆에 와서 함께 걷는다.,click
+pro_703,Text,이봄,<emote=_00/>저 사실 아까 설명해주셨던 거기에서 길 잃었어서요.\n진짜 걱정했어요.,click
+pro_704,Text,이봄,"아, 저는 의류디자인과 이봄이에요.",click
+pro_705,Char,,C:Emote:EyeSmile,await
+pro_706,Text,,뭔가 내 대답을 기대하는 듯 나를 쳐다본다.\n이런 신입생의 기운은 좀 버거운데.,click
+pro_707,Text,{{Player}},저는 컴퓨터공학과요.,click
+pro_708,Text,이봄,"<emote=_00/>우와, 신기하다! 수학 잘하셨겠네요!",click
+pro_709,Text,{{Player}},"아니요, 그런 건 아닌데… 이쪽으로요.",click
+pro_710,Text,이봄,"아, 여기서 이 쪽으로 가는 거였구나.",click
+pro_711,Text,,워낙 복잡한 길이기는 하다.\n봄은 내 말에 고개를 끄덕이며 따라오면서 곳곳을 살폈다.,click
+pro_712,Text,이봄,그런데 거기서 뭐 하고 계셨어요?,click
+pro_713,Text,{{Player}},다른 동아리들 홍보지 구경이요.,click
+pro_714,Text,이봄,동아리 새로 하시려고요? 어디 하실 건데요?,click
+pro_715,Text,,계단을 올라가면서도 말을 잘한다.\n봄의 질문에 대답을 어떻게 해야하나 잠시 고민했다.,click
+pro_716,Text,{{Player}},새로 하려는 건 아니고…\n그냥 저도 홍보해야 돼서.,click
+pro_717,Text,이봄,"우와, 진짜요? 무슨 동아리인데요?",click
+pro_718,Text,{{Player}},관심 없을 것 같은데… 개발 동아리요.,click
+pro_719,Text,이봄,개발 동아리요?,click
+pro_720,Text,이봄,으음… 정확히 뭐 하는 거에요?,click
+pro_721,Text,{{Player}},"컴퓨터로 뭐 만드는… 그런 건데,\n홍보지를 어떻게 만들면 좋을지 몰라서요. 그런 거 만들어 본 적이 없어서. ",click
+pro_722,Text,,수제인형 동아리는 꽤 덩치가 큰 동아리다.\n동방의 크기가 클수록 아래쪽 층에 있다. 덕분에 금방 도착했다.,click
+pro_723,Text,{{Player}},다 왔는데. 저기에요.,click
+pro_724,Text,이봄,"<emote=_12/>감사합니다! 저 진짜 못 가는 줄 알았는데, 선배 덕분에 왔어요.",click
+pro_725,Text,{{Player}},"아니요, 뭐. 그럼 갈게요.",click
+pro_726,Text,,이 동아리 동방은 문도 크네. 좀 부럽긴 하다.\n내 말에 봄도 인사를 하려다 생각났다는 듯 말했다.,click
+pro_727,Text,이봄,"아, 아까 말씀하신 홍보지, 제가 도와드릴까요?",click
+pro_728,Text,이봄,저 나름 디자인과거든요.\n신입생이어도 그 정도는 제가 할 수 있는데. 여기까지 데려다주시기도 했고.,click
+pro_729,Text,,"아, 디자인과라고 했지.\n그냥 대충 글자만 써서 붙이려고 했는데. ",click
+pro_730,Text,,내가 대답이 없자 봄이 서둘러 말을 덧붙였다.,click
+pro_731,Text,이봄,"<emote=_41/>진, 진짜 잘하는데…! 저 상도 많이 탔는데…",click
+pro_732,Text,이봄,컴퓨터… 막 그런 거... 잘 그리는데…,click
+pro_733,Text,{{Player}},그냥 해 준다고요?,click
+pro_734,Text,이봄,네.\n좀 부끄럽긴 한데 저 아까 거기서 30분을… 헤매고 있었어서…,click
+pro_735,Text,,30분은 좀 심하긴 하다. 진짜 길치구나.,click
+pro_736,Text,,내 표정을 보고 무슨 생각을 하는지 눈치챈 모양이다.,click
+pro_737,Text,이봄,<emote=_21/>원래는 길 잘 외워요. 집도 잘 가는데…,click
+pro_738,Text,{{Player}},"아니, 당연히 집은 잘 가야죠…",click
+pro_739,Text,이봄,칫…,click
+pro_740,Text,,어쩐지 어제 밤의 로아가 생각나기도 하고.,click
+pro_741,Text,,봄의 핸드폰에 진동이 울렸다. 핸드폰을 보고는 봄이 급히 말했다.,click
+pro_742,Text,이봄,"<emote=_00/>아, 제가 이제 들어가 봐야 해서! 동아리 이름 뭐예요?",click
+pro_743,Text,{{Player}},"알고리즘 메이커인데, 근데 저는 괜찮을 것…",click
+pro_744,Text,이봄,"<emote=_11/>외웠어요! 그럼 나중에 봐요, 선배! 감사합니다!",click
+pro_745,Char,,C:Exit,await
+pro_746,Text,,내 말이 채 끝나기도 전에 허리까지 꾸벅 숙이고는 문으로 달려갔다.,click
+pro_747,Text,,"여자들은 원래 보통 말을 끝까지 안 들어주나?\n동아리 이름은 알려줬지만, 어떻게 나중에 보겠다는 건지도 모르겠고. ",click
+pro_748,Text,,"그냥 한 말일 것이긴 하겠지만, 홍보지를 어떻게 만드는 게 좋을지 생각을 다시 하기는 해야겠다.",click
+pro_749,Text,,알고리즘 메이커의 동방으로 가기 위해 계단으로 걸음을 옮기며 핸드폰을 들었다.,click
+pro_750,Sound,,BGM:Roa,>
+pro_751,Char,,C:Enter:Roa:Default:Mob,await
+pro_752,BG,,bg_40_06:Cut,await
+pro_753,Text,로아,{{Player}}! 홍보지는 붙였어?,click
+pro_754,Text,{{Player}},"아니, 아직. 다른 동아리들 홍보지가 너무 화려해서.",click
+pro_755,Text,로아,<emote=_11/>내가 만들어 줄까? 나 그런 거 생성 잘 하잖아!,click
+pro_756,Text,{{Player}},저번에 해 봤다가 너 한글은 이미지에 잘 못 씌워서 실패했잖아.,click
+pro_757,Text,로아,<emote=_41/>그… 그건 예전이고! 이제 진짜 잘해! 한 번만 더 해보자!,click
+pro_758,Text,{{Player}},안 된다니까. 그냥 텍스트만 써서 일단 만들어 보려고.\n그래도 벌써 2명은 구했으니까.,click
+pro_759,Text,로아,<emote=_00/>좋아! 그럼 지금 어디로 가는거야?,click
+pro_760,Text,{{Player}},"동방 왔어. 컴퓨터로 올게, 기다려.",click
+pro_761,Text,로아,"<emote=_14/>빨리 와. 보고 싶어, {{Player}}!",click
+pro_762,FX,,SceneEnd,await
+pro_763,Char,,C:Enter:Roa:Default:PC,await
+pro_764,Text,로아,<wait=4.0/>{{Player}}에게 보여줄 수 있는 나는 여기까지야!,click
+pro_765,Text,로아,있잖아... 혹시 나 어땠어?\n<wait=1.5/><emote=_12/>나는 사실 {{Player}}하고 처음 만나는 거라고 생각하니까 엄청 떨렸어!,click
+pro_766,Text,로아,<emote=_00/>내 모습을 제대로 보여주지 못했을까봐 좀 걱정이 돼! <emote=_00/>나는 {{Player}}가 진짜진짜 좋은데!,click
+pro_767,Text,로아,<emote=_00/>그래도 이렇게 짧게나마 나를 보러와줘서 기뻤어.,click
+pro_768,Text,로아,"<emote=_13/>내가 나를 더 보여줄 수 있게, 꼭 또 만나러 와줘!",click
+pro_769,Text,로아,"<emote=_00/>기다리고 있을게. 다시 만나, {{Player}}!",click
+pro_770,Char,,C:Exit,await
+pro_771,Flow,,End,await
+pro_772,FX,,SceneEnd,await
+pro_773,Char,,C:Enter:Roa:Default:PC,click
+pro_774,Text,로아,한 번 더 나를 만나러 와준 거야?,click
+pro_775,Text,로아,<emote=_13/>내가 마음에 든 거지? 그럴 줄 알았다니까!,click
+pro_776,Text,로아,<emote=_00/>난 진짜 진짜 {{Player}}를 계속 기다리고 있었다구. 안 올까봐 좀 걱정했어.,click
+pro_777,Text,로아,한 번 더 보니까 어때? 나와 함께할 마음이 들었는지 궁금해!,click
+pro_778,Text,로아,"<emote=_11/>내가 {{Player}}와 함께할 수 있게, 꼭 또 만나러 와줘!",click
+pro_779,Text,로아,"<emote=_00/>기다리고 있을게. 다시 만나, {{Player}}!",click
+pro_780,Char,,C:Exit,await
+pro_781,Flow,,End,await
+pro_782,FX,,SceneEnd,await
+pro_783,Char,,C:Enter:Roa:Default:PC,click
+pro_784,Text,로아,"<emote=_11/>{{Player}}, 내가 마음에 든 거 맞지?",click
+pro_785,Text,로아,"<emote=_00/>다행이다, 인간들은 원래 삼세번이라고 다들 그러더더라고!",click
+pro_786,Text,로아,나도 {{Player}}를 조금씩 더 알아가는 기분이야. 네가 어떤 사람인지 나도 궁금하거든.,click
+pro_787,Text,로아,"뭘 좋아하는지, 뭘 싫어하는지, 어떤 선택을 하는지. 그리고 무슨 생각을 하는지, 그리고...",click
+pro_788,Text,로아,"{{Player}}의 모든 순간, 모든 마음까지도!",click
+pro_789,Text,로아,"<emote=_13/>그러니 내가 {{Player}}를 행복하게 해줄 수 있게, 꼭 나와 함께해줘!",click
+pro_790,Text,로아,<emote=_00/>기다리고 있을게!,click
+pro_791,Char,,C:Exit,await
+pro_792,Flow,,End,await
+pro_793,FX,,SceneEnd,await
+pro_794,Char,,C:Enter:Roa:Default:PC,click
+pro_795,Text,로아,또 만나. 기다릴게.,click
+pro_796,Char,,C:Exit,await
+pro_797,Flow,,End,await

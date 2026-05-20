@@ -28,12 +28,20 @@ namespace LoveAlgo.Stage
         [SerializeField] CharacterStageDatabase characterStageDatabase;
 
         bool _destroyed;
+        static bool _quitting;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void ResetQuitFlag() { _quitting = false; }
+
+        void OnApplicationQuit() { _quitting = true; }
 
         StageRig Rig
         {
             get
             {
-                if (_destroyed) return null;
+                // 종료 중 / 본인 파괴됨 → 조용히 null (다른 모듈의 OnDestroy 콜백 chain이 안전하게 통과하도록)
+                if (_destroyed || _quitting || !Application.isPlaying) return null;
+
                 if (stageRig == null)
                 {
                     // 인스펙터 미바인딩 시 마지막 안전망: 씬에서 한 번 찾아본다.

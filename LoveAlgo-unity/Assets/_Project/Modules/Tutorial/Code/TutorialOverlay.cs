@@ -47,11 +47,39 @@ namespace LoveAlgo.UI
         [Tooltip("첫 진입 시 안내 멘트(텍스트박스 + 텍스트) 등장 페이드 시간")]
         [SerializeField] float firstStepFadeDuration = 0.2f;
 
+        [Header("뿅 등장 — 첫 스텝 펀치 애니메이션")]
+        [Tooltip("0=비활성. 1.05~1.2 권장. 시작 스케일 0.8 → 펀치 → 1.0 으로 안착.")]
+        [SerializeField] float popupPunchStrength = 0.15f;
+        [SerializeField] float popupPunchDuration = 0.35f;
+        [Tooltip("캐릭터 이미지에도 동일 펀치 적용 여부")]
+        [SerializeField] bool popupPunchCharacter = true;
+
         [Header("텍스트박스 동적 리사이즈")]
         [Tooltip("텍스트박스 상하 패딩 (px)")]
         [SerializeField] float textboxPaddingVertical = 60f;
+        [Tooltip("텍스트박스 좌우 패딩 (px)")]
+        [SerializeField] float textboxPaddingHorizontal = 80f;
         [Tooltip("텍스트박스 최소 높이 (px)")]
         [SerializeField] float textboxMinHeight = 120f;
+        [Tooltip("텍스트박스 최소 너비 (px)")]
+        [SerializeField] float textboxMinWidth = 400f;
+        [Tooltip("텍스트박스 최대 너비 (px) — 이 너비 넘으면 자동 줄바꿈")]
+        [SerializeField] float textboxMaxWidth = 1100f;
+
+        [Header("dim별 위치 프리셋 (선택)")]
+        [Tooltip("dim 키 → textbox/character RectTransform 위치 매핑. 빈 배열이면 기본 위치 유지.")]
+        [SerializeField] AnchorPreset[] anchorPresets;
+
+        [System.Serializable]
+        public struct AnchorPreset
+        {
+            [Tooltip("ApplyDim 의 dim 이름과 일치 (예: tutorial_dim_01)")]
+            public string dimKey;
+            [Tooltip("텍스트박스 anchoredPosition (RectTransform 기준)")]
+            public Vector2 textboxAnchoredPos;
+            [Tooltip("캐릭터 이미지 anchoredPosition")]
+            public Vector2 characterAnchoredPos;
+        }
 
         /// <summary>클릭 수신 플래그</summary>
         bool _clicked;
@@ -172,13 +200,29 @@ namespace LoveAlgo.UI
 
                 if (i == 0 && textboxImage != null)
                 {
-                    // 첫 진입: 텍스트박스 배경 + 텍스트를 같이 빠르게 페이드 인
+                    // 첫 진입: 텍스트박스 배경 + 텍스트를 같이 빠르게 페이드 인 + "뿅" 스케일 펀치
+                    var boxRt = textboxImage.rectTransform;
+                    var charRt = popupPunchCharacter && characterImage != null ? characterImage.rectTransform : null;
+
+                    if (popupPunchStrength > 0f)
+                    {
+                        boxRt.localScale = Vector3.one * 0.8f;
+                        if (charRt != null) charRt.localScale = Vector3.one * 0.85f;
+                    }
+
                     var seq = DOTween.Sequence();
                     _ = seq.Join(textboxImage.DOFade(1f, firstStepFadeDuration).SetEase(Ease.OutCubic));
                     _ = seq.Join(DOTween.ToAlpha(
                         () => dialogueText.color, c => dialogueText.color = c,
                         1f, firstStepFadeDuration
                     ).SetEase(Ease.OutCubic));
+                    if (popupPunchStrength > 0f)
+                    {
+                        // OutBack: 0.8 → 1.15 → 1.0 (탱탱 튀어나오는 느낌)
+                        _ = seq.Join(boxRt.DOScale(1f, popupPunchDuration).SetEase(Ease.OutBack, 2.5f));
+                        if (charRt != null)
+                            _ = seq.Join(charRt.DOScale(1f, popupPunchDuration).SetEase(Ease.OutBack, 2.5f));
+                    }
                     await seq.ToUniTask(cancellationToken: ct);
                 }
                 else
@@ -214,12 +258,13 @@ namespace LoveAlgo.UI
                 GameState.Instance?.SetFlag(seenFlagKey, true);
         }
 
-        /// <summary>딤 이미지 적용 (빈값=숨김, keep=유지, 이름=새 스프라이트)</summary>
+        /// <summary>딤 이미지 적용 (빈값=숨김, keep=유지, 이름=새 스프라이트) + 위치 프리셋</summary>
         void ApplyDim(string dimValue)
         {
             if (string.IsNullOrEmpty(dimValue))
             {
                 dimImage.enabled = false;
+                ApplyAnchorPreset(""); // 기본 위치 복귀는 옵션 — 빈값일 땐 그대로 두는 편이 자연스러움
                 return;
             }
 
@@ -236,22 +281,56 @@ namespace LoveAlgo.UI
                 Debug.LogWarning($"[TutorialOverlay] 딤 스프라이트 '{dimValue}'을 찾을 수 없습니다.");
                 dimImage.enabled = false;
             }
+
+            // dim 키에 매칭되는 위치 프리셋 적용 (있으면)
+            ApplyAnchorPreset(dimValue);
         }
 
-        /// <summary>텍스트 높이에 맞춰 텍스트박스 높이 조정 (9-slice 스프라이트 활용)</summary>
+        /// <summary>dim 키에 매칭되는 anchor preset을 textbox/character 에 적용</summary>
+        void ApplyAnchorPreset(string dimKey)
+        {
+            if (anchorPresets == null || anchorPresets.Length == 0) return;
+            if (string.IsNullOrEmpty(dimKey)) return;
+
+            foreach (var preset in anchorPresets)
+            {
+                if (!string.Equals(preset.dimKey, dimKey, StringComparison.OrdinalIgnoreCase)) continue;
+                if (textboxImage != null)
+                    textboxImage.rectTransform.anchoredPosition = preset.textboxAnchoredPos;
+                if (characterImage != null)
+                    characterImage.rectTransform.anchoredPosition = preset.characterAnchoredPos;
+                return;
+            }
+        }
+
+        /// <summary>텍스트 내용에 맞춰 텍스트박스 너비/높이 동적 조정 (9-slice 스프라이트 활용)</summary>
         void FitTextboxHeight()
         {
             if (textboxImage == null || dialogueText == null) return;
 
+            // 1) 가로: preferredWidth → min/max 클램프
+            //    텍스트가 maxWidth 안에서 자연 폭으로 끝나면 짧은 박스, 넘으면 max에서 wrap → 세로 늘림
+            dialogueText.textWrappingMode = TextWrappingModes.NoWrap;
+            dialogueText.ForceMeshUpdate();
+            float naturalW = dialogueText.preferredWidth;
+            float availableTextWidth = Mathf.Max(textboxMinWidth, textboxMaxWidth) - textboxPaddingHorizontal;
+            float newTextW = Mathf.Clamp(naturalW, textboxMinWidth - textboxPaddingHorizontal, availableTextWidth);
+            float newBoxW = Mathf.Clamp(naturalW + textboxPaddingHorizontal, textboxMinWidth, textboxMaxWidth);
+
+            // 2) wrap 다시 켜고 가로 확정 → 그 결과 세로(preferredHeight) 계산
+            dialogueText.textWrappingMode = TextWrappingModes.Normal;
+            var textRt = dialogueText.rectTransform;
+            textRt.sizeDelta = new Vector2(newTextW, textRt.sizeDelta.y);
             dialogueText.ForceMeshUpdate();
             float textH = dialogueText.preferredHeight;
-            float newH = Mathf.Max(textH + textboxPaddingVertical, textboxMinHeight);
+            float newBoxH = Mathf.Max(textH + textboxPaddingVertical, textboxMinHeight);
 
+            // 3) 박스 sizeDelta 갱신
             var rt = textboxImage.rectTransform;
-            rt.sizeDelta = new Vector2(rt.sizeDelta.x, newH);
+            rt.sizeDelta = new Vector2(newBoxW, newBoxH);
         }
 
-        /// <summary>화면 클릭 또는 스페이스바 대기 (ESC 누르면 스킵)</summary>
+        /// <summary>화면 클릭/스페이스바 대기 (ESC 스킵). 인스펙터 OnClick 미바인딩 안전망으로 마우스 직접 폴링.</summary>
         async UniTask WaitForClickAsync(CancellationToken ct)
         {
             _clicked = false;
@@ -259,7 +338,8 @@ namespace LoveAlgo.UI
                 _clicked
                 || _skipRequested
                 || (Keyboard.current != null && Keyboard.current.spaceKey.wasPressedThisFrame)
-                || (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame && (_skipRequested = true)),
+                || (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame && (_skipRequested = true))
+                || (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame),
                 cancellationToken: ct);
         }
 

@@ -40,6 +40,7 @@ namespace LoveAlgo.LockScreen.UI
 
         Vector2 shakeOriginalPos;
         Coroutine shakeCo;
+        bool _loginOnly;
 
         public event Action<string> OnPasswordEntered;
         public event Action OnKeyClicked;
@@ -79,6 +80,18 @@ namespace LoveAlgo.LockScreen.UI
         }
 
         /// <summary>
+        /// LOGIN 버튼만 노출 (게임 첫 진입 GameStart 모드).
+        /// InputField + 눈 토글 + 열쇠 아이콘 모두 숨김. Confirm() 호출 시 빈 비번으로 OnPasswordEntered 발행.
+        /// </summary>
+        public void SetLoginOnly(bool loginOnly)
+        {
+            _loginOnly = loginOnly;
+            if (inputField != null) inputField.gameObject.SetActive(!loginOnly);
+            if (revealToggle != null) revealToggle.gameObject.SetActive(!loginOnly);
+            if (keyIcon != null && loginOnly) keyIcon.SetActive(false);
+        }
+
+        /// <summary>
         /// 마스킹 모드. 기획서 §개발: 첫 설정 시 *로 표기되지 않음.
         /// FirstSetup/Reset → SetMaskMode(false). Normal → SetMaskMode(true).
         /// </summary>
@@ -101,6 +114,13 @@ namespace LoveAlgo.LockScreen.UI
 
         public void Confirm()
         {
+            // LoginOnly(게임 첫 진입 GameStart 모드) — 비번 검증 우회, 빈 문자열로 발행
+            if (_loginOnly)
+            {
+                OnPasswordEntered?.Invoke("");
+                return;
+            }
+
             if (inputField == null) return;
             string pwd = inputField.text ?? "";
             if (!PasswordHasher.IsValidPassword(pwd))

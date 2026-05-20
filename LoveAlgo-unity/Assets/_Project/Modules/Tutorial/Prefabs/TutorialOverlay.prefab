@@ -298,8 +298,15 @@ MonoBehaviour:
   fadeOutDuration: 0.25
   textFadeDuration: 0.15
   firstStepFadeDuration: 0.2
+  popupPunchStrength: 0.15
+  popupPunchDuration: 0.35
+  popupPunchCharacter: 1
   textboxPaddingVertical: 60
+  textboxPaddingHorizontal: 80
   textboxMinHeight: 120
+  textboxMinWidth: 400
+  textboxMaxWidth: 1100
+  anchorPresets: []
 --- !u!1 &4251121224175227366
 GameObject:
   m_ObjectHideFlags: 0
@@ -579,7 +586,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_Sprite: {fileID: 21300000, guid: bde4b5309365d0044af422f8252e1b68, type: 3}
-  m_Type: 0
+  m_Type: 1
   m_PreserveAspect: 1
   m_FillCenter: 1
   m_FillMethod: 4

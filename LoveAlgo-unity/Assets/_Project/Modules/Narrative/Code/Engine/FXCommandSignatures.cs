@@ -61,6 +61,7 @@ namespace LoveAlgo.Story.StoryEngine
             { "Wait",         new Sig(0, 1, "[seconds]") },
             { "DialogueHide", new Sig(0, 0, "(인자 없음)") },
             { "DialogueShow", new Sig(0, 0, "(인자 없음)") },
+            { "Video",        new Sig(1, 3, "파일명[:Loop|:NoSkip]") },
             { "LoadingScene", new Sig(0, 1, "[displayTime]") },
         };
 

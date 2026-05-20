@@ -60,6 +60,16 @@ namespace LoveAlgo.Core
             Flow = new GameFlowController(this);
             DayLoop = new DayLoopController(this);
             Session = new SessionController(this);
+
+            // 게임 설치 후 최초 1회 진입: EntryRouter가 LockScreen GameStart 띄우는 중 → Title 전환 보류.
+            // LockScreen Outro Blackout 시점에 EntryRouter가 ChangePhase(Title)을 호출한다.
+            var ls = LoveAlgo.Common.Services.TryGet<LoveAlgo.LockScreen.ILockScreen>();
+            if (ls != null && !ls.IsPasswordSet)
+            {
+                Debug.Log("[GameManager] 첫 진입(LockScreen 흐름) — Title 전환 보류");
+                return;
+            }
+
             Flow.ChangePhase(GamePhase.Title);
         }
 

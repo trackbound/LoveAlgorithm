@@ -41,7 +41,7 @@
 | **SD** | (공란) | `다은 첫만남` / `Close` | `await` | SD 일러스트. |
 | **Sound** | (공란) | `BGM:로아` / `SFX:123` / `BGM:Stop` | `>` | BGM/SFX. **`Fade:N` 같은 파라미터는 자동 제거된다** (페이드 연출이 필요하면 직접 FX로). |
 | **FX** | (공란) | `Wait:0.5` / `CamShake` / `SceneEnd` | `await` | 연출 효과. |
-| **Flow** | (공란) | `Jump:roa_intro` / `Save` / `End` / `Schedule` / `Day:1` / `Username` / `LockScreen:on` / `Affinity:로아:+1` | `>` | 흐름 제어. |
+| **Flow** | (공란) | `Jump:roa_intro` / `Save` / `End` / `Schedule` / `Day:1` / `Username` / `LockScreen:GameStart` / `Affinity:로아:+1` | `>` | 흐름 제어. |
 | **Choice / Option** | (공란) | 선택지 분기 | 별도 | 선택지(Choice)와 각 보기(Option). |
 
 **Next 값**:
@@ -50,6 +50,38 @@
 - `>` = 즉시 다음 라인 (BGM 깔고 바로 다음 줄로)
 
 비워두면 위 표의 기본값을 변환기가 자동으로 넣어준다.
+
+---
+
+## LockScreen (PC잠금 연출)
+
+기획서 §진입 정보 + §비밀번호 시스템.
+
+### 서브명령
+| Flow 명령 | 의미 |
+|---|---|
+| `Flow:LockScreen:GameStart` | **CSV에 박지 말 것** — 게임 설치 후 최초 1회 진입은 `EntryRouter`가 자동 처리. CSV는 그 다음 흐름만 책임짐 |
+| `Flow:LockScreen:FirstSetup` | 비번 첫 설정 — 평문 입력 (이름 입력 직후) |
+| `Flow:LockScreen:Normal` | 일반 잠금/로그인 — 마스킹, 비번 검증 |
+| `Flow:LockScreen:Reset` | 비번 재설정 — 새 비번 입력 흐름 |
+| `Flow:LockScreen:Auto` | 비번 유무에 따라 Normal / FirstSetup 자동 판별 |
+
+### 옵션 (콜론으로 자유 조합)
+- `Time=HH:mm` — 시계 1회 오버라이드 (예: `Time=23:58`)
+- `FadeOut` — outro에 페이드아웃까지 자동 포함 → 다음 라인이 자연스럽게 시작
+- `NoFadeOut` — 페이드아웃 생략 (기본값과 동일)
+
+### 동작
+- Panel 표시 → 사용자가 로그인 완료 → `OnFlowComplete` → 스토리 자동 복귀.
+- await로 호출하면 잠금 동안 스크립트 정지.
+
+### 예시
+```
+,Flow,,LockScreen:GameStart:FadeOut,await         ← 게임 첫 진입
+,Flow,,LockScreen:FirstSetup:FadeOut,await         ← 로아가 "비번 설정해줘" 직후
+,Flow,,LockScreen:Normal:Time=07:30,await          ← 다음날 아침 재로그인 연출
+,Flow,,LockScreen:Auto:FadeOut:Time=23:58,await    ← 시간 명시 자동 분기
+```
 
 ---
 

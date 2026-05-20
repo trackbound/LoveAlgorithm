@@ -49,7 +49,7 @@ namespace LoveAlgo.Story.StoryEngine.Flow
                 return;
             }
 
-            var module = UnityEngine.Object.FindObjectOfType<LockScreenModule>();
+            var module = UnityEngine.Object.FindAnyObjectByType<LockScreenModule>();
             if (module == null)
             {
                 Debug.LogError("[Flow][LockScreen] LockScreenModule GameObject 미발견");

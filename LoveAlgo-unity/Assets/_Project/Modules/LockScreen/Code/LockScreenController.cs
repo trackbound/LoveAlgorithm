@@ -41,6 +41,8 @@ namespace LoveAlgo.LockScreen
         public void OpenForNormal()     => OpenMode(LockScreenMode.Normal);
         /// <summary>기획서 §오류/분실: 기존 비번 확인 X — 바로 새 비번 설정 흐름.</summary>
         public void OpenForReset()      => OpenMode(LockScreenMode.Reset);
+        /// <summary>게임 설치 후 최초 진입 — 비번 입력 없이 LOGIN 버튼만으로 통과 (시각 연출).</summary>
+        public void OpenForGameStart()  => OpenMode(LockScreenMode.GameStart);
 
         void OpenMode(LockScreenMode mode)
         {

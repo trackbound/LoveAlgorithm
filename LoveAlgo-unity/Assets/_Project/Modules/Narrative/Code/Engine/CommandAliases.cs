@@ -53,6 +53,7 @@ namespace LoveAlgo.Story.StoryEngine
             { "Wait",        "Wait" },
             { "DialogueHide","DialogueHide" },
             { "DialogueShow","DialogueShow" },
+            { "Video",       "Video" },
 
             // Flow → FX 별칭
             { "Loading",      "LoadingScene" },

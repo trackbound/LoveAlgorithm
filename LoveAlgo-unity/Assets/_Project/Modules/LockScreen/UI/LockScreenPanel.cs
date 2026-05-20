@@ -140,10 +140,8 @@ namespace LoveAlgo.LockScreen.UI
         /// </summary>
         public void OpenForGameStart()
         {
-            if (lockScreen != null && lockScreen.IsPasswordSet)
-                Begin(LockScreenMode.Normal, fadeIn: true);
-            else
-                Begin(LockScreenMode.FirstSetup, fadeIn: true);
+            // 기획서 §진입 정보: 첫 진입은 비번 입력 없이 LOGIN 버튼만으로 통과
+            Begin(LockScreenMode.GameStart, fadeIn: true);
         }
 
         /// <summary>
@@ -176,6 +174,7 @@ namespace LoveAlgo.LockScreen.UI
             {
                 case LockScreenMode.FirstSetup: lockScreen.OpenForFirstSetup(); break;
                 case LockScreenMode.Reset:      lockScreen.OpenForReset();      break;
+                case LockScreenMode.GameStart:  lockScreen.OpenForGameStart();  break;
                 default:                        lockScreen.OpenForNormal();     break;
             }
 
@@ -251,15 +250,23 @@ namespace LoveAlgo.LockScreen.UI
             if (lockScreen == null || passwordInput == null) return;
             switch (lockScreen.CurrentMode)
             {
+                case LockScreenMode.GameStart:
+                    // 첫 진입: 안내 텍스트 비움, InputField/Toggle 숨김, LOGIN 버튼만 노출
+                    if (headerText != null) headerText.text = "";
+                    passwordInput.SetLoginOnly(true);
+                    passwordInput.SetKeyIcon(false);
+                    break;
                 case LockScreenMode.FirstSetup:
                 case LockScreenMode.Reset:
                     SetHeader(LockScreenHint.FirstSetup);
+                    passwordInput.SetLoginOnly(false);
                     passwordInput.SetMaskMode(false); // 첫 설정 — 평문
                     passwordInput.SetKeyIcon(false);
                     break;
                 case LockScreenMode.Normal:
                 default:
                     SetHeader(LockScreenHint.Normal);
+                    passwordInput.SetLoginOnly(false);
                     passwordInput.SetMaskMode(true);  // 평상시 — 마스킹
                     passwordInput.SetKeyIcon(false);
                     break;
@@ -278,6 +285,11 @@ namespace LoveAlgo.LockScreen.UI
             if (lockScreen == null) return;
             switch (lockScreen.CurrentMode)
             {
+                case LockScreenMode.GameStart:
+                    // 비번 검증/저장 없이 그대로 outro (시각 연출 통과)
+                    StartCoroutine(OutroSequence());
+                    break;
+
                 case LockScreenMode.FirstSetup:
                 case LockScreenMode.Reset:
                     if (lockScreen.SetPassword(pwd))

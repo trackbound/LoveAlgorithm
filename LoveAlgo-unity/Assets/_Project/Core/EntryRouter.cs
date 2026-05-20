@@ -1,3 +1,4 @@
+using Cysharp.Threading.Tasks;
 using LoveAlgo.Common;
 using LoveAlgo.LockScreen;
 using LoveAlgo.Title;
@@ -70,6 +71,15 @@ namespace LoveAlgo.Core
 
         void ShowTitle(ITitle title)
         {
+            // GameManager가 phase 보류 중일 수 있으므로 phase 전환으로 통일 (BGM/UI 정상화)
+            var gm = GameManager.Instance;
+            if (gm != null && gm.Flow != null)
+            {
+                gm.Flow.ChangePhase(GamePhase.Title);
+                return;
+            }
+
+            // 폴백: GameManager 미초기화 — panel 직접 활성화
             if (title == null)
             {
                 Debug.LogError("[EntryRouter] ITitle 미등록 — 첫 화면 표출 실패");
@@ -83,7 +93,7 @@ namespace LoveAlgo.Core
         void ShowLockScreenFirstSetup()
         {
             // LockScreenModule 직접 참조는 LoveAlgo.LockScreen 네임스페이스 — Core이므로 허용
-            var module = Object.FindObjectOfType<LockScreenModule>();
+            var module = Object.FindAnyObjectByType<LockScreenModule>();
             if (module == null)
             {
                 Debug.LogError("[EntryRouter] LockScreenModule GameObject 미발견 — 폴백: 타이틀");
@@ -105,8 +115,10 @@ namespace LoveAlgo.Core
             onBlackout = () =>
             {
                 panel.OnBlackoutReached -= onBlackout;
-                Debug.Log("[EntryRouter] LockScreen blackout — 타이틀 셋업 (fade-out에서 reveal)");
-                ShowTitle(Services.TryGet<ITitle>());
+                Debug.Log("[EntryRouter] LockScreen blackout — 새 게임 즉시 시작 (Prologue 직진)");
+                // 첫 진입은 타이틀 거치지 않고 곧장 프롤로그 시작.
+                // StartNewGame → Flow.StartPrologueFromNewGame → TransitionToPrologueAsync (로딩+페이드)
+                GameManager.Instance?.StartNewGame();
             };
             onComplete = () =>
             {
@@ -116,7 +128,10 @@ namespace LoveAlgo.Core
             panel.OnBlackoutReached += onBlackout;
             panel.OnFlowComplete += onComplete;
 
-            // 게임 첫 시작: 5초 페이드인 + fade-out reveal (타이틀이 자연스럽게 등장)
+            // 게임 첫 시작 BGM (PC 잠금화면 백색소음 — 기획서 §진입 정보)
+            LoveAlgo.Modules.Audio.AudioManager.Instance?.PlayBGMAsync("white_noise").Forget();
+
+            // 게임 첫 시작: 5초 페이드인 + fade-out reveal (이후 Prologue가 자연스럽게 등장)
             panel.SetFadeOutAfter(true);
             panel.OpenForGameStart();
         }

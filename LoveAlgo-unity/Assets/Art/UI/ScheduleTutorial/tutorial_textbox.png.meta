@@ -52,7 +52,7 @@ TextureImporter:
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
   spritePixelsToUnits: 100
-  spriteBorder: {x: 100, y: 60, z: 60, w: 80}
+  spriteBorder: {x: 101, y: 63, z: 72, w: 70}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
   alphaIsTransparency: 1
@@ -209,8 +209,8 @@ TextureImporter:
       - key: SpriteEditor.SliceSettings
         value: '{"sliceOnImport":true,"gridCellCount":{"x":3.0,"y":1.0},"gridSpriteSize":{"x":333.0,"y":281.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":1,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":2,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
-      tutorial_textbox_0: 1714207546
-      tutorial_textbox_1: -1411665608
+      tutorial_textbox_0: -2023310431
+      tutorial_textbox_1: -223459374
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

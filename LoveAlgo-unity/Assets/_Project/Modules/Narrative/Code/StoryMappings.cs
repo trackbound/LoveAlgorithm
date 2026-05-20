@@ -38,8 +38,10 @@ namespace LoveAlgo.Story
             { "학생회관_게시판",          "bg_40_05" },
             { "학생회관_동방_낮_나무",    "bg_40_06" },
             { "학생회관_동방_낮_벚꽃",    "bg_40_07" },
-            { "편의점 앞 낮",             "bg_60_01" },
-            { "편의점 앞 밤",             "bg_60_02" },
+            { "동아리방_낮_나무",         "bg_40_06" },   // 작가 표기 별칭
+            { "동아리방_낮_벚꽃",         "bg_40_07" },   // 작가 표기 별칭
+            { "편의점 앞 낮",             "bg_60_00" },
+            { "편의점 앞 밤",             "bg_60_01" },
         };
 
         // ─── CG ───────────────────────────────────────────────────
@@ -95,6 +97,14 @@ namespace LoveAlgo.Story
             { "윙크",            "_44" },
             { "자신만만",        "_45" },
 
+            // 작가 표기 별칭 (한글)
+            { "활짝웃음",        "_13" },   // 활짝의 풀이
+            { "부끄",            "_34" },   // 부끄러워 줄임
+            { "놀람",            "_41" },   // 깜짝 동의어
+            { "당황",            "_23" },   // 머쓱
+            { "집중",            "_00" },   // 임시 fallback — 표정 파일 추가 시 갱신
+            { "음주",            "_00" },   // 임시 fallback — 표정 파일 추가 시 갱신
+
             // 영문 별칭 — Prologue.csv 등 코드 전역에서 사용
             { "Default",         "_00" },
             { "EyeSmile",        "_11" },
@@ -113,14 +123,14 @@ namespace LoveAlgo.Story
             public string[] Aliases;
         }
 
-        // Aliases는 코드 전역(GameConstants.HeroineConfig 등)에서 쓰이는 영문 ID와 일치.
+        // Aliases는 코드 전역(GameConstants.HeroineConfig 등) 표준 영문 ID + 작가 CSV의 짧은 별칭.
         public static readonly Character[] Characters =
         {
             new() { Id = "c01", DisplayName = "로아",    Aliases = new[] { "Roa" } },
-            new() { Id = "c02", DisplayName = "서다은",  Aliases = new[] { "SeoDaEun" } },
-            new() { Id = "c03", DisplayName = "하예은",  Aliases = new[] { "HaYeEun" } },
-            new() { Id = "c04", DisplayName = "도희원",  Aliases = new[] { "DoHeewon" } },
-            new() { Id = "c05", DisplayName = "이봄",    Aliases = new[] { "LeeBom" } },
+            new() { Id = "c02", DisplayName = "서다은",  Aliases = new[] { "SeoDaEun", "Daeun" } },
+            new() { Id = "c03", DisplayName = "하예은",  Aliases = new[] { "HaYeEun",  "Yeun"  } },
+            new() { Id = "c04", DisplayName = "도희원",  Aliases = new[] { "DoHeewon", "Heewon"} },
+            new() { Id = "c05", DisplayName = "이봄",    Aliases = new[] { "LeeBom",   "Bom"   } },
         };
 
         // ─── Overlay (가상 캐릭터 — VirtualBGOverlay 1:1) ─────────
