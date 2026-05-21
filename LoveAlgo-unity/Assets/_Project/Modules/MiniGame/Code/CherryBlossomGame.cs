@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
+using LoveAlgo.Common;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -63,7 +64,7 @@ namespace LoveAlgo.MiniGame
             {
                 lastSpeedPhase = currentPhase;
                 currentSpeedMultiplier *= 1.5f;
-                Debug.Log($"[CherryBlossom] 속도 증가! x{currentSpeedMultiplier:F1}");
+                Log.Info($"[CherryBlossom] 속도 증가! x{currentSpeedMultiplier:F1}");
             }
 
             // 스폰

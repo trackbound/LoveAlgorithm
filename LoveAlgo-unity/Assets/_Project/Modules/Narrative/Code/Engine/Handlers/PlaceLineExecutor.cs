@@ -1,5 +1,6 @@
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using LoveAlgo.Common;
 using UnityEngine;
 using LoveAlgo.Core;
 using LoveAlgo.UI;
@@ -22,7 +23,7 @@ namespace LoveAlgo.Story.StoryEngine.Handlers
             }
             else
             {
-                Debug.Log($"[Place] {line.Value}");
+                Log.Info($"[Place] {line.Value}");
             }
             return UniTask.FromResult(true);
         }

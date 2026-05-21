@@ -1,5 +1,6 @@
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using LoveAlgo.Common;
 using UnityEngine;
 using LoveAlgo.Core;
 
@@ -62,7 +63,7 @@ namespace LoveAlgo.Story.StoryEngine.Handlers
             }
             else
             {
-                Debug.Log($"[CG] {line.Value}");
+                Log.Info($"[CG] {line.Value}");
             }
 
             return true;

@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using LoveAlgo.Common;
 using UnityEngine;
 using LoveAlgo.Core;
 
@@ -71,7 +72,7 @@ namespace LoveAlgo.Story.StoryEngine.Handlers
             }
             else
             {
-                Debug.Log($"[FX] {normalizedValue}");
+                Log.Info($"[FX] {normalizedValue}");
             }
 
             if (command == "FadeOut")

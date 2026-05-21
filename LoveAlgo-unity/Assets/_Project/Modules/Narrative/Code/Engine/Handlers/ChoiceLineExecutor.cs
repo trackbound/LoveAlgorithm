@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using LoveAlgo.Common;
 using UnityEngine;
 using LoveAlgo.Core;
 using LoveAlgo.UI;
@@ -71,7 +72,7 @@ namespace LoveAlgo.Story.StoryEngine.Handlers
                     {
                         GameState.Instance?.AddChoice(result.JumpTarget);
                         _setCurrentIndex(targetIndex - 1);
-                        Debug.Log($"[Choice] 선택 -> {result.JumpTarget}");
+                        Log.Info($"[Choice] 선택 -> {result.JumpTarget}");
                     }
                     else
                     {
@@ -82,7 +83,7 @@ namespace LoveAlgo.Story.StoryEngine.Handlers
             else
             {
                 // UI 없음(헤드리스/테스트) → 첫 선택지 자동 선택. 라벨 검증 후에만 인덱스 이동·기록.
-                Debug.Log($"[Choice] {options.Count}개 선택지 (UI 없음 → 첫 번째 자동 선택)");
+                Log.Info($"[Choice] {options.Count}개 선택지 (UI 없음 → 첫 번째 자동 선택)");
                 if (options.Count > 0 && !string.IsNullOrEmpty(options[0].JumpTarget))
                 {
                     if (_lineIndex().TryGetValue(options[0].JumpTarget, out int targetIndex))

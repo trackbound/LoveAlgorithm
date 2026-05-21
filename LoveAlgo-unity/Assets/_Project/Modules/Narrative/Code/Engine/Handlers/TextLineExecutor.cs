@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using LoveAlgo.Common;
 using UnityEngine;
 using LoveAlgo.Core;
 
@@ -42,7 +43,7 @@ namespace LoveAlgo.Story.StoryEngine.Handlers
             }
             else
             {
-                Debug.Log($"[Text] {(string.IsNullOrEmpty(line.Speaker) ? "(나레이션)" : line.Speaker)}: {line.Value}");
+                Log.Info($"[Text] {(string.IsNullOrEmpty(line.Speaker) ? "(나레이션)" : line.Speaker)}: {line.Value}");
             }
 
             return true;

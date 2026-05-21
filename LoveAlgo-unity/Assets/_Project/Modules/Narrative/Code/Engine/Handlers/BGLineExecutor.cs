@@ -1,5 +1,6 @@
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using LoveAlgo.Common;
 using UnityEngine;
 using LoveAlgo.Core;
 
@@ -27,7 +28,7 @@ namespace LoveAlgo.Story.StoryEngine.Handlers
             if (background != null && !string.IsNullOrEmpty(background.CurrentBackground)
                 && background.CurrentBackground.Equals(bgName, System.StringComparison.OrdinalIgnoreCase))
             {
-                Debug.Log($"[BG] '{bgName}' 동일 → 전환 효과 스킵");
+                Log.Info($"[BG] '{bgName}' 동일 → 전환 효과 스킵");
                 return true;
             }
 
@@ -38,7 +39,7 @@ namespace LoveAlgo.Story.StoryEngine.Handlers
             {
                 if (background != null)
                     await background.ChangeBackgroundAsync(bgName, BGTransition.Cut, 0f, ct);
-                Debug.Log($"[BG] '{bgName}' → CG 뒤에서 즉시 교체");
+                Log.Info($"[BG] '{bgName}' → CG 뒤에서 즉시 교체");
             }
             else if (isCut || isCrossFade)
             {
