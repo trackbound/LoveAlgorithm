@@ -234,7 +234,7 @@ namespace LoveAlgo.Core
                     return;
                 }
 
-                await _gm.AutoSaveAsync();
+                await _gm.AutoSaveAsync("day-end");
 
                 await UniTask.Delay(700, cancellationToken: ct);
 

@@ -121,7 +121,7 @@ namespace LoveAlgo.Story.StoryEngine
 
                 case "Save":
                     if (LoveAlgo.Core.GameManager.Instance != null)
-                        await LoveAlgo.Core.GameManager.Instance.AutoSaveAsync();
+                        await LoveAlgo.Core.GameManager.Instance.AutoSaveAsync("scripted");
                     return true;
 
                 case "Schedule":

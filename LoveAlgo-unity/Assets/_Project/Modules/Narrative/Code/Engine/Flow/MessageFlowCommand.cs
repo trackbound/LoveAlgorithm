@@ -56,12 +56,8 @@ namespace LoveAlgo.Story.StoryEngine.Flow
                 await UniTask.Delay(System.TimeSpan.FromSeconds(2), cancellationToken: ct);
                 phone.OpenChat(characterId);
 
-                // 사용자가 폰을 닫을 때까지 대기
-                while (phone.IsOpen)
-                {
-                    if (ct.IsCancellationRequested) return;
-                    await UniTask.Yield(ct);
-                }
+                // 사용자가 폰을 닫을 때까지 대기 (CancellationToken 자동 처리)
+                await UniTask.WaitWhile(() => phone.IsOpen, cancellationToken: ct);
                 Debug.Log("[Flow] Message:wait — 사용자가 폰 닫음, 스토리 계속");
             }
         }

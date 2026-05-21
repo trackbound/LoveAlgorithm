@@ -187,13 +187,21 @@ namespace LoveAlgo.Core
         }
 
         /// <summary>
-        /// 자동저장 (슬롯 0) — 비동기: UI 숨김 → 1프레임 대기 → 스크린샷 → 저장
+        /// 자동저장 (슬롯 0) — 비동기: UI 숨김 → 1프레임 대기 → 스크린샷 → 저장.
+        ///
+        /// 호출 정책 (모든 진입점이 reason을 전달):
+        /// - "day-end"   : DayLoopController.EndDayAsync, day 증가 직후
+        /// - "phase:X"   : GameFlowController가 Phase 전환 직후 (X = 대상 phase)
+        /// - "macro:X"   : 매크로(DayEnd 등)가 호출
+        /// - "scripted"  : 스크립트가 직접 트리거한 명시적 저장점
+        /// 어디서 자동저장이 일어나는지 콘솔에서 추적 가능. 향후 정책 변경(빈도 제한·
+        /// 진행률 임계치 등)이 필요하면 이 reason을 분기 키로 활용.
         /// </summary>
-        public async UniTask AutoSaveAsync()
+        public async UniTask AutoSaveAsync(string reason = "unspecified")
         {
             await SaveThumbnailManager.CapturePendingScreenshotAsync();
             Save(SaveManager.AutoSaveSlot, usePendingThumbnail: true);
-            Debug.Log("[GameManager] 자동저장 완료");
+            Debug.Log($"[GameManager] 자동저장 완료 (reason={reason})");
         }
 
         /// <summary>
