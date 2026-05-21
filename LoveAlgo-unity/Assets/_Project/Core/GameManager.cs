@@ -1,6 +1,7 @@
 using UnityEngine;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
+using LoveAlgo.Common;
 using LoveAlgo.Story;
 using LoveAlgo.Schedule;
 using LoveAlgo.Core;
@@ -18,7 +19,9 @@ namespace LoveAlgo.Core
         [SerializeField] int tweenersCapacity = 500;
         [SerializeField] int sequencesCapacity = 125;
 
-        public GamePhase CurrentPhase { get; set; } = GamePhase.Title;
+        GamePhase _currentPhase = GamePhase.Title;
+        /// <summary>현재 phase. 변경은 ChangePhase(...) 또는 컨트롤러 전용 SetCurrentPhase 경유 — 외부 직접 set 금지.</summary>
+        public GamePhase CurrentPhase => _currentPhase;
         public int CurrentDay { get; set; } = 1;
         public int RemainingActions { get; set; }
         public string PlayerName { get; set; } = "";
@@ -105,8 +108,19 @@ namespace LoveAlgo.Core
             PlayerPrefs.Save();
         }
 
-        // ── 내부 상태 setter (컨트롤러 전용) ──
-        public void SetCurrentPhase(GamePhase phase) => CurrentPhase = phase;
+        // ── 내부 상태 setter (컨트롤러 전용 — 같은 어셈블리 내 Flow/Session/Debug에서만 호출) ──
+        /// <summary>
+        /// phase를 직접 갱신하고 GamePhaseChangedEvent를 발행한다. 같은 phase로의 재설정은 no-op.
+        /// 외부 진입점은 ChangePhase(...) 사용 — 이 메서드는 FlowController/SessionController의
+        /// 내부 흐름 전용으로, 정상 전환에 필요한 사전·사후 처리(페이드/Stage 정리 등)는 호출자가 책임.
+        /// </summary>
+        internal void SetCurrentPhase(GamePhase phase)
+        {
+            if (_currentPhase == phase) return;
+            var prev = _currentPhase;
+            _currentPhase = phase;
+            EventBus.Publish(new GamePhaseChangedEvent(prev, phase));
+        }
         public void SetPlayerName(string name) => PlayerName = name;
         public void CleanupStage() => Session.CleanupStage();
         public void OnScheduleSelected(ScheduleType type) => DayLoop.OnScheduleSelected(type);
