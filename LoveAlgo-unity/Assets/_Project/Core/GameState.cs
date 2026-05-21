@@ -151,47 +151,31 @@ namespace LoveAlgo.Core
         {
             if (string.IsNullOrEmpty(condition)) return true;
 
-            // 언더스코어 형식 정규화: Love_Roa>5 → Love:Roa>5
-            if (condition.StartsWith("Love_") || condition.StartsWith("Stat_"))
-            {
-                int idx = condition.IndexOf('_');
-                condition = condition.Substring(0, idx) + ":" + condition.Substring(idx + 1);
-            }
+            condition = NormalizeLegacyPrefix(condition);
 
-            // 부정 플래그: !Flag:Name
-            if (condition.StartsWith("!Flag:"))
-            {
-                string flagName = condition.Substring(6);
-                return !GetFlag(flagName);
-            }
-
-            // 플래그: Flag:Name
-            if (condition.StartsWith("Flag:"))
-            {
-                string flagName = condition.Substring(5);
-                return GetFlag(flagName);
-            }
-
-            // 호감도: Love:Character>=Value
-            if (condition.StartsWith("Love:"))
-            {
-                return EvaluateComparison(condition.Substring(5), GetLove);
-            }
-
-            // 스탯: Stat:StatName>=Value 또는 StatName>=Value
-            if (condition.StartsWith("Stat:"))
-            {
-                return EvaluateComparison(condition.Substring(5), GetStat);
-            }
+            if (condition.StartsWith("!Flag:")) return !GetFlag(condition.Substring(6));
+            if (condition.StartsWith("Flag:"))  return  GetFlag(condition.Substring(5));
+            if (condition.StartsWith("Love:"))  return EvaluateComparison(condition.Substring(5), GetLove);
+            if (condition.StartsWith("Stat:"))  return EvaluateComparison(condition.Substring(5), GetStat);
 
             // 머신-와이드 카운터: EndingCount>=N (PlayerPrefs)
             if (condition.StartsWith("EndingCount"))
-            {
                 return EvaluateComparison(condition, _ => EndingCount);
-            }
 
             // 직접 스탯 비교: Int>=20, Fatigue>=50
             return EvaluateComparison(condition, GetStat);
+        }
+
+        /// <summary>
+        /// 옛 표기를 새 표기로 변환. 현재 대상: Love_Xxx → Love:Xxx, Stat_Xxx → Stat:Xxx.
+        /// 첫 언더스코어만 콜론으로 교체해 변수명 안의 언더스코어는 그대로 둔다.
+        /// </summary>
+        static string NormalizeLegacyPrefix(string condition)
+        {
+            if (!condition.StartsWith("Love_") && !condition.StartsWith("Stat_"))
+                return condition;
+            int idx = condition.IndexOf('_');
+            return condition.Substring(0, idx) + ":" + condition.Substring(idx + 1);
         }
 
         bool EvaluateComparison(string expr, Func<string, int> getValue)
