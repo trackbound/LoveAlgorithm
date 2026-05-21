@@ -22,9 +22,11 @@ namespace LoveAlgo.Core
         GamePhase _currentPhase = GamePhase.Title;
         /// <summary>현재 phase. 변경은 ChangePhase(...) 또는 컨트롤러 전용 SetCurrentPhase 경유 — 외부 직접 set 금지.</summary>
         public GamePhase CurrentPhase => _currentPhase;
-        public int CurrentDay { get; set; } = 1;
-        public int RemainingActions { get; set; }
-        public string PlayerName { get; set; } = "";
+        // 잔여 상태도 외부 set 차단(같은 어셈블리 내부 setter만). 컨트롤러/디버그는 그대로 동작.
+        // 향후 .asmdef로 모듈이 분리되면 외부 모듈에서 강제로 막힘.
+        public int CurrentDay { get; internal set; } = 1;
+        public int RemainingActions { get; internal set; }
+        public string PlayerName { get; internal set; } = "";
 
         public GameFlowController Flow { get; private set; }
         public DayLoopController DayLoop { get; private set; }
