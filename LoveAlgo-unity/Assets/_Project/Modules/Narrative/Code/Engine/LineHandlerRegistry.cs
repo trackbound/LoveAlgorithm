@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using LoveAlgo.Core;
+using UnityEngine;
 
 namespace LoveAlgo.Story.StoryEngine
 {
@@ -42,5 +43,9 @@ namespace LoveAlgo.Story.StoryEngine
         {
             _executors.Clear();
         }
+
+        /// <summary>Reload Domain Off 가드 — PlayMode 진입 시 옛 ScriptRunner의 실행기 잔재 방지.</summary>
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void ResetStaticStateOnLoad() => Clear();
     }
 }

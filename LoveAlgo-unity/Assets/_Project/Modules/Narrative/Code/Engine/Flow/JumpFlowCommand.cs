@@ -53,5 +53,13 @@ namespace LoveAlgo.Story.StoryEngine.Flow
             }
             return true;
         }
+
+        /// <summary>Reload Domain Off 가드 — PlayMode 진입 시 옛 hop 카운터 리셋.</summary>
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void ResetStaticStateOnLoad()
+        {
+            _recentHops = 0;
+            _windowStartTime = 0f;
+        }
     }
 }

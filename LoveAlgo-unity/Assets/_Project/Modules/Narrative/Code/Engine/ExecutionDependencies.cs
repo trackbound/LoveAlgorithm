@@ -55,5 +55,9 @@ namespace LoveAlgo.Story.StoryEngine
             _stage = null;
             _audio = null;
         }
+
+        /// <summary>Reload Domain Off 가드 — PlayMode 진입 시 옛 매니저 참조 잔재 방지.</summary>
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void ResetStaticStateOnLoad() => Reset();
     }
 }

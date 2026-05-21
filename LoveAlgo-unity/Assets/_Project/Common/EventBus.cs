@@ -52,6 +52,14 @@ namespace LoveAlgo.Common
         /// <summary>씬 전환/도메인 리로드 시 정리.</summary>
         public static void Clear() => _handlers.Clear();
 
+        /// <summary>
+        /// Unity Editor의 "Reload Domain Off" 설정 시 PlayMode 진입마다 정적 dictionary가
+        /// 리셋되지 않아 옛 핸들러가 남는 사고 방지. SubsystemRegistration 단계는
+        /// 가장 일찍 호출돼 다른 모듈 Awake 이전에 정리 완료.
+        /// </summary>
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void ResetStaticStateOnLoad() => Clear();
+
         sealed class SubscriptionToken<T> : IDisposable where T : struct
         {
             Action<T> _handler;

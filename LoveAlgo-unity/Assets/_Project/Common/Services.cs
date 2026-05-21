@@ -59,6 +59,10 @@ namespace LoveAlgo.Common
 
         /// <summary>씬 전환/도메인 리로드 시 정리.</summary>
         public static void Clear() => _services.Clear();
+
+        /// <summary>Reload Domain Off 가드 — PlayMode 진입 시 옛 서비스 참조 잔재 방지.</summary>
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void ResetStaticStateOnLoad() => Clear();
     }
 
     /// <summary>

@@ -34,6 +34,10 @@ namespace LoveAlgo.Story
         /// </summary>
         public static bool Strict { get; set; }
 
+        /// <summary>Reload Domain Off 가드 — PlayMode 진입 시 Strict 토글 기본값(false)로 복원.</summary>
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void ResetStaticStateOnLoad() => Strict = false;
+
         /// <summary>
         /// TextAsset에서 스크립트 파싱
         /// </summary>
