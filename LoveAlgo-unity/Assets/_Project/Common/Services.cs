@@ -21,8 +21,19 @@ namespace LoveAlgo.Common
         public static void Register<T>(T service) where T : class
         {
             var t = typeof(T);
-            if (_services.ContainsKey(t))
-                Debug.LogWarning($"[Services] {t.Name} 중복 등록 — 덮어씀");
+            if (_services.TryGetValue(t, out var existing))
+            {
+                // 같은 인스턴스 재등록은 idempotent — 도메인 리로드 등으로 Awake가 두 번
+                // 호출되는 정상 케이스. silent하게 통과.
+                if (ReferenceEquals(existing, service)) return;
+
+                // 다른 인스턴스로 덮어쓰는 경우는 거의 항상 사고(중복 모듈 GameObject 등).
+                // 스택 트레이스를 남겨 추적 가능하도록 LogError로 격상.
+                Debug.LogError(
+                    $"[Services] {t.Name} 다른 인스턴스가 이미 등록됨 — 새 인스턴스로 덮어씀. " +
+                    $"기존: {(existing is UnityEngine.Object oldObj && oldObj != null ? oldObj.name : existing.GetType().Name)}, " +
+                    $"신규: {(service is UnityEngine.Object newObj && newObj != null ? newObj.name : service.GetType().Name)}");
+            }
             _services[t] = service;
         }
 
