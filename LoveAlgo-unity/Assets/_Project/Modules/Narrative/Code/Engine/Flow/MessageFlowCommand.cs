@@ -45,6 +45,13 @@ namespace LoveAlgo.Story.StoryEngine.Flow
             // 확인 필수 메시지: 폰 자동 오픈 + 사용자 응답 대기
             if (waitForResponse)
             {
+                // Headless 자동화: 메시지는 이미 수신됐고, 응답 대기는 즉시 통과 (ADR §MessageFlowCommand).
+                if (Headless.IsEnabled)
+                {
+                    Log.Info("[Flow] Message:wait — headless 즉시 통과");
+                    return;
+                }
+
                 var phone = Services.TryGet<IPhone>();
                 if (phone == null)
                 {
