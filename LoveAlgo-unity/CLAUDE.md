@@ -67,6 +67,23 @@ Unity/TMP/패키지 API 중 `[Obsolete]` 마크된 것은 **절대 새로 쓰지
 작성하면 무조건 `Log.Info`. 사용자에게 보고되는 진짜 에러만 `Debug.LogError` 또는
 `Log.Error` 유지.
 
+## 2.7 UI 접근 규칙 — `Services.TryGet<I*>()` 직접 사용
+
+`UIManager.Instance.DialogueUI` 같은 wrapper 프로퍼티는 **신규 코드 사용 금지**.
+Wrapper는 결국 `Services.TryGet<INarrative>()?.DialogueUI`로 위임될 뿐이고,
+UIManager가 거의 모든 모듈 인터페이스를 끌어안아 모듈 분리 시 강한 결합 지점이 됨.
+
+```csharp
+// ❌ 옛 패턴
+var ui = UIManager.Instance?.DialogueUI;
+
+// ✅ 새 패턴
+var ui = LoveAlgo.Common.Services.TryGet<INarrative>()?.DialogueUI;
+```
+
+기존 호출처는 그대로 동작(소프트 deprecate). Phase C 인터페이스 분리 후 정식
+`[Obsolete]` 표시 + 전수 마이그레이션 예정.
+
 ## 3. 토큰 효율
 
 - **수정 범위 = 그 기능 폴더만**. 의도치 않은 다른 파일 수정 금지.

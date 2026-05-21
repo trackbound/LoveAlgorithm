@@ -26,9 +26,21 @@ namespace LoveAlgo.UI
         [UnityEngine.Serialization.FormerlySerializedAs("sceneRoot")]
         [SerializeField] Transform titleRoot;
 
-        // ── UI 인스턴스 호환성 wrapper (모듈 위임) ───────────────────
-        // 옛 호출자(UIManager.Instance.X)를 위한 1줄 wrapper. 새 코드는 Services.Get<I*>() 직접 사용.
-        // 모듈이 아직 등록 안 됐을 수 있으므로 TryGet 사용 (Get은 throw).
+        // ── UI 인스턴스 호환성 wrapper (모듈 위임) ─────────────────────────────
+        //
+        // ⚠ DEPRECATED — 새 코드에서 호출 금지. Services를 직접 사용하세요.
+        //
+        //   ❌ var ui = UIManager.Instance?.DialogueUI;
+        //   ✅ var ui = Services.TryGet<INarrative>()?.DialogueUI;
+        //
+        // 이유:
+        // - 이 wrapper는 결국 Services.TryGet 한 줄로 위임될 뿐인데 한 단계를 더 건너뜀.
+        // - UIManager가 거의 모든 모듈 인터페이스에 의존(INarrative/ISchedule/IShop/
+        //   ITitle/ITutorial/ISimulation)해 모듈 분리 시 강한 결합 지점이 됨.
+        // - Phase C 인터페이스 분리 + .asmdef 도입 후 정식 [Obsolete] 표시 예정.
+        //
+        // 기존 호출처(25+곳)는 그대로 동작 — 점진 마이그레이션 가능. 신규 코드에서만 직접
+        // Services.TryGet<I*>() 사용을 권장.
         public DialogueUI DialogueUI => Services.TryGet<INarrative>()?.DialogueUI;
         public DialogueShowButton DialogueShowButton => Services.TryGet<INarrative>()?.DialogueShowButton;
         public ChoicePopup ChoicePopup => Services.TryGet<INarrative>()?.ChoicePopup;
