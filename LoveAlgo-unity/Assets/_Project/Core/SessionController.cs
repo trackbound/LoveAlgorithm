@@ -262,9 +262,27 @@ namespace LoveAlgo.Core
         }
 
         /// <summary>
-        /// 장면 정리 (타이틀 복귀 / 로드 시)
+        /// 장면 정리 (타이틀 복귀 / 로드 시). Resources.UnloadUnusedAssets는 fire-and-forget —
+        /// AsyncOperation을 그대로 무시하므로 백그라운드에서 진행되며 호출 자체는 비-블로킹.
+        /// 정리 완료를 await하려면 <see cref="CleanupStageAsync"/>.
         /// </summary>
         public void CleanupStage()
+        {
+            CleanupStageSyncPart();
+            _ = Resources.UnloadUnusedAssets();
+        }
+
+        /// <summary>
+        /// CleanupStage의 비동기 버전 — Resources.UnloadUnusedAssets 완료까지 대기.
+        /// 씬 전환·로드 직후 메모리 안정성이 필요할 때만 사용 (일반 정리는 CleanupStage로 충분).
+        /// </summary>
+        public async UniTask CleanupStageAsync(CancellationToken ct = default)
+        {
+            CleanupStageSyncPart();
+            await Resources.UnloadUnusedAssets().ToUniTask(cancellationToken: ct);
+        }
+
+        void CleanupStageSyncPart()
         {
             // 레이어 정리
             StageModule.Instance?.Character?.SetVisibleImmediate(true);  // SD 숨김 상태 복원
@@ -291,9 +309,6 @@ namespace LoveAlgo.Core
 
             // 캐릭터 스프라이트 캐시 정리
             CharacterSlot.ClearSpriteCache();
-
-            // 미사용 에셋 메모리 해제
-            Resources.UnloadUnusedAssets();
         }
 
         /// <summary>
