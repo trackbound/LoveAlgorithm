@@ -61,8 +61,12 @@ namespace LoveAlgo.Story.StoryEngine.Handlers
             foreach (var opt in scriptOptions)
                 options.Add(OptionData.Parse(opt.Value));
 
+            // 자동 선택 경로 — UI 없거나 Headless면 첫 선택지를 즉시 선택 (ADR §ChoiceLineExecutor).
+            // 두 경로(UI null vs Headless toggle)가 같은 자동 분기로 통합.
             var choiceUI = UIManager.Instance?.ChoicePopup;
-            if (choiceUI != null)
+            bool useAutoFirst = choiceUI == null || Headless.IsEnabled;
+
+            if (!useAutoFirst)
             {
                 var result = await choiceUI.ShowAndWaitAsync(options, ct);
                 if (result != null && !string.IsNullOrEmpty(result.JumpTarget))
@@ -82,8 +86,8 @@ namespace LoveAlgo.Story.StoryEngine.Handlers
             }
             else
             {
-                // UI 없음(헤드리스/테스트) → 첫 선택지 자동 선택. 라벨 검증 후에만 인덱스 이동·기록.
-                Log.Info($"[Choice] {options.Count}개 선택지 (UI 없음 → 첫 번째 자동 선택)");
+                string reason = Headless.IsEnabled ? "headless" : "UI 없음";
+                Log.Info($"[Choice] {options.Count}개 선택지 ({reason} → 첫 번째 자동 선택)");
                 if (options.Count > 0 && !string.IsNullOrEmpty(options[0].JumpTarget))
                 {
                     if (_lineIndex().TryGetValue(options[0].JumpTarget, out int targetIndex))
