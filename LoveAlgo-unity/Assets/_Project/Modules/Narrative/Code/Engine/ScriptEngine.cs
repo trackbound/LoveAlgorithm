@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using LoveAlgo.Common;
 using UnityEngine;
 using LoveAlgo.Core;
 using LoveAlgo.UI;
@@ -210,6 +211,14 @@ namespace LoveAlgo.Story.StoryEngine
         /// </summary>
         async UniTask WaitForClickAsync(CancellationToken ct)
         {
+            // Headless 자동화: 클릭 대기를 즉시 통과 (ADR §진입점별 헤드리스 규약).
+            // 일반 플레이는 IsEnabled=false라 영향 없음.
+            if (Headless.IsEnabled)
+            {
+                await UniTask.Yield(ct);
+                return;
+            }
+
             var dialogueUI = ExecutionDependencies.DialogueUI;
             int textLen = dialogueUI?.LastDisplayedTextLength ?? 0;
             float autoDelayBase = _getAutoDelayBase();

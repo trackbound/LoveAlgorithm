@@ -20,6 +20,14 @@ namespace LoveAlgo.Story.StoryEngine.Handlers
 
         public async UniTask<bool> ExecuteAsync(ScriptLine line, CancellationToken ct)
         {
+            // Headless 자동화: 타이핑/딤 연출 전부 우회하고 로그만 (ADR §진입점별 헤드리스 규약).
+            if (Headless.IsEnabled)
+            {
+                _needsPreTextBeat = false;
+                Log.Info($"[Text] {(string.IsNullOrEmpty(line.Speaker) ? "(나레이션)" : line.Speaker)}: {line.Value}");
+                return true;
+            }
+
             if (_needsPreTextBeat)
             {
                 _needsPreTextBeat = false;
