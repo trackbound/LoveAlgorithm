@@ -61,8 +61,11 @@ namespace LoveAlgo.Modules.Audio
         {
             ValidateAudioSources();
             CacheSFXClips();
-            LoadCharacterVoiceVolumes();
-            LoadMixerVolumes();
+
+            // 볼륨 복원은 SettingsModule.Load의 책임 — 마스터 설정 저장소를
+            // 한 곳으로 통일하기 위해 AudioManager는 PlayerPrefs를 직접 읽지 않는다.
+            // SettingsModule(-450)이 AudioModule(-500) Awake 이후 곧바로 Load를 호출하며,
+            // 그때 SetMasterVolume/SetBGMVolume/SetCharacterVoiceVolume이 적용된다.
 
             if (audioSettings == null)
             {
@@ -613,26 +616,6 @@ namespace LoveAlgo.Modules.Audio
         #endregion
 
         #region 캐릭터별 음성 볼륨
-
-        /// <summary>
-        /// PlayerPrefs에서 BGM/SFX 볼륨 복원 (게임 시작 시 호출)
-        /// </summary>
-        void LoadMixerVolumes()
-        {
-            SetMasterVolume(PlayerPrefs.GetFloat("MasterVolume", GameConstants.DefaultMasterVolume));
-            SetBGMVolume(PlayerPrefs.GetFloat("BGMVolume", GameConstants.DefaultBGMVolume));
-            SetSFXVolume(PlayerPrefs.GetFloat("SFXVolume", GameConstants.DefaultSFXVolume));
-            SetVoiceVolume(PlayerPrefs.GetFloat("VoiceVolume", GameConstants.DefaultVoiceVolume));
-        }
-
-        void LoadCharacterVoiceVolumes()
-        {
-            string[] characters = { "HaYeEun", "SeoDaEun", "LeeBom", "DoHeewon", "Roa" };
-            foreach (var c in characters)
-            {
-                characterVoiceVolumes[c] = PlayerPrefs.GetFloat($"Voice_{c}", GameConstants.DefaultVoiceVolume);
-            }
-        }
 
         public void SetCharacterVoiceVolume(string character, float volume)
         {

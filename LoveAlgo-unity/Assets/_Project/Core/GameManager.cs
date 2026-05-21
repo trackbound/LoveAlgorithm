@@ -78,14 +78,11 @@ namespace LoveAlgo.Core
 
         void RestoreResolution()
         {
-            int resIdx = PlayerPrefs.GetInt("ResolutionIndex", -1);
-            if (resIdx < 0) return;
-            bool fullscreen = PlayerPrefs.GetInt("Fullscreen", 1) == 1;
-            var resolutions = GameConstants.Resolutions;
-            resIdx = Mathf.Clamp(resIdx, 0, resolutions.Length - 1);
-            var res = resolutions[resIdx];
-            Screen.SetResolution(res.w, res.h, fullscreen ? FullScreenMode.FullScreenWindow : FullScreenMode.Windowed);
-            Debug.Log($"[GameManager] 해상도 복원: {res.w}x{res.h}, 전체화면: {fullscreen}");
+            // 해상도/전체화면 저장소는 SettingsModule이 마스터. SettingsModule(-450)이
+            // 이미 Awake에서 Load + ApplyResolution 자체 호출 흐름을 갖춰두지 않으므로,
+            // GameManager 시작 시 한 번 위임 호출해 화면에 반영한다.
+            var settings = LoveAlgo.Common.Services.TryGet<LoveAlgo.Settings.ISettings>();
+            settings?.ApplyResolution();
         }
 
         const string DemoSingleScheduleCompleteFlag = "Demo_SingleScheduleComplete";
