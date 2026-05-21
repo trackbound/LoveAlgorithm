@@ -122,6 +122,7 @@ namespace LoveAlgo.Core
         }
         public void SetPlayerName(string name) => PlayerName = name;
         public void CleanupStage() => Session.CleanupStage();
+        public UniTask CleanupStageAsync(System.Threading.CancellationToken ct = default) => Session.CleanupStageAsync(ct);
         public void OnScheduleSelected(ScheduleType type) => DayLoop.OnScheduleSelected(type);
         public string DetermineEndingHeroine() => DayLoop.DetermineEndingHeroine();
         public bool IsHappyEnding(string heroineId) => DayLoop.IsHappyEnding(heroineId);

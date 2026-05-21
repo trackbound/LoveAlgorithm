@@ -228,8 +228,8 @@ namespace LoveAlgo.Core
 
                 ScriptRunner.Instance?.Stop();
 
-                // 장면 정리 (캐릭터, 배경, 오버레이 등)
-                _gm.CleanupStage();
+                // 장면 정리 (캐릭터, 배경, 오버레이 등) — Title 복귀 직후 메모리 안정성 ↑
+                await _gm.CleanupStageAsync(ct);
 
                 ChangePhase(GamePhase.Title);
 
@@ -324,7 +324,8 @@ namespace LoveAlgo.Core
                 if (fx != null)
                     await fx.FadeOutAsync(0.5f, ct);
 
-                _gm.CleanupStage();
+                // Prologue→DayLoop 큰 전환 직후 메모리 안정성 ↑
+                await _gm.CleanupStageAsync(ct);
 
                 // 데모 모드: 프롤로그 후 스케줄 없이 바로 종료 안내
                 if (_gm.IsDemoMode)

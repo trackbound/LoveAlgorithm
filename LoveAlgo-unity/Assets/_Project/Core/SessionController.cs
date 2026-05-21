@@ -116,8 +116,8 @@ namespace LoveAlgo.Core
                 }
                 ScriptRunner.Instance?.Stop();
 
-                // 이전 장면 정리
-                _gm.CleanupStage();
+                // 이전 장면 정리 — 로드 직후 메모리 안정성 위해 UnloadUnusedAssets 완료까지 await
+                await _gm.CleanupStageAsync(_gm.GetCancellationTokenOnDestroy());
 
                 _gm.SetPlayerName(data.PlayerName);
                 _gm.CurrentDay = data.CurrentDay;
