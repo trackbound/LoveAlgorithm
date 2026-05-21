@@ -28,6 +28,13 @@ namespace LoveAlgo.Story
         }
 
         /// <summary>
+        /// 전역 엄격 파싱 토글. true면 모든 LogWarning이 LogError로 격상되고,
+        /// 빌드/테스트 파이프라인이 콘솔 에러를 게이트로 사용해 잘못된 CSV가
+        /// 무음으로 통과하는 것을 막을 수 있다. 기본값 false — 기존 동작과 동일.
+        /// </summary>
+        public static bool Strict { get; set; }
+
+        /// <summary>
         /// TextAsset에서 스크립트 파싱
         /// </summary>
         public static List<ScriptLine> Parse(TextAsset asset)
@@ -77,6 +84,15 @@ namespace LoveAlgo.Story
         }
 
         /// <summary>
+        /// Strict 모드면 LogError, 아니면 LogWarning. 메시지는 동일하게 노출.
+        /// </summary>
+        static void LogParseIssue(string message)
+        {
+            if (Strict) Debug.LogError(message);
+            else Debug.LogWarning(message);
+        }
+
+        /// <summary>
         /// CSV 한 줄 파싱
         /// </summary>
         static ScriptLine ParseLine(string row, int lineNumber)
@@ -88,7 +104,7 @@ namespace LoveAlgo.Story
 
             if (columns.Length < minColumns)
             {
-                Debug.LogWarning($"[ScriptParser] Line {lineNumber}: 컬럼 부족 ({columns.Length}/{minColumns}) - \"{TruncateForLog(row)}\"");
+                LogParseIssue($"[ScriptParser] Line {lineNumber}: 컬럼 부족 ({columns.Length}/{minColumns}) - \"{TruncateForLog(row)}\"");
                 return null;
             }
 
@@ -105,14 +121,14 @@ namespace LoveAlgo.Story
             // Type 파싱
             if (!TryParseType(typeStr, out LineType type))
             {
-                Debug.LogWarning($"[ScriptParser] Line {lineNumber}: 알 수 없는 Type '{typeStr}'");
+                LogParseIssue($"[ScriptParser] Line {lineNumber}: 알 수 없는 Type '{typeStr}'");
                 return null;
             }
 
             // Next 파싱 (엄격 모드: 빈 Next는 오류)
             ParseNext(nextStr, out NextType nextType, out float delay);
 
-            // 빈 Next → Option/Choice만 허용, 나머지는 오류
+            // 빈 Next → Option/Choice만 허용, 나머지는 오류 (Strict 무관 — 이미 LogError)
             if (string.IsNullOrEmpty(nextStr))
             {
                 if (type != LineType.Option && type != LineType.Choice)
@@ -129,7 +145,7 @@ namespace LoveAlgo.Story
                 var bgParts = value.Split(':');
                 if (bgParts.Length < 2)
                 {
-                    Debug.LogWarning($"[ScriptParser] Line {lineNumber}: BG 전환 타입(Cut/Fade/Cross) 생략됨. "
+                    LogParseIssue($"[ScriptParser] Line {lineNumber}: BG 전환 타입(Cut/Fade/Cross) 생략됨. "
                         + $"명시적으로 지정하세요 — 예: {value}:Cross");
                 }
             }
