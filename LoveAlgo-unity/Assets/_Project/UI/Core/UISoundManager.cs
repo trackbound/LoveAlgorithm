@@ -119,6 +119,7 @@ namespace LoveAlgo.UI
         /// </summary>
         public void BindAllButtons()
         {
+            PruneDestroyedButtons();
             // 비활성화된 오브젝트 포함해서 모든 버튼 찾기
             var buttons = FindObjectsByType<Button>(FindObjectsInactive.Include);
             foreach (var button in buttons)
@@ -128,10 +129,33 @@ namespace LoveAlgo.UI
         }
 
         /// <summary>
+        /// 등록·제외 HashSet에서 destroyed 버튼 항목을 제거. 동적 UI(ChoicePopup 버튼, 미니게임
+        /// 페탈 등)가 자주 생성/파괴되면 HashSet에 죽은 참조가 누적되므로 주기적으로 청소.
+        /// BindAllButtons/RegisterButton 진입 시 자동 호출되며, 외부에서 명시적 호출도 가능.
+        /// </summary>
+        public void PruneDestroyedButtons()
+        {
+            // Unity의 overloaded == 로 destroyed Object를 null로 인식 → 1줄 제거.
+            registeredButtons.RemoveWhere(b => b == null);
+            excludedButtons.RemoveWhere(b => b == null);
+        }
+
+        // RegisterButton 호출 누적 카운터 — N번에 한 번 prune로 비용 분산.
+        int _registerCallsSincePrune;
+        const int PruneEveryN = 64;
+
+        /// <summary>
         /// 개별 버튼 등록
         /// </summary>
         public void RegisterButton(Button button)
         {
+            // 등록 직전 누적 prune (Contains 검사가 죽은 참조로 잘못 답하지 않게).
+            if (++_registerCallsSincePrune >= PruneEveryN)
+            {
+                _registerCallsSincePrune = 0;
+                PruneDestroyedButtons();
+            }
+
             if (button == null || registeredButtons.Contains(button)) return;
 
             registeredButtons.Add(button);
@@ -183,10 +207,11 @@ namespace LoveAlgo.UI
         }
 
         /// <summary>
-        /// 새로 생성된 UI에 버튼 바인딩 (동적 UI용)
+        /// 새로 생성된 UI에 버튼 바인딩 (동적 UI용). 진입 시 prune해 죽은 참조 누적 방지.
         /// </summary>
         public void BindButtonsInTransform(Transform root)
         {
+            PruneDestroyedButtons();
             var buttons = root.GetComponentsInChildren<Button>(true);
             foreach (var button in buttons)
             {
