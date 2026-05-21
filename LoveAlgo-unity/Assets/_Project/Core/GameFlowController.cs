@@ -286,40 +286,21 @@ namespace LoveAlgo.Core
             {
                 var ct = _gm.GetCancellationTokenOnDestroy();
                 var fx = ScreenFX.Instance;
-                var loading = LoadingScreen.Instance;
 
-                // 1) 페이드 아웃
-                if (fx != null)
-                    await fx.FadeOutAsync(0.6f, ct);
-                else
-                    await UniTask.Yield(ct);
+                // FadeOut → Loading 표시 → FadeIn (로딩 화면이 부드럽게 드러남)
+                if (fx != null) await fx.EnterLoadingAsync(0.6f, 0.5f, ct);
+                else await UniTask.Yield(ct);
 
-                // 2) 로딩 화면 표시 (암전 위에)
-                if (loading != null)
-                    await loading.ShowAsync(ct);
-
-                // 3) 페이드 해제 (로딩 화면이 부드럽게 드러남)
-                if (fx != null)
-                    await fx.FadeInAsync(0.5f, ct);
-
-                // 4) UI 전환 + 프롤로그 UI 준비 (로딩 화면 뒤에서)
+                // UI 전환 + 프롤로그 UI 준비 (로딩 화면 뒤에서)
                 ChangePhase(GamePhase.Prologue);
 
-                // 5) 로딩 화면 표시 유지
+                // 로딩 화면 표시 유지
                 await UniTask.Delay(System.TimeSpan.FromSeconds(0.8f), cancellationToken: ct);
 
-                // 6) 페이드 아웃 (로딩 화면 위에 암전)
-                if (fx != null)
-                    await fx.FadeOutAsync(0.5f, ct);
+                // FadeOut → Loading 제거 → FadeIn (인게임 등장)
+                if (fx != null) await fx.ExitLoadingAsync(0.5f, 2.0f, ct);
 
-                // 7) 로딩 화면 제거 (암전 상태라 안 보임)
-                loading?.HideImmediate();
-
-                // 8) 인게임 페이드 인 (로딩 후 부드러운 등장)
-                if (fx != null)
-                    await fx.FadeInAsync(2.0f, ct);
-
-                // 10) 프롤로그 스크립트 실행 (전환 완료 후 시작)
+                // 프롤로그 스크립트 실행 (전환 완료 후 시작)
                 ScriptRunner.Instance?.StartScript(_gm.PrologueScript).Forget();
             }
             finally
