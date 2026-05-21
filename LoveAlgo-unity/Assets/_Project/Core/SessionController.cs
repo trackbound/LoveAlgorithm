@@ -219,6 +219,24 @@ namespace LoveAlgo.Core
                 ? customLabel
                 : GetSaveChapterName(scriptName);
 
+            // 썸네일을 먼저 commit한 뒤에만 JSON 저장 — 데이터/썸네일 불일치 방지.
+            // pending 우선(수동저장 팝업): commit 실패 시 옛 슬롯 유지(데이터 저장도 보류) →
+            // 사용자가 잘못된 시각화 + 새 데이터 조합을 보지 않도록 보수적으로 차단.
+            // 자동저장: 즉시 캡처(CaptureScreenshot) — 캡처 실패는 내부에서 LogWarning만 하고
+            // 데이터 저장은 계속 (자동저장은 데이터 보존 우선, 썸네일은 best-effort).
+            if (usePendingThumbnail)
+            {
+                if (!SaveManager.TryCommitPendingScreenshot(slot))
+                {
+                    Debug.LogError($"[SessionController] 슬롯 {slot} pending 썸네일 commit 실패 — 데이터 저장도 보류 (옛 슬롯 유지)");
+                    return;
+                }
+            }
+            else
+            {
+                SaveManager.CaptureScreenshot(slot);
+            }
+
             SaveManager.Save(
                 slot,
                 _gm.CurrentPhase,
@@ -229,22 +247,6 @@ namespace LoveAlgo.Core
                 lineIndex,
                 chapterName
             );
-
-            // 스크린샷 저장
-            // - 수동 저장 팝업: ShowSave에서 미리 캡처한 pending 썸네일 우선 사용
-            //   (commit 실패 시 즉시 재캡처는 SaveLoadPopup/Confirm/딤이 찍힐 위험이 있어 생략)
-            // - 자동저장/기타: pending 미사용 시 즉시 캡처
-            if (usePendingThumbnail)
-            {
-                if (!SaveManager.TryCommitPendingScreenshot(slot))
-                {
-                    Debug.LogWarning($"[SessionController] 슬롯 {slot} pending 썸네일 commit 실패 — 기존 썸네일 유지");
-                }
-            }
-            else
-            {
-                SaveManager.CaptureScreenshot(slot);
-            }
         }
 
         /// <summary>
