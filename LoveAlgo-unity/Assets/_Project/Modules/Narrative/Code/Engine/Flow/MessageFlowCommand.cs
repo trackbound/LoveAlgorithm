@@ -40,7 +40,7 @@ namespace LoveAlgo.Story.StoryEngine.Flow
 
             // 메시지 수신 처리 (MessengerManager가 ChatRoom 업데이트 + OnNewMessage 발화 → PhoneNotificationButton 자동 반응)
             MessengerManager.ReceiveMessage(characterId, text, day);
-            Debug.Log($"[Flow] Message — '{characterId}' → \"{text}\"{(waitForResponse ? " (응답 대기)" : "")}");
+            Log.Info($"[Flow] Message — '{characterId}' → \"{text}\"{(waitForResponse ? " (응답 대기)" : "")}");
 
             // 확인 필수 메시지: 폰 자동 오픈 + 사용자 응답 대기
             if (waitForResponse)
@@ -58,7 +58,7 @@ namespace LoveAlgo.Story.StoryEngine.Flow
 
                 // 사용자가 폰을 닫을 때까지 대기 (CancellationToken 자동 처리)
                 await UniTask.WaitWhile(() => phone.IsOpen, cancellationToken: ct);
-                Debug.Log("[Flow] Message:wait — 사용자가 폰 닫음, 스토리 계속");
+                Log.Info("[Flow] Message:wait — 사용자가 폰 닫음, 스토리 계속");
             }
         }
     }

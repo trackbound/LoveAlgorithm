@@ -73,7 +73,7 @@ namespace LoveAlgo.Story.StoryEngine.Flow
                 {
                     string hhmm = token.Substring(5);
                     ls.SetClockOverride(hhmm);
-                    Debug.Log($"[Flow][LockScreen] 시계 오버라이드: {hhmm}");
+                    Log.Info($"[Flow][LockScreen] 시계 오버라이드: {hhmm}");
                 }
                 else if (string.Equals(token, "FadeOut", StringComparison.OrdinalIgnoreCase))
                     withFadeOut = true;
@@ -120,7 +120,7 @@ namespace LoveAlgo.Story.StoryEngine.Flow
                 ls.SetClockOverride(""); // 다음 호출에 영향 X
             }
 
-            Debug.Log("[Flow][LockScreen] 완료 — 스토리 복귀");
+            Log.Info("[Flow][LockScreen] 완료 — 스토리 복귀");
         }
 
         static bool Equals(string a, string b) =>

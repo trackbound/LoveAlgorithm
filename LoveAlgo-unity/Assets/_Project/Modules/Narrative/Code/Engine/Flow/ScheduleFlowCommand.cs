@@ -1,5 +1,6 @@
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using LoveAlgo.Common;
 using UnityEngine;
 using LoveAlgo.Core;
 using LoveAlgo.UI;
@@ -17,7 +18,7 @@ namespace LoveAlgo.Story.StoryEngine.Flow
 
         public static async UniTask ExecuteAsync(CancellationToken ct)
         {
-            Debug.Log("[Flow] Schedule — 인라인 스케줄 시작");
+            Log.Info("[Flow] Schedule — 인라인 스케줄 시작");
 
             var gm = GameManager.Instance;
             if (gm == null)
@@ -49,7 +50,7 @@ namespace LoveAlgo.Story.StoryEngine.Flow
 
             if (fx != null) await fx.FadeInAsync(FadeDuration, ct);
 
-            Debug.Log("[Flow] Schedule — 인라인 스케줄 완료, 스토리 복귀");
+            Log.Info("[Flow] Schedule — 인라인 스케줄 완료, 스토리 복귀");
         }
     }
 }

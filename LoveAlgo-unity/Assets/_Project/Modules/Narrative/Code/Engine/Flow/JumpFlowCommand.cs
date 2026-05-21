@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using LoveAlgo.Common;
 using UnityEngine;
 using LoveAlgo.Core;
 
@@ -27,7 +28,7 @@ namespace LoveAlgo.Story.StoryEngine.Flow
                 {
                     if (!CheckHopBudget(targetId)) return false;
                     currentIndex = targetIndex - 1;
-                    Debug.Log($"[Flow] Jump -> {targetId} (index {targetIndex})");
+                    Log.Info($"[Flow] Jump -> {targetId} (index {targetIndex})");
                     return true;
                 }
                 Debug.LogError($"[Flow] Jump 대상 '{targetId}'를 찾을 수 없습니다.");
