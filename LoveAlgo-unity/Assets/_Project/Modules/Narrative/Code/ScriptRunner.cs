@@ -40,6 +40,19 @@ namespace LoveAlgo.Story
 
         ScriptEngine _engine;
 
+        /// <summary>스토리 CSV 캐시 — 같은 스크립트 반복 로드 시 Resources.Load 비용 회피.</summary>
+        readonly Dictionary<string, TextAsset> _scriptCache = new();
+
+        TextAsset LoadScriptAsset(string scriptName)
+        {
+            if (string.IsNullOrEmpty(scriptName)) return null;
+            if (_scriptCache.TryGetValue(scriptName, out var cached) && cached != null)
+                return cached;
+            var asset = Resources.Load<TextAsset>($"Story/{scriptName}");
+            if (asset != null) _scriptCache[scriptName] = asset;
+            return asset;
+        }
+
         public void SetAutoDelay(float normalized)
         {
             // 0=느림(6초 기본 딜레이), 1=빠름(0.3초) — 슬라이더 전 구간에서 차이 체감
@@ -136,7 +149,7 @@ namespace LoveAlgo.Story
 
         public async UniTask StartScript(string scriptName)
         {
-            var asset = Resources.Load<TextAsset>($"Story/{scriptName}");
+            var asset = LoadScriptAsset(scriptName);
             if (asset == null)
             {
                 Debug.LogError($"[ScriptRunner] 스크립트 '{scriptName}'를 찾을 수 없습니다.");
@@ -150,7 +163,7 @@ namespace LoveAlgo.Story
 
         public async UniTask StartScriptFrom(string scriptName, string lineId, int lineIdx)
         {
-            var asset = Resources.Load<TextAsset>($"Story/{scriptName}");
+            var asset = LoadScriptAsset(scriptName);
             if (asset == null)
             {
                 Debug.LogError($"[ScriptRunner] 스크립트 '{scriptName}' 없음");
