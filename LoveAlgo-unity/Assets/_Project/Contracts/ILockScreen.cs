@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
+using LoveAlgo.LockScreen;
 using LoveAlgo.LockScreen.Data;
 
-namespace LoveAlgo.LockScreen
+namespace LoveAlgo.Contracts
 {
     /// <summary>
     /// PC잠금 모듈 외부 계약.

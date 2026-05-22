@@ -5,11 +5,11 @@ using LoveAlgo.Story;
 using LoveAlgo.UI;
 using UnityEngine;
 
-namespace LoveAlgo.Narrative
+namespace LoveAlgo.Contracts
 {
     /// <summary>
     /// 내러티브(스크립트 엔진) 모듈 외부 계약.
-    /// 구현: <see cref="NarrativeModule"/>. 내부 위임: <see cref="ScriptRunner"/>.
+    /// 구현: <see cref="LoveAlgo.Narrative.NarrativeModule"/>. 내부 위임: <see cref="ScriptRunner"/>.
     /// </summary>
     public interface INarrative
     {

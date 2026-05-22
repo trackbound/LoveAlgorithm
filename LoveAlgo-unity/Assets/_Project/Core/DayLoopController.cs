@@ -1,3 +1,4 @@
+using LoveAlgo.Contracts;
 using System.Threading;
 using UnityEngine;
 using LoveAlgo.Modules.Affinity;

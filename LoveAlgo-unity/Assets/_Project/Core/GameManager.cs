@@ -1,3 +1,4 @@
+using LoveAlgo.Contracts;
 using UnityEngine;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
@@ -68,7 +69,7 @@ namespace LoveAlgo.Core
 
             // 게임 설치 후 최초 1회 진입: EntryRouter가 LockScreen GameStart 띄우는 중 → Title 전환 보류.
             // LockScreen Outro Blackout 시점에 EntryRouter가 ChangePhase(Title)을 호출한다.
-            var ls = LoveAlgo.Common.Services.TryGet<LoveAlgo.LockScreen.ILockScreen>();
+            var ls = LoveAlgo.Common.Services.TryGet<LoveAlgo.Contracts.ILockScreen>();
             if (ls != null && !ls.IsPasswordSet)
             {
                 Debug.Log("[GameManager] 첫 진입(LockScreen 흐름) — Title 전환 보류");
@@ -83,7 +84,7 @@ namespace LoveAlgo.Core
             // 해상도/전체화면 저장소는 SettingsModule이 마스터. SettingsModule(-450)이
             // 이미 Awake에서 Load + ApplyResolution 자체 호출 흐름을 갖춰두지 않으므로,
             // GameManager 시작 시 한 번 위임 호출해 화면에 반영한다.
-            var settings = LoveAlgo.Common.Services.TryGet<LoveAlgo.Settings.ISettings>();
+            var settings = LoveAlgo.Common.Services.TryGet<LoveAlgo.Contracts.ISettings>();
             settings?.ApplyResolution();
         }
 

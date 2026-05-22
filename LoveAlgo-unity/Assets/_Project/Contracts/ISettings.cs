@@ -1,9 +1,9 @@
-namespace LoveAlgo.Settings
+namespace LoveAlgo.Contracts
 {
     /// <summary>
     /// 사용자 설정 모듈 외부 계약.
     /// 볼륨·해상도·대사 속도 등 PlayerPrefs 보관 설정의 단일 접근점.
-    /// 구현: <see cref="SettingsModule"/>.
+    /// 구현: <see cref="LoveAlgo.Settings.SettingsModule"/>.
     /// </summary>
     public interface ISettings
     {

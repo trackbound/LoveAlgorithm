@@ -4,11 +4,11 @@ using LoveAlgo.Core;
 using LoveAlgo.Story.SaveSystem;
 using UnityEngine;
 
-namespace LoveAlgo.Save
+namespace LoveAlgo.Contracts
 {
     /// <summary>
     /// 세이브/로드 모듈 외부 계약.
-    /// 구현: <see cref="SaveModule"/>.
+    /// 구현: <see cref="LoveAlgo.Save.SaveModule"/>.
     /// </summary>
     public interface ISave
     {

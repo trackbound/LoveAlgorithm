@@ -1,7 +1,8 @@
 using System;
+using LoveAlgo.Simulation;
 using LoveAlgo.UI;
 
-namespace LoveAlgo.Simulation
+namespace LoveAlgo.Contracts
 {
     /// <summary>
     /// 시뮬레이션 sub-mode가 구현하는 인터페이스. ScheduleModule/ShopModule 등이 구현.

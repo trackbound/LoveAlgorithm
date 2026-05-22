@@ -1,4 +1,6 @@
-namespace LoveAlgo.Schedule
+using LoveAlgo.Schedule;
+
+namespace LoveAlgo.Contracts
 {
     /// <summary>
     /// 스케줄(자유행동) 모듈 외부 계약.

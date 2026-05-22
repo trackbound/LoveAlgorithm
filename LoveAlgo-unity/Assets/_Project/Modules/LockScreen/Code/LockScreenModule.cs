@@ -1,3 +1,4 @@
+using LoveAlgo.Contracts;
 using LoveAlgo.Common;
 using LoveAlgo.LockScreen.UI;
 using LoveAlgo.UI;

@@ -1,9 +1,9 @@
-namespace LoveAlgo.Modules.Stats
+namespace LoveAlgo.Contracts
 {
     /// <summary>
     /// 플레이어 스탯 모듈 외부 계약.
     /// 다른 모듈은 GameState 직접 참조 대신 이 인터페이스 사용.
-    /// 구현: <see cref="StatsModule"/>.
+    /// 구현: <see cref="LoveAlgo.Modules.Stats.StatsModule"/>.
     /// </summary>
     public interface IStats
     {

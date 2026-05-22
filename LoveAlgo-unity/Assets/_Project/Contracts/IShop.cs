@@ -1,4 +1,6 @@
-namespace LoveAlgo.Shop
+using LoveAlgo.Shop;
+
+namespace LoveAlgo.Contracts
 {
     /// <summary>
     /// 상점/인벤토리 모듈 외부 계약.

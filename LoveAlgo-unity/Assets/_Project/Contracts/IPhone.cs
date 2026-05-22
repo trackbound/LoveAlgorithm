@@ -1,8 +1,8 @@
-namespace LoveAlgo.Phone
+namespace LoveAlgo.Contracts
 {
     /// <summary>
     /// 메신저(폰) 모듈 외부 계약.
-    /// 구현: <see cref="PhoneModule"/>.
+    /// 구현: <see cref="LoveAlgo.Phone.PhoneModule"/>.
     /// </summary>
     public interface IPhone
     {

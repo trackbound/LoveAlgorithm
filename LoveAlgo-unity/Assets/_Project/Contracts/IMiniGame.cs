@@ -1,11 +1,10 @@
 using Cysharp.Threading.Tasks;
-using System.Threading;
 
-namespace LoveAlgo.MiniGame
+namespace LoveAlgo.Contracts
 {
     /// <summary>
     /// 미니게임 모듈 외부 계약.
-    /// 구현: <see cref="MiniGameModule"/>.
+    /// 구현: <see cref="LoveAlgo.MiniGame.MiniGameModule"/>.
     /// </summary>
     public interface IMiniGame
     {

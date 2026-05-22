@@ -1,10 +1,10 @@
 using LoveAlgo.UI;
 
-namespace LoveAlgo.Title
+namespace LoveAlgo.Contracts
 {
     /// <summary>
     /// 타이틀/이름입력/Extra 모듈 외부 계약.
-    /// 구현: <see cref="TitleModule"/>.
+    /// 구현: <see cref="LoveAlgo.Title.TitleModule"/>.
     /// </summary>
     public interface ITitle
     {

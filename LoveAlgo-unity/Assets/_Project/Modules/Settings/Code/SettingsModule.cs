@@ -1,3 +1,4 @@
+using LoveAlgo.Contracts;
 using System.Collections.Generic;
 using LoveAlgo.Common;
 using LoveAlgo.Core;

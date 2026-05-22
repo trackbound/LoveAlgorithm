@@ -1,4 +1,6 @@
-namespace LoveAlgo.Modules.DayLoop
+using LoveAlgo.Modules.DayLoop;
+
+namespace LoveAlgo.Contracts
 {
     /// <summary>
     /// 게임 진행 흐름 모듈 외부 계약.

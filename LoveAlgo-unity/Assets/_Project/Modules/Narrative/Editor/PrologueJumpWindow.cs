@@ -1,4 +1,5 @@
 #if UNITY_EDITOR
+using LoveAlgo.Contracts;
 using System.Collections.Generic;
 using System.IO;
 using LoveAlgo.Common;

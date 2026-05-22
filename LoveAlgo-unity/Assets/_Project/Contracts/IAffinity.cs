@@ -1,5 +1,6 @@
+using LoveAlgo.Modules.Affinity;
 
-namespace LoveAlgo.Modules.Affinity
+namespace LoveAlgo.Contracts
 {
     /// <summary>
     /// 호감도/엔딩 분기 모듈 외부 계약.

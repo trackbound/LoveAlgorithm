@@ -1,8 +1,9 @@
 using LoveAlgo.Core;
+using LoveAlgo.Stage;
 using LoveAlgo.Story;
 using UnityEngine;
 
-namespace LoveAlgo.Stage
+namespace LoveAlgo.Contracts
 {
     /// <summary>
     /// 스테이지 모듈 외부 계약.

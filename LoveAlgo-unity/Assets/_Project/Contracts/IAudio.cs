@@ -1,9 +1,9 @@
-namespace LoveAlgo.Modules.Audio
+namespace LoveAlgo.Contracts
 {
     /// <summary>
     /// 오디오 모듈 외부 계약 (최소 표면).
     /// 볼륨 슬라이더 같은 설정 UI는 기존 AudioManager 직접 사용. 이 인터페이스는 cross-module 호출만.
-    /// 구현: <see cref="AudioModule"/>.
+    /// 구현: <see cref="LoveAlgo.Modules.Audio.AudioModule"/>.
     /// </summary>
     public interface IAudio
     {
