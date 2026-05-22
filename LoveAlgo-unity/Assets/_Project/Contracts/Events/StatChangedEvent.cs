@@ -1,4 +1,4 @@
-namespace LoveAlgo.Modules.Stats
+namespace LoveAlgo.Contracts
 {
     /// <summary>스탯이 변경되면 발행. statId는 GameConstants.CombatStatIds 또는 "Fatigue".</summary>
     public readonly struct StatChangedEvent

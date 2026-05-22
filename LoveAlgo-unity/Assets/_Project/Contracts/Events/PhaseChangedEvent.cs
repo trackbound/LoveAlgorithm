@@ -1,4 +1,6 @@
-namespace LoveAlgo.Modules.DayLoop
+using LoveAlgo.Modules.DayLoop;
+
+namespace LoveAlgo.Contracts
 {
     /// <summary>EventPhase가 바뀌면 발행.</summary>
     public readonly struct PhaseChangedEvent

@@ -1,4 +1,4 @@
-namespace LoveAlgo.Modules.DayLoop
+namespace LoveAlgo.Contracts
 {
     /// <summary>일자가 바뀌면 발행.</summary>
     public readonly struct DayChangedEvent

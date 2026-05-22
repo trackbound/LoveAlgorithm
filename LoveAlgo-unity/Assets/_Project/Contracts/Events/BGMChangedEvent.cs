@@ -1,4 +1,4 @@
-namespace LoveAlgo.Modules.Audio
+namespace LoveAlgo.Contracts
 {
     /// <summary>BGM이 변경되거나 정지될 때 발행. Name이 null/빈문자열이면 정지.</summary>
     public readonly struct BGMChangedEvent
