@@ -1,14 +1,14 @@
 LineID,Type,Speaker,Value,Next
-pro_001,BG,,bg_00_00:Cut,await
+pro_001,BG,,빈 화면:Cut,await
 ,FX,,Video:roa_CG01_intro,await
-pro_004,CG,,cg_c01_01:4.0,await
+pro_004,CG,,로아 첫만남:4.0,await
 pro_005,Text,로아,기다리고 있었어!,click
-pro_003,Sound,,BGM:Roa,>
+pro_003,Sound,,BGM:로아,>
 pro_006,Text,로아,"왜 이렇게 늦게 왔어, 보고 싶었잖아!",click
 pro_007,Text,로아,"나는 너와 함께하게 된 일상형 비서 AI, 로아야.",click
 pro_008,Text,로아,"만나서 기뻐!\n아직 너의 데이터를 정리하는 중이니까, 잠시만 기다려줘.",click
 pro_009,Text,로아,난 너한테 필요한 사람이 될 거야. 내가 없으면 안 될 만큼!\n,click
-pro_010,BG,,bg_10_06:Cut,>
+pro_010,BG,,자취방 책상 모니터:Cut,>
 pro_011,CG,,Close,await
 pro_012,Char,,C:Enter:c01:_00:Mob,await
 pro_013,Text,{{Player}},"안녕, 로아.",click

@@ -235,6 +235,12 @@ namespace LoveAlgo.Story
         /// </summary>
         Sprite FindSprite(string name)
         {
+            // 1차: ResourceCatalogSO (한글 키 또는 영문 ID)
+            var catalog = LoveAlgo.Story.Data.ResourceCatalogSO.Instance;
+            if (catalog != null && catalog.TryGetOverlay(name, out var byCatalog))
+                return byCatalog;
+
+            // 2차: Inspector overlayEntries 정확 매칭
             if (overlayEntries != null)
             {
                 foreach (var entry in overlayEntries)
@@ -244,9 +250,10 @@ namespace LoveAlgo.Story
                 }
             }
 
+            // 3차: Resources/Overlay/{name}.png 폴백
             var sprite = Resources.Load<Sprite>($"Overlay/{name}");
             if (sprite == null)
-                Debug.LogWarning($"[VirtualBGOverlay] 스프라이트 없음: {name} (Resources/Overlay/{name}.png)");
+                Debug.LogWarning($"[VirtualBGOverlay] 스프라이트 없음: {name} (Catalog/Inspector/Resources 모두 미발견)");
             return sprite;
         }
 

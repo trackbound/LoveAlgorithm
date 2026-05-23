@@ -586,7 +586,9 @@ namespace LoveAlgo.DevTools
             }
 
             StageSyncLog.Info("NextDay", $"phase=DayLoop day={prevDay}→{newDay}, target=line {targetIdx + 1}");
-            runner.JumpWithStateSyncAsync(targetIdx + 1).Forget();
+            // 같은 스크립트 내 점프지만 안전한 일관성 위해 GameFlowJumper 사용
+            string scriptName = runner.CurrentScriptName ?? "Prologue";
+            GameFlowJumper.JumpToScriptAsync(scriptName, targetIdx + 1, GamePhase.DayLoop).Forget();
         }
 
         /// <summary>주어진 prefix로 시작하는 첫 Mark의 인덱스. 없으면 -1.</summary>
@@ -773,8 +775,8 @@ namespace LoveAlgo.DevTools
         // ══════════════════════════════════════════════
 
         /// <summary>
-        /// Mark 라벨로 점프. Mark 라인은 LineID가 없을 수 있으므로 인덱스 기반.
-        /// Mark는 합성기에서 "그 다음 라인부터 스캔 시작"의 기준 — Mark 다음 라인으로 진입.
+        /// Mark 라벨로 점프 — GameFlowJumper에 위임.
+        /// Mark 라인 다음 인덱스로 진입 (Mark는 메타 라인, no-op).
         /// </summary>
         void JumpToMarkAsync(string label, int markIndex)
         {
@@ -787,35 +789,19 @@ namespace LoveAlgo.DevTools
 
             isJumping = true;
             mode = PanelMode.None;
+
+            string scriptName = runner.CurrentScriptName ?? gm.PrologueScript;
+            var phase = GameFlowJumper.InferPhaseFromScript(scriptName);
+
+            Debug.Log($"[DebugPanel] Mark 점프 → '{label}' (line {targetIndex})");
+            DoJumpToIndexAsync(scriptName, targetIndex, phase).Forget();
+        }
+
+        async UniTaskVoid DoJumpToIndexAsync(string scriptName, int index, GamePhase phase)
+        {
             try
             {
-                runner.Stop();
-                gm.CleanupStage();
-
-                if (string.IsNullOrEmpty(gm.PlayerName))
-                    gm.SetPlayerName("테스트");
-                GameState.Instance?.SetPlayerName(gm.PlayerName);
-
-                gm.SetCurrentPhase(GamePhase.Prologue);
-                UIManager.Instance?.ShowOnly(MainUIType.Dialogue);
-
-                var dialogueUI = UIManager.Instance?.DialogueUI;
-                dialogueUI?.Clear();
-                dialogueUI?.ClearLog();
-                dialogueUI?.HideImmediate();
-
-                ScreenFX.Instance?.SetClear();
-                ScreenFX.Instance?.EyeOpenImmediate();
-
-                var flow = gm.Flow;
-                if (flow != null)
-                {
-                    runner.OnScriptEnd -= flow.OnPrologueEnd;
-                    runner.OnScriptEnd += flow.OnPrologueEnd;
-                }
-
-                Debug.Log($"[DebugPanel] Mark 점프: '{label}' → line {targetIndex}");
-                runner.JumpWithStateSyncAsync(targetIndex).Forget();
+                await GameFlowJumper.JumpToScriptAsync(scriptName, index, phase);
             }
             finally
             {
@@ -830,44 +816,14 @@ namespace LoveAlgo.DevTools
 
             isJumping = true;
             mode = PanelMode.None;
+            DoJumpByLineIdAsync(gm.PrologueScript, lineId).Forget();
+        }
 
+        async UniTaskVoid DoJumpByLineIdAsync(string scriptName, string lineId)
+        {
             try
             {
-                // 1. 기존 실행 정리
-                ScriptRunner.Instance?.Stop();
-                gm.CleanupStage();
-
-                // 2. 플레이어 이름 (미설정 시 기본값)
-                if (string.IsNullOrEmpty(gm.PlayerName))
-                    gm.SetPlayerName("테스트");
-                GameState.Instance?.SetPlayerName(gm.PlayerName);
-
-                // 3. Phase → Prologue, UI 전환
-                gm.SetCurrentPhase(GamePhase.Prologue);
-                UIManager.Instance?.ShowOnly(MainUIType.Dialogue);
-
-                var dialogueUI = UIManager.Instance?.DialogueUI;
-                dialogueUI?.Clear();
-                dialogueUI?.ClearLog();
-                dialogueUI?.HideImmediate();
-
-                // 4. 화면 효과 초기화
-                ScreenFX.Instance?.SetClear();
-                ScreenFX.Instance?.EyeOpenImmediate();
-
-                // 5. 프롤로그 종료 이벤트 연결 + 스크립트 실행
-                var runner = ScriptRunner.Instance;
-                if (runner != null)
-                {
-                    var flow = gm.Flow;
-                    if (flow != null)
-                    {
-                        runner.OnScriptEnd -= flow.OnPrologueEnd;
-                        runner.OnScriptEnd += flow.OnPrologueEnd;
-                    }
-                    // 무대 상태 동기화 점프 (점프 라인까지의 누적 BG/Char/BGM 등을 즉시 복원)
-                    runner.StartScriptFromWithStageSync(gm.PrologueScript, lineId, 0).Forget();
-                }
+                await GameFlowJumper.JumpToScriptByLineIdAsync(scriptName, lineId, GamePhase.Prologue);
             }
             finally
             {

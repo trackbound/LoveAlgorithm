@@ -16,7 +16,7 @@ namespace LoveAlgo.Story
         // ─── BG (배경) ────────────────────────────────────────────
         public static readonly Dictionary<string, string> BG = new(KO)
         {
-            { "검은 화면",                "bg_00_00" },
+            { "빈 화면",                  "bg_00_00" },
             { "자취방 전경 낮",           "bg_10_01" },
             { "자취방 전경 밤",           "bg_10_02" },
             { "자취방 전경 밤 불켜기",    "bg_10_03" },

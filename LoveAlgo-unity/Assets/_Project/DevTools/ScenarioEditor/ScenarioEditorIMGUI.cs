@@ -5,6 +5,7 @@ using Cysharp.Threading.Tasks;
 using UnityEngine;
 using LoveAlgo.Core;
 using LoveAlgo.Story;
+using LoveAlgo.Story.Data;
 using LoveAlgo.Story.SaveSystem;
 using LoveAlgo.Story.StoryEngine;
 
@@ -250,24 +251,22 @@ namespace LoveAlgo.DevTools.ScenarioEditor
         async UniTaskVoid JumpToSelectedInMemory()
         {
             if (workingLines == null || selectedIndex < 0 || selectedIndex >= workingLines.Count) return;
-            var runner = ScriptRunner.Instance;
-            if (runner == null) return;
 
             // 1. 편집기 먼저 닫기 — fade가 게임 화면에서 보이도록 (IMGUI 오버레이가 가리면 fade 안 보임)
             isOpen = false;
             activeDropdownKey = null;
 
-            // 2. 현재 메모리 상태를 CSV 문자열로 직렬화 → ScriptRunner에 in-memory 주입
+            // 2. 현재 메모리 상태를 CSV 문자열로 직렬화
             string csv = ScriptCsvSerializer.Serialize(workingLines);
             var selectedLine = workingLines[selectedIndex];
             StageSyncLog.Info("EditorJump",
                 $"target line=#{selectedIndex} lineId={selectedLine.LineID ?? "-"} type={selectedLine.Type} " +
                 $"(memory state, lines={workingLines.Count}, csv {csv.Length} chars)");
 
-            runner.LoadScript(csv, scriptName);
-
-            // 3. Fade 포함 점프
-            await runner.JumpWithStateSyncAsync(selectedIndex, withFade: true);
+            // 3. GameFlowJumper에 위임 — Phase/UI 스왑 + Tear-down + 페이드 포함
+            //    어떤 페이즈(타이틀/락스크린/스토리 중) 어디서든 안전하게 점프
+            var targetPhase = LoveAlgo.Core.GameFlowJumper.InferPhaseFromScript(scriptName);
+            await LoveAlgo.Core.GameFlowJumper.JumpToMemoryAsync(csv, scriptName, selectedIndex, targetPhase);
 
             currentRunningIndex = selectedIndex;
         }
@@ -521,8 +520,18 @@ namespace LoveAlgo.DevTools.ScenarioEditor
                 case LineType.Char:    DrawCharWidget(line);    break;
                 case LineType.BG:      DrawBGWidget(line);      break;
                 case LineType.Sound:   DrawSoundWidget(line);   break;
-                case LineType.CG:      DrawAssetWidget(line, "CG",      StoryMappings.CG);      break;
-                case LineType.SD:      DrawAssetWidget(line, "SD",      StoryMappings.SD);      break;
+                case LineType.CG:
+                {
+                    List<ResourceCatalogSO.SpriteEntry> cgList = ResourceCatalogSO.Instance != null ? ResourceCatalogSO.Instance.CG : null;
+                    DrawAssetWidget(line, "CG", cgList);
+                    break;
+                }
+                case LineType.SD:
+                {
+                    List<ResourceCatalogSO.SpriteEntry> sdList = ResourceCatalogSO.Instance != null ? ResourceCatalogSO.Instance.SD : null;
+                    DrawAssetWidget(line, "SD", sdList);
+                    break;
+                }
                 case LineType.Overlay: DrawGenericValueWidget(line, "Overlay Value");           break;
                 case LineType.FX:      DrawGenericValueWidget(line, "FX 명령 (예: CamShake:0.5)"); break;
                 case LineType.Flow:    DrawFlowWidget(line);    break;
@@ -631,21 +640,20 @@ namespace LoveAlgo.DevTools.ScenarioEditor
                 {
                     GUILayout.Space(4);
                     GUILayout.Label("<b>캐릭터</b>", new GUIStyle(GUI.skin.label) { richText = true });
-                    var chOptions = StoryMappings.Characters.Select(c => $"{c.DisplayName} ({c.Aliases?.FirstOrDefault() ?? c.Id})").ToArray();
-                    var chIds = StoryMappings.Characters.Select(c => c.Aliases?.FirstOrDefault() ?? c.Id).ToArray();
-                    int chIdx = Array.IndexOf(chIds, ch);
+                    var (chLabels, chVals) = GetCharacterOptions();
+                    int chIdx = Array.IndexOf(chVals, ch);
                     if (chIdx < 0) chIdx = 0;
-                    int newChIdx = DrawDropdown("Character", chIdx, chOptions, $"char_{selectedIndex}", 280);
-                    if (newChIdx >= 0) newCh = chIds[newChIdx];
+                    int newChIdx = DrawDropdown("Character", chIdx, chLabels, $"char_{selectedIndex}", 280);
+                    if (newChIdx >= 0 && newChIdx < chVals.Length) newCh = chVals[newChIdx];
                 }
                 GUILayout.Space(4);
                 GUILayout.Label("<b>표정</b>", new GUIStyle(GUI.skin.label) { richText = true });
-                var emKeys = StoryMappings.Emote.Keys.ToArray();
-                int emIdx = Array.IndexOf(emKeys, emote);
-                if (emIdx < 0) emIdx = Array.IndexOf(emKeys, "Default");
+                var (emLabels, emVals) = GetEmoteOptions();
+                int emIdx = Array.IndexOf(emVals, emote);
+                if (emIdx < 0) emIdx = Array.IndexOf(emVals, "Default");
                 if (emIdx < 0) emIdx = 0;
-                int newEmIdx = DrawDropdown("Emote", emIdx, emKeys, $"emote_{selectedIndex}", 280);
-                if (newEmIdx >= 0) newEmote = emKeys[newEmIdx];
+                int newEmIdx = DrawDropdown("Emote", emIdx, emLabels, $"emote_{selectedIndex}", 280);
+                if (newEmIdx >= 0 && newEmIdx < emVals.Length) newEmote = emVals[newEmIdx];
             }
 
             // Value 재합성
@@ -670,11 +678,10 @@ namespace LoveAlgo.DevTools.ScenarioEditor
             string transition = parts.Length > 1 ? parts[1] : "CrossFade";
 
             GUILayout.Label("<b>배경</b>", new GUIStyle(GUI.skin.label) { richText = true });
-            var bgKeys = StoryMappings.BG.Keys.ToArray();
-            int bgIdx = Array.IndexOf(bgKeys, bgKey);
-            if (bgIdx < 0) bgIdx = -1; // 미일치 — 첫 항목 선택 안 함, 사용자가 명시
-            int newIdx = DrawDropdown("BG", Mathf.Max(bgIdx, 0), bgKeys, $"bg_{selectedIndex}", 320);
-            string newBg = newIdx >= 0 ? bgKeys[newIdx] : bgKey;
+            var (labels, values) = GetSpriteOptions(ResourceCatalogSO.Instance?.BG);
+            int bgIdx = Array.IndexOf(values, bgKey);
+            int newIdx = DrawDropdown("BG", Mathf.Max(bgIdx, 0), labels, $"bg_{selectedIndex}", 320);
+            string newBg = (newIdx >= 0 && newIdx < values.Length) ? values[newIdx] : bgKey;
 
             GUILayout.Space(4);
             GUILayout.Label("<b>전환</b>", new GUIStyle(GUI.skin.label) { richText = true });
@@ -685,7 +692,68 @@ namespace LoveAlgo.DevTools.ScenarioEditor
 
             line.Value = $"{newBg}:{trans[newTIdx]}";
             GUILayout.Space(4);
-            GUILayout.Label($"<color=#888>Value: {line.Value}  ({StoryMappings.BG.GetValueOrDefault(newBg, "?")})</color>", new GUIStyle(GUI.skin.label) { richText = true });
+            GUILayout.Label($"<color=#888>Value: {line.Value}</color>", new GUIStyle(GUI.skin.label) { richText = true });
+        }
+
+        /// <summary>
+        /// Catalog SpriteEntry 리스트 → (표시 라벨[], 저장 값[]) 페어.
+        /// 표시: Aliases[0] 또는 Id. 저장도 동일 (Aliases[0] 있으면 한글 별칭 우선, 없으면 Id).
+        /// Catalog 없으면 StoryMappings 한글 키 폴백.
+        /// </summary>
+        static (string[] labels, string[] values) GetSpriteOptions(List<ResourceCatalogSO.SpriteEntry> list)
+        {
+            if (list != null && list.Count > 0)
+            {
+                var labels = list.Select(e => e?.DisplayLabel ?? "(null)").ToArray();
+                var values = list.Select(e => e?.DisplayLabel ?? "").ToArray(); // Aliases[0] 우선, 폴백 Id
+                return (labels, values);
+            }
+            // 폴백: StoryMappings 한글 키
+            return (new string[0], new string[0]);
+        }
+
+        static (string[] labels, string[] values) GetAudioOptions(List<ResourceCatalogSO.AudioEntry> list)
+        {
+            if (list != null && list.Count > 0)
+            {
+                var labels = list.Select(e => e?.DisplayLabel ?? "(null)").ToArray();
+                var values = list.Select(e => e?.DisplayLabel ?? "").ToArray();
+                return (labels, values);
+            }
+            return (new string[0], new string[0]);
+        }
+
+        static (string[] labels, string[] values) GetEmoteOptions()
+        {
+            var catalog = ResourceCatalogSO.Instance;
+            if (catalog != null && catalog.Emotes != null && catalog.Emotes.Count > 0)
+            {
+                var labels = catalog.Emotes.Select(e => e?.DisplayLabel ?? "(null)").ToArray();
+                var values = catalog.Emotes.Select(e => e?.DisplayLabel ?? "").ToArray();
+                return (labels, values);
+            }
+            // 폴백: StoryMappings
+            var keys = StoryMappings.Emote.Keys.ToArray();
+            return (keys, keys);
+        }
+
+        static (string[] labels, string[] values) GetCharacterOptions()
+        {
+            var catalog = ResourceCatalogSO.Instance;
+            if (catalog != null && catalog.Characters != null && catalog.Characters.Count > 0)
+            {
+                var labels = catalog.Characters.Select(c => $"{c.DisplayName} ({c.Id})").ToArray();
+                // 저장값: Aliases[0] 우선 → DisplayName → Id 순
+                var values = catalog.Characters.Select(c =>
+                    (c.Aliases != null && c.Aliases.Length > 0 && !string.IsNullOrEmpty(c.Aliases[0]))
+                        ? c.Aliases[0]
+                        : (!string.IsNullOrEmpty(c.DisplayName) ? c.DisplayName : c.Id)).ToArray();
+                return (labels, values);
+            }
+            // 폴백
+            var lbls = StoryMappings.Characters.Select(c => $"{c.DisplayName} ({c.Id})").ToArray();
+            var vals = StoryMappings.Characters.Select(c => c.Aliases?.FirstOrDefault() ?? c.Id).ToArray();
+            return (lbls, vals);
         }
 
         void DrawSoundWidget(ScriptLine line)
@@ -705,19 +773,38 @@ namespace LoveAlgo.DevTools.ScenarioEditor
             if (newChannel == "BGM")
             {
                 GUILayout.Label("<b>BGM (Stop 또는 곡명)</b>", new GUIStyle(GUI.skin.label) { richText = true });
-                var keys = new List<string> { "Stop" };
-                keys.AddRange(StoryMappings.BGM.Keys);
-                var arr = keys.ToArray();
-                int nIdx = Array.IndexOf(arr, name);
+                var (bgmLabels, bgmVals) = GetAudioOptions(ResourceCatalogSO.Instance?.BGM);
+                // "Stop" 옵션 prepend
+                var labels = new[] { "Stop" }.Concat(bgmLabels).ToArray();
+                var vals   = new[] { "Stop" }.Concat(bgmVals).ToArray();
+                int nIdx = Array.IndexOf(vals, name);
                 if (nIdx < 0) nIdx = 0;
-                int newNIdx = DrawDropdown("BGM", nIdx, arr, $"bgm_{selectedIndex}", 280);
-                if (newNIdx >= 0) name = arr[newNIdx];
+                int newNIdx = DrawDropdown("BGM", nIdx, labels, $"bgm_{selectedIndex}", 280);
+                if (newNIdx >= 0 && newNIdx < vals.Length) name = vals[newNIdx];
+            }
+            else if (newChannel == "SFX")
+            {
+                GUILayout.Label("<b>SFX (카탈로그 또는 직접 입력)</b>", new GUIStyle(GUI.skin.label) { richText = true });
+                var (sfxLabels, sfxVals) = GetAudioOptions(ResourceCatalogSO.Instance?.SFX);
+                if (sfxLabels.Length > 0)
+                {
+                    int nIdx = Array.IndexOf(sfxVals, name);
+                    if (nIdx < 0) nIdx = 0;
+                    int newNIdx = DrawDropdown("SFX", nIdx, sfxLabels, $"sfx_{selectedIndex}", 280);
+                    if (newNIdx >= 0 && newNIdx < sfxVals.Length) name = sfxVals[newNIdx];
+                }
+                else
+                {
+                    name = LabeledTextField("SFX 이름", name, 280);
+                    GUILayout.Label("<color=#ffaa88>※ SFX 카탈로그 비어있음 — 직접 입력</color>",
+                        new GUIStyle(GUI.skin.label) { richText = true, fontSize = 10 });
+                }
             }
             else
             {
-                // SFX/Voice: 카탈로그 빈약하므로 그냥 입력 + 경고
+                // Voice — 카탈로그 미정의
                 name = LabeledTextField($"{newChannel} 이름", name, 280);
-                GUILayout.Label("<color=#ffaa88>※ SFX/Voice 카탈로그 미정 — 정확한 파일명 입력 필요</color>",
+                GUILayout.Label("<color=#ffaa88>※ Voice 카탈로그 미정 — 정확한 파일명 입력 필요</color>",
                     new GUIStyle(GUI.skin.label) { richText = true, fontSize = 10 });
             }
 
@@ -726,7 +813,7 @@ namespace LoveAlgo.DevTools.ScenarioEditor
             GUILayout.Label($"<color=#888>Value: {line.Value}</color>", new GUIStyle(GUI.skin.label) { richText = true });
         }
 
-        void DrawAssetWidget(ScriptLine line, string label, Dictionary<string, string> catalog)
+        void DrawAssetWidget(ScriptLine line, string label, List<ResourceCatalogSO.SpriteEntry> catalogList)
         {
             var parts = (line.Value ?? "").Split(':');
             string first = parts.Length > 0 ? parts[0] : "";
@@ -749,11 +836,11 @@ namespace LoveAlgo.DevTools.ScenarioEditor
             {
                 GUILayout.Space(4);
                 GUILayout.Label($"<b>{label}</b>", new GUIStyle(GUI.skin.label) { richText = true });
-                var keys = catalog.Keys.ToArray();
-                int idx = Array.IndexOf(keys, first);
+                var (labels, values) = GetSpriteOptions(catalogList);
+                int idx = Array.IndexOf(values, first);
                 if (idx < 0) idx = 0;
-                int newIdx = DrawDropdown(label, idx, keys, $"asset_{selectedIndex}", 320);
-                string chosen = newIdx >= 0 && newIdx < keys.Length ? keys[newIdx] : first;
+                int newIdx = DrawDropdown(label, idx, labels, $"asset_{selectedIndex}", 320);
+                string chosen = (newIdx >= 0 && newIdx < values.Length) ? values[newIdx] : first;
                 line.Value = chosen;
             }
             GUILayout.Space(4);

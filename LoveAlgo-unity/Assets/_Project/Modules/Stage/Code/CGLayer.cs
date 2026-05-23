@@ -200,9 +200,20 @@ namespace LoveAlgo.Story
         /// </summary>
         Sprite LoadSprite(string cgName)
         {
+            if (string.IsNullOrEmpty(cgName)) return null;
             if (cgName.StartsWith("CG/", System.StringComparison.OrdinalIgnoreCase))
                 cgName = cgName.Substring(3);
 
+            // 1. ResourceCatalogSO 우선
+            var catalog = LoveAlgo.Story.Data.ResourceCatalogSO.Instance;
+            if (catalog != null && catalog.TryGetCg(cgName, out var byCatalog))
+                return byCatalog;
+
+            // 2. StoryMappings 한글→영문 폴백
+            if (StoryMappings.TryResolveCg(cgName, out var resolved))
+                cgName = resolved;
+
+            // 3. Resources.Load 폴백
             return Resources.Load<Sprite>($"CG/{cgName}");
         }
 

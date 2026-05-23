@@ -1,0 +1,351 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2f74f2d1d9b88b842a43659e37883bb1, type: 3}
+  m_Name: ResourceCatalog
+  m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.Story.Data.ResourceCatalogSO
+  BG:
+  - Id: bg_00_00
+    Aliases:
+    - "\uBE48 \uD654\uBA74"
+    Sprite: {fileID: 21300000, guid: db7b2f04b7b99a3419f98f3604c5fa67, type: 3}
+    Note: 
+  - Id: bg_10_01
+    Aliases:
+    - "\uC790\uCDE8\uBC29 \uC804\uACBD \uB0AE"
+    Sprite: {fileID: 21300000, guid: bb4494f1731e3714984eda2ed2ac3053, type: 3}
+    Note: 
+  - Id: bg_10_02
+    Aliases:
+    - "\uC790\uCDE8\uBC29 \uC804\uACBD \uBC24 \uBD88\uAEBC\uC9D0"
+    Sprite: {fileID: 21300000, guid: d33ddd72099a9f04bbccd1208f69b3b6, type: 3}
+    Note: 
+  - Id: bg_10_03
+    Aliases:
+    - "\uC790\uCDE8\uBC29 \uC804\uACBD \uBC24 \uBD88\uCF1C\uC9D0"
+    Sprite: {fileID: 21300000, guid: 98e9b1419ce33854ebdd3b701cbb81f3, type: 3}
+    Note: 
+  - Id: bg_10_04
+    Aliases:
+    - "\uC790\uCDE8\uBC29 \uCE68\uB300\uC704 \uC544\uCE68"
+    Sprite: {fileID: 21300000, guid: 5a93da6a927871942bada0d23ccb2563, type: 3}
+    Note: 
+  - Id: bg_10_05
+    Aliases:
+    - "\uC790\uCDE8\uBC29 \uCE68\uB300\uC704 \uBC24"
+    Sprite: {fileID: 21300000, guid: 24b758dda9d983a42af309dd39edb3cf, type: 3}
+    Note: 
+  - Id: bg_10_06
+    Aliases:
+    - "\uC790\uCDE8\uBC29 \uCC45\uC0C1 \uBAA8\uB2C8\uD130"
+    Sprite: {fileID: 21300000, guid: aefe78c018530444e860a6642829f028, type: 3}
+    Note: 
+  - Id: bg_20_01
+    Aliases:
+    - "\uACF5\uB300 \uC55E \uB0AE"
+    Sprite: {fileID: 21300000, guid: b76034863b3cf3b438e267063c9a14a0, type: 3}
+    Note: 
+  - Id: bg_20_02
+    Aliases:
+    - "\uACF5\uB300 \uC55E \uBC24"
+    Sprite: {fileID: 21300000, guid: 669626e06fc18ef48bd8e5fb0f689e2b, type: 3}
+    Note: 
+  - Id: bg_20_03
+    Aliases:
+    - "\uACF5\uB300 \uAC15\uC758\uC2E4\uBCF5\uB3C4"
+    Sprite: {fileID: 21300000, guid: a809f0d5726f90742bda616e9ac2995d, type: 3}
+    Note: 
+  - Id: bg_20_04
+    Aliases:
+    - "\uACF5\uB300 \uD559\uC0DD\uBCF5\uC9C0\uC2E4"
+    Sprite: {fileID: 21300000, guid: bda26a9e319363843815feb2af53af5d, type: 3}
+    Note: 
+  - Id: bg_20_05
+    Aliases:
+    - "\uACF5\uB300 \uAC15\uC758\uC2E4 \uB0AE"
+    Sprite: {fileID: 21300000, guid: e9ddfcc115712f040b54f492b39aedfd, type: 3}
+    Note: 
+  - Id: bg_20_06
+    Aliases:
+    - "\uACF5\uB300 \uAC15\uC758\uC2E4 \uB0AE \uBC9A\uAF43"
+    Sprite: {fileID: 21300000, guid: 8811cc8c93dde31498d5751798460d0c, type: 3}
+    Note: 
+  - Id: bg_30_01
+    Aliases:
+    - "\uCEA0\uD37C\uC2A4\uAC70\uB9AC1 \uB0AE \uB9D1\uC74C"
+    Sprite: {fileID: 21300000, guid: 61fc385a906bf2145a052e7928adad0e, type: 3}
+    Note: 
+  - Id: bg_30_02
+    Aliases:
+    - "\uCEA0\uD37C\uC2A4\uAC70\uB9AC2 \uB0AE \uB9D1\uC74C"
+    Sprite: {fileID: 21300000, guid: f75cf3fb36d3cc84f943c799a2d35698, type: 3}
+    Note: 
+  - Id: bg_40_01
+    Aliases:
+    - "\uD559\uC0DD\uD68C\uAD00 \uC55E \uB0AE"
+    Sprite: {fileID: 21300000, guid: c342e1853a423e3428bc965a332650fe, type: 3}
+    Note: 
+  - Id: bg_40_02
+    Aliases:
+    - "\uD559\uC0DD\uD68C\uAD00 \uC55E \uBC24"
+    Sprite: {fileID: 21300000, guid: 9e77d9c6d94ea8848a4e9bc3a67e6be5, type: 3}
+    Note: 
+  - Id: bg_40_03
+    Aliases:
+    - "\uD589\uC815\uC2E4"
+    Sprite: {fileID: 21300000, guid: f56661a33a108bb43aba1499a18504a2, type: 3}
+    Note: 
+  - Id: bg_40_04
+    Aliases:
+    - "\uD559\uC0DD\uD68C\uAD00 \uBCF5\uB3C4"
+    Sprite: {fileID: 21300000, guid: 0bf1d30a1bd891a4baafc037d6ad338b, type: 3}
+    Note: 
+  - Id: bg_40_05
+    Aliases:
+    - "\uD559\uC0DD\uD68C\uAD00 \uAC8C\uC2DC\uD310\uC55E"
+    Sprite: {fileID: 21300000, guid: 08116bbe36dce5f4abb2d2bb3e565cb2, type: 3}
+    Note: 
+  - Id: bg_40_06
+    Aliases:
+    - "\uD559\uC0DD\uD68C\uAD00 \uB3D9\uC544\uB9AC\uBC29 \uB0AE"
+    Sprite: {fileID: 21300000, guid: cf2110fbc71536247a814d6c60f0d76c, type: 3}
+    Note: 
+  - Id: bg_40_07
+    Aliases:
+    - "\uD559\uC0DD\uD68C\uAD00 \uB3D9\uC544\uB9AC\uBC29 \uBC9A\uAF43"
+    Sprite: {fileID: 21300000, guid: 5f27087b8acfc274c9f90f6c1655b983, type: 3}
+    Note: 
+  - Id: bg_60_02
+    Aliases:
+    - "\uD3B8\uC758\uC810 \uC55E \uBC24"
+    Sprite: {fileID: 21300000, guid: f4ba98335779a554684415d42e78cd5e, type: 3}
+    Note: 
+  CG:
+  - Id: cg_c01_01
+    Aliases:
+    - "\uB85C\uC544 \uCCAB\uB9CC\uB0A8"
+    Sprite: {fileID: 21300000, guid: fd2cd4db2a583c8408279f07f6db2c80, type: 3}
+    Note: 
+  - Id: cg_c03_01
+    Aliases:
+    - "\uC608\uC740 \uC785\uBD80\uC2E0\uCCAD\uC11C \uC791\uC131"
+    Sprite: {fileID: 21300000, guid: 3f7fe530c55a4874fb51ef493e0aed18, type: 3}
+    Note: 
+  SD:
+  - Id: sd_c02_01
+    Aliases:
+    - "\uB2E4\uC740 \uC18D\uB2E5"
+    Sprite: {fileID: -4788060219013692248, guid: 7084639a474369d48a761f8781f1a07e, type: 3}
+    Note: 
+  - Id: sd_c04_01
+    Aliases:
+    - "\uD76C\uC6D0 \uB9E5\uC8FC"
+    Sprite: {fileID: -1686431694650480196, guid: e0df994a2b240ca4c82defa6fb607350, type: 3}
+    Note: 
+  - Id: sd_c05_01
+    Aliases:
+    - "\uBD04 \uAE00\uC37D"
+    Sprite: {fileID: 9048995715135091374, guid: d50b5f2af3879bb4a8054252f6e5b18a, type: 3}
+    Note: 
+  Overlays:
+  - Id: overlay_c01_mob_default
+    Aliases: []
+    Sprite: {fileID: 41180429181792357, guid: db5b95b2973431d41b464bbff5856ebf, type: 3}
+    Note: auto-scan
+  - Id: overlay_c01_mob_negative
+    Aliases: []
+    Sprite: {fileID: -454607102219501695, guid: 14fb59b918d4dba4b8726f50ae63bd98, type: 3}
+    Note: auto-scan
+  - Id: overlay_c01_mob_positive
+    Aliases: []
+    Sprite: {fileID: 7278057810668601103, guid: 17342f4b65a768047b264e398f50bbb1, type: 3}
+    Note: auto-scan
+  - Id: overlay_c01_pc_default
+    Aliases: []
+    Sprite: {fileID: 21300000, guid: 42433eafdc9614b4db52e189612c23d2, type: 3}
+    Note: auto-scan
+  - Id: overlay_c01_pc_negative
+    Aliases: []
+    Sprite: {fileID: 21300000, guid: e673bd7f9d3c2cb46ab635dc37f976a0, type: 3}
+    Note: auto-scan
+  - Id: overlay_c01_pc_positive
+    Aliases: []
+    Sprite: {fileID: 21300000, guid: ef77d877761df6a4fb2d2fc6f8f77c8b, type: 3}
+    Note: auto-scan
+  BGM:
+  - Id: white_noise
+    Aliases:
+    - "\uBC31\uC0C9\uC18C\uC74C"
+    Clip: {fileID: 8300000, guid: 1f892dfffabdddf4b92f963d4b15cc45, type: 3}
+    Note: 
+  - Id: daily2
+    Aliases:
+    - "\uC77C\uC0C12"
+    Clip: {fileID: 8300000, guid: 9472a21bd372c1d4a817a981b6491085, type: 3}
+    Note: 
+  - Id: daeun
+    Aliases:
+    - "\uC11C\uB2E4\uC740"
+    Clip: {fileID: 8300000, guid: 14717baad671f344690220280e1d38cd, type: 3}
+    Note: 
+  - Id: yeeun
+    Aliases:
+    - "\uD558\uC608\uC740"
+    Clip: {fileID: 8300000, guid: 9e93c4898f624114a94a4f55fa746b7c, type: 3}
+    Note: 
+  - Id: heewon
+    Aliases:
+    - "\uB3C4\uD76C\uC6D0"
+    Clip: {fileID: 8300000, guid: dff07e1e44a9f0641ae4db9f2d3ad21d, type: 3}
+    Note: 
+  - Id: bom
+    Aliases:
+    - "\uC774\uBD04"
+    Clip: {fileID: 8300000, guid: 8cd0e20e47d895443884cdb8fe519735, type: 3}
+    Note: 
+  - Id: roa
+    Aliases:
+    - "\uB85C\uC544"
+    Clip: {fileID: 8300000, guid: 8cd0e20e47d895443884cdb8fe519735, type: 3}
+    Note: 
+  SFX: []
+  Characters:
+  - Id: c01
+    DisplayName: "\uB85C\uC544"
+    Aliases:
+    - Roa
+    - "\uB85C\uC544"
+    Note: 
+  - Id: c02
+    DisplayName: "\uC11C\uB2E4\uC740"
+    Aliases:
+    - SeoDaEun
+    - Daeun
+    - "\uB2E4\uC740"
+    - "\uC11C\uB2E4\uC740"
+    Note: 
+  - Id: c03
+    DisplayName: "\uD558\uC608\uC740"
+    Aliases:
+    - HaYeEun
+    - Yeun
+    - "\uC608\uC740"
+    - "\uD558\uC608\uC740"
+    Note: 
+  - Id: c04
+    DisplayName: "\uB3C4\uD76C\uC6D0"
+    Aliases:
+    - DoHeewon
+    - Heewon
+    - "\uD76C\uC6D0"
+    - "\uB3C4\uD76C\uC6D0"
+    Note: 
+  - Id: c05
+    DisplayName: "\uC774\uBD04"
+    Aliases:
+    - LeeBom
+    - Bom
+    - "\uBD04"
+    - "\uC774\uBD04"
+    Note: 
+  Emotes:
+  - Id: _00
+    Aliases:
+    - "\uAE30\uBCF8"
+    Note: 
+  - Id: _11
+    Aliases:
+    - "\uB208\uC6C3\uC74C"
+    Note: 
+  - Id: _12
+    Aliases:
+    - "\uBC1D\uAC8C\uC6C3\uC74C"
+    Note: 
+  - Id: _13
+    Aliases:
+    - "\uD65C\uC9DD\uC6C3\uC74C"
+    Note: 
+  - Id: _14
+    Aliases:
+    - "\uD589\uBCF5"
+    Note: 
+  - Id: _21
+    Aliases:
+    - "\uCC0C\uB9BF"
+    Note: 
+  - Id: _22
+    Aliases:
+    - "\uC090\uC9D0"
+    Note: 
+  - Id: _23
+    Aliases:
+    - "\uBA38\uC4F1"
+    Note: 
+  - Id: _24
+    Aliases:
+    - "\uC5B4\uC9C8\uC5B4\uC9C8"
+    Note: 
+  - Id: _31
+    Aliases:
+    - "\uC6B8\uBA39"
+    Note: 
+  - Id: _32
+    Aliases:
+    - "\uC8FC\uB974\uB975"
+    Note: 
+  - Id: _33
+    Aliases:
+    - "\uC640\uC544\uC559"
+    Note: 
+  - Id: _34
+    Aliases:
+    - "\uBD80\uB044"
+    Note: 
+  - Id: _35
+    Aliases:
+    - "\uC878\uB824"
+    Note: 
+  - Id: _41
+    Aliases:
+    - "\uAE5C\uC9DD"
+    Note: 
+  - Id: _42
+    Aliases:
+    - "\uBC18\uC9DD\uBE48\uC9DD"
+    Note: 
+  - Id: _43
+    Aliases:
+    - "\uAD81\uAE08"
+    Note: 
+  - Id: _44
+    Aliases:
+    - "\uC719\uD06C"
+    Note: 
+  - Id: _45
+    Aliases:
+    - "\uC790\uC2E0\uB9CC\uB9CC"
+    Note: 
+  - Id: _55
+    Aliases:
+    - "\uC74C\uC8FC"
+    Note: 
+  - Id: _56
+    Aliases:
+    - "\uB9CC\uCDE8"
+    Note: 
+  - Id: _57
+    Aliases:
+    - "\uC9D1\uC911"
+    Note: 
+  - Id: _58
+    Aliases:
+    - "\uACE0\uBBFC"
+    Note: 

@@ -296,9 +296,20 @@ namespace LoveAlgo.Story
         /// </summary>
         Sprite LoadSprite(string sdName)
         {
+            if (string.IsNullOrEmpty(sdName)) return null;
             if (sdName.StartsWith("SD/", System.StringComparison.OrdinalIgnoreCase))
                 sdName = sdName.Substring(3);
 
+            // 1. ResourceCatalogSO 우선
+            var catalog = LoveAlgo.Story.Data.ResourceCatalogSO.Instance;
+            if (catalog != null && catalog.TryGetSd(sdName, out var byCatalog))
+                return byCatalog;
+
+            // 2. StoryMappings 한글→영문 폴백
+            if (StoryMappings.TryResolveSd(sdName, out var resolved))
+                sdName = resolved;
+
+            // 3. Resources.Load 폴백
             return Resources.Load<Sprite>($"SD/{sdName}");
         }
 

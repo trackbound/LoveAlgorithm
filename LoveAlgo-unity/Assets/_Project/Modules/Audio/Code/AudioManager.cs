@@ -173,8 +173,16 @@ namespace LoveAlgo.Modules.Audio
         {
             if (currentBGM == name) return;
 
-            var clip = LoadAudioClip($"Audio/BGM/{name}");
-            
+            // 1차: ResourceCatalogSO (한글 키 또는 영문 ID)
+            AudioClip clip = null;
+            var catalog = LoveAlgo.Story.Data.ResourceCatalogSO.Instance;
+            if (catalog != null && catalog.TryGetBgm(name, out var byCatalog))
+                clip = byCatalog;
+
+            // 2차: 기존 Resources/Audio/BGM 폴백
+            if (clip == null)
+                clip = LoadAudioClip($"Audio/BGM/{name}");
+
             if (clip == null)
             {
                 Debug.LogWarning($"[AudioManager] BGM 없음: {name}");

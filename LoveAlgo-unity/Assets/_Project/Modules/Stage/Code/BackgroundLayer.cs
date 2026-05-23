@@ -188,6 +188,18 @@ namespace LoveAlgo.Story
         /// </summary>
         Sprite LoadSprite(string bgName)
         {
+            if (string.IsNullOrEmpty(bgName)) return null;
+
+            // 1. ResourceCatalogSO 우선 — 한글 키 또는 영문 ID 모두 받음
+            var catalog = LoveAlgo.Story.Data.ResourceCatalogSO.Instance;
+            if (catalog != null && catalog.TryGetBg(bgName, out var byCatalog))
+                return byCatalog;
+
+            // 2. StoryMappings 한글→영문 변환 폴백 (legacy)
+            if (StoryMappings.TryResolveBg(bgName, out var resolved))
+                bgName = resolved;
+
+            // 3. Resources.Load 폴백 (영문 ID로 직접 호출된 경우)
             return Resources.Load<Sprite>($"BG/{bgName}");
         }
 
