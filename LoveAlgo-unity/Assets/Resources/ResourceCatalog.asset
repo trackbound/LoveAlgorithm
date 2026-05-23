@@ -186,6 +186,11 @@ MonoBehaviour:
     - "\uBC31\uC0C9\uC18C\uC74C"
     Clip: {fileID: 8300000, guid: 1f892dfffabdddf4b92f963d4b15cc45, type: 3}
     Note: 
+  - Id: daily1
+    Aliases:
+    - "\uC77C\uC0C11"
+    Clip: {fileID: 8300000, guid: acda5c16009d69e478e869343688ebe1, type: 3}
+    Note: 
   - Id: daily2
     Aliases:
     - "\uC77C\uC0C12"
@@ -214,46 +219,48 @@ MonoBehaviour:
   - Id: roa
     Aliases:
     - "\uB85C\uC544"
-    Clip: {fileID: 8300000, guid: 8cd0e20e47d895443884cdb8fe519735, type: 3}
+    Clip: {fileID: 8300000, guid: 7ae5fe903e96fd543b5fefee877396b4, type: 3}
     Note: 
-  SFX: []
+  SFX:
+  - Id: 060
+    Aliases:
+    - "\uBA54\uC2DC\uC9C0 \uC54C\uB9BC\uC74C"
+    Clip: {fileID: 8300000, guid: 6b54c3c8df030224696c4caf23e53435, type: 3}
+    Note: 
+  - Id: 200
+    Aliases:
+    - "\uBCFC\uD39C\uC18C\uB9AC"
+    Clip: {fileID: 8300000, guid: ff0b5522250d3844aaaedcada138a81b, type: 3}
+    Note: 
+  - Id: 083
+    Aliases:
+    - "\uB85C\uC544\uB4F1\uC7A5"
+    Clip: {fileID: 8300000, guid: 2b52e57d7c3a52747b496c819d0d4abf, type: 3}
+    Note: 
   Characters:
   - Id: c01
     DisplayName: "\uB85C\uC544"
     Aliases:
-    - Roa
     - "\uB85C\uC544"
     Note: 
   - Id: c02
     DisplayName: "\uC11C\uB2E4\uC740"
     Aliases:
-    - SeoDaEun
-    - Daeun
-    - "\uB2E4\uC740"
     - "\uC11C\uB2E4\uC740"
     Note: 
   - Id: c03
     DisplayName: "\uD558\uC608\uC740"
     Aliases:
-    - HaYeEun
-    - Yeun
-    - "\uC608\uC740"
     - "\uD558\uC608\uC740"
     Note: 
   - Id: c04
     DisplayName: "\uB3C4\uD76C\uC6D0"
     Aliases:
-    - DoHeewon
-    - Heewon
-    - "\uD76C\uC6D0"
     - "\uB3C4\uD76C\uC6D0"
     Note: 
   - Id: c05
     DisplayName: "\uC774\uBD04"
     Aliases:
-    - LeeBom
-    - Bom
-    - "\uBD04"
     - "\uC774\uBD04"
     Note: 
   Emotes:

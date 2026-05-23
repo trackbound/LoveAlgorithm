@@ -3,6 +3,7 @@ using Cysharp.Threading.Tasks;
 using LoveAlgo.Core;
 using LoveAlgo.Modules.Audio;
 using LoveAlgo.Stage;
+using LoveAlgo.Story;
 
 namespace LoveAlgo.Story.SaveSystem
 {
@@ -55,6 +56,10 @@ namespace LoveAlgo.Story.SaveSystem
                         var slot = charLayer.GetSlot(pos);
                         if (slot != null)
                         {
+                            // 오버레이 캐릭터(로아 등) 복원 시 시그니처 SFX (정상 Enter와 동일)
+                            if (StoryMappings.GetOverlay(charInfo.Character) != null)
+                                AudioManager.Instance?.PlayCharacterEntrySFX(charInfo.Character);
+
                             var sw = Stopwatch.StartNew();
                             await slot.EnterAsync(charInfo.Character, charInfo.Emote);
                             sw.Stop();

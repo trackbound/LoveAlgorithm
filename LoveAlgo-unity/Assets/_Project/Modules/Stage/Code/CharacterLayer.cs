@@ -128,9 +128,9 @@ namespace LoveAlgo.Story
                         string fifth = parts.Length >= 5 ? parts[4] : null;
                         string overlay = ResolveEnterOverlay(character, emote, fifth);
 
-                        // 로아: 글리치 SFX 즉시 + 캐릭터&오버레이 동시 페이드
+                        // 캐릭터별 시그니처 SFX (로아=글리치 등, AudioManager 인스펙터에 바인딩)
                         if (IsOverlayCharacter(character))
-                            PlayGlitchSFX();
+                            AudioManager.Instance?.PlayCharacterEntrySFX(character);
 
                         if (!string.IsNullOrEmpty(overlay))
                         {
@@ -156,7 +156,7 @@ namespace LoveAlgo.Story
                         string overlay = ResolveEnterOverlay(character, emote, fifth);
 
                         if (IsOverlayCharacter(character))
-                            PlayGlitchSFX();
+                            AudioManager.Instance?.PlayCharacterEntrySFX(character);
 
                         if (!string.IsNullOrEmpty(overlay))
                         {
@@ -224,7 +224,7 @@ namespace LoveAlgo.Story
 
                         if (shouldHideOverlay)
                         {
-                            PlayGlitchSFX();
+                            AudioManager.Instance?.PlayCharacterEntrySFX(exitingChar);
                             await UniTask.WhenAll(
                                 slot.ExitAsync(ct),
                                 HideOverlayAsync(ct)
@@ -259,7 +259,7 @@ namespace LoveAlgo.Story
 
                         if (shouldHideOverlay)
                         {
-                            PlayGlitchSFX();
+                            AudioManager.Instance?.PlayCharacterEntrySFX(exitingChar);
                             await UniTask.WhenAll(
                                 slot.ExitSlideDownAsync(ct),
                                 HideOverlayAsync(ct)
@@ -293,20 +293,21 @@ namespace LoveAlgo.Story
         public async UniTask ExitAllAsync(CancellationToken ct = default)
         {
             var tasks = new List<UniTask>();
-            bool shouldHideOverlay = false;
+            string exitingOverlayChar = null;
 
             foreach (var slot in slots.Values)
             {
                 if (slot != null && !slot.IsEmpty)
                 {
-                    shouldHideOverlay |= IsOverlayCharacter(slot.CurrentCharacter);
+                    if (exitingOverlayChar == null && IsOverlayCharacter(slot.CurrentCharacter))
+                        exitingOverlayChar = slot.CurrentCharacter;
                     tasks.Add(slot.ExitAsync(ct));
                 }
             }
 
-            if (shouldHideOverlay)
+            if (exitingOverlayChar != null)
             {
-                PlayGlitchSFX();
+                AudioManager.Instance?.PlayCharacterEntrySFX(exitingOverlayChar);
                 tasks.Add(HideOverlayAsync(ct));
             }
 
@@ -546,15 +547,8 @@ namespace LoveAlgo.Story
             return string.IsNullOrEmpty(slot.CurrentCharacter);
         }
 
-        /// <summary>
-        /// 오버레이 효과음 재생 (오버레이 캐릭터 등장/퇴장 시 자동)
-        /// </summary>
-        static void PlayGlitchSFX()
-        {
-            // [진단 로그] BGM과 동시 발생 시 찌직거림 추적용
-            Debug.Log($"[CharacterLayer][GlitchSFX] t={Time.time:F2}");
-            AudioManager.Instance?.PlaySFX("Glitch");
-        }
+        // PlayGlitchSFX 제거 — AudioManager.PlayCharacterEntrySFX(character)로 일원화.
+        // 사운드 자산은 AudioManager 인스펙터의 characterEntrySFXs 리스트에 직접 바인딩.
 
         #endregion
 

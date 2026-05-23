@@ -34,6 +34,18 @@ namespace LoveAlgo.Modules.Audio
         [Header("설정")]
         [SerializeField] float defaultFadeDuration = 4.0f;
 
+        [Header("캐릭터 등장 SFX (인스펙터 바인딩)")]
+        [Tooltip("CharacterId(c01 등) → 등장 시 1회 재생할 AudioClip. 글리치 등 캐릭터별 시그니처 사운드.")]
+        [SerializeField] List<CharacterEntrySFX> characterEntrySFXs = new();
+
+        [Serializable]
+        public class CharacterEntrySFX
+        {
+            [Tooltip("CharacterId (예: c01) 또는 DisplayName/Alias (예: 로아, Roa)")]
+            public string Character;
+            public AudioClip Clip;
+        }
+
         string currentBGM;
         string currentCharacterBGM;
 
@@ -497,7 +509,7 @@ namespace LoveAlgo.Modules.Audio
         public void PlaySFX(string name)
         {
             var clip = LoadSFXClip(name);
-            
+
             if (clip == null)
             {
                 Debug.LogWarning($"[AudioManager] SFX 없음: {name}");
@@ -505,6 +517,32 @@ namespace LoveAlgo.Modules.Audio
             }
 
             sfxSource.PlayOneShot(clip);
+        }
+
+        /// <summary>
+        /// 캐릭터 등장 시그니처 SFX 재생 (인스펙터 바인딩)
+        /// 로아=글리치 등 캐릭터별 시그니처 사운드.
+        /// 미바인딩이면 조용히 스킵 — 캐릭터마다 등장 사운드가 없을 수 있음.
+        /// </summary>
+        public void PlayCharacterEntrySFX(string character)
+        {
+            if (string.IsNullOrEmpty(character) || characterEntrySFXs == null || sfxSource == null)
+                return;
+
+            // 입력(displayName/alias/id) → characterId(c01) 정규화
+            string resolvedId = StoryMappings.SpeakerToCharacterId(character) ?? character;
+
+            foreach (var entry in characterEntrySFXs)
+            {
+                if (entry?.Clip == null || string.IsNullOrEmpty(entry.Character)) continue;
+                // 등록된 키도 다양한 표기 허용 — id/displayName/alias 모두 ok
+                string entryId = StoryMappings.SpeakerToCharacterId(entry.Character) ?? entry.Character;
+                if (string.Equals(entryId, resolvedId, StringComparison.OrdinalIgnoreCase))
+                {
+                    sfxSource.PlayOneShot(entry.Clip);
+                    return;
+                }
+            }
         }
 
         /// <summary>

@@ -1309,11 +1309,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.Narrative.NarrativeModule
   logPopupPrefab: {fileID: 1374232990556309103, guid: fd486e67a6a30a34c8fb1245ec18511a, type: 3}
   dialogueUISceneInstance: {fileID: 1752629497}
-  dialogueUIPrefab: {fileID: 0}
+  dialogueUIPrefab: {fileID: 6042698343353078107, guid: 8f092ce31f1df914daecce527e0ca897, type: 3}
   dialogueShowButtonSceneInstance: {fileID: 2080739621}
-  dialogueShowButtonPrefab: {fileID: 0}
+  dialogueShowButtonPrefab: {fileID: 269105233623496650, guid: 6a7bbfd502a9125429af984db31c26d5, type: 3}
   choicePopupSceneInstance: {fileID: 707500000}
-  choicePopupPrefab: {fileID: 0}
+  choicePopupPrefab: {fileID: 7261170059170272204, guid: acaa06f849d639a4a9e0eb61a2614ec2, type: 3}
 --- !u!1 &350045614 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 8669209719801022898, guid: 8f092ce31f1df914daecce527e0ca897, type: 3}
@@ -2169,6 +2169,9 @@ MonoBehaviour:
   voiceVolumeParam: VoiceVolume
   audioSettings: {fileID: 11400000, guid: bb1249c2996d74a44a23734987f28cbe, type: 2}
   defaultFadeDuration: 4
+  characterEntrySFXs:
+  - Character: c01
+    Clip: {fileID: 8300000, guid: 2b52e57d7c3a52747b496c819d0d4abf, type: 3}
 --- !u!4 &645657213
 Transform:
   m_ObjectHideFlags: 0
@@ -2281,7 +2284,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.Simulation.SimulationModule
   quickMenuSceneInstance: {fileID: 1240169672}
-  quickMenuPrefab: {fileID: 0}
+  quickMenuPrefab: {fileID: 1830715381788321002, guid: 47e2faf407064c84fa70bbc2d5caf9e4, type: 3}
   mainMode: 1
 --- !u!1 &690771408 stripped
 GameObject:
@@ -3895,6 +3898,50 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 645657213}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1195151910
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1195151912}
+  - component: {fileID: 1195151911}
+  m_Layer: 0
+  m_Name: '[VideoLayer]'
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1195151911
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1195151910}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2e770b0f6837d5f499b8b4893e068ed6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.Story.VideoLayer
+--- !u!4 &1195151912
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1195151910}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1240169670
 PrefabInstance:
@@ -6498,3 +6545,4 @@ SceneRoots:
   - {fileID: 986594965}
   - {fileID: 735747611}
   - {fileID: 578211415}
+  - {fileID: 1195151912}

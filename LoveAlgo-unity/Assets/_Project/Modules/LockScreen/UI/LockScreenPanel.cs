@@ -69,17 +69,17 @@ namespace LoveAlgo.LockScreen.UI
         [SerializeField] AudioSource sfxSource;
 
         [Header("Timing")]
-        [Tooltip("게임 첫 시작 시 5초 페이드인. EntryRouter가 첫 시작 분기에서 외부 set 권장.")]
+        [Tooltip("게임 첫 시작 시 페이드인. EntryRouter가 첫 시작 분기에서 외부 set 권장.")]
         [SerializeField] bool useFirstStartFadeIn = false;
-        [SerializeField] float firstStartFadeInSec = 5f;
+        [SerializeField] float firstStartFadeInSec = 1.5f;
         [Tooltip("화면 표출 후 메시지 시작까지 (기획서: 5초)")]
         [SerializeField] float beforeMessagesDelaySec = 5f;
         [Tooltip("마지막 메시지 후 클릭 가능까지 (기획서: 3초)")]
         [SerializeField] float afterLastMessageDelaySec = 3f;
-        [Tooltip("Outro 페이드인 — 패널 사라지며 검은 화면으로 (기획서: 3초). panel↓ + black↑ 동시.")]
-        [SerializeField] float outroFadeToBlackSec = 3f;
-        [Tooltip("Outro 페이드아웃 — 검은 화면이 사라짐 (기획서: 3초). withFadeOut=true일 때만.")]
-        [SerializeField] float outroFadeFromBlackSec = 3f;
+        [Tooltip("Outro 페이드인 — 검정이 panel을 덮으며 등장 (완전 페이드 — 크로스 합산 없음).")]
+        [SerializeField] float outroFadeToBlackSec = 1.0f;
+        [Tooltip("Outro 페이드아웃 — 검은 화면이 사라짐. withFadeOut=true일 때만.")]
+        [SerializeField] float outroFadeFromBlackSec = 1.0f;
         [Tooltip("기본 outro에 fade-out까지 포함할지. true면 흐름 종료 시 화면이 완전히 노출됨.\n외부에서 SetFadeOutAfter(bool)로 1회 override 가능 (CSV :FadeOut 옵션).")]
         [SerializeField] bool defaultWithFadeOut = false;
 
@@ -430,19 +430,19 @@ namespace LoveAlgo.LockScreen.UI
 
         IEnumerator OutroSequence()
         {
-            // ── Phase 1: 페이드인 (panel↓ ‖ black↑, 동시 3초) — 기획서 §구성 ──
-            if (rootCanvasGroup != null && blackOverlay != null)
+            // ── Phase 1: 완전 페이드 — 검정 오버레이가 panel을 덮으며 등장 ──
+            // (이전 크로스페이드: panel↓ + black↑ 동시 → 도중에 알파 합산으로 회색 톤 발생)
+            // 검정이 panel을 가린 뒤에 panel을 instant 정리해 다음 화면 셋업과 분리.
+            if (blackOverlay != null)
             {
-                // 동시 진행 — panel이 사라지며 검정 오버레이가 올라옴
-                Coroutine panelCo = StartCoroutine(FadeCanvas(rootCanvasGroup, rootCanvasGroup.alpha, 0f, outroFadeToBlackSec));
-                Coroutine blackCo = StartCoroutine(FadeCanvas(blackOverlay, blackOverlay.alpha, 1f, outroFadeToBlackSec));
-                yield return panelCo;
-                yield return blackCo;
+                yield return FadeCanvas(blackOverlay, blackOverlay.alpha, 1f, outroFadeToBlackSec);
+                if (rootCanvasGroup != null) rootCanvasGroup.alpha = 0f;
             }
             else if (rootCanvasGroup != null)
+            {
+                // 검정 오버레이가 없을 때만 panel을 fade out
                 yield return FadeCanvas(rootCanvasGroup, rootCanvasGroup.alpha, 0f, outroFadeToBlackSec);
-            else if (blackOverlay != null)
-                yield return FadeCanvas(blackOverlay, blackOverlay.alpha, 1f, outroFadeToBlackSec);
+            }
 
             // 검은 화면 도달 — EntryRouter/외부가 다음 화면을 검은 뒤에서 셋업할 수 있는 순간
             OnBlackoutReached?.Invoke();

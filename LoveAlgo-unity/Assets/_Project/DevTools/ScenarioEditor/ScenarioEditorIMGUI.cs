@@ -50,6 +50,7 @@ namespace LoveAlgo.DevTools.ScenarioEditor
         Vector2 widgetScroll;
         Vector2 validationScroll;
         List<ScriptValidator.Violation> violations = new();
+        bool pendingScrollToSelected;           // 열 때 1회 — 진행 중 라인으로 자동 스크롤
 
         // ── 드롭다운 팝업 상태 (한 번에 하나만) ──
         string activeDropdownKey;
@@ -159,6 +160,9 @@ namespace LoveAlgo.DevTools.ScenarioEditor
             originalLines = DeepCopy(workingLines);
             selectedIndex = (currentRunningIndex >= 0 && currentRunningIndex < workingLines.Count)
                 ? currentRunningIndex : (workingLines.Count > 0 ? 0 : -1);
+
+            // 진행 중인 라인이 화면에 보이도록 자동 스크롤 (첫 그리기에서 적용)
+            pendingScrollToSelected = selectedIndex >= 0;
 
             // 외부 변경 감지 베이스라인
             _loadedAtMtime = StoryAssetLoader.GetLastWriteTime(name);
@@ -300,7 +304,8 @@ namespace LoveAlgo.DevTools.ScenarioEditor
 
             DrawTopBar(new Rect(pad, pad, Screen.width - pad * 2, topBarH));
 
-            float leftW = Mathf.Min(Screen.width * 0.40f, 520f);
+            // 좌측 리스트 확대 (40%/520 → 60%/900) + 우측 편집창 추가 축소
+            float leftW = Mathf.Min(Screen.width * 0.60f, 900f);
             DrawLineList(new Rect(pad, bodyY, leftW, bodyH));
             DrawWidget(new Rect(pad + leftW + pad, bodyY, Screen.width - leftW - pad * 3, bodyH));
 
@@ -392,6 +397,16 @@ namespace LoveAlgo.DevTools.ScenarioEditor
             GUILayout.EndHorizontal();
             GUILayout.Space(4);
 
+            // 진행 중인 라인이 화면 중앙쯤 오도록 1회 자동 스크롤
+            if (pendingScrollToSelected && selectedIndex >= 0 && Event.current.type == EventType.Layout)
+            {
+                const float rowHeight = 22f;                  // IMGUI 기본 버튼 1행 ≈ 22px
+                float viewportH = rect.height - 80f;          // 헤더+버튼 행 차감 근사
+                float targetY = selectedIndex * rowHeight - viewportH * 0.35f;
+                listScroll.y = Mathf.Max(0f, targetY);
+                pendingScrollToSelected = false;
+            }
+
             listScroll = GUILayout.BeginScrollView(listScroll);
 
             if (workingLines != null)
@@ -448,7 +463,7 @@ namespace LoveAlgo.DevTools.ScenarioEditor
             string speakerOrPreview = line.Type == LineType.Text
                 ? (string.IsNullOrEmpty(line.Speaker) ? "(나)" : line.Speaker)
                 : "";
-            string val = Trunc(line.Value ?? "", 32).Replace("\n", " ↵ ");
+            string val = Trunc(line.Value ?? "", 52).Replace("\n", " ↵ ");
             string typeColor = TypeColor(line.Type);
             return $"<color=#888>{index,4}</color>  <color={typeColor}><b>{line.Type,-7}</b></color>  <color=#aaa>{id,-12}</color>  {speakerOrPreview}  <color=#ccc>{val}</color>";
         }
