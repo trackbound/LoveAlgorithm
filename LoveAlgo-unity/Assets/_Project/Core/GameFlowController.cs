@@ -74,16 +74,21 @@ namespace LoveAlgo.Core
         {
             UIManager.Instance?.ShowOnly(MainUIType.Title);
             UIManager.Instance?.TitlePanel?.PlayTitleBGM();
+            // 타이틀/이름입력 화면에는 폰 알림 안 보임
+            Common.Services.TryGet<Phone.IPhone>()?.SetNotificationVisible(false);
         }
 
         void EnterUsername()
         {
             UIManager.Instance?.ShowOnly(MainUIType.Username);
+            Common.Services.TryGet<Phone.IPhone>()?.SetNotificationVisible(false);
         }
 
         void EnterPrologue()
         {
             UIManager.Instance?.ShowOnly(MainUIType.Dialogue);
+            // 스토리/대사 출력 중 폰 알림 활성
+            Common.Services.TryGet<Phone.IPhone>()?.SetNotificationVisible(true);
 
             // 대화창을 숨김 상태로 시작 (첨 대사 시점에 자동 표시)
             var dialogueUI = UIManager.Instance?.DialogueUI;

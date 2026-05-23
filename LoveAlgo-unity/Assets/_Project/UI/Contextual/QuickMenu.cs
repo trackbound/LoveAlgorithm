@@ -55,14 +55,15 @@ namespace LoveAlgo.UI
 
             toggleButton?.onClick.AddListener(Toggle);
 
-            backButton?.onClick.AddListener(() => { Close(); OnBackRequested?.Invoke(); });
+            // 메뉴 버튼: 즉시 닫기(트윈 중간 끼임 방지) → 액션
+            backButton?.onClick.AddListener(() => { SetClosed(immediate: true); OnBackRequested?.Invoke(); });
 
-            titleButton?.onClick.AddListener(() => { Close(); OnTitle(); });
-            phoneButton?.onClick.AddListener(() => { Close(); OnPhone(); });
-            saveButton?.onClick.AddListener(() => { Close(); OnSave(); });
-            loadButton?.onClick.AddListener(() => { Close(); OnLoad(); });
-            configButton?.onClick.AddListener(() => { Close(); OnConfig(); });
-            exitButton?.onClick.AddListener(() => { Close(); OnExit(); });
+            titleButton?.onClick.AddListener(() => { SetClosed(immediate: true); OnTitle(); });
+            phoneButton?.onClick.AddListener(() => { SetClosed(immediate: true); OnPhone(); });
+            saveButton?.onClick.AddListener(() => { SetClosed(immediate: true); OnSave(); });
+            loadButton?.onClick.AddListener(() => { SetClosed(immediate: true); OnLoad(); });
+            configButton?.onClick.AddListener(() => { SetClosed(immediate: true); OnConfig(); });
+            exitButton?.onClick.AddListener(() => { SetClosed(immediate: true); OnExit(); });
         }
 
         void OnDestroy()
@@ -182,22 +183,22 @@ namespace LoveAlgo.UI
 
         void OnPhone()
         {
-            Services.Get<IPhone>()?.ShowPhoneUI();
+            Services.TryGet<IPhone>()?.ShowPhoneUI();
         }
 
         void OnSave()
         {
-            Services.Get<ISave>()?.ShowSaveUI();
+            Services.TryGet<ISave>()?.ShowSaveUI();
         }
 
         void OnLoad()
         {
-            Services.Get<ISave>()?.ShowLoadUI();
+            Services.TryGet<ISave>()?.ShowLoadUI();
         }
 
         void OnConfig()
         {
-            Services.Get<ISettings>()?.ShowSettingsUI();
+            Services.TryGet<ISettings>()?.ShowSettingsUI();
         }
 
         void OnExit()

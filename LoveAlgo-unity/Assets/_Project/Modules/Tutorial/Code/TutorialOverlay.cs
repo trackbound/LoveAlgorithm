@@ -253,9 +253,22 @@ namespace LoveAlgo.UI
 
             gameObject.SetActive(false);
 
-            // 플래그 설정 — 다음부터 표시 안 함
+            // 플래그 설정 — 다음부터 표시 안 함.
+            // 튜토리얼은 "유저가 한 번이라도 봤는가" 메타데이터라 PlayerPrefs(영구) + GameState(현재 세션) 둘 다 저장.
+            // GameState만 쓰면 ResetAll(새 게임) 시 초기화되어 매번 다시 뜸.
             if (!string.IsNullOrEmpty(seenFlagKey))
+            {
                 GameState.Instance?.SetFlag(seenFlagKey, true);
+                PlayerPrefs.SetInt("Tutorial_" + seenFlagKey, 1);
+                PlayerPrefs.Save();
+            }
+        }
+
+        /// <summary>이 튜토리얼을 이전에 본 적이 있는지 (PlayerPrefs 영구 확인).</summary>
+        public static bool HasSeen(string seenFlagKey)
+        {
+            if (string.IsNullOrEmpty(seenFlagKey)) return false;
+            return PlayerPrefs.GetInt("Tutorial_" + seenFlagKey, 0) == 1;
         }
 
         /// <summary>딤 이미지 적용 (빈값=숨김, keep=유지, 이름=새 스프라이트) + 위치 프리셋</summary>
@@ -334,6 +347,9 @@ namespace LoveAlgo.UI
         async UniTask WaitForClickAsync(CancellationToken ct)
         {
             _clicked = false;
+            // 직전 프레임 클릭이 잡혀 즉시 스킵되는 것 방지 — 1프레임 양보
+            await UniTask.Yield(PlayerLoopTiming.LastUpdate, ct);
+
             await UniTask.WaitUntil(() =>
                 _clicked
                 || _skipRequested

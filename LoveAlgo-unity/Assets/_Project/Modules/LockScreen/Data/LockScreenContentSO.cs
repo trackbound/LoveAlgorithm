@@ -31,6 +31,12 @@ namespace LoveAlgo.LockScreen.Data
         [Tooltip("평상시 입력")]
         public string hintNormal = "비밀번호를 입력해주세요.";
 
+        [Tooltip("1회 오류 시")]
+        public string hintWrongOnce = "비밀번호가 일치하지 않습니다.";
+
+        [Tooltip("2회 오류 시")]
+        public string hintWrongTwice = "비밀번호를 다시 한 번 확인해주세요.";
+
         [Tooltip("기획서 §오류/분실 — 3회 이상 오류 시")]
         public string hintForgot = "비밀번호를 잊으셨다면 우측 하단 열쇠 모양 버튼을 눌러주세요.";
 

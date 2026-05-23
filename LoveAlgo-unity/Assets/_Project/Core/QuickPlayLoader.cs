@@ -110,12 +110,12 @@ namespace LoveAlgo.Core
                     // UI 표시
                     UI.UIManager.Instance?.ShowOnly(UI.MainUIType.Dialogue);
 
-                    // 스크립트 로드
-                    var asset = Resources.Load<TextAsset>($"Story/{data.scriptPath}");
-                    if (asset != null)
+                    // 스크립트 로드 (StreamingAssets/Story/{name}.csv)
+                    string csv = await LoveAlgo.Story.StoryAssetLoader.LoadCsvAsync(data.scriptPath);
+                    if (!string.IsNullOrEmpty(csv))
                     {
-                        scriptRunner.LoadScript(asset);
-                        
+                        scriptRunner.LoadScript(csv, data.scriptPath);
+
                         // 특정 LineID부터 시작하거나 처음부터 시작
                         if (!string.IsNullOrEmpty(data.startLineId))
                         {
@@ -125,7 +125,7 @@ namespace LoveAlgo.Core
                         {
                             scriptRunner.Run();
                         }
-                        
+
                         Debug.Log($"[QuickPlay] Script started: {data.scriptPath}");
                     }
                     else

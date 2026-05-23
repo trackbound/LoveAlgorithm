@@ -129,30 +129,65 @@ namespace LoveAlgo.LockScreen.UI
             if (inputCatcher != null) inputCatcher.onClick.RemoveListener(OnInputCatcherClicked);
         }
 
-        // ── 외부 진입 API ──
-        public void OpenFirstSetup() => Begin(LockScreenMode.FirstSetup, fadeIn: useFirstStartFadeIn);
-        public void OpenNormal()     => Begin(LockScreenMode.Normal,     fadeIn: false);
-        public void OpenReset()      => Begin(LockScreenMode.Reset,      fadeIn: false);
+        // ══════════════════════════════════════════════
+        //  외부 진입 API
+        //  ─ 화면 상태 2개:
+        //    Standby = 시계/ToDo/로아 메시지 4개 (대기화면, 클릭 액션 없음)
+        //    Login   = 비번 입력창 + 눈 토글 + LOGIN 버튼 (잠금화면)
+        //  ─ Full = Standby → 클릭 대기 → Login (기획서 기본 흐름)
+        // ══════════════════════════════════════════════
 
         /// <summary>
-        /// 게임 첫 시작 sugar — 5초 페이드인 강제 + 비번 자동 판별(FirstSetup/Normal).
+        /// 기획서 §구성 ① — 대기화면만 표시. 로그인 단계로 자동 진입하지 않음.
+        /// 클릭/대화 진행 등 외부 트리거 전까지 대기 상태 유지.
+        /// 외부에서 GoToLoginStage() 호출하면 잠금화면으로 전환 가능.
+        /// </summary>
+        public void OpenStandbyOnly(LockScreenMode mode, bool fadeIn = false)
+            => Begin(mode, fadeIn: fadeIn, gotoLogin: false);
+
+        /// <summary>
+        /// 기획서 §구성 ② — 잠금화면 단계만. 대기화면 인트로(시계/메시지) 스킵.
+        /// 재진입·게임 내 로그인 요청 등에 사용.
+        /// </summary>
+        public void OpenLoginOnly(LockScreenMode mode, bool fadeIn = false)
+            => Begin(mode, fadeIn: fadeIn, skipIntro: true, gotoLogin: true);
+
+        /// <summary>
+        /// 기획서 기본 흐름 — 대기화면 → 클릭 대기 → 잠금화면 → 비번 입력 → outro.
+        /// </summary>
+        public void OpenFullSequence(LockScreenMode mode, bool fadeIn = false)
+            => Begin(mode, fadeIn: fadeIn, gotoLogin: true);
+
+        // ── 기존 sugar (하위 호환) ──
+        public void OpenFirstSetup() => OpenFullSequence(LockScreenMode.FirstSetup, fadeIn: useFirstStartFadeIn);
+        public void OpenNormal()     => OpenFullSequence(LockScreenMode.Normal);
+        public void OpenReset()      => OpenFullSequence(LockScreenMode.Reset);
+
+        /// <summary>
+        /// 게임 첫 시작 sugar — 5초 페이드인 강제 + GameStart 모드(LOGIN 버튼만).
         /// EntryRouter / CSV GameStart 모드에서 호출.
         /// </summary>
         public void OpenForGameStart()
-        {
-            // 기획서 §진입 정보: 첫 진입은 비번 입력 없이 LOGIN 버튼만으로 통과
-            Begin(LockScreenMode.GameStart, fadeIn: true);
-        }
+            => OpenFullSequence(LockScreenMode.GameStart, fadeIn: true);
 
         /// <summary>
         /// CSV Auto sugar — 비번 자동 판별, 페이드인 없음.
         /// </summary>
         public void OpenAuto()
         {
-            if (lockScreen != null && lockScreen.IsPasswordSet)
-                Begin(LockScreenMode.Normal, fadeIn: false);
-            else
-                Begin(LockScreenMode.FirstSetup, fadeIn: false);
+            var mode = (lockScreen != null && lockScreen.IsPasswordSet)
+                ? LockScreenMode.Normal : LockScreenMode.FirstSetup;
+            OpenFullSequence(mode);
+        }
+
+        /// <summary>
+        /// 대기화면만 띄운 상태에서 외부 트리거(예: 스크립트 라인)로 잠금화면 전환.
+        /// OpenStandbyOnly로 진입한 경우에만 의미 있음.
+        /// </summary>
+        public void GoToLoginStage()
+        {
+            if (seqCo != null) StopCoroutine(seqCo);
+            seqCo = StartCoroutine(EnterLoginStage());
         }
 
         /// <summary>이번 1회 outro에 fade-out(black→0)까지 포함할지 override. null=defaultWithFadeOut.</summary>
@@ -167,7 +202,9 @@ namespace LoveAlgo.LockScreen.UI
             gameObject.SetActive(false);
         }
 
-        void Begin(LockScreenMode mode, bool fadeIn)
+        /// <param name="gotoLogin">true면 대기 → 클릭 대기 → 로그인. false면 대기 상태에서 멈춤.</param>
+        /// <param name="skipIntro">true면 대기화면(시계/메시지) 스킵하고 곧장 로그인 단계로.</param>
+        void Begin(LockScreenMode mode, bool fadeIn, bool gotoLogin = true, bool skipIntro = false)
         {
             if (lockScreen == null) return;
             switch (mode)
@@ -190,10 +227,22 @@ namespace LoveAlgo.LockScreen.UI
             if (blackOverlay != null) blackOverlay.alpha = 0f;
 
             if (seqCo != null) StopCoroutine(seqCo);
-            seqCo = StartCoroutine(IntroSequence(fadeIn));
+
+            if (skipIntro)
+            {
+                // 잠금화면 단독 — 대기 인트로 스킵, 곧장 로그인
+                if (rootCanvasGroup != null) rootCanvasGroup.alpha = 1f;
+                // 좌측 위젯은 처음부터 숨김(슬라이드 대신 즉시 제거)
+                HideLeftWidgetsImmediate();
+                seqCo = StartCoroutine(EnterLoginStage(skipSlideAnim: true));
+            }
+            else
+            {
+                seqCo = StartCoroutine(IntroSequence(fadeIn, gotoLogin));
+            }
         }
 
-        IEnumerator IntroSequence(bool fadeIn)
+        IEnumerator IntroSequence(bool fadeIn, bool gotoLogin)
         {
             // 1. 페이드인
             if (rootCanvasGroup != null)
@@ -214,9 +263,15 @@ namespace LoveAlgo.LockScreen.UI
                 roaMessage.OnMessageShown -= PlayMessageSfx;
             }
 
-            // 4. +3초 후 클릭 가능
+            // 4. +3초 후 클릭 가능 (gotoLogin=false면 여기서 멈춤 — 외부 트리거 대기)
             yield return new WaitForSecondsRealtime(afterLastMessageDelaySec);
-            if (inputCatcher != null) inputCatcher.gameObject.SetActive(true);
+            if (gotoLogin && inputCatcher != null) inputCatcher.gameObject.SetActive(true);
+        }
+
+        void HideLeftWidgetsImmediate()
+        {
+            for (int i = 0; i < leftWidgets.Count; i++)
+                if (leftWidgets[i] != null) leftWidgets[i].gameObject.SetActive(false);
         }
 
         void OnInputCatcherClicked()
@@ -225,18 +280,27 @@ namespace LoveAlgo.LockScreen.UI
             seqCo = StartCoroutine(EnterLoginStage());
         }
 
-        IEnumerator EnterLoginStage()
+        IEnumerator EnterLoginStage(bool skipSlideAnim = false)
         {
             if (inputCatcher != null) inputCatcher.gameObject.SetActive(false);
 
-            // 좌측 위젯/메시지/dim 동시 진행
-            Coroutine left = StartCoroutine(SlideOutLeftWidgets());
-            Coroutine msg  = roaMessage != null ? StartCoroutine(roaMessage.HideRoutine()) : null;
-            Coroutine dim  = loginDim != null ? StartCoroutine(FadeCanvas(loginDim, 0f, loginDimAlpha, loginDimFadeDuration)) : null;
+            if (skipSlideAnim)
+            {
+                // OpenLoginOnly 진입 — 슬라이드/메시지 페이드 없이 즉시 dim 표시
+                if (roaMessage != null) roaMessage.HideAllImmediate();
+                if (loginDim != null) loginDim.alpha = loginDimAlpha;
+            }
+            else
+            {
+                // 좌측 위젯/메시지/dim 동시 진행
+                Coroutine left = StartCoroutine(SlideOutLeftWidgets());
+                Coroutine msg  = roaMessage != null ? StartCoroutine(roaMessage.HideRoutine()) : null;
+                Coroutine dim  = loginDim != null ? StartCoroutine(FadeCanvas(loginDim, 0f, loginDimAlpha, loginDimFadeDuration)) : null;
 
-            yield return left;
-            if (msg != null) yield return msg;
-            if (dim != null) yield return dim;
+                yield return left;
+                if (msg != null) yield return msg;
+                if (dim != null) yield return dim;
+            }
 
             if (loginStage != null) loginStage.SetActive(true);
             ApplyHintForCurrentMode();
@@ -313,7 +377,14 @@ namespace LoveAlgo.LockScreen.UI
             if (passwordInput == null || lockScreen == null) return;
             passwordInput.PlayShake();
             passwordInput.SetKeyIcon(lockScreen.ShowKeyIcon);
-            if (lockScreen.ShowKeyIcon) SetHeader(LockScreenHint.Forgot);
+
+            // 실패 횟수별 안내문 차별화 (3회 이상 = Forgot + 열쇠)
+            if (lockScreen.ShowKeyIcon)
+                SetHeader(LockScreenHint.Forgot);
+            else if (failCount == 1)
+                SetHeader(LockScreenHint.WrongOnce);
+            else if (failCount == 2)
+                SetHeader(LockScreenHint.WrongTwice);
         }
 
         // ── 열쇠 → 재설정 확인 팝업 ──

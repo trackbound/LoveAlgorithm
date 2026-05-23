@@ -116,6 +116,7 @@ namespace LoveAlgo.Story
             lineIndex = ScriptParser.BuildLineIndex(lines);
             currentIndex = 0;
             currentScriptName = asset.name;
+            MarkRegistry.Rebuild(lines);
         }
 
         public void LoadScript(string csv, string scriptName = null)
@@ -125,37 +126,55 @@ namespace LoveAlgo.Story
             currentIndex = 0;
             if (!string.IsNullOrEmpty(scriptName))
                 currentScriptName = scriptName;
+            MarkRegistry.Rebuild(lines);
         }
 
         public async UniTask StartScript(string scriptName)
         {
-            var asset = Resources.Load<TextAsset>($"Story/{scriptName}");
-            if (asset == null)
+            // StreamingAssets/Story/{scriptName}.csv 로드 (빌드 후 외부·내부 편집 가능)
+            string csv = await StoryAssetLoader.LoadCsvAsync(scriptName);
+            if (string.IsNullOrEmpty(csv))
             {
                 Debug.LogError($"[ScriptRunner] 스크립트 '{scriptName}'를 찾을 수 없습니다.");
                 return;
             }
             currentScriptName = scriptName;
-            LoadScript(asset);
+            LoadScript(csv, scriptName);
             Run();
             await UniTask.WaitUntil(() => !isRunning);
         }
 
         public async UniTask StartScriptFrom(string scriptName, string lineId, int lineIdx)
+            => await StartScriptFromInternal(scriptName, lineId, lineIdx, withStageSync: false);
+
+        /// <summary>
+        /// 디버그 점프용: 스크립트 로드 → 0..target 무대 상태 합성·복원 → 실행.
+        /// 중간 라인부터 시작해도 누적된 BG/Char/BGM/CG/SD/Overlay가 표시됨.
+        /// </summary>
+        public UniTask StartScriptFromWithStageSync(string scriptName, string lineId, int lineIdx)
+            => StartScriptFromInternal(scriptName, lineId, lineIdx, withStageSync: true);
+
+        async UniTask StartScriptFromInternal(string scriptName, string lineId, int lineIdx, bool withStageSync)
         {
-            var asset = Resources.Load<TextAsset>($"Story/{scriptName}");
-            if (asset == null)
+            // StreamingAssets/Story/{scriptName}.csv 로드
+            string csv = await StoryAssetLoader.LoadCsvAsync(scriptName);
+            if (string.IsNullOrEmpty(csv))
             {
                 Debug.LogError($"[ScriptRunner] 스크립트 '{scriptName}' 없음");
                 return;
             }
 
             currentScriptName = scriptName;
-            LoadScript(asset);
+            LoadScript(csv, scriptName);
 
             if (!string.IsNullOrEmpty(lineId) && lineIndex.TryGetValue(lineId, out int idx))
             {
                 _engine.RebuildLogFromPreviousLines(idx);
+                if (withStageSync)
+                {
+                    var data = StageStateSynthesizer.Synthesize(lines, idx - 1);
+                    await LoveAlgo.Story.SaveSystem.StageRestorer.RestoreAsync(data);
+                }
                 Stop();
                 currentIndex = idx;
                 cts = new CancellationTokenSource();
@@ -165,6 +184,11 @@ namespace LoveAlgo.Story
             else if (lineIdx > 0 && lineIdx < lines.Count)
             {
                 _engine.RebuildLogFromPreviousLines(lineIdx);
+                if (withStageSync)
+                {
+                    var data = StageStateSynthesizer.Synthesize(lines, lineIdx - 1);
+                    await LoveAlgo.Story.SaveSystem.StageRestorer.RestoreAsync(data);
+                }
                 Stop();
                 currentIndex = lineIdx;
                 cts = new CancellationTokenSource();
@@ -221,8 +245,11 @@ namespace LoveAlgo.Story
             }
         }
 
+        bool _explicitlyStopped;
+
         public void Stop()
         {
+            _explicitlyStopped = true;  // 자연 종료와 구분 — RunAsync가 OnScriptEnd 발화 안 함
             isRunning = false;
 
             CancellationTokenSource oldCts;
@@ -270,6 +297,50 @@ namespace LoveAlgo.Story
             cts = new CancellationTokenSource();
             isRunning = true;
             RunAsync(cts.Token).Forget();
+        }
+
+        /// <summary>
+        /// 0~(index-1) 라인을 forward-scan해서 누적된 무대 상태를 합성·즉시 복원한 뒤 index 라인부터 실행.
+        /// 중간 라인 점프 시 빈 화면 문제 방지.
+        ///
+        /// <param name="withFade">true(기본)면 검은 페이드 아웃 → 복원 → 페이드 인.
+        ///   비동기 복원 중 부분 상태(BGM 크로스페이드, 캐릭터 페이드인 등 100~700ms)가 보이지 않도록 가림.
+        ///   편집기 [저장&적용]처럼 화면이 IMGUI에 가려진 상태에서는 false 권장.</param>
+        /// </summary>
+        public async UniTask JumpWithStateSyncAsync(int index, bool withFade = true)
+        {
+            if (lines == null || index < 0 || index >= lines.Count)
+            {
+                Debug.LogWarning($"[ScriptRunner] JumpWithStateSync: 범위 초과 ({index}/{lines?.Count ?? 0})");
+                return;
+            }
+
+            Stop();
+
+            // 페이드 아웃 — 부분 상태가 보이지 않도록 검은 화면으로
+            var fx = ScreenFX.Instance;
+            if (withFade && fx != null && !fx.IsFadeBlack)
+            {
+                StageSyncLog.Section("StageSync", "fade-out 0.25s");
+                await fx.FadeOutAsync(0.25f);
+            }
+
+            // 타겟 직전까지의 누적 무대 상태 합성 + 복원
+            var data = StageStateSynthesizer.Synthesize(lines, index - 1);
+            await LoveAlgo.Story.SaveSystem.StageRestorer.RestoreAsync(data);
+
+            // 타겟 라인부터 실행
+            currentIndex = index;
+            cts = new CancellationTokenSource();
+            isRunning = true;
+            RunAsync(cts.Token).Forget();
+
+            // 페이드 인
+            if (withFade && fx != null)
+            {
+                StageSyncLog.Section("StageSync", "fade-in 0.35s");
+                await fx.FadeInAsync(0.35f);
+            }
         }
 
         public void Rewind(int textCount = 1)
@@ -323,6 +394,7 @@ namespace LoveAlgo.Story
 
         async UniTaskVoid RunAsync(CancellationToken ct)
         {
+            _explicitlyStopped = false;  // 새 실행 시작 — 플래그 리셋
             Debug.Log("[ScriptRunner] 스크립트 실행 시작");
 
             while (isRunning && currentIndex < lines.Count)
@@ -344,8 +416,19 @@ namespace LoveAlgo.Story
             }
 
             isRunning = false;
-            Debug.Log("[ScriptRunner] 스크립트 실행 종료");
-            OnScriptEnd?.Invoke();
+
+            // OnScriptEnd는 자연 종료(라인 끝까지 진행) 또는 Flow:End 명시 종료에만 발화.
+            // 외부 Stop()으로 인한 중단(편집기 토글, 점프, 로드 등)에서는 발화 금지 —
+            // 안 그러면 Prologue OnScriptEnd 핸들러가 잘못 트리거되어 Title로 복귀하는 버그 발생.
+            if (_explicitlyStopped)
+            {
+                Debug.Log("[ScriptRunner] 스크립트 실행 중단 (외부 Stop) — OnScriptEnd 발화 안 함");
+            }
+            else
+            {
+                Debug.Log("[ScriptRunner] 스크립트 실행 종료");
+                OnScriptEnd?.Invoke();
+            }
         }
     }
 }

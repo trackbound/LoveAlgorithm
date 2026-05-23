@@ -28,15 +28,15 @@ namespace LoveAlgo.UI
 
         // ── UI 인스턴스 호환성 wrapper (모듈 위임) ───────────────────
         // 옛 호출자(UIManager.Instance.X)를 위한 1줄 wrapper. 새 코드는 Services.Get<I*>() 직접 사용.
-        public DialogueUI DialogueUI => Services.Get<INarrative>()?.DialogueUI;
-        public DialogueShowButton DialogueShowButton => Services.Get<INarrative>()?.DialogueShowButton;
-        public ChoicePopup ChoicePopup => Services.Get<INarrative>()?.ChoicePopup;
-        public ScheduleUI ScheduleUI => Services.Get<ISchedule>()?.ScheduleUI;
-        public ShopUI ShopUI => Services.Get<IShop>()?.ShopUI;
-        public TitlePanel TitlePanel => Services.Get<ITitle>()?.TitlePanel;
-        public UsernameUI UsernameUI => Services.Get<ITitle>()?.UsernameUI;
-        public TutorialOverlay TutorialOverlay => Services.Get<ITutorial>()?.Overlay;
-        public QuickMenu QuickMenu => Services.Get<ISimulation>()?.QuickMenu;
+        public DialogueUI DialogueUI => Services.TryGet<INarrative>()?.DialogueUI;
+        public DialogueShowButton DialogueShowButton => Services.TryGet<INarrative>()?.DialogueShowButton;
+        public ChoicePopup ChoicePopup => Services.TryGet<INarrative>()?.ChoicePopup;
+        public ScheduleUI ScheduleUI => Services.TryGet<ISchedule>()?.ScheduleUI;
+        public ShopUI ShopUI => Services.TryGet<IShop>()?.ShopUI;
+        public TitlePanel TitlePanel => Services.TryGet<ITitle>()?.TitlePanel;
+        public UsernameUI UsernameUI => Services.TryGet<ITitle>()?.UsernameUI;
+        public TutorialOverlay TutorialOverlay => Services.TryGet<ITutorial>()?.Overlay;
+        public QuickMenu QuickMenu => Services.TryGet<ISimulation>()?.QuickMenu;
 
         /// <summary>UI 인스턴스 부모 그룹 — 모듈이 자기 UI를 spawn할 때 사용.</summary>
         public Transform GetGroupRoot(UIGroup group)
@@ -83,8 +83,8 @@ namespace LoveAlgo.UI
             if (sim != null && sim.IsActive) sim.ExitSimulation();
             else
             {
-                SetActiveIfExists(Services.Get<ISchedule>()?.ScheduleUI, false);
-                SetActiveIfExists(Services.Get<IShop>()?.ShopUI, false);
+                SetActiveIfExists(Services.TryGet<ISchedule>()?.ScheduleUI, false);
+                SetActiveIfExists(Services.TryGet<IShop>()?.ShopUI, false);
             }
 
             var title = Services.Get<ITitle>();

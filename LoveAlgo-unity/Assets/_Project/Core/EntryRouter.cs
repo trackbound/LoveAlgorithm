@@ -120,11 +120,26 @@ namespace LoveAlgo.Core
                 // StartNewGame → Flow.StartPrologueFromNewGame → TransitionToPrologueAsync (로딩+페이드)
                 GameManager.Instance?.StartNewGame();
             };
+            // 안전망: OnBlackout 못 받고 OnFlowComplete 먼저 오면 거기서도 새 게임 시작
+            //         (Outro 페이드 옵션/순서 변경에 대한 미래 대비)
+            bool newGameTriggered = false;
             onComplete = () =>
             {
                 panel.OnFlowComplete -= onComplete;
-                Debug.Log("[EntryRouter] 첫 시작 잠금 해제 완료");
+                panel.OnBlackoutReached -= onBlackout;
+                if (!newGameTriggered)
+                {
+                    Debug.LogWarning("[EntryRouter] OnBlackout 미수신 — OnFlowComplete에서 새 게임 시작 (안전망)");
+                    GameManager.Instance?.StartNewGame();
+                }
+                else
+                {
+                    Debug.Log("[EntryRouter] 첫 시작 잠금 해제 완료");
+                }
             };
+            // onBlackout 콜백 안에서 플래그 set
+            var prevOnBlackout = onBlackout;
+            onBlackout = () => { newGameTriggered = true; prevOnBlackout(); };
             panel.OnBlackoutReached += onBlackout;
             panel.OnFlowComplete += onComplete;
 

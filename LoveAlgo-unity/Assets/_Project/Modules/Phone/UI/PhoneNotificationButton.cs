@@ -160,7 +160,7 @@ namespace LoveAlgo.Phone
 
         void OnOpenClick()
         {
-            Services.Get<IPhone>()?.ShowPhoneUI();
+            Services.TryGet<IPhone>()?.ShowPhoneUI();
             // 폰 열고 나면 알림 자동 갱신
             UpdateBadge();
         }

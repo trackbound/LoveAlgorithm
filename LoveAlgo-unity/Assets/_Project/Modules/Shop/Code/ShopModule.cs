@@ -44,7 +44,7 @@ namespace LoveAlgo.Shop
         void Awake()
         {
             Services.Register<IShop>(this);
-            Services.Get<ISimulation>()?.RegisterSubMode(this);
+            Services.TryGet<ISimulation>()?.RegisterSubMode(this);
         }
 
         void OnDestroy()

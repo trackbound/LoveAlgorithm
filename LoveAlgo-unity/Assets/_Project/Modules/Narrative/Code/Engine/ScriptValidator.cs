@@ -84,6 +84,15 @@ namespace LoveAlgo.Story.StoryEngine
             else if (line.Type == LineType.Flow && !string.IsNullOrEmpty(line.Value))
             {
                 var parts = line.Value.Split(':');
+
+                // Mark 라벨 필수 검증 — 자동 점프 메뉴·합성기 출처 추적용
+                if (string.Equals(parts[0], "Mark", System.StringComparison.OrdinalIgnoreCase))
+                {
+                    if (parts.Length < 2 || string.IsNullOrWhiteSpace(parts[1]))
+                        Add(result, line, "Error",
+                            "Mark에는 라벨이 필요합니다. 예: `Mark:school_morning` (씬 식별자, unique).");
+                }
+
                 if (string.Equals(parts[0], "LockScreen", System.StringComparison.OrdinalIgnoreCase))
                 {
                     if (parts.Length < 2)

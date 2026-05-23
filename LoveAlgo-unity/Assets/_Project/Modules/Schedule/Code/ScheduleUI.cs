@@ -201,7 +201,9 @@ namespace LoveAlgo.Schedule
                 .ToUniTask(cancellationToken: ct);
 
             // 첫 진입 시 튜토리얼 표시 (스케줄 UI 등장 후 3초 뒤)
+            // GameState 플래그(현재 세션) + PlayerPrefs(영구) 둘 다 확인 — 새 게임으로 ResetAll 해도 안 뜸.
             if (tutorialOverlay != null
+                && !LoveAlgo.UI.TutorialOverlay.HasSeen("HasSeenScheduleTutorial")
                 && GameState.Instance != null
                 && !GameState.Instance.GetFlag("HasSeenScheduleTutorial"))
             {
@@ -652,7 +654,7 @@ namespace LoveAlgo.Schedule
         /// <summary>폰 열기 (행동 소비 없음)</summary>
         void OnPhoneClick()
         {
-            LoveAlgo.Common.Services.Get<Phone.IPhone>()?.ShowPhoneUI();
+            LoveAlgo.Common.Services.TryGet<Phone.IPhone>()?.ShowPhoneUI();
         }
 
         #endregion

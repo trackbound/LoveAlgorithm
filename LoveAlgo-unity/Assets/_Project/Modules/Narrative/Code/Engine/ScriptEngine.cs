@@ -151,6 +151,11 @@ namespace LoveAlgo.Story.StoryEngine
                     await Flow.MessageFlowCommand.ExecuteAsync(parts, ct);
                     return true;
 
+                case "Mark":
+                    // 무대 합성·점프 시스템 전용 메타 라인. 실행 시점엔 no-op.
+                    Flow.MarkFlowCommand.Execute(parts);
+                    return true;
+
                 default:
                     Debug.LogWarning($"[Flow] 알 수 없는 Flow 명령: {command}");
                     return true;

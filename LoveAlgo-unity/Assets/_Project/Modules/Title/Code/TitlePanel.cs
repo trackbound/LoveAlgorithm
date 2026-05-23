@@ -80,6 +80,15 @@ namespace LoveAlgo.UI
 
         public void PlayTitleBGM()
         {
+            // 첫 시작 LockScreen 흐름에서는 EntryRouter가 white_noise를 띄움 — 충돌 방지.
+            // GameManager.Start()도 같은 IsPasswordSet 체크로 Title phase 전환을 보류함.
+            var ls = LoveAlgo.Common.Services.TryGet<LoveAlgo.LockScreen.ILockScreen>();
+            if (ls != null && !ls.IsPasswordSet)
+            {
+                // 첫 진입 LockScreen 흐름 — Title BGM 재생 보류 (LockScreen Outro 후 자연 재진입 시 다시 시도)
+                return;
+            }
+
             if (!string.IsNullOrEmpty(titleBGM))
             {
                 AudioManager.Instance?.PlayBGMAsync(titleBGM).Forget();  // 기본 3초 페이드인
@@ -279,19 +288,19 @@ namespace LoveAlgo.UI
         void OnLoadClick()
         {
             Debug.Log("[TitlePanel] Load - 불러오기");
-            Services.Get<ISave>()?.ShowLoadUI();
+            Services.TryGet<ISave>()?.ShowLoadUI();
         }
 
         void OnSettingsClick()
         {
             Debug.Log("[TitlePanel] Settings - 설정");
-            Services.Get<ISettings>()?.ShowSettingsUI();
+            Services.TryGet<ISettings>()?.ShowSettingsUI();
         }
 
         void OnExtraClick()
         {
             Debug.Log("[TitlePanel] Extra - 엑스트라");
-            Services.Get<ITitle>()?.ShowExtraUI();
+            Services.TryGet<ITitle>()?.ShowExtraUI();
         }
 
         void OnExitClick()

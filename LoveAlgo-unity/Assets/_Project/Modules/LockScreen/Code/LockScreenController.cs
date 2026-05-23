@@ -130,6 +130,8 @@ namespace LoveAlgo.LockScreen
                 case LockScreenHint.FirstSetup: return content.hintFirstSetup;
                 case LockScreenHint.Complete:   return content.hintComplete;
                 case LockScreenHint.Normal:     return content.hintNormal;
+                case LockScreenHint.WrongOnce:  return content.hintWrongOnce;
+                case LockScreenHint.WrongTwice: return content.hintWrongTwice;
                 case LockScreenHint.Forgot:     return content.hintForgot;
                 default: return "";
             }
@@ -143,6 +145,8 @@ namespace LoveAlgo.LockScreen
                 case LockScreenHint.FirstSetup: return "앞으로 사용할 비밀번호를 입력해주세요.\n최대 7자까지 입력 가능합니다.";
                 case LockScreenHint.Complete:   return "비밀번호 설정 완료!";
                 case LockScreenHint.Normal:     return "비밀번호를 입력해주세요.";
+                case LockScreenHint.WrongOnce:  return "비밀번호가 일치하지 않습니다.";
+                case LockScreenHint.WrongTwice: return "비밀번호를 다시 한 번 확인해주세요.";
                 case LockScreenHint.Forgot:     return "비밀번호를 잊으셨다면 우측 하단 열쇠 모양 버튼을 눌러주세요.";
                 default: return "";
             }

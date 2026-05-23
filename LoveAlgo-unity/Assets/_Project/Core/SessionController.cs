@@ -114,10 +114,24 @@ namespace LoveAlgo.Core
                 {
                     AudioManager.Instance.StopBGMImmediate();
                 }
+                LoveAlgo.Story.StageSyncLog.Section("LoadFromSave", "Stop ScriptRunner");
                 ScriptRunner.Instance?.Stop();
 
-                // 이전 장면 정리
+                // ── Race 방어 ──
+                LoveAlgo.Story.StageSyncLog.Section("LoadFromSave", "Yield 1 frame for cancellation propagation");
+                await UniTask.Yield();
+
+                // 이전 장면 정리 (1차)
+                LoveAlgo.Story.StageSyncLog.Section("LoadFromSave", "Cleanup stage (1차)");
                 _gm.CleanupStage();
+
+                // 2차 명시 정리 — race 잔여 작업이 또 무대를 건드렸을 수도 있으므로
+                LoveAlgo.Story.StageSyncLog.Section("LoadFromSave", "Cleanup stage (2차)");
+                await UniTask.Yield();
+                StageModule.Instance?.CG?.Clear();
+                StageModule.Instance?.SDCutscene?.Clear();
+                StageModule.Instance?.VirtualBG?.HideImmediate();
+                StageModule.Instance?.MonologueDim?.HideImmediate();
 
                 _gm.SetPlayerName(data.PlayerName);
                 _gm.CurrentDay = data.CurrentDay;
@@ -142,6 +156,7 @@ namespace LoveAlgo.Core
                     dialogueUI?.HideImmediate();
 
                     // 장면 상태 복원 (배경, 캐릭터, BGM)
+                    LoveAlgo.Story.StageSyncLog.Section("LoadFromSave", "Restore stage from SaveData");
                     await RestoreStageState(data);
 
                     // 안전장치: 저장 시 암전이었으면 페이드 인 (전환 중 저장된 경우)
@@ -171,6 +186,8 @@ namespace LoveAlgo.Core
 
                         // 로드 완료 — 스크립트 실행 전에 플래그 해제 (실행 중 재로드 허용)
                         _isLoading = false;
+                        LoveAlgo.Story.StageSyncLog.Section("LoadFromSave",
+                            $"StartScriptFrom script={data.ScriptName} lineId={data.LineId} lineIdx={data.LineIndex}");
                         await runner.StartScriptFrom(data.ScriptName, data.LineId, data.LineIndex);
                     }
 
@@ -295,99 +312,10 @@ namespace LoveAlgo.Core
         }
 
         /// <summary>
-        /// 세이브 데이터에서 장면 상태 복원 (배경, 캐릭터, BGM, CG, 오버레이, 딤, FX)
+        /// 세이브 데이터에서 장면 상태 복원 (배경, 캐릭터, BGM, CG, 오버레이, 딤, FX).
+        /// 실제 로직은 StageRestorer.RestoreAsync로 추출됨 — 디버그 점프 등에서도 공유 사용.
         /// </summary>
-        async UniTask RestoreStageState(SaveData data)
-        {
-            // 배경 복원 (즉시 전환)
-            if (!string.IsNullOrEmpty(data.CurrentBG))
-            {
-                var bg = StageModule.Instance?.Background;
-                if (bg != null)
-                {
-                    await bg.ChangeBackgroundAsync(data.CurrentBG, Story.BGTransition.Cut, 0f);
-                }
-            }
-
-            // 캐릭터 복원
-            if (data.Characters != null && data.Characters.Count > 0)
-            {
-                var charLayer = StageModule.Instance?.Character;
-                if (charLayer != null)
-                {
-                    foreach (var charInfo in data.Characters)
-                    {
-                        Story.SlotPosition pos;
-                        switch (charInfo.Slot)
-                        {
-                            case "L": pos = Story.SlotPosition.L; break;
-                            case "R": pos = Story.SlotPosition.R; break;
-                            default:  pos = Story.SlotPosition.C; break;
-                        }
-                        var slot = charLayer.GetSlot(pos);
-                        if (slot != null)
-                        {
-                            await slot.EnterAsync(charInfo.Character, charInfo.Emote);
-                        }
-                    }
-                }
-            }
-
-            // CG 복원
-            if (!string.IsNullOrEmpty(data.CurrentCG))
-            {
-                var cg = StageModule.Instance?.CG;
-                if (cg != null)
-                {
-                    await cg.ShowAsync(data.CurrentCG, 0f);
-                }
-            }
-
-            // SD 컷씬 복원
-            if (!string.IsNullOrEmpty(data.CurrentSD))
-            {
-                var sd = StageModule.Instance?.SDCutscene;
-                if (sd != null)
-                {
-                    StageModule.Instance?.Character?.SetVisibleImmediate(false);
-                    await sd.ShowAsync(data.CurrentSD, 0f);
-                }
-            }
-
-            // VirtualBG 오버레이 복원
-            if (!string.IsNullOrEmpty(data.CurrentOverlay))
-            {
-                var overlay = StageModule.Instance?.VirtualBG;
-                if (overlay != null)
-                {
-                    await overlay.ShowAsync(data.CurrentOverlay, 0f);
-                }
-            }
-
-            // 독백 딤 복원
-            if (data.IsMonologueDimShowing)
-            {
-                StageModule.Instance?.MonologueDim?.ShowImmediate();
-            }
-
-            // 화면 효과 복원
-            var fx = ScreenFX.Instance;
-            if (fx != null)
-            {
-                if (data.IsEyeClosed)
-                    fx.EyeCloseImmediate();
-                else if (data.IsFadeBlack)
-                    fx.SetBlack();
-                else
-                    fx.SetClear();
-            }
-
-            // BGM 복원
-            if (!string.IsNullOrEmpty(data.CurrentBGM) && AudioManager.Instance != null)
-            {
-                await AudioManager.Instance.PlayBGMAsync(data.CurrentBGM, 0.5f);
-            }
-        }
+        UniTask RestoreStageState(SaveData data) => StageRestorer.RestoreAsync(data);
 
         /// <summary>
         /// 테스트용: 프롤로그 스킵하고 DayLoop 직행
