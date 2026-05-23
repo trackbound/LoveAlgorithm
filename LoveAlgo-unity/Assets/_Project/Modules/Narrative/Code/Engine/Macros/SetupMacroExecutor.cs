@@ -84,6 +84,28 @@ namespace LoveAlgo.Story.StoryEngine.Macros
                         }
                         break;
 
+                    case "Eye":
+                        // 합성기와 동일 의미 — Close/Open 즉시 적용
+                        var fx = ScreenFX.Instance;
+                        if (fx != null)
+                        {
+                            if (string.Equals(value, "Close", System.StringComparison.OrdinalIgnoreCase))
+                            {
+                                fx.EyeCloseImmediate();
+                                Debug.Log("[Macro] Setup: Eye → Close");
+                            }
+                            else if (string.Equals(value, "Open", System.StringComparison.OrdinalIgnoreCase))
+                            {
+                                fx.EyeOpenImmediate();
+                                Debug.Log("[Macro] Setup: Eye → Open");
+                            }
+                            else
+                            {
+                                Debug.LogWarning($"[Macro] Setup: Eye 값 '{value}' 알 수 없음 (Close|Open만 허용)");
+                            }
+                        }
+                        break;
+
                     default:
                         Debug.LogWarning($"[Macro] Setup: 알 수 없는 키 '{key}'");
                         break;

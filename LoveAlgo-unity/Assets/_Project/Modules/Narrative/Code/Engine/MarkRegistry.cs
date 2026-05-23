@@ -24,6 +24,36 @@ namespace LoveAlgo.Story
         public static bool TryGetIndex(string label, out int index)
             => _labelToIndex.TryGetValue(label ?? "", out index);
 
+        // ── Scene Mark 카테고리 (Mark:scene:…) ──────────────────────────────
+        // 시맨틱: "여기는 한 씬의 시작점. 직후에 Setup FX 라인이 모든 상태를 명시."
+        // 점프 시 가장 신뢰할 수 있는 anchor (합성기 부담 X, Setup으로 정확).
+
+        const string SceneCategoryPrefix = "scene:";
+
+        public static bool IsSceneMark(string label)
+            => !string.IsNullOrEmpty(label)
+            && label.StartsWith(SceneCategoryPrefix, System.StringComparison.OrdinalIgnoreCase);
+
+        /// <summary>Scene Mark 라벨에서 표시용 이름 추출 ("scene:로아 인트로" → "로아 인트로").</summary>
+        public static string GetSceneDisplayName(string label)
+        {
+            if (!IsSceneMark(label)) return label ?? "";
+            return label.Substring(SceneCategoryPrefix.Length).Trim();
+        }
+
+        /// <summary>주어진 라인 인덱스 이하 가장 가까운 Scene Mark의 인덱스. 없으면 -1.</summary>
+        public static int FindNearestSceneMarkAtOrBefore(int targetIndex)
+        {
+            int best = -1;
+            for (int i = 0; i < _sortedByIndex.Count; i++)
+            {
+                var (idx, label) = _sortedByIndex[i];
+                if (idx > targetIndex) break;
+                if (IsSceneMark(label)) best = idx;
+            }
+            return best;
+        }
+
         /// <summary>주어진 라인 인덱스 이하 가장 가까운 Mark의 인덱스. 없으면 -1.</summary>
         public static int FindNearestMarkAtOrBefore(int targetIndex)
         {

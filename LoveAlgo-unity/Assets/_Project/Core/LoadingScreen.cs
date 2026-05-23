@@ -18,19 +18,23 @@ namespace LoveAlgo.Core
         [SerializeField] Image characterImage;
         [SerializeField] Image blackOverlay;
 
-        [Header("설정")]
-        [SerializeField] float fadeInDuration = 0.4f;
-        [SerializeField] float fadeOutDuration = 0.3f;
-        [SerializeField] float minDisplayTime = 1.5f;
+        // ── Timing (FXDefaultsConfig SO 단일 정전) ──
+        // 인스펙터 SerializedField 제거 — 사용자가 값 조정은 Resources/Data/FXDefaultsConfig.asset에서만.
+        static float FadeIn  => FXDefaultsConfig.Instance != null
+            ? FXDefaultsConfig.Instance.loadingScreenFadeIn  : 0.4f;
+        static float FadeOut => FXDefaultsConfig.Instance != null
+            ? FXDefaultsConfig.Instance.loadingScreenFadeOut : 0.3f;
+        static float MinHold => FXDefaultsConfig.Instance != null
+            ? FXDefaultsConfig.Instance.loadingScreenMinHold : 1.5f;
 
         /// <summary>현재 표시 중인지</summary>
         public bool IsShowing { get; private set; }
 
         /// <summary>페이드인 소요 시간 (외부 참조용)</summary>
-        public float FadeInDuration => fadeInDuration;
+        public float FadeInDuration => FadeIn;
 
         /// <summary>최소 표시 시간 (외부 참조용)</summary>
-        public float MinDisplayTime => minDisplayTime;
+        public float MinDisplayTime => MinHold;
 
         /// <summary>
         /// Resources/UI/Loading/ 폴더의 로딩 이미지 목록
@@ -120,7 +124,7 @@ namespace LoveAlgo.Core
             canvasGroup.alpha = 1f;
 
             // 일러스트만 페이드인
-            await characterImage.DOFade(1f, fadeInDuration)
+            await characterImage.DOFade(1f, FadeIn)
                 .SetEase(Ease.OutQuad)
                 .SetUpdate(true)
                 .ToUniTask(cancellationToken: ct);
@@ -136,7 +140,7 @@ namespace LoveAlgo.Core
             if (characterImage == null || !IsShowing) return;
 
             DOTween.Kill(characterImage);
-            await characterImage.DOFade(0f, fadeOutDuration)
+            await characterImage.DOFade(0f, FadeOut)
                 .SetEase(Ease.InQuad)
                 .SetUpdate(true)
                 .ToUniTask(cancellationToken: ct);
@@ -153,7 +157,7 @@ namespace LoveAlgo.Core
             if (canvasGroup == null || !IsShowing) return;
 
             DOTween.Kill(characterImage);
-            await canvasGroup.DOFade(0f, fadeOutDuration)
+            await canvasGroup.DOFade(0f, FadeOut)
                 .SetEase(Ease.InQuad)
                 .SetUpdate(true)
                 .ToUniTask(cancellationToken: ct);
@@ -172,7 +176,7 @@ namespace LoveAlgo.Core
         {
             await ShowAsync(ct);
 
-            float wait = Mathf.Max(duration, minDisplayTime) - fadeInDuration;
+            float wait = Mathf.Max(duration, MinHold) - FadeIn;
             if (wait > 0f)
                 await UniTask.Delay(
                     System.TimeSpan.FromSeconds(wait),

@@ -57,7 +57,7 @@ namespace LoveAlgo.Story.StoryEngine
             { "NextDay",      new Sig(0, 3, "[Wake|Cut][:bgPath][:actionCount]") },
             { "SceneStart",   new Sig(0, 2, "[bgPath[:EyeClose]]") },
             { "SceneEnd",     new Sig(0, 1, "[fadeDuration]") },
-            { "Setup",        new Sig(1, int.MaxValue, "BG=...|BGM=...|Char=...|Overlay=...") },
+            { "Setup",        new Sig(1, int.MaxValue, "BG=...|BGM=...|Char=...[:슬롯]|Overlay=...|Eye=Close|Open") },
             { "Wait",         new Sig(0, 1, "[seconds]") },
             { "DialogueHide", new Sig(0, 0, "(인자 없음)") },
             { "DialogueShow", new Sig(0, 0, "(인자 없음)") },

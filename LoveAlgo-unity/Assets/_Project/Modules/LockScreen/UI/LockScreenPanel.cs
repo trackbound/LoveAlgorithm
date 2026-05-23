@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using LoveAlgo.Common;
+using LoveAlgo.Core;
 using LoveAlgo.UI;
 using TMPro;
 using UnityEngine;
@@ -68,20 +69,25 @@ namespace LoveAlgo.LockScreen.UI
         [SerializeField] AudioClip messageSfx;
         [SerializeField] AudioSource sfxSource;
 
-        [Header("Timing")]
+        [Header("동작 모드 (timing은 FXDefaultsConfig SO에서 단일 관리)")]
         [Tooltip("게임 첫 시작 시 페이드인. EntryRouter가 첫 시작 분기에서 외부 set 권장.")]
         [SerializeField] bool useFirstStartFadeIn = false;
-        [SerializeField] float firstStartFadeInSec = 1.5f;
-        [Tooltip("화면 표출 후 메시지 시작까지 (기획서: 5초)")]
-        [SerializeField] float beforeMessagesDelaySec = 5f;
-        [Tooltip("마지막 메시지 후 클릭 가능까지 (기획서: 3초)")]
-        [SerializeField] float afterLastMessageDelaySec = 3f;
-        [Tooltip("Outro 페이드인 — 검정이 panel을 덮으며 등장 (완전 페이드 — 크로스 합산 없음).")]
-        [SerializeField] float outroFadeToBlackSec = 1.0f;
-        [Tooltip("Outro 페이드아웃 — 검은 화면이 사라짐. withFadeOut=true일 때만.")]
-        [SerializeField] float outroFadeFromBlackSec = 1.0f;
         [Tooltip("기본 outro에 fade-out까지 포함할지. true면 흐름 종료 시 화면이 완전히 노출됨.\n외부에서 SetFadeOutAfter(bool)로 1회 override 가능 (CSV :FadeOut 옵션).")]
         [SerializeField] bool defaultWithFadeOut = false;
+
+        // ── 타이밍 (FXDefaultsConfig SO 단일 정전 — SerializedField/const 폴백 X) ──
+        // SO 없으면 안전 폴백. 사용자가 시간 조정은 Resources/Data/FXDefaultsConfig.asset에서만.
+        static float FirstStartFadeInSec   => Cfg(c => c.lockScreenFirstStartFadeIn, 0.8f);
+        static float BeforeMessagesDelaySec => Cfg(c => c.lockScreenBeforeMessages, 5f);
+        static float AfterLastMessageDelaySec => Cfg(c => c.lockScreenAfterLastMessage, 3f);
+        static float OutroFadeToBlackSec   => Cfg(c => c.lockScreenOutroToBlack, 0.5f);
+        static float OutroFadeFromBlackSec => Cfg(c => c.lockScreenOutroFromBlack, 0.5f);
+
+        static float Cfg(Func<FXDefaultsConfig, float> sel, float fallback)
+        {
+            var cfg = FXDefaultsConfig.Instance;
+            return cfg != null ? sel(cfg) : fallback;
+        }
 
         ILockScreen lockScreen;
         Coroutine seqCo;
@@ -247,12 +253,12 @@ namespace LoveAlgo.LockScreen.UI
             // 1. 페이드인
             if (rootCanvasGroup != null)
             {
-                if (fadeIn) yield return FadeCanvas(rootCanvasGroup, 0f, 1f, firstStartFadeInSec);
+                if (fadeIn) yield return FadeCanvas(rootCanvasGroup, 0f, 1f, FirstStartFadeInSec);
                 else rootCanvasGroup.alpha = 1f;
             }
 
             // 2. 메시지 시작 전 대기 (5초)
-            yield return new WaitForSecondsRealtime(beforeMessagesDelaySec);
+            yield return new WaitForSecondsRealtime(BeforeMessagesDelaySec);
 
             // 3. 4메시지 순차 + 효과음
             if (roaMessage != null)
@@ -264,7 +270,7 @@ namespace LoveAlgo.LockScreen.UI
             }
 
             // 4. +3초 후 클릭 가능 (gotoLogin=false면 여기서 멈춤 — 외부 트리거 대기)
-            yield return new WaitForSecondsRealtime(afterLastMessageDelaySec);
+            yield return new WaitForSecondsRealtime(AfterLastMessageDelaySec);
             if (gotoLogin && inputCatcher != null) inputCatcher.gameObject.SetActive(true);
         }
 
@@ -432,27 +438,28 @@ namespace LoveAlgo.LockScreen.UI
         {
             // ── Phase 1: 완전 페이드 — 검정 오버레이가 panel을 덮으며 등장 ──
             // (이전 크로스페이드: panel↓ + black↑ 동시 → 도중에 알파 합산으로 회색 톤 발생)
-            // 검정이 panel을 가린 뒤에 panel을 instant 정리해 다음 화면 셋업과 분리.
+            // black이 panel을 확실히 가리도록 sibling order 강제.
             if (blackOverlay != null)
             {
-                yield return FadeCanvas(blackOverlay, blackOverlay.alpha, 1f, outroFadeToBlackSec);
+                blackOverlay.transform.SetAsLastSibling();   // panel 위로 보장
+                yield return FadeCanvas(blackOverlay, blackOverlay.alpha, 1f, OutroFadeToBlackSec);
                 if (rootCanvasGroup != null) rootCanvasGroup.alpha = 0f;
             }
             else if (rootCanvasGroup != null)
             {
                 // 검정 오버레이가 없을 때만 panel을 fade out
-                yield return FadeCanvas(rootCanvasGroup, rootCanvasGroup.alpha, 0f, outroFadeToBlackSec);
+                yield return FadeCanvas(rootCanvasGroup, rootCanvasGroup.alpha, 0f, OutroFadeToBlackSec);
             }
 
             // 검은 화면 도달 — EntryRouter/외부가 다음 화면을 검은 뒤에서 셋업할 수 있는 순간
             OnBlackoutReached?.Invoke();
 
-            // ── Phase 2 (옵션): 페이드아웃 (black↓, 3초) ──
+            // ── Phase 2 (옵션): 페이드아웃 — 검정 사라지며 다음 화면 reveal ──
             bool withFadeOut = withFadeOutOverride ?? defaultWithFadeOut;
             withFadeOutOverride = null; // 1회용 override 리셋
 
             if (withFadeOut && blackOverlay != null)
-                yield return FadeCanvas(blackOverlay, 1f, 0f, outroFadeFromBlackSec);
+                yield return FadeCanvas(blackOverlay, 1f, 0f, OutroFadeFromBlackSec);
 
             OnFlowComplete?.Invoke();
             gameObject.SetActive(false);

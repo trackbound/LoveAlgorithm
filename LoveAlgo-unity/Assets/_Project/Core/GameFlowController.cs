@@ -226,10 +226,12 @@ namespace LoveAlgo.Core
             {
                 var ct = _gm.GetCancellationTokenOnDestroy();
                 var fx = ScreenFX.Instance;
+                float fade = FXDefaultsConfig.Instance != null
+                    ? FXDefaultsConfig.Instance.phaseTransitionFade : 0.5f;
 
                 // 페이드 아웃
                 if (fx != null && !fx.IsFadeBlack)
-                    await fx.FadeOutAsync(0.5f, ct);
+                    await fx.FadeOutAsync(fade, ct);
 
                 ScriptRunner.Instance?.Stop();
 
@@ -242,7 +244,7 @@ namespace LoveAlgo.Core
 
                 // 페이드 인 (타이틀 표시)
                 if (fx != null)
-                    await fx.FadeInAsync(0.5f, ct);
+                    await fx.FadeInAsync(fade, ct);
             }
             finally
             {
@@ -293,36 +295,36 @@ namespace LoveAlgo.Core
                 var fx = ScreenFX.Instance;
                 var loading = LoadingScreen.Instance;
 
+                // ── 모든 timing은 FXDefaultsConfig SO 단일 정전 ──
+                var cfg = FXDefaultsConfig.Instance;
+                float phaseFade   = cfg != null ? cfg.phaseTransitionFade : 0.3f;
+                float loadingHold = cfg != null ? cfg.loadingScreenMinHold : 0.4f;
+                float gameReveal  = cfg != null ? cfg.phaseTransitionReveal : 0.8f;
+
                 // 1) 페이드 아웃
-                if (fx != null)
-                    await fx.FadeOutAsync(0.6f, ct);
-                else
-                    await UniTask.Yield(ct);
+                if (fx != null) await fx.FadeOutAsync(phaseFade, ct);
+                else            await UniTask.Yield(ct);
 
                 // 2) 로딩 화면 표시 (암전 위에)
-                if (loading != null)
-                    await loading.ShowAsync(ct);
+                if (loading != null) await loading.ShowAsync(ct);
 
                 // 3) 페이드 해제 (로딩 화면이 부드럽게 드러남)
-                if (fx != null)
-                    await fx.FadeInAsync(0.5f, ct);
+                if (fx != null) await fx.FadeInAsync(phaseFade, ct);
 
                 // 4) UI 전환 + 프롤로그 UI 준비 (로딩 화면 뒤에서)
                 ChangePhase(GamePhase.Prologue);
 
                 // 5) 로딩 화면 표시 유지
-                await UniTask.Delay(System.TimeSpan.FromSeconds(0.8f), cancellationToken: ct);
+                await UniTask.Delay(System.TimeSpan.FromSeconds(loadingHold), cancellationToken: ct);
 
                 // 6) 페이드 아웃 (로딩 화면 위에 암전)
-                if (fx != null)
-                    await fx.FadeOutAsync(0.5f, ct);
+                if (fx != null) await fx.FadeOutAsync(phaseFade, ct);
 
                 // 7) 로딩 화면 제거 (암전 상태라 안 보임)
                 loading?.HideImmediate();
 
-                // 8) 인게임 페이드 인 (로딩 후 부드러운 등장)
-                if (fx != null)
-                    await fx.FadeInAsync(2.0f, ct);
+                // 8) 인게임 페이드 인 (로딩 후 부드러운 등장 — 분위기 살리려 약간 길게)
+                if (fx != null) await fx.FadeInAsync(gameReveal, ct);
 
                 // 10) 프롤로그 스크립트 실행 (전환 완료 후 시작)
                 ScriptRunner.Instance?.StartScript(_gm.PrologueScript).Forget();
@@ -344,9 +346,11 @@ namespace LoveAlgo.Core
             {
                 var ct = _gm.GetCancellationTokenOnDestroy();
                 var fx = ScreenFX.Instance;
+                float fade = FXDefaultsConfig.Instance != null
+                    ? FXDefaultsConfig.Instance.phaseTransitionFade : 0.5f;
 
                 if (fx != null)
-                    await fx.FadeOutAsync(0.5f, ct);
+                    await fx.FadeOutAsync(fade, ct);
 
                 _gm.CleanupStage();
 
@@ -366,7 +370,7 @@ namespace LoveAlgo.Core
                 await UniTask.Yield(ct);
 
                 if (fx != null)
-                    await fx.FadeInAsync(0.5f, ct);
+                    await fx.FadeInAsync(fade, ct);
             }
             finally
             {
@@ -402,7 +406,11 @@ namespace LoveAlgo.Core
 
             // 페이드 아웃 → 타이틀 복귀
             if (ScreenFX.Instance != null)
-                await ScreenFX.Instance.FadeOutAsync(0.5f, ct);
+            {
+                float fade = FXDefaultsConfig.Instance != null
+                    ? FXDefaultsConfig.Instance.phaseTransitionFade : 0.5f;
+                await ScreenFX.Instance.FadeOutAsync(fade, ct);
+            }
 
             GoToTitle();
         }

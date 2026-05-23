@@ -52,6 +52,11 @@ namespace LoveAlgo.DevTools.ScenarioEditor
         List<ScriptValidator.Violation> violations = new();
         bool pendingScrollToSelected;           // 열 때 1회 — 진행 중 라인으로 자동 스크롤
 
+        // ── 드래그&드롭 순서 변경 ──
+        int dragSourceIndex = -1;               // -1 = 드래그 안 함
+        int dragHoverIndex = -1;                // 현재 마우스가 위치한 라인
+        Vector2 dragStartMousePos;              // 드래그 시작 좌표 (threshold 검사)
+
         // ── 드롭다운 팝업 상태 (한 번에 하나만) ──
         string activeDropdownKey;
         Vector2 dropdownScroll;
@@ -409,6 +414,9 @@ namespace LoveAlgo.DevTools.ScenarioEditor
 
             listScroll = GUILayout.BeginScrollView(listScroll);
 
+            // 행 Rect 추적 (드래그 중 마우스 위치 → hoverIndex 계산용)
+            var rowRects = new List<Rect>();
+
             if (workingLines != null)
             {
                 for (int i = 0; i < workingLines.Count; i++)
@@ -416,13 +424,30 @@ namespace LoveAlgo.DevTools.ScenarioEditor
                     var line = workingLines[i];
                     bool isSelected = i == selectedIndex;
                     bool isCurrent  = i == currentRunningIndex;
+                    bool isSceneMark = IsSceneMarkLine(line);
+                    bool isDragSource = i == dragSourceIndex;
+                    bool isDropTarget = dragSourceIndex >= 0 && i == dragHoverIndex && i != dragSourceIndex;
 
-                    // 행 버튼 스타일
+                    GUILayout.BeginHorizontal();
+
+                    // ── 드래그 핸들 ☰ ──
+                    var handleStyle = new GUIStyle(GUI.skin.label)
+                    {
+                        alignment = TextAnchor.MiddleCenter,
+                        fontSize = 14,
+                        fontStyle = FontStyle.Bold,
+                    };
+                    handleStyle.normal.textColor = isDragSource
+                        ? new Color(1f, 0.9f, 0.3f) : new Color(0.55f, 0.55f, 0.6f);
+                    GUILayout.Label("☰", handleStyle, GUILayout.Width(22), GUILayout.Height(22));
+                    Rect handleRect = GUILayoutUtility.GetLastRect();
+
+                    // ── 행 버튼 스타일 ──
                     var rowStyle = new GUIStyle(GUI.skin.button)
                     {
                         alignment = TextAnchor.MiddleLeft,
                         richText = true,
-                        fontSize = 11,
+                        fontSize = 13,   // 11 → 13 (가독성 ↑)
                     };
                     if (isCurrent)
                     {
@@ -436,9 +461,26 @@ namespace LoveAlgo.DevTools.ScenarioEditor
                         rowStyle.normal.textColor = Color.yellow;
                         rowStyle.hover.textColor = Color.yellow;
                     }
+                    else if (isSceneMark)
+                    {
+                        // Scene Mark — 청록 굵게 (씬 anchor 시각화)
+                        rowStyle.fontStyle = FontStyle.Bold;
+                        rowStyle.normal.textColor = new Color(0.4f, 1f, 0.95f);
+                        rowStyle.hover.textColor  = new Color(0.55f, 1f, 1f);
+                    }
+                    if (isDragSource)
+                    {
+                        // 드래그 중 — 행 텍스트 반투명
+                        var c = rowStyle.normal.textColor;
+                        c.a = 0.4f;
+                        rowStyle.normal.textColor = c;
+                    }
 
                     // 행 텍스트 (화살표를 버튼 본문에 inline — 별도 Label 안 만들어서 레이아웃 깨짐 방지)
-                    string prefix = isCurrent ? "<color=#ffaa44>▶ </color>" : "<color=#00000000>▶ </color>"; // 투명 placeholder로 폭 통일
+                    string prefix;
+                    if (isCurrent)        prefix = "<color=#ffaa44>▶ </color>";
+                    else if (isSceneMark) prefix = "<color=#66ffee>◆ </color>";
+                    else                  prefix = "<color=#00000000>▶ </color>"; // 투명 placeholder로 폭 통일
                     string label = prefix + FormatLineLabel(i, line);
 
                     if (GUILayout.Button(label, rowStyle))
@@ -450,11 +492,120 @@ namespace LoveAlgo.DevTools.ScenarioEditor
                         }
                         activeDropdownKey = null;
                     }
+                    Rect rowRect = GUILayoutUtility.GetLastRect();
+                    // 핸들 + 행 합쳐서 hover 판정용
+                    rowRects.Add(new Rect(handleRect.x, handleRect.y,
+                        rowRect.xMax - handleRect.x, Mathf.Max(handleRect.height, rowRect.height)));
+
+                    GUILayout.EndHorizontal();
+
+                    // ── 드롭 인디케이터 (대상 행 위에 청록 선) ──
+                    if (isDropTarget && Event.current.type == EventType.Repaint)
+                    {
+                        var indicator = new Rect(rowRect.x, rowRect.y - 1, rowRect.width, 2);
+                        EditorGUIStubFill(indicator, new Color(0.3f, 0.9f, 1f, 0.9f));
+                    }
+
+                    // ── 드래그 핸들 클릭 감지 (MouseDown) ──
+                    var ev = Event.current;
+                    if (ev.type == EventType.MouseDown && ev.button == 0
+                     && handleRect.Contains(ev.mousePosition))
+                    {
+                        dragSourceIndex = i;
+                        dragHoverIndex = i;
+                        dragStartMousePos = ev.mousePosition;
+                        ev.Use();
+                    }
                 }
             }
 
             GUILayout.EndScrollView();
+
+            // ── 드래그 진행/종료 처리 (ScrollView 밖에서 — 마우스 캡처 안정성) ──
+            HandleDragEvents(rowRects);
+
             GUILayout.EndArea();
+        }
+
+        /// <summary>드래그 중 마우스 이동/릴리스 처리.</summary>
+        void HandleDragEvents(List<Rect> rowRects)
+        {
+            if (dragSourceIndex < 0) return;
+            var ev = Event.current;
+
+            if (ev.type == EventType.MouseDrag)
+            {
+                // hoverIndex 갱신
+                for (int k = 0; k < rowRects.Count; k++)
+                {
+                    if (rowRects[k].Contains(ev.mousePosition))
+                    {
+                        if (dragHoverIndex != k) dragHoverIndex = k;
+                        break;
+                    }
+                }
+                ev.Use();
+            }
+            else if (ev.type == EventType.MouseUp)
+            {
+                int moved = -1;
+                if (dragHoverIndex >= 0 && dragHoverIndex != dragSourceIndex)
+                {
+                    // threshold — 마우스가 거의 안 움직였으면 의도치 않은 드롭 방지
+                    float dist = (ev.mousePosition - dragStartMousePos).magnitude;
+                    if (dist > 6f)
+                    {
+                        MoveLine(dragSourceIndex, dragHoverIndex);
+                        moved = dragHoverIndex;
+                    }
+                }
+                dragSourceIndex = -1;
+                dragHoverIndex = -1;
+                ev.Use();
+                if (moved >= 0)
+                    Debug.Log($"[ScenarioEditor] 드래그 이동 완료 → #{moved}");
+            }
+            else if (ev.type == EventType.MouseLeaveWindow)
+            {
+                // 윈도우 밖으로 나가면 취소
+                dragSourceIndex = -1;
+                dragHoverIndex = -1;
+            }
+        }
+
+        /// <summary>드롭 인디케이터용 단색 채우기 (IMGUI Repaint 안전).</summary>
+        static void EditorGUIStubFill(Rect rect, Color color)
+        {
+            var saved = GUI.color;
+            GUI.color = color;
+            GUI.DrawTexture(rect, Texture2D.whiteTexture);
+            GUI.color = saved;
+        }
+
+        /// <summary>라인을 from → to 인덱스로 이동. selectedIndex/currentRunningIndex 자동 보정.</summary>
+        void MoveLine(int from, int to)
+        {
+            if (workingLines == null) return;
+            if (from < 0 || from >= workingLines.Count) return;
+            if (to < 0 || to >= workingLines.Count) return;
+            if (from == to) return;
+
+            PushUndoSnapshot();
+            var item = workingLines[from];
+            workingLines.RemoveAt(from);
+            workingLines.Insert(to, item);
+
+            // 선택 인덱스 동기화
+            if (selectedIndex == from) selectedIndex = to;
+            else if (from < selectedIndex && to >= selectedIndex) selectedIndex--;
+            else if (from > selectedIndex && to <= selectedIndex) selectedIndex++;
+
+            // 진행 중 라인 인덱스 동기화
+            if (currentRunningIndex == from) currentRunningIndex = to;
+            else if (from < currentRunningIndex && to >= currentRunningIndex) currentRunningIndex--;
+            else if (from > currentRunningIndex && to <= currentRunningIndex) currentRunningIndex++;
+
+            RunValidation();
         }
 
         string FormatLineLabel(int index, ScriptLine line)
@@ -465,7 +616,24 @@ namespace LoveAlgo.DevTools.ScenarioEditor
                 : "";
             string val = Trunc(line.Value ?? "", 52).Replace("\n", " ↵ ");
             string typeColor = TypeColor(line.Type);
+
+            // Scene Mark — 라벨에서 "scene:" prefix 떼고 씬 이름 강조
+            if (IsSceneMarkLine(line))
+            {
+                string sceneName = MarkRegistry.GetSceneDisplayName(
+                    LoveAlgo.Story.StoryEngine.Flow.MarkFlowCommand.ExtractLabel(line.Value));
+                return $"<color=#888>{index,4}</color>  <color=#66ffee><b>━━ ◆ {sceneName} ━━</b></color>";
+            }
+
             return $"<color=#888>{index,4}</color>  <color={typeColor}><b>{line.Type,-7}</b></color>  <color=#aaa>{id,-12}</color>  {speakerOrPreview}  <color=#ccc>{val}</color>";
+        }
+
+        /// <summary>Flow 라인이고 Value가 "Mark:scene:..." 패턴인지.</summary>
+        static bool IsSceneMarkLine(ScriptLine line)
+        {
+            if (line == null || line.Type != LineType.Flow) return false;
+            string label = LoveAlgo.Story.StoryEngine.Flow.MarkFlowCommand.ExtractLabel(line.Value);
+            return MarkRegistry.IsSceneMark(label);
         }
 
         static string TypeColor(LineType t)

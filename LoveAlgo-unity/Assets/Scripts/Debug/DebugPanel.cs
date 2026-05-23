@@ -47,7 +47,7 @@ namespace LoveAlgo.DevTools
             ("F2",            "GameState 뷰어/편집 패널 토글"),
             ("F3",            "점프/리셋 패널 토글"),
             // ── 자주 쓰는 도구 (Esc 옆 ` 키 — 콘솔 관습) ──
-            ("`",             "시나리오 편집기 토글 (현재 스크립트 라이브 편집)"),
+            ("` 또는 F4",     "시나리오 편집기 토글 (Editor에서 ` 안 먹으면 F4)"),
             // ── 스크립트 흐름 그룹 ──
             ("F5",            "다음 날로 진행 [DayLoop 전용, Mark:day{N}* 점프]"),
             ("F6",            "다음 선택지(Choice)까지 점프 [스크립트 실행 중 전용]"),
@@ -108,8 +108,8 @@ namespace LoveAlgo.DevTools
             if (kb.f3Key.wasPressedThisFrame)
                 mode = mode == PanelMode.Jump ? PanelMode.None : PanelMode.Jump;
 
-            // ── 시나리오 편집기 (` 백틱 — 게임 콘솔 관습 키) ──
-            if (kb.backquoteKey.wasPressedThisFrame)
+            // ── 시나리오 편집기 (` 백틱 또는 F4 — Editor IME 등 충돌 대비 이중 등록) ──
+            if (kb.backquoteKey.wasPressedThisFrame || kb.f4Key.wasPressedThisFrame)
                 LoveAlgo.DevTools.ScenarioEditor.ScenarioEditorIMGUI.Instance?.Toggle();
 
             // ── 스크립트 흐름 그룹 (F5~F7) ──
@@ -304,7 +304,7 @@ namespace LoveAlgo.DevTools
             GUILayout.Label("<b>Debug Panel</b>  (F3 닫기)", header);
             var hintStyle = new GUIStyle(GUI.skin.label) { richText = true, fontSize = 10, wordWrap = true };
             GUILayout.Label(
-                "<color=#aaaaaa>F1 도움말  F2 상태  F3 점프  ` 편집기\n" +
+                "<color=#aaaaaa>F1 도움말  F2 상태  F3 점프  `/F4 편집기\n" +
                 "F5 →날  F6 →선택지  F7 고속  F10 UI숨김  F11 오버레이\n" +
                 "Ctrl+Shift+ S 세이브 / L 로드 / P 스샷 / R 첫실행리셋</color>", hintStyle);
             GUILayout.Space(6);

@@ -84,5 +84,40 @@ namespace LoveAlgo.Core
         public float sceneStartFadeEyeClosed = 0.3f;
         public float sceneStartFadeEyeOpen = 0.6f;
         public float sceneEndFadeOut = 0.5f;
+
+        // ══════════════════════════════════════════════
+        //  LockScreen
+        // ══════════════════════════════════════════════
+        [Header("LockScreen")]
+        [Tooltip("게임 첫 시작 시 잠금화면 페이드인 (useFirstStartFadeIn=true일 때만).")]
+        public float lockScreenFirstStartFadeIn = 0.8f;
+        [Tooltip("Outro Phase 1 — 검정 오버레이가 panel을 덮으며 등장.")]
+        public float lockScreenOutroToBlack = 0.5f;
+        [Tooltip("Outro Phase 2 (옵션 :FadeOut) — 검정이 사라지며 다음 화면 reveal.")]
+        public float lockScreenOutroFromBlack = 0.5f;
+        [Tooltip("기획서: 잠금화면 표출 후 로아 메시지 시작까지 대기.")]
+        public float lockScreenBeforeMessages = 5f;
+        [Tooltip("기획서: 마지막 로아 메시지 후 클릭 가능까지 대기.")]
+        public float lockScreenAfterLastMessage = 3f;
+
+        // ══════════════════════════════════════════════
+        //  Loading Screen
+        // ══════════════════════════════════════════════
+        [Header("Loading Screen")]
+        [Tooltip("로딩 일러스트 페이드인.")]
+        public float loadingScreenFadeIn = 0.3f;
+        [Tooltip("로딩 일러스트/패널 페이드아웃.")]
+        public float loadingScreenFadeOut = 0.3f;
+        [Tooltip("로딩 화면 최소 유지 시간 (자동저장 등 짧은 작업도 사용자가 인식할 시간).")]
+        public float loadingScreenMinHold = 0.4f;
+
+        // ══════════════════════════════════════════════
+        //  Phase Transition (Title ↔ Prologue 등 글로벌 전환)
+        // ══════════════════════════════════════════════
+        [Header("Phase Transition (Global)")]
+        [Tooltip("Title ↔ Prologue, Prologue ↔ DayLoop 등 Phase 간 전환 페이드 — 글로벌 통일 값.")]
+        public float phaseTransitionFade = 0.3f;
+        [Tooltip("Phase 전환 끝, 인게임 reveal 페이드 인 (분위기 살리려 길게).")]
+        public float phaseTransitionReveal = 0.8f;
     }
 }
