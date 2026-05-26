@@ -184,7 +184,7 @@ MonoBehaviour:
   - Id: white_noise
     Aliases:
     - "\uBC31\uC0C9\uC18C\uC74C"
-    Clip: {fileID: 8300000, guid: 1f892dfffabdddf4b92f963d4b15cc45, type: 3}
+    Clip: {fileID: 8300000, guid: 626663a0d7712d943ad92eba505a664c, type: 3}
     Note: 
   - Id: daily1
     Aliases:
@@ -221,11 +221,16 @@ MonoBehaviour:
     - "\uB85C\uC544"
     Clip: {fileID: 8300000, guid: 7ae5fe903e96fd543b5fefee877396b4, type: 3}
     Note: 
+  - Id: title
+    Aliases:
+    - "\uD0C0\uC774\uD2C0"
+    Clip: {fileID: 8300000, guid: 6478dfdd832a98d4383c64059105df6c, type: 3}
+    Note: 
   SFX:
   - Id: 060
     Aliases:
     - "\uBA54\uC2DC\uC9C0 \uC54C\uB9BC\uC74C"
-    Clip: {fileID: 8300000, guid: 6b54c3c8df030224696c4caf23e53435, type: 3}
+    Clip: {fileID: 8300000, guid: fde3e7c0d22bb454f8cc50c6d7190027, type: 3}
     Note: 
   - Id: 200
     Aliases:

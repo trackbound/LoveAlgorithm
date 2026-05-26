@@ -15,7 +15,15 @@ namespace LoveAlgo.Phone
         [Tooltip("스토리 진행 중 화면 우측 알림 버튼 (선택). 씬에 배치된 인스턴스를 드래그.")]
         [SerializeField] PhoneNotificationButton notificationButton;
 
-        void Awake() => Services.Register<IPhone>(this);
+        void Awake()
+        {
+            Services.Register<IPhone>(this);
+
+            // PhoneNotificationButton GameObject가 씬에 비활성으로 저장되어 있어도 강제 활성화.
+            // 표시 여부는 본인의 IsBlocked() 폴링이 visual만 토글 (Phase/CG/SD/Fade/Popup 등 고려).
+            if (notificationButton != null && !notificationButton.gameObject.activeSelf)
+                notificationButton.gameObject.SetActive(true);
+        }
 
         void OnDestroy()
         {

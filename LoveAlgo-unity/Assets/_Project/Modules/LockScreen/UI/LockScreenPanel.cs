@@ -290,26 +290,45 @@ namespace LoveAlgo.LockScreen.UI
         {
             if (inputCatcher != null) inputCatcher.gameObject.SetActive(false);
 
+            // loginStage 페이드인 준비 — 활성화 + alpha 0
+            // CanvasGroup이 없으면 자동 추가 (prefab 빌드 에디터에서도 보장하지만 런타임 안전망).
+            CanvasGroup loginCg = null;
+            if (loginStage != null)
+            {
+                loginStage.SetActive(true);
+                loginCg = loginStage.GetComponent<CanvasGroup>();
+                if (loginCg == null) loginCg = loginStage.AddComponent<CanvasGroup>();
+            }
+
+            // 진입 시점에 hint/mode 미리 적용 — 페이드 도중에도 올바른 텍스트·아이콘 노출
+            ApplyHintForCurrentMode();
+
             if (skipSlideAnim)
             {
-                // OpenLoginOnly 진입 — 슬라이드/메시지 페이드 없이 즉시 dim 표시
+                // OpenLoginOnly 진입 — 애니메이션 없이 즉시 표시
                 if (roaMessage != null) roaMessage.HideAllImmediate();
                 if (loginDim != null) loginDim.alpha = loginDimAlpha;
+                if (loginCg != null) loginCg.alpha = 1f;
             }
             else
             {
-                // 좌측 위젯/메시지/dim 동시 진행
-                Coroutine left = StartCoroutine(SlideOutLeftWidgets());
-                Coroutine msg  = roaMessage != null ? StartCoroutine(roaMessage.HideRoutine()) : null;
-                Coroutine dim  = loginDim != null ? StartCoroutine(FadeCanvas(loginDim, 0f, loginDimAlpha, loginDimFadeDuration)) : null;
+                if (loginCg != null) loginCg.alpha = 0f;
+
+                // 4 트랙 동시 진행 — 페이드 시간 통일 (loginDimFadeDuration)
+                //  1) 좌측 위젯 좌로 슬라이드아웃 (Warn/Audio/ToDo)
+                //  2) 로아 메시지 박스 아래로 슬라이드 사라짐
+                //  3) loginDim 검정 반투명 페이드인 (배경 가독성 ↓)
+                //  4) loginStage 입력 UI (input/header/button) 페이드인
+                Coroutine left  = StartCoroutine(SlideOutLeftWidgets());
+                Coroutine msg   = roaMessage != null ? StartCoroutine(roaMessage.HideRoutine()) : null;
+                Coroutine dim   = loginDim != null   ? StartCoroutine(FadeCanvas(loginDim, 0f, loginDimAlpha, loginDimFadeDuration)) : null;
+                Coroutine stage = loginCg != null    ? StartCoroutine(FadeCanvas(loginCg, 0f, 1f, loginDimFadeDuration)) : null;
 
                 yield return left;
-                if (msg != null) yield return msg;
-                if (dim != null) yield return dim;
+                if (msg   != null) yield return msg;
+                if (dim   != null) yield return dim;
+                if (stage != null) yield return stage;
             }
-
-            if (loginStage != null) loginStage.SetActive(true);
-            ApplyHintForCurrentMode();
 
             if (passwordInput != null && EventSystem.current != null)
                 EventSystem.current.SetSelectedGameObject(passwordInput.gameObject);

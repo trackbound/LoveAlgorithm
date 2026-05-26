@@ -57,6 +57,18 @@ namespace LoveAlgo.DevTools.ScenarioEditor
         int dragHoverIndex = -1;                // 현재 마우스가 위치한 라인
         Vector2 dragStartMousePos;              // 드래그 시작 좌표 (threshold 검사)
 
+        // ── 윈도우 (드래그/리사이즈) ──
+        const int WindowId = 0xCE01;            // GUI.Window 식별자
+        const string PrefKeyX = "ScenarioEditor.WinX";
+        const string PrefKeyY = "ScenarioEditor.WinY";
+        const string PrefKeyW = "ScenarioEditor.WinW";
+        const string PrefKeyH = "ScenarioEditor.WinH";
+        const float MinWindowW = 800f;
+        const float MinWindowH = 500f;
+        const float ResizeHandleSize = 18f;
+        Rect windowRect;
+        bool windowPrefsLoaded;
+
         // ── 드롭다운 팝업 상태 (한 번에 하나만) ──
         string activeDropdownKey;
         Vector2 dropdownScroll;
@@ -111,10 +123,12 @@ namespace LoveAlgo.DevTools.ScenarioEditor
                 bool shift = kb.leftShiftKey.isPressed || kb.rightShiftKey.isPressed;
                 if (ctrl && kb.zKey.wasPressedThisFrame)
                 {
+                    Debug.Log($"[ScenarioEditor] Ctrl+{(shift ? "Shift+Z" : "Z")} 감지 — undo={undoStack.Count}, redo={redoStack.Count}, preEdit={(_preEditSnapshot != null)}");
                     if (shift) Redo(); else Undo();
                 }
                 else if (ctrl && kb.yKey.wasPressedThisFrame)
                 {
+                    Debug.Log($"[ScenarioEditor] Ctrl+Y 감지 — redo={redoStack.Count}");
                     Redo();
                 }
             }
@@ -187,6 +201,8 @@ namespace LoveAlgo.DevTools.ScenarioEditor
         {
             isOpen = false;
             activeDropdownKey = null;
+            SaveWindowPrefs();
+            PlayerPrefs.Save();   // 닫을 때 한 번 명시적 저장
             Debug.Log("[ScenarioEditor] CLOSE (변경사항 미저장) — 게임 재개");
             ResumeRunner();
         }
@@ -296,28 +312,87 @@ namespace LoveAlgo.DevTools.ScenarioEditor
         {
             if (!isOpen) return;
 
-            // 풀스크린 불투명 배경 (어두운 차콜) — 반투명보다 가독성 좋음
-            GUI.color = new Color(0.12f, 0.12f, 0.14f, 1.0f);
+            EnsureWindowPrefsLoaded();
+
+            // 게임 화면 가독성을 위한 반투명 backdrop (게임 일부 보이지만 어둡게)
+            GUI.color = new Color(0f, 0f, 0f, 0.55f);
             GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), Texture2D.whiteTexture);
             GUI.color = Color.white;
 
+            // 화면 밖으로 나가지 않도록 윈도우 위치 clamp
+            windowRect.x = Mathf.Clamp(windowRect.x, 0f, Screen.width - 100f);
+            windowRect.y = Mathf.Clamp(windowRect.y, 0f, Screen.height - 60f);
+            windowRect.width  = Mathf.Clamp(windowRect.width,  MinWindowW, Screen.width);
+            windowRect.height = Mathf.Clamp(windowRect.height, MinWindowH, Screen.height);
+
+            windowRect = GUI.Window(WindowId, windowRect, DrawWindowContent,
+                $"📝 시나리오 편집기  ·  파일: {scriptName ?? "?"}");
+
+            // 활성 드롭다운은 윈도우 위에 그리기 (Z order)
+            DrawActiveDropdown();
+        }
+
+        /// <summary>윈도우 내부 콘텐츠 — 모든 좌표는 windowRect 상대.</summary>
+        void DrawWindowContent(int windowId)
+        {
+            const float titleH = 22f;       // GUI.Window 기본 제목바 높이
             float pad = 8f;
             float topBarH = 32f;
             float bottomBarH = 80f;
-            float bodyY = topBarH + pad;
-            float bodyH = Screen.height - topBarH - bottomBarH - pad * 2;
+            float bodyY = titleH + pad + topBarH + pad;
+            float bodyH = windowRect.height - bodyY - bottomBarH - pad * 2;
 
-            DrawTopBar(new Rect(pad, pad, Screen.width - pad * 2, topBarH));
+            DrawTopBar(new Rect(pad, titleH + pad, windowRect.width - pad * 2, topBarH));
 
-            // 좌측 리스트 확대 (40%/520 → 60%/900) + 우측 편집창 추가 축소
-            float leftW = Mathf.Min(Screen.width * 0.60f, 900f);
+            float leftW = Mathf.Min(windowRect.width * 0.60f, 900f);
             DrawLineList(new Rect(pad, bodyY, leftW, bodyH));
-            DrawWidget(new Rect(pad + leftW + pad, bodyY, Screen.width - leftW - pad * 3, bodyH));
+            DrawWidget(new Rect(pad + leftW + pad, bodyY, windowRect.width - leftW - pad * 3, bodyH));
 
-            DrawBottomBar(new Rect(pad, Screen.height - bottomBarH - pad, Screen.width - pad * 2, bottomBarH));
+            DrawBottomBar(new Rect(pad, windowRect.height - bottomBarH - pad,
+                                   windowRect.width - pad * 2, bottomBarH));
 
-            // 활성 드롭다운은 마지막에 그려서 위에 표시
-            DrawActiveDropdown();
+            // 리사이즈 핸들 (우하단 ↘) — RepeatButton 누르고 있는 동안 크기 조정
+            var resizeRect = new Rect(windowRect.width - ResizeHandleSize - 2,
+                                       windowRect.height - ResizeHandleSize - 2,
+                                       ResizeHandleSize, ResizeHandleSize);
+            var resizeStyle = new GUIStyle(GUI.skin.button) { fontSize = 12, alignment = TextAnchor.MiddleCenter };
+            if (GUI.RepeatButton(resizeRect, "↘", resizeStyle))
+            {
+                Vector2 mp = Event.current.mousePosition;
+                windowRect.width  = Mathf.Max(MinWindowW, mp.x + ResizeHandleSize * 0.5f);
+                windowRect.height = Mathf.Max(MinWindowH, mp.y + ResizeHandleSize * 0.5f);
+                SaveWindowPrefs();
+            }
+
+            // 제목바 영역만 드래그 가능 (리사이즈 핸들/콘텐츠 위와 겹치지 않게)
+            GUI.DragWindow(new Rect(0, 0, windowRect.width, titleH));
+        }
+
+        void EnsureWindowPrefsLoaded()
+        {
+            if (windowPrefsLoaded) return;
+            windowPrefsLoaded = true;
+
+            // 기본 — 화면 중앙 80%
+            float defW = Mathf.Min(Screen.width * 0.85f, 1400f);
+            float defH = Mathf.Min(Screen.height * 0.85f, 900f);
+            float defX = (Screen.width  - defW) * 0.5f;
+            float defY = (Screen.height - defH) * 0.5f;
+
+            windowRect = new Rect(
+                PlayerPrefs.GetFloat(PrefKeyX, defX),
+                PlayerPrefs.GetFloat(PrefKeyY, defY),
+                PlayerPrefs.GetFloat(PrefKeyW, defW),
+                PlayerPrefs.GetFloat(PrefKeyH, defH));
+        }
+
+        void SaveWindowPrefs()
+        {
+            PlayerPrefs.SetFloat(PrefKeyX, windowRect.x);
+            PlayerPrefs.SetFloat(PrefKeyY, windowRect.y);
+            PlayerPrefs.SetFloat(PrefKeyW, windowRect.width);
+            PlayerPrefs.SetFloat(PrefKeyH, windowRect.height);
+            // PlayerPrefs.Save() — 너무 잦은 호출이라 명시 X. Unity가 적절 시점 저장.
         }
 
         // ── 상단 바 ──
@@ -611,9 +686,20 @@ namespace LoveAlgo.DevTools.ScenarioEditor
         string FormatLineLabel(int index, ScriptLine line)
         {
             string id = string.IsNullOrEmpty(line.LineID) ? "·" : line.LineID;
-            string speakerOrPreview = line.Type == LineType.Text
-                ? (string.IsNullOrEmpty(line.Speaker) ? "(나)" : line.Speaker)
-                : "";
+            // 화자 표시:
+            //  - 빈 = (나레이션) 회색 이태릭
+            //  - {{Player}} = (주인공) 분홍
+            //  - 그 외 = 그대로
+            string speakerOrPreview = "";
+            if (line.Type == LineType.Text)
+            {
+                if (string.IsNullOrEmpty(line.Speaker))
+                    speakerOrPreview = "<color=#888><i>(나레이션)</i></color>";
+                else if (line.Speaker == "{{Player}}")
+                    speakerOrPreview = "<color=#ffaaff>(주인공)</color>";
+                else
+                    speakerOrPreview = line.Speaker;
+            }
             string val = Trunc(line.Value ?? "", 52).Replace("\n", " ↵ ");
             string typeColor = TypeColor(line.Type);
 
@@ -776,15 +862,41 @@ namespace LoveAlgo.DevTools.ScenarioEditor
         {
             GUILayout.Label("<b>Speaker</b>", new GUIStyle(GUI.skin.label) { richText = true });
 
+            // 의미 구분:
+            //  - (나레이션)  = Speaker 빈 문자열 — 화자명 칸 안 보임, 독백/지문
+            //  - {{Player}}  = 주인공 대사 — 게임에서 실제 입력한 플레이어 이름으로 치환
+            //  - 히로인       = 카탈로그 캐릭터
+            //  - 직접 입력    = NPC/조연 등 임의 화자 (TextField로 자유 입력)
             var speakerOptions = BuildSpeakerOptions();
+
+            // 현재 값에 매칭되는 옵션 찾기 (없으면 -1 = 직접 입력 모드)
             int curIdx = Array.IndexOf(speakerOptions, line.Speaker ?? "");
-            if (curIdx < 0) curIdx = 0;
-            int newIdx = DrawDropdown("Speaker", curIdx, speakerOptions, $"speaker_{selectedIndex}", 240);
-            if (newIdx >= 0 && newIdx < speakerOptions.Length)
+            if (string.IsNullOrEmpty(line.Speaker)) curIdx = Array.IndexOf(speakerOptions, "(나레이션)");
+
+            GUILayout.BeginHorizontal();
+            // 드롭다운 (빠른 선택)
+            int newIdx = DrawDropdown("Speaker", curIdx, speakerOptions, $"speaker_{selectedIndex}", 200);
+            if (newIdx >= 0 && newIdx < speakerOptions.Length && newIdx != curIdx)
             {
                 string sel = speakerOptions[newIdx];
                 line.Speaker = sel == "(나레이션)" ? "" : sel;
             }
+            // 직접 입력 (자유 — NPC, 조연 등). 빈 = 나레이션 동등.
+            GUILayout.Space(4);
+            GUILayout.Label("직접:", GUILayout.Width(36));
+            string typed = GUILayout.TextField(line.Speaker ?? "", GUILayout.Width(160));
+            if (typed != line.Speaker) line.Speaker = typed;
+            GUILayout.EndHorizontal();
+
+            // 의미 안내
+            string hint;
+            if (string.IsNullOrEmpty(line.Speaker))
+                hint = "<color=#aaaaaa>나레이션/독백 — 화자명 칸 안 보임</color>";
+            else if (line.Speaker == "{{Player}}")
+                hint = "<color=#ffaaff>주인공 대사 — 게임에서 실제 플레이어 이름으로 치환됨</color>";
+            else
+                hint = $"<color=#ccccff>대사 화자 — '{line.Speaker}'</color>";
+            GUILayout.Label(hint, new GUIStyle(GUI.skin.label) { richText = true, fontSize = 11 });
 
             GUILayout.Space(6);
             GUILayout.Label("<b>대사</b>", new GUIStyle(GUI.skin.label) { richText = true });
@@ -1228,26 +1340,38 @@ namespace LoveAlgo.DevTools.ScenarioEditor
 
         void Undo()
         {
-            if (undoStack.Count == 0) return;
+            if (undoStack.Count == 0)
+            {
+                Debug.Log("[ScenarioEditor] Undo 무시 — 스택 비어있음");
+                return;
+            }
             redoStack.Push(new UndoEntry { Snapshot = DeepCopy(workingLines), SelectedIndex = selectedIndex });
             var prev = undoStack.Pop();
             workingLines = prev.Snapshot;
             selectedIndex = Mathf.Clamp(prev.SelectedIndex, -1, (workingLines?.Count ?? 1) - 1);
             CaptureSelectionHash();
             RunValidation();
-            Debug.Log($"[ScenarioEditor] Undo ({undoStack.Count} more)");
+            // IMGUI TextField 캐시 무효화 — 현재 포커스된 위젯이 자체 입력 버퍼를 들고 있어
+            // workingLines 변경이 화면에 반영 안 되는 문제 방지
+            GUI.FocusControl(null);
+            Debug.Log($"[ScenarioEditor] Undo 적용 — workingLines={workingLines?.Count}라인, 남은 undo={undoStack.Count}");
         }
 
         void Redo()
         {
-            if (redoStack.Count == 0) return;
+            if (redoStack.Count == 0)
+            {
+                Debug.Log("[ScenarioEditor] Redo 무시 — 스택 비어있음");
+                return;
+            }
             undoStack.Push(new UndoEntry { Snapshot = DeepCopy(workingLines), SelectedIndex = selectedIndex });
             var next = redoStack.Pop();
             workingLines = next.Snapshot;
             selectedIndex = Mathf.Clamp(next.SelectedIndex, -1, (workingLines?.Count ?? 1) - 1);
             CaptureSelectionHash();
             RunValidation();
-            Debug.Log($"[ScenarioEditor] Redo ({redoStack.Count} more)");
+            GUI.FocusControl(null);
+            Debug.Log($"[ScenarioEditor] Redo 적용 — workingLines={workingLines?.Count}라인, 남은 redo={redoStack.Count}");
         }
 
         /// <summary>
@@ -1369,8 +1493,12 @@ namespace LoveAlgo.DevTools.ScenarioEditor
 
         static string[] BuildSpeakerOptions()
         {
-            var list = new List<string> { "(나레이션)" };
-            // 한글 이름 우선 (작가 친화)
+            // 순서:
+            //  1. (나레이션) — Speaker 빈 = 독백/지문
+            //  2. {{Player}} — 주인공 대사 (게임에서 이름 치환)
+            //  3. 카탈로그 히로인
+            // 임의 NPC/조연은 우측 TextField에서 직접 입력 가능.
+            var list = new List<string> { "(나레이션)", "{{Player}}" };
             foreach (var c in StoryMappings.Characters)
                 list.Add(c.DisplayName);
             return list.ToArray();

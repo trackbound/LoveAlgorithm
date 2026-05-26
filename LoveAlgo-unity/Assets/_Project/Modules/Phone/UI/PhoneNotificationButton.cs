@@ -2,6 +2,8 @@ using DG.Tweening;
 using LoveAlgo.Common;
 using LoveAlgo.Core;
 using LoveAlgo.Stage;
+using LoveAlgo.Story;
+using LoveAlgo.UI;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -15,7 +17,8 @@ namespace LoveAlgo.Phone
     /// 동작:
     /// - 평시: 핑크 아이콘만 우측 끝에 노출 (호버 영역만 보임)
     /// - 호버: 슬라이드 인 → "MESSAGE" 텍스트 + 핸들 전체 표시
-    /// - 새 메시지: 우상단 N 뱃지 표시
+    /// - 새 메시지: 핸들 스프라이트 통째로 교체 (btn_phone → btn_phone_new)
+    ///   * N 뱃지를 위에 얹지 않음 — normalImage / newMessageImage GameObject 토글
     /// - 클릭: 메신저(PhonePopup) 열기
     ///
     /// 씬 배치: _UI/Narrative/PhoneNotificationButton (스토리 컨텍스트 상시)
@@ -32,10 +35,10 @@ namespace LoveAlgo.Phone
         [SerializeField] TMP_Text labelText;
         [SerializeField] string labelDefault = "MESSAGE";
 
-        [Header("핸들 이미지 (둘 중 하나만 활성)")]
-        [Tooltip("평상시 핸들 이미지 (말풍선 + MESSAGE)")]
+        [Header("핸들 이미지 (둘 중 하나만 활성 — 통이미지 교체)")]
+        [Tooltip("평상시 스프라이트: btn_phone (말풍선 + MESSAGE)")]
         [SerializeField] GameObject normalImage;
-        [Tooltip("새 메시지 있을 때 핸들 이미지 (N 뱃지 포함된 통합 이미지)")]
+        [Tooltip("새 메시지 시 스프라이트: btn_phone_new (N이 통합된 단일 이미지)")]
         [SerializeField] GameObject newMessageImage;
 
         [Header("클릭 버튼")]
@@ -64,6 +67,8 @@ namespace LoveAlgo.Phone
         Tween shakeTween;
         float nextPollAt;
         int lastUnreadCount;
+        bool pendingShake;          // 도착 시점이 blocked → 가시화 후 1회 발화 예약
+        bool _warnedSelfBinding;    // expandedView 자가 바인딩 경고 1회만
 
         void Awake()
         {
@@ -89,17 +94,53 @@ namespace LoveAlgo.Phone
             }
         }
 
-        /// <summary>Stage CG/SD가 표시 중이면 자식 visual 가림 (외부 명시 제어와 별개).</summary>
+        /// <summary>
+        /// 표시 가능 컨텍스트 판정 — 다음 중 하나라도 해당이면 가림:
+        ///   • CG / SD 컷씬 표시 중 (몰입 방해)
+        ///   • Video 재생 중 (풀스크린 컷씬)
+        ///   • ScreenFX 페이드 검정 / 눈감김 활성 (페이드 도중 핑크 아이콘 어색)
+        ///   • LoadingScreen 표시 중
+        ///   • Popup(모달/Dialog 등) 활성 — Choice/Save/Load/Confirm 모두 포함
+        ///   • GamePhase가 Prologue/DayLoop 아닐 때 (Title/Username/Ending 등 스토리 외)
+        /// </summary>
         void SyncStageVisibility()
         {
-            bool blocked = false;
+            SetVisualVisible(!IsBlocked());
+        }
+
+        bool IsBlocked()
+        {
+            // Phase — 스토리 컨텍스트 외에는 노출 X
+            var gm = GameManager.Instance;
+            if (gm != null)
+            {
+                var phase = gm.CurrentPhase;
+                if (phase != GamePhase.Prologue && phase != GamePhase.DayLoop)
+                    return true;
+            }
+
+            // Stage 컷씬
             var sm = StageModule.Instance;
             if (sm != null)
             {
-                blocked = (sm.CG != null && sm.CG.IsShowing) ||
-                          (sm.SDCutscene != null && sm.SDCutscene.IsShowing);
+                if (sm.CG != null && sm.CG.IsShowing) return true;
+                if (sm.SDCutscene != null && sm.SDCutscene.IsShowing) return true;
             }
-            SetVisualVisible(!blocked);
+
+            // Video 풀스크린
+            if (VideoLayer.Instance != null && VideoLayer.Instance.IsPlaying) return true;
+
+            // ScreenFX 페이드 / EyeMask
+            var fx = ScreenFX.Instance;
+            if (fx != null && (fx.IsFadeBlack || fx.IsEyeClosed)) return true;
+
+            // 로딩 화면
+            if (LoadingScreen.Instance != null && LoadingScreen.Instance.IsShowing) return true;
+
+            // 팝업 (Choice/Save/Load/Confirm — PopupBase 기반 모두 포함)
+            if (PopupManager.Instance != null && PopupManager.Instance.IsAnyPopupOpen) return true;
+
+            return false;
         }
 
         /// <summary>핸들 visual 자체 표시/숨김 (자기 GO는 활성 유지, polling 계속).</summary>
@@ -116,7 +157,23 @@ namespace LoveAlgo.Phone
         {
             currentTween?.Kill();
 
-            if (expandedView != null) expandedView.SetActive(expanded);
+            // 가드 — prefab의 expandedView가 루트 GameObject 자체로 바인딩되어 있으면
+            // SetActive(false) 시 본인이 비활성 → Update/이벤트 안 받음 → 영구 hide 버그.
+            // expandedView는 반드시 "확장 시 추가로 노출되는 child" (예: MESSAGE 텍스트)여야 함.
+            if (expandedView != null && expandedView != gameObject)
+                expandedView.SetActive(expanded);
+            else if (expandedView == gameObject)
+            {
+                // 1회만 경고 — 매 호버마다 폭주 방지
+                if (!_warnedSelfBinding)
+                {
+                    Debug.LogWarning(
+                        "[PhoneNotificationButton] expandedView가 루트와 같음 — prefab에서 child로 변경해야 호버 떼면 사라지는 버그 해소. 일단 SetActive 호출 스킵.",
+                        this);
+                    _warnedSelfBinding = true;
+                }
+            }
+
             if (labelText != null && expanded) labelText.text = labelDefault;
 
             if (slideContainer == null) return;
@@ -143,10 +200,20 @@ namespace LoveAlgo.Phone
             if (normalImage != null) normalImage.SetActive(!hasNew);
             if (newMessageImage != null) newMessageImage.SetActive(hasNew);
 
-            // 새 메시지 도착 감지 시 진동 애니메이션 (2초)
+            // 새 메시지 도착 감지 — blocked 중이면 진동 보류, 가시화 시점에 1회 발화
             if (unread > lastUnreadCount)
-                PlayShake();
+            {
+                if (IsBlocked()) pendingShake = true;
+                else             PlayShake();
+            }
             lastUnreadCount = unread;
+
+            // 보류된 진동 — 가시 상태이면서 새 메시지 있을 때 발화
+            if (pendingShake && hasNew && !IsBlocked())
+            {
+                PlayShake();
+                pendingShake = false;
+            }
         }
 
         void PlayShake()
