@@ -1,5 +1,6 @@
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using LoveAlgo.Common;
 using UnityEngine;
 using LoveAlgo.Core;
 
@@ -39,7 +40,7 @@ namespace LoveAlgo.Story.StoryEngine.Flow
 
             int prev = gm.CurrentDay;
             gm.CurrentDay = day;
-            Debug.Log($"[Flow] Day — CurrentDay {prev} → {day}");
+            Log.Info($"[Flow] Day — CurrentDay {prev} → {day}");
             return UniTask.CompletedTask;
         }
     }

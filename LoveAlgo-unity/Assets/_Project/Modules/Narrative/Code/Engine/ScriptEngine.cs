@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using LoveAlgo.Common;
 using UnityEngine;
 using LoveAlgo.Core;
 using LoveAlgo.UI;
@@ -121,7 +122,7 @@ namespace LoveAlgo.Story.StoryEngine
 
                 case "Save":
                     if (LoveAlgo.Core.GameManager.Instance != null)
-                        await LoveAlgo.Core.GameManager.Instance.AutoSaveAsync();
+                        await LoveAlgo.Core.GameManager.Instance.AutoSaveAsync("scripted");
                     return true;
 
                 case "Schedule":
@@ -215,6 +216,14 @@ namespace LoveAlgo.Story.StoryEngine
         /// </summary>
         async UniTask WaitForClickAsync(CancellationToken ct)
         {
+            // Headless 자동화: 클릭 대기를 즉시 통과 (ADR §진입점별 헤드리스 규약).
+            // 일반 플레이는 IsEnabled=false라 영향 없음.
+            if (Headless.IsEnabled)
+            {
+                await UniTask.Yield(ct);
+                return;
+            }
+
             var dialogueUI = ExecutionDependencies.DialogueUI;
             int textLen = dialogueUI?.LastDisplayedTextLength ?? 0;
             float autoDelayBase = _getAutoDelayBase();
@@ -347,8 +356,12 @@ namespace LoveAlgo.Story.StoryEngine
                 }
             }
 
-            // ── BGM 상태 복원: 점프 지점 이전의 마지막 Sound:BGM 명령을 찾아 재생 ──
+            // ── BGM 상태 복원: 점프 지점 이전의 마지막 Sound:BGM 명령을 찾아 반영 ──
+            // - 같은 BGM이면 끊지 않고 그대로 흐르게 (연속성).
+            // - 다른 BGM이면 0.5s 페이드로 전환.
+            // - 가장 최근 명령이 Stop이면 BGM 정지(이전 BGM이 새 컨텍스트로 새는 것 방지).
             string lastBGM = null;
+            bool lastWasStop = false;
             for (int i = targetIndex - 1; i >= startIdx; i--)
             {
                 var line = lines[i];
@@ -356,23 +369,34 @@ namespace LoveAlgo.Story.StoryEngine
                     line.Value.StartsWith("BGM:", System.StringComparison.OrdinalIgnoreCase))
                 {
                     var parts = line.Value.Split(':');
-                    if (parts.Length >= 2 &&
-                        !parts[1].Equals("Stop", System.StringComparison.OrdinalIgnoreCase))
+                    if (parts.Length >= 2)
                     {
-                        lastBGM = parts[1];
+                        if (parts[1].Equals("Stop", System.StringComparison.OrdinalIgnoreCase))
+                            lastWasStop = true;
+                        else
+                            lastBGM = parts[1];
                     }
                     break; // 가장 최근 BGM 명령만 필요
                 }
             }
 
-            if (lastBGM != null)
+            var audio = ExecutionDependencies.Audio;
+            if (audio != null)
             {
-                var audio = ExecutionDependencies.Audio;
-                if (audio != null && audio.CurrentBGM != lastBGM)
+                if (lastWasStop)
+                {
+                    if (!string.IsNullOrEmpty(audio.CurrentBGM))
+                    {
+                        audio.StopBGMAsync(0.5f).Forget();
+                        Debug.Log("[ScriptEngine] BGM 정지 복원");
+                    }
+                }
+                else if (lastBGM != null && audio.CurrentBGM != lastBGM)
                 {
                     audio.PlayBGMAsync(lastBGM, 0.5f).Forget();
                     Debug.Log($"[ScriptEngine] BGM 복원: {lastBGM}");
                 }
+                // lastBGM == null && !lastWasStop: 새 컨텍스트에 BGM 지시가 없으므로 현재 BGM 유지.
             }
 
             // ── 대사 로그 복원 ──

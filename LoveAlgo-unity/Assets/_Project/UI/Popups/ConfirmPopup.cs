@@ -1,5 +1,6 @@
 using System;
 using Cysharp.Threading.Tasks;
+using LoveAlgo.Common;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -48,11 +49,19 @@ namespace LoveAlgo.UI
         [SerializeField] string defaultConfirmText = "예";
         [SerializeField] string defaultCancelText = "아니요";
 
+        readonly ListenerBag _listeners = new();
+
         protected override void Awake()
         {
             base.Awake();
-            confirmButton?.onClick.AddListener(OnConfirm);
-            cancelButton?.onClick.AddListener(OnCancel);
+            _listeners.Bind(confirmButton, OnConfirm);
+            _listeners.Bind(cancelButton, OnCancel);
+        }
+
+        protected override void OnDestroy()
+        {
+            _listeners.Dispose();
+            base.OnDestroy();
         }
 
         public UniTask<bool> ShowAsync(ConfirmPopupData data)

@@ -1,3 +1,4 @@
+using LoveAlgo.Contracts;
 using DG.Tweening;
 using LoveAlgo.Common;
 using LoveAlgo.Core;
@@ -70,10 +71,12 @@ namespace LoveAlgo.Phone
         bool pendingShake;          // 도착 시점이 blocked → 가시화 후 1회 발화 예약
         bool _warnedSelfBinding;    // expandedView 자가 바인딩 경고 1회만
 
+        readonly ListenerBag _listeners = new();
+
         void Awake()
         {
             if (slideContainer != null) collapsedX = slideContainer.anchoredPosition.x;
-            if (openButton != null) openButton.onClick.AddListener(OnOpenClick);
+            _listeners.Bind(openButton, OnOpenClick);
             SetExpanded(false, instant: true);
         }
 
@@ -234,6 +237,7 @@ namespace LoveAlgo.Phone
 
         void OnDestroy()
         {
+            _listeners.Dispose();
             currentTween?.Kill();
             shakeTween?.Kill();
         }

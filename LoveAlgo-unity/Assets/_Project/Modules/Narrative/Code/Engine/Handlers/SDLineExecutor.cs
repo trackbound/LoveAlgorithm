@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using LoveAlgo.Common;
 using UnityEngine;
 using LoveAlgo.Core;
 
@@ -18,7 +19,7 @@ namespace LoveAlgo.Story.StoryEngine.Handlers
             var sd = ExecutionDependencies.Stage?.SDCutscene;
             if (sd == null)
             {
-                Debug.Log($"[SD] {line.Value}");
+                Log.Info($"[SD] {line.Value}");
                 return true;
             }
 

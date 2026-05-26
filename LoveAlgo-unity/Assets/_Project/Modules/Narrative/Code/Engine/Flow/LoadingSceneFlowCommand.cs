@@ -1,5 +1,6 @@
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using LoveAlgo.Common;
 using UnityEngine;
 using LoveAlgo.Core;
 
@@ -16,7 +17,7 @@ namespace LoveAlgo.Story.StoryEngine.Flow
         public static async UniTask ExecuteAsync(string[] parts, CancellationToken ct)
         {
             float displayTime = parts.Length > 1 && float.TryParse(parts[1], out float dt) ? dt : 2.0f;
-            Debug.Log($"[Flow] LoadingScene (표시={displayTime}s)");
+            Log.Info($"[Flow] LoadingScene (표시={displayTime}s)");
 
             var loading = LoadingScreen.Instance;
             var fx = ScreenFX.Instance;
@@ -50,7 +51,7 @@ namespace LoveAlgo.Story.StoryEngine.Flow
                 await UniTask.Delay(System.TimeSpan.FromSeconds(displayTime), cancellationToken: ct);
             }
 
-            Debug.Log("[Flow] LoadingScene 완료 (암전 유지)");
+            Log.Info("[Flow] LoadingScene 완료 (암전 유지)");
         }
     }
 }

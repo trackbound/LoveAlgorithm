@@ -1,5 +1,6 @@
 using System;
 using Cysharp.Threading.Tasks;
+using LoveAlgo.Common;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -30,11 +31,18 @@ namespace LoveAlgo.MiniGame
         // 게임 결과 콜백
         public event Action<int> OnGameEnd;
 
+        protected readonly ListenerBag _listeners = new();
+
         protected virtual void Awake()
         {
-            startButton?.onClick.AddListener(StartGame);
-            backButton?.onClick.AddListener(GoBack);
-            resultConfirmButton?.onClick.AddListener(CloseResult);
+            _listeners.Bind(startButton, StartGame);
+            _listeners.Bind(backButton, GoBack);
+            _listeners.Bind(resultConfirmButton, CloseResult);
+        }
+
+        protected virtual void OnDestroy()
+        {
+            _listeners.Dispose();
         }
 
         protected virtual void OnEnable()

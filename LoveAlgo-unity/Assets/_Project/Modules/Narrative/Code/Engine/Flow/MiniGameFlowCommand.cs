@@ -1,5 +1,6 @@
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using LoveAlgo.Common;
 using UnityEngine;
 using LoveAlgo.Core;
 
@@ -15,6 +16,14 @@ namespace LoveAlgo.Story.StoryEngine.Flow
         {
             if (parts.Length >= 3)
             {
+                // Headless 자동화: 미니게임 launch 자체 skip (ADR §MiniGameFlowCommand).
+                if (Headless.IsEnabled)
+                {
+                    Log.Info($"[Flow] MiniGame:{parts[1]} — headless skip");
+                    await UniTask.Yield(ct);
+                    return;
+                }
+
                 string gameName = parts[1];
                 string heroineId = parts[2];
                 await LoveAlgo.MiniGame.MiniGameLauncher.LaunchAsync(gameName, heroineId);

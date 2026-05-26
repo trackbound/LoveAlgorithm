@@ -1,6 +1,8 @@
+using LoveAlgo.Contracts;
 using UnityEngine;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
+using LoveAlgo.Common;
 using LoveAlgo.Story;
 using LoveAlgo.Schedule;
 using LoveAlgo.Core;
@@ -18,10 +20,14 @@ namespace LoveAlgo.Core
         [SerializeField] int tweenersCapacity = 500;
         [SerializeField] int sequencesCapacity = 125;
 
-        public GamePhase CurrentPhase { get; set; } = GamePhase.Title;
-        public int CurrentDay { get; set; } = 1;
-        public int RemainingActions { get; set; }
-        public string PlayerName { get; set; } = "";
+        GamePhase _currentPhase = GamePhase.Title;
+        /// <summary>현재 phase. 변경은 ChangePhase(...) 또는 컨트롤러 전용 SetCurrentPhase 경유 — 외부 직접 set 금지.</summary>
+        public GamePhase CurrentPhase => _currentPhase;
+        // 잔여 상태도 외부 set 차단(같은 어셈블리 내부 setter만). 컨트롤러/디버그는 그대로 동작.
+        // 향후 .asmdef로 모듈이 분리되면 외부 모듈에서 강제로 막힘.
+        public int CurrentDay { get; internal set; } = 1;
+        public int RemainingActions { get; internal set; }
+        public string PlayerName { get; internal set; } = "";
 
         public GameFlowController Flow { get; private set; }
         public DayLoopController DayLoop { get; private set; }
@@ -63,7 +69,7 @@ namespace LoveAlgo.Core
 
             // 게임 설치 후 최초 1회 진입: EntryRouter가 LockScreen GameStart 띄우는 중 → Title 전환 보류.
             // LockScreen Outro Blackout 시점에 EntryRouter가 ChangePhase(Title)을 호출한다.
-            var ls = LoveAlgo.Common.Services.TryGet<LoveAlgo.LockScreen.ILockScreen>();
+            var ls = LoveAlgo.Common.Services.TryGet<LoveAlgo.Contracts.ILockScreen>();
             if (ls != null && !ls.IsPasswordSet)
             {
                 Debug.Log("[GameManager] 첫 진입(LockScreen 흐름) — Title 전환 보류");
@@ -75,14 +81,11 @@ namespace LoveAlgo.Core
 
         void RestoreResolution()
         {
-            int resIdx = PlayerPrefs.GetInt("ResolutionIndex", -1);
-            if (resIdx < 0) return;
-            bool fullscreen = PlayerPrefs.GetInt("Fullscreen", 1) == 1;
-            var resolutions = GameConstants.Resolutions;
-            resIdx = Mathf.Clamp(resIdx, 0, resolutions.Length - 1);
-            var res = resolutions[resIdx];
-            Screen.SetResolution(res.w, res.h, fullscreen ? FullScreenMode.FullScreenWindow : FullScreenMode.Windowed);
-            Debug.Log($"[GameManager] 해상도 복원: {res.w}x{res.h}, 전체화면: {fullscreen}");
+            // 해상도/전체화면 저장소는 SettingsModule이 마스터. SettingsModule(-450)이
+            // 이미 Awake에서 Load + ApplyResolution 자체 호출 흐름을 갖춰두지 않으므로,
+            // GameManager 시작 시 한 번 위임 호출해 화면에 반영한다.
+            var settings = LoveAlgo.Common.Services.TryGet<LoveAlgo.Contracts.ISettings>();
+            settings?.ApplyResolution();
         }
 
         const string DemoSingleScheduleCompleteFlag = "Demo_SingleScheduleComplete";
@@ -105,10 +108,22 @@ namespace LoveAlgo.Core
             PlayerPrefs.Save();
         }
 
-        // ── 내부 상태 setter (컨트롤러 전용) ──
-        public void SetCurrentPhase(GamePhase phase) => CurrentPhase = phase;
+        // ── 내부 상태 setter (컨트롤러 전용 — 같은 어셈블리 내 Flow/Session/Debug에서만 호출) ──
+        /// <summary>
+        /// phase를 직접 갱신하고 GamePhaseChangedEvent를 발행한다. 같은 phase로의 재설정은 no-op.
+        /// 외부 진입점은 ChangePhase(...) 사용 — 이 메서드는 FlowController/SessionController의
+        /// 내부 흐름 전용으로, 정상 전환에 필요한 사전·사후 처리(페이드/Stage 정리 등)는 호출자가 책임.
+        /// </summary>
+        internal void SetCurrentPhase(GamePhase phase)
+        {
+            if (_currentPhase == phase) return;
+            var prev = _currentPhase;
+            _currentPhase = phase;
+            EventBus.Publish(new GamePhaseChangedEvent(prev, phase));
+        }
         public void SetPlayerName(string name) => PlayerName = name;
         public void CleanupStage() => Session.CleanupStage();
+        public UniTask CleanupStageAsync(System.Threading.CancellationToken ct = default) => Session.CleanupStageAsync(ct);
         public void OnScheduleSelected(ScheduleType type) => DayLoop.OnScheduleSelected(type);
         public string DetermineEndingHeroine() => DayLoop.DetermineEndingHeroine();
         public bool IsHappyEnding(string heroineId) => DayLoop.IsHappyEnding(heroineId);
@@ -123,7 +138,7 @@ namespace LoveAlgo.Core
         public void OnContentEnd() => Flow.OnContentEnd();
         public void OnScheduleCompleted() => DayLoop.OnScheduleCompleted();
         public void SkipToDayLoop() => Session.SkipToDayLoop();
-        public UniTask AutoSaveAsync() => Session.AutoSaveAsync();
+        public UniTask AutoSaveAsync(string reason = "unspecified") => Session.AutoSaveAsync(reason);
         public void Save(int slot, bool usePendingThumbnail = true, string customLabel = null)
             => Session.Save(slot, usePendingThumbnail, customLabel);
     }

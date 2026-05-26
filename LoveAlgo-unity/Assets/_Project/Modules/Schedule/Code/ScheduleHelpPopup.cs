@@ -1,3 +1,4 @@
+using LoveAlgo.Common;
 using LoveAlgo.UI;
 using UnityEngine;
 using UnityEngine.UI;
@@ -13,25 +14,29 @@ namespace LoveAlgo.Schedule
         [Header("닫힘 버튼 (여러 개 등록 가능)")]
         [SerializeField] Button[] closeButtons;
 
+        readonly ListenerBag _listeners = new();
+
         protected override void Awake()
         {
             base.Awake();
             if (closeButtons != null)
             {
                 foreach (var btn in closeButtons)
-                    btn?.onClick.AddListener(Close);
+                    _listeners.Bind(btn, Close);
             }
             gameObject.SetActive(false);
+        }
+
+        protected override void OnDestroy()
+        {
+            _listeners.Dispose();
+            base.OnDestroy();
         }
 
         /// <summary>외부 호출 진입점 (기존 Open API 유지).</summary>
         public void Open() => Show();
 
         /// <summary>런타임에서 닫힘 버튼 추가</summary>
-        public void AddCloseButton(Button btn)
-        {
-            if (btn == null) return;
-            btn.onClick.AddListener(Close);
-        }
+        public void AddCloseButton(Button btn) => _listeners.Bind(btn, Close);
     }
 }

@@ -1,4 +1,5 @@
 using System;
+using LoveAlgo.Common;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -23,11 +24,17 @@ namespace LoveAlgo.Schedule
 
         Action<ScheduleType> onClick;
 
+        readonly ListenerBag _listeners = new();
+
         void Awake()
         {
-            button?.onClick.AddListener(() => onClick?.Invoke(scheduleType));
+            _listeners.Bind(button, RaiseClick);
             RefreshDisplay();
         }
+
+        void OnDestroy() => _listeners.Dispose();
+
+        void RaiseClick() => onClick?.Invoke(scheduleType);
 
         /// <summary>
         /// 클릭 콜백 설정

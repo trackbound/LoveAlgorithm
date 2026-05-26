@@ -1,4 +1,5 @@
 #if UNITY_EDITOR
+using LoveAlgo.Contracts;
 using System.Collections.Generic;
 using System.IO;
 using LoveAlgo.Common;
@@ -94,7 +95,7 @@ namespace LoveAlgo.NarrativeEditor
         void Jump(int index)
         {
             if (!Application.isPlaying) return;
-            var nm = Services.Get<INarrative>();
+            var nm = Services.TryGet<INarrative>();
             if (nm == null) { Debug.LogWarning("[StoryJump] INarrative 서비스 없음"); return; }
             nm.JumpToIndex(index);
             Debug.Log($"[StoryJump] #{index} 으로 점프");

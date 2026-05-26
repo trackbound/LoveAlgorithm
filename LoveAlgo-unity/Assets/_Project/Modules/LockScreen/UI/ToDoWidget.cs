@@ -1,3 +1,4 @@
+using LoveAlgo.Contracts;
 using System.Collections.Generic;
 using LoveAlgo.LockScreen.Data;
 using UnityEngine;

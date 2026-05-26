@@ -47,6 +47,43 @@ Unity/TMP/패키지 API 중 `[Obsolete]` 마크된 것은 **절대 새로 쓰지
 - 기존 코드에서 obsolete 경고가 보고되면 **그 PR에서 같이 고침** (별도 작업 안 미룸).
 - 잘 모르는 API는 Unity 문서에서 "obsolete" 키워드로 그 클래스 페이지 검색.
 
+## 2.6 로깅 규칙 — `LoveAlgo.Common.Log` 우선 사용
+
+`Debug.Log`/`Debug.LogWarning`은 릴리즈 빌드에서도 호출 자체(문자열 보간 + 콘솔 I/O)가
+실행되므로 매 라인/매 프레임 호출되는 경로에서 비용이 누적된다. **새 코드는
+`LoveAlgo.Common.Log` 헬퍼를 디폴트로 사용**.
+
+| 상황 | 사용할 것 |
+|---|---|
+| 정보성 (개발 디버그용, 릴리즈 빌드에서 사라져도 OK) | `Log.Info(...)` |
+| 경고 (개발 중 주의 환기, 릴리즈 빌드에서 사라져도 OK) | `Log.Warn(...)` |
+| 에러 (사용자/QA에게도 보여야 함) | `Log.Error(...)` 또는 `Debug.LogError(...)` |
+| 예외 | `Log.Exception(e)` |
+
+`Log.Info/Warn`은 `[Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]`로
+릴리즈 빌드에서 호출이 컴파일러에 의해 제거된다 — 문자열 보간 비용 0.
+
+기존 `Debug.Log` 84여 개는 점진 마이그레이션. 새 핫팟(Update/코루틴/매 라인 처리)을
+작성하면 무조건 `Log.Info`. 사용자에게 보고되는 진짜 에러만 `Debug.LogError` 또는
+`Log.Error` 유지.
+
+## 2.7 UI 접근 규칙 — `Services.TryGet<I*>()` 직접 사용
+
+`UIManager.Instance.DialogueUI` 같은 wrapper 프로퍼티는 **신규 코드 사용 금지**.
+Wrapper는 결국 `Services.TryGet<INarrative>()?.DialogueUI`로 위임될 뿐이고,
+UIManager가 거의 모든 모듈 인터페이스를 끌어안아 모듈 분리 시 강한 결합 지점이 됨.
+
+```csharp
+// ❌ 옛 패턴
+var ui = UIManager.Instance?.DialogueUI;
+
+// ✅ 새 패턴
+var ui = LoveAlgo.Common.Services.TryGet<INarrative>()?.DialogueUI;
+```
+
+기존 호출처는 그대로 동작(소프트 deprecate). Phase C 인터페이스 분리 후 정식
+`[Obsolete]` 표시 + 전수 마이그레이션 예정.
+
 ## 3. 토큰 효율
 
 - **수정 범위 = 그 기능 폴더만**. 의도치 않은 다른 파일 수정 금지.

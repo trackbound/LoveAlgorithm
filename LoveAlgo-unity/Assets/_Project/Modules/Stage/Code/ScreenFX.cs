@@ -356,6 +356,29 @@ namespace LoveAlgo.Core
         }
 
         /// <summary>
+        /// FadeOut → LoadingScreen 표시 → FadeIn 을 한 호출로. 호출자는 이후 작업(phase 전환·
+        /// 데이터 갱신 등)을 수행하고, 마무리는 <see cref="ExitLoadingAsync"/>로.
+        /// </summary>
+        public async UniTask EnterLoadingAsync(float fadeOutDuration, float fadeInDuration, CancellationToken ct = default)
+        {
+            await FadeOutAsync(fadeOutDuration, ct);
+            var loading = LoadingScreen.Instance;
+            if (loading != null) await loading.ShowAsync(ct);
+            if (fadeInDuration > 0f) await FadeInAsync(fadeInDuration, ct);
+        }
+
+        /// <summary>
+        /// FadeOut → LoadingScreen 즉시 제거 → FadeIn 을 한 호출로. <see cref="EnterLoadingAsync"/>의 짝.
+        /// fadeInDuration이 0이면 마지막 페이드 인 생략 (호출자가 별도 등장 연출을 가질 때).
+        /// </summary>
+        public async UniTask ExitLoadingAsync(float fadeOutDuration, float fadeInDuration, CancellationToken ct = default)
+        {
+            await FadeOutAsync(fadeOutDuration, ct);
+            LoadingScreen.Instance?.HideImmediate();
+            if (fadeInDuration > 0f) await FadeInAsync(fadeInDuration, ct);
+        }
+
+        /// <summary>
         /// 즉시 검은 화면
         /// </summary>
         public void SetBlack()

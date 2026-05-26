@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using LoveAlgo.Common;
 using UnityEngine;
 using LoveAlgo.Core;
 
@@ -25,12 +26,12 @@ namespace LoveAlgo.Story.StoryEngine.Flow
             string condition = string.Join(":", parts[1..^1]);
 
             bool result = GameState.Instance?.EvaluateCondition(condition) ?? false;
-            Debug.Log($"[Flow:If] 조건: {condition} = {result}");
+            Log.Info($"[Flow:If] 조건: {condition} = {result}");
 
             if (result && lineIndex.TryGetValue(jumpTarget, out int targetIndex))
             {
                 currentIndex = targetIndex - 1;
-                Debug.Log($"[Flow:If] 점프: {jumpTarget} (index: {targetIndex})");
+                Log.Info($"[Flow:If] 점프: {jumpTarget} (index: {targetIndex})");
                 return true;
             }
 

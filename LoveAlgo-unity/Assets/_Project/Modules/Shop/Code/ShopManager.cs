@@ -1,3 +1,4 @@
+using LoveAlgo.Contracts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -349,7 +350,7 @@ namespace LoveAlgo.Shop
         static void AddStat(GameState gs, string statId, int delta)
         {
             if (delta == 0) return;
-            var stats = Services.Get<IStats>();
+            var stats = Services.TryGet<IStats>();
             if (stats != null) stats.Add(statId, delta);
             else if (gs != null) gs.AddStat(statId, delta);
         }

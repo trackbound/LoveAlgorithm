@@ -1,4 +1,5 @@
 using Cysharp.Threading.Tasks;
+using LoveAlgo.Common;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -21,11 +22,12 @@ namespace LoveAlgo.UI
         [SerializeField] string defaultConfirmText = "확인";
 
         UniTaskCompletionSource tcs;
+        readonly ListenerBag _listeners = new();
 
         protected override void Awake()
         {
             base.Awake();
-            confirmButton?.onClick.AddListener(OnConfirm);
+            _listeners.Bind(confirmButton, OnConfirm);
         }
 
         /// <summary>팝업 표시 및 확인 대기.</summary>
@@ -60,6 +62,7 @@ namespace LoveAlgo.UI
 
         protected override void OnDestroy()
         {
+            _listeners.Dispose();
             tcs?.TrySetCanceled();
             tcs = null;
             base.OnDestroy();

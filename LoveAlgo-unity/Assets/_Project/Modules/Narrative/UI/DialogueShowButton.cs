@@ -1,3 +1,4 @@
+using LoveAlgo.Common;
 using UnityEngine;
 using UnityEngine.UI;
 using LoveAlgo.Story;
@@ -17,12 +18,20 @@ namespace LoveAlgo.UI
         Button button;
         DialogueUI dialogueUI;
 
+        readonly ListenerBag _listeners = new();
+
         void Awake()
         {
             button = GetComponent<Button>();
             if (canvasGroup == null) canvasGroup = GetComponent<CanvasGroup>();
-            button.onClick.AddListener(OnClick);
+            _listeners.Bind(button, OnClick);
             ApplyVisible(false); // 시작은 숨김
+        }
+
+        void OnDestroy()
+        {
+            _listeners.Dispose();
+            if (dialogueUI != null) dialogueUI.OnHiddenChanged -= OnHiddenChanged;
         }
 
         void OnEnable()

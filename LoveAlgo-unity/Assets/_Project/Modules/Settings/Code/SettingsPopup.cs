@@ -1,3 +1,4 @@
+using LoveAlgo.Contracts;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using TMPro;
@@ -63,69 +64,65 @@ namespace LoveAlgo.UI
         bool isResolutionDirty;  // 해상도/전체화면 변경
 
         ISettings settings;
+        readonly ListenerBag _listeners = new();
 
         protected override void Awake()
         {
             base.Awake();
-            settings = Services.Get<ISettings>();
+            settings = Services.TryGet<ISettings>();
 
             SetupButtons();
             SetupSliders();
         }
 
+        protected override void OnDestroy()
+        {
+            _listeners.Dispose();
+            base.OnDestroy();
+        }
+
         void SetupButtons()
         {
-            confirmButton?.onClick.AddListener(OnConfirmClick);
-            resetButton?.onClick.AddListener(OnResetClick);
-            closeButton?.onClick.AddListener(Close);
+            _listeners.Bind(confirmButton, OnConfirmClick);
+            _listeners.Bind(resetButton, OnResetClick);
+            _listeners.Bind(closeButton, Close);
 
-            fullscreenButton?.onClick.AddListener(() => SetWindowMode(true));
-            windowedButton?.onClick.AddListener(() => SetWindowMode(false));
-            resolutionPrevButton?.onClick.AddListener(PrevResolution);
-            resolutionNextButton?.onClick.AddListener(NextResolution);
-            applyButton?.onClick.AddListener(ApplyResolutionButton_Click);
+            _listeners.Bind(fullscreenButton, SetWindowModeFullscreen);
+            _listeners.Bind(windowedButton, SetWindowModeWindowed);
+            _listeners.Bind(resolutionPrevButton, PrevResolution);
+            _listeners.Bind(resolutionNextButton, NextResolution);
+            _listeners.Bind(applyButton, ApplyResolutionButton_Click);
         }
+
+        void SetWindowModeFullscreen() => SetWindowMode(true);
+        void SetWindowModeWindowed() => SetWindowMode(false);
 
         void SetupSliders()
         {
-            masterSlider?.onValueChanged.AddListener(v =>
-            {
-                if (settings != null) settings.MasterVolume = v;
-                UISoundManager.Instance?.PlayVolumePreview();
-                MarkDirty();
-            });
-            bgmSlider?.onValueChanged.AddListener(v =>
-            {
-                if (settings != null) settings.BGMVolume = v;
-                UISoundManager.Instance?.PlayVolumePreview();
-                MarkDirty();
-            });
-            sfxSlider?.onValueChanged.AddListener(v =>
-            {
-                if (settings != null) settings.SFXVolume = v;
-                UISoundManager.Instance?.PlayVolumePreview();
-                MarkDirty();
-            });
+            if (masterSlider != null) _listeners.Bind(masterSlider.onValueChanged, OnMasterChanged);
+            if (bgmSlider != null) _listeners.Bind(bgmSlider.onValueChanged, OnBgmChanged);
+            if (sfxSlider != null) _listeners.Bind(sfxSlider.onValueChanged, OnSfxChanged);
 
-            voiceYeunSlider?.onValueChanged.AddListener(v => { settings?.SetCharacterVoice("HaYeEun", v); UISoundManager.Instance?.PlayVolumePreview(v); MarkDirty(); });
-            voiceDaeunSlider?.onValueChanged.AddListener(v => { settings?.SetCharacterVoice("SeoDaEun", v); UISoundManager.Instance?.PlayVolumePreview(v); MarkDirty(); });
-            voiceBomSlider?.onValueChanged.AddListener(v => { settings?.SetCharacterVoice("LeeBom", v); UISoundManager.Instance?.PlayVolumePreview(v); MarkDirty(); });
-            voiceHeewonSlider?.onValueChanged.AddListener(v => { settings?.SetCharacterVoice("DoHeewon", v); UISoundManager.Instance?.PlayVolumePreview(v); MarkDirty(); });
-            voiceRoaSlider?.onValueChanged.AddListener(v => { settings?.SetCharacterVoice("Roa", v); UISoundManager.Instance?.PlayVolumePreview(v); MarkDirty(); });
+            if (voiceYeunSlider != null) _listeners.Bind(voiceYeunSlider.onValueChanged, OnVoiceYeunChanged);
+            if (voiceDaeunSlider != null) _listeners.Bind(voiceDaeunSlider.onValueChanged, OnVoiceDaeunChanged);
+            if (voiceBomSlider != null) _listeners.Bind(voiceBomSlider.onValueChanged, OnVoiceBomChanged);
+            if (voiceHeewonSlider != null) _listeners.Bind(voiceHeewonSlider.onValueChanged, OnVoiceHeewonChanged);
+            if (voiceRoaSlider != null) _listeners.Bind(voiceRoaSlider.onValueChanged, OnVoiceRoaChanged);
 
-            textSpeedSlider?.onValueChanged.AddListener(v =>
-            {
-                if (settings != null) settings.TextSpeed = v;
-                UISoundManager.Instance?.PlayVolumePreview();
-                MarkDirty();
-            });
-            autoSpeedSlider?.onValueChanged.AddListener(v =>
-            {
-                if (settings != null) settings.AutoSpeed = v;
-                UISoundManager.Instance?.PlayVolumePreview();
-                MarkDirty();
-            });
+            if (textSpeedSlider != null) _listeners.Bind(textSpeedSlider.onValueChanged, OnTextSpeedChanged);
+            if (autoSpeedSlider != null) _listeners.Bind(autoSpeedSlider.onValueChanged, OnAutoSpeedChanged);
         }
+
+        void OnMasterChanged(float v) { if (settings != null) settings.MasterVolume = v; UISoundManager.Instance?.PlayVolumePreview(); MarkDirty(); }
+        void OnBgmChanged(float v) { if (settings != null) settings.BGMVolume = v; UISoundManager.Instance?.PlayVolumePreview(); MarkDirty(); }
+        void OnSfxChanged(float v) { if (settings != null) settings.SFXVolume = v; UISoundManager.Instance?.PlayVolumePreview(); MarkDirty(); }
+        void OnVoiceYeunChanged(float v) { settings?.SetCharacterVoice("HaYeEun", v); UISoundManager.Instance?.PlayVolumePreview(v); MarkDirty(); }
+        void OnVoiceDaeunChanged(float v) { settings?.SetCharacterVoice("SeoDaEun", v); UISoundManager.Instance?.PlayVolumePreview(v); MarkDirty(); }
+        void OnVoiceBomChanged(float v) { settings?.SetCharacterVoice("LeeBom", v); UISoundManager.Instance?.PlayVolumePreview(v); MarkDirty(); }
+        void OnVoiceHeewonChanged(float v) { settings?.SetCharacterVoice("DoHeewon", v); UISoundManager.Instance?.PlayVolumePreview(v); MarkDirty(); }
+        void OnVoiceRoaChanged(float v) { settings?.SetCharacterVoice("Roa", v); UISoundManager.Instance?.PlayVolumePreview(v); MarkDirty(); }
+        void OnTextSpeedChanged(float v) { if (settings != null) settings.TextSpeed = v; UISoundManager.Instance?.PlayVolumePreview(); MarkDirty(); }
+        void OnAutoSpeedChanged(float v) { if (settings != null) settings.AutoSpeed = v; UISoundManager.Instance?.PlayVolumePreview(); MarkDirty(); }
 
         void MarkDirty() => isDirty = true;
         void MarkResolutionDirty() => isResolutionDirty = true;

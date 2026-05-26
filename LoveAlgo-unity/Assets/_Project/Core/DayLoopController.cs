@@ -1,3 +1,4 @@
+using LoveAlgo.Contracts;
 using System.Threading;
 using UnityEngine;
 using LoveAlgo.Modules.Affinity;
@@ -55,7 +56,7 @@ namespace LoveAlgo.Core
                 }
                 else
                 {
-                    var stats = Services.Get<IStats>();
+                    var stats = Services.TryGet<IStats>();
                     AddStat(stats, gs, "Str", effect.strengthChange);
                     AddStat(stats, gs, "Int", effect.intelligenceChange);
                     AddStat(stats, gs, "Soc", effect.socialChange);
@@ -216,16 +217,10 @@ namespace LoveAlgo.Core
                 }
 
                 var fx = ScreenFX.Instance;
-                var loading = LoadingScreen.Instance;
 
+                // FadeOut → Loading 표시 → FadeIn (0.6 / 0.4)
                 if (fx != null)
-                    await fx.FadeOutAsync(0.6f, ct);
-
-                if (loading != null)
-                    await loading.ShowAsync(ct);
-
-                if (fx != null)
-                    await fx.FadeInAsync(0.4f, ct);
+                    await fx.EnterLoadingAsync(0.6f, 0.4f, ct);
 
                 _gm.CurrentDay++;
                 _gm.RemainingActions = GameConstants.ActionsPerDay;
@@ -234,22 +229,19 @@ namespace LoveAlgo.Core
 
                 if (_gm.CurrentDay > GameConstants.MaxDay)
                 {
-                    if (fx != null) await fx.FadeOutAsync(0.5f, ct);
-                    loading?.HideImmediate();
+                    // Ending 진입 — 마지막 FadeIn은 ending 흐름이 책임
+                    if (fx != null) await fx.ExitLoadingAsync(0.5f, fadeInDuration: 0f, ct);
                     _gm.ChangePhase(GamePhase.Ending);
                     return;
                 }
 
-                await _gm.AutoSaveAsync();
+                await _gm.AutoSaveAsync("day-end");
 
                 await UniTask.Delay(700, cancellationToken: ct);
 
-                if (fx != null)
-                    await fx.FadeOutAsync(0.5f, ct);
-
-                loading?.HideImmediate();
+                // FadeOut → Loading 제거 (Phase 전환 사이에) → 마지막 FadeIn은 ChangePhase 이후로 분리
+                if (fx != null) await fx.ExitLoadingAsync(0.5f, fadeInDuration: 0f, ct);
                 _gm.ChangePhase(GamePhase.DayLoop);
-
                 await UniTask.Yield(ct);
 
                 // 로딩 화면 후 부드러운 등장 (배경/UI 모두 3초 페이드)

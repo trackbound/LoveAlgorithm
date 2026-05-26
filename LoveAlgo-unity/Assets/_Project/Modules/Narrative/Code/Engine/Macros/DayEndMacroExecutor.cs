@@ -69,7 +69,7 @@ namespace LoveAlgo.Story.StoryEngine.Macros
             }
 
             if (GameManager.Instance != null)
-                await GameManager.Instance.AutoSaveAsync();
+                await GameManager.Instance.AutoSaveAsync("macro:DayEnd");
 
             float elapsed = Time.time - startTime;
             float remaining = totalDuration - elapsed;

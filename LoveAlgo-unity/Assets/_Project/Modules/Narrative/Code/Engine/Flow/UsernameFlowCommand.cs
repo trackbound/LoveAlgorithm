@@ -1,5 +1,6 @@
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using LoveAlgo.Common;
 using UnityEngine;
 using LoveAlgo.Core;
 using LoveAlgo.UI;
@@ -18,9 +19,22 @@ namespace LoveAlgo.Story.StoryEngine.Flow
 
         public static async UniTask ExecuteAsync(CancellationToken ct)
         {
-            Debug.Log("[Flow] Username — 인라인 이름 입력 시작");
+            Log.Info("[Flow] Username — 인라인 이름 입력 시작");
 
             var gm = GameManager.Instance;
+
+            // Headless 자동화: UI 우회하고 기본 이름으로 즉시 설정 (ADR §UsernameFlowCommand).
+            if (Headless.IsEnabled)
+            {
+                string defaultName = Headless.DefaultUsername;
+                gm?.SetPlayerName(defaultName);
+                if (GameState.Instance != null)
+                    GameState.Instance.SetPlayerName(defaultName);
+                Log.Info($"[Flow] Username — headless 자동 설정: {defaultName}");
+                await UniTask.Yield(ct);
+                return;
+            }
+
             var usernameUI = UIManager.Instance?.UsernameUI;
             if (gm == null || usernameUI == null)
             {
@@ -56,7 +70,7 @@ namespace LoveAlgo.Story.StoryEngine.Flow
 
             if (fx != null) await fx.FadeInAsync(FadeDuration, ct);
 
-            Debug.Log($"[Flow] Username — 인라인 이름 입력 완료: {playerName}");
+            Log.Info($"[Flow] Username — 인라인 이름 입력 완료: {playerName}");
         }
     }
 }

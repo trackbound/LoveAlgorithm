@@ -12,6 +12,17 @@ namespace LoveAlgo.Story.SaveSystem
     [Serializable]
     public class SaveData
     {
+        /// <summary>
+        /// 현재 게임이 생성하는 세이브 포맷 버전.
+        /// 필드 추가/이름 변경/스키마 변화 시 +1 하고 SaveDataSerializer.MigrateIfNeeded에 분기 추가.
+        /// </summary>
+        public const int CurrentVersion = 1;
+
+        /// <summary>
+        /// 이 세이브가 작성된 시점의 포맷 버전. 0 = 버전 도입 전 옛 세이브.
+        /// </summary>
+        public int Version;
+
         // 게임 진행 상태
         public GamePhase Phase;
         public int CurrentDay;

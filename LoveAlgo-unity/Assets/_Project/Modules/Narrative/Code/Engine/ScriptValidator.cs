@@ -119,16 +119,66 @@ namespace LoveAlgo.Story.StoryEngine
                 }
             }
 
-            // Char 검증 — 첫 토큰이 슬롯이거나 액션 키워드여야 함
+            // Char 검증 — 슬롯/액션 위치 + 액션별 최소 인자 갯수
             else if (line.Type == LineType.Char && !string.IsNullOrEmpty(line.Value))
             {
-                var parts = line.Value.Split(':');
-                string first = parts[0];
-                if (CommandAliases.NormalizeSlot(first) == null && !CommandAliases.IsCharAction(first))
-                {
-                    Add(result, line, "Error", $"Char 라인 첫 토큰이 슬롯(L/C/R)도 액션(Enter/Exit/Emote)도 아님: '{first}'");
-                }
+                ValidateChar(line, result);
             }
+        }
+
+        /// <summary>
+        /// Char 라인 문법:
+        ///   [슬롯:]액션[:인자1[:인자2…]]
+        /// 슬롯이 생략되면 C 자동 주입(CharLineExecutor.NormalizeCharValue).
+        /// 액션별 최소 인자: Enter/EnterUp/Move는 1, Emote는 1, Exit/ExitDown/Clear는 0.
+        /// </summary>
+        static void ValidateChar(ScriptLine line, List<Violation> result)
+        {
+            var parts = line.Value.Split(':');
+            string first = parts[0];
+            bool firstIsSlot = CommandAliases.NormalizeSlot(first) != null;
+            bool firstIsAction = CommandAliases.IsCharAction(first);
+
+            if (!firstIsSlot && !firstIsAction)
+            {
+                Add(result, line, "Error", $"Char 라인 첫 토큰이 슬롯(L/C/R)도 액션(Enter/Exit/Emote/…)도 아님: '{first}'");
+                return;
+            }
+
+            // 액션은 슬롯 다음(있다면) 또는 첫 토큰
+            int actionIdx = firstIsSlot ? 1 : 0;
+            if (actionIdx >= parts.Length)
+            {
+                Add(result, line, "Error", $"Char 라인에 액션이 없음 (슬롯만): '{line.Value}'");
+                return;
+            }
+
+            string action = parts[actionIdx];
+            if (!CommandAliases.IsCharAction(action))
+            {
+                Add(result, line, "Error", $"Char 라인 액션 위치에 알 수 없는 키워드: '{action}'. 사용 가능: Enter/Exit/Emote/EnterUp/ExitDown/Clear/Move");
+                return;
+            }
+
+            int argCount = parts.Length - actionIdx - 1;
+            string err = ValidateCharActionArgs(action, argCount);
+            if (err != null)
+                Add(result, line, "Error", err);
+        }
+
+        static string ValidateCharActionArgs(string action, int argCount)
+        {
+            // 케이스 무시 비교
+            bool Is(string s) => string.Equals(action, s, System.StringComparison.OrdinalIgnoreCase);
+
+            if (Is("Enter") || Is("EnterUp"))
+                return argCount < 1 ? $"Char:{action}는 캐릭터 이름이 필요: {action}:<이름>[:<표정>]" : null;
+            if (Is("Emote"))
+                return argCount < 1 ? "Char:Emote는 표정 인자가 필요: Emote:<표정>" : null;
+            if (Is("Move"))
+                return argCount < 1 ? "Char:Move는 대상 슬롯이 필요: Move:<L|C|R>" : null;
+            // Exit/ExitDown/Clear는 인자 없어도 OK
+            return null;
         }
 
         static void Add(List<Violation> list, ScriptLine line, string severity, string msg)

@@ -1,5 +1,6 @@
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using LoveAlgo.Common;
 using UnityEngine;
 using LoveAlgo.Core;
 using LoveAlgo.UI;
@@ -17,7 +18,16 @@ namespace LoveAlgo.Story.StoryEngine.Flow
 
         public static async UniTask ExecuteAsync(CancellationToken ct)
         {
-            Debug.Log("[Flow] Schedule — 인라인 스케줄 시작");
+            Log.Info("[Flow] Schedule — 인라인 스케줄 시작");
+
+            // Headless 자동화: UI 우회, 효과 미적용으로 즉시 통과 (ADR §ScheduleFlowCommand).
+            // 효과 적용 시 게임 상태 변화로 후속 라인 분기가 바뀔 수 있어 명시적 skip.
+            if (Headless.IsEnabled)
+            {
+                Log.Info("[Flow] Schedule — headless 즉시 통과 (효과 미적용)");
+                await UniTask.Yield(ct);
+                return;
+            }
 
             var gm = GameManager.Instance;
             if (gm == null)
@@ -49,7 +59,7 @@ namespace LoveAlgo.Story.StoryEngine.Flow
 
             if (fx != null) await fx.FadeInAsync(FadeDuration, ct);
 
-            Debug.Log("[Flow] Schedule — 인라인 스케줄 완료, 스토리 복귀");
+            Log.Info("[Flow] Schedule — 인라인 스케줄 완료, 스토리 복귀");
         }
     }
 }

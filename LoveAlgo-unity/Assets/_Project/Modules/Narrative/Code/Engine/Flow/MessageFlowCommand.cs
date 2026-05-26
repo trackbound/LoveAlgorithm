@@ -1,3 +1,4 @@
+using LoveAlgo.Contracts;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using LoveAlgo.Common;
@@ -40,12 +41,19 @@ namespace LoveAlgo.Story.StoryEngine.Flow
 
             // 메시지 수신 처리 (MessengerManager가 ChatRoom 업데이트 + OnNewMessage 발화 → PhoneNotificationButton 자동 반응)
             MessengerManager.ReceiveMessage(characterId, text, day);
-            Debug.Log($"[Flow] Message — '{characterId}' → \"{text}\"{(waitForResponse ? " (응답 대기)" : "")}");
+            Log.Info($"[Flow] Message — '{characterId}' → \"{text}\"{(waitForResponse ? " (응답 대기)" : "")}");
 
             // 확인 필수 메시지: 폰 자동 오픈 + 사용자 응답 대기
             if (waitForResponse)
             {
-                var phone = Services.Get<IPhone>();
+                // Headless 자동화: 메시지는 이미 수신됐고, 응답 대기는 즉시 통과 (ADR §MessageFlowCommand).
+                if (Headless.IsEnabled)
+                {
+                    Log.Info("[Flow] Message:wait — headless 즉시 통과");
+                    return;
+                }
+
+                var phone = Services.TryGet<IPhone>();
                 if (phone == null)
                 {
                     Debug.LogWarning("[Flow] Message:wait — IPhone 서비스 없음, 대기 스킵");
@@ -56,13 +64,9 @@ namespace LoveAlgo.Story.StoryEngine.Flow
                 await UniTask.Delay(System.TimeSpan.FromSeconds(2), cancellationToken: ct);
                 phone.OpenChat(characterId);
 
-                // 사용자가 폰을 닫을 때까지 대기
-                while (phone.IsOpen)
-                {
-                    if (ct.IsCancellationRequested) return;
-                    await UniTask.Yield(ct);
-                }
-                Debug.Log("[Flow] Message:wait — 사용자가 폰 닫음, 스토리 계속");
+                // 사용자가 폰을 닫을 때까지 대기 (CancellationToken 자동 처리)
+                await UniTask.WaitWhile(() => phone.IsOpen, cancellationToken: ct);
+                Log.Info("[Flow] Message:wait — 사용자가 폰 닫음, 스토리 계속");
             }
         }
     }

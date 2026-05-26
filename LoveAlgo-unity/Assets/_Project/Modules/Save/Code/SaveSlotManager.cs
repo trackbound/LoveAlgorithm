@@ -44,16 +44,25 @@ namespace LoveAlgo.Story.SaveSystem
         }
 
         /// <summary>
-        /// 세이브 데이터 삭제 (스크린샷 제외 — 호출자가 처리)
+        /// 세이브 데이터 삭제 (본 파일 + .bak 백업, 스크린샷 제외 — 호출자가 처리)
         /// </summary>
         public static void Delete(int slot)
         {
             string path = GetSavePath(slot);
+            bool deleted = false;
             if (File.Exists(path))
             {
                 File.Delete(path);
-                Debug.Log($"[SaveSlotManager] 슬롯 {slot} 삭제");
+                deleted = true;
             }
+            string bak = path + ".bak";
+            if (File.Exists(bak))
+            {
+                File.Delete(bak);
+                deleted = true;
+            }
+            if (deleted)
+                Debug.Log($"[SaveSlotManager] 슬롯 {slot} 삭제");
         }
 
         /// <summary>

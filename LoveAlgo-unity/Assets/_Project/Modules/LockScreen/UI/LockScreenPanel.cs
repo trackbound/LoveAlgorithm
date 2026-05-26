@@ -1,3 +1,4 @@
+using LoveAlgo.Contracts;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -104,7 +105,7 @@ namespace LoveAlgo.LockScreen.UI
 
         void Awake()
         {
-            lockScreen = Services.Get<ILockScreen>();
+            lockScreen = Services.TryGet<ILockScreen>();
             if (lockScreen == null)
                 Debug.LogError("[LockScreenPanel] ILockScreen 미등록 — 씬에 LockScreenModule 확인");
 

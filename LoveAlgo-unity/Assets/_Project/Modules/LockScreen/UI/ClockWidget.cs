@@ -1,4 +1,7 @@
+using LoveAlgo.Contracts;
 using System;
+using System.Threading;
+using Cysharp.Threading.Tasks;
 using LoveAlgo.Common;
 using TMPro;
 using UnityEngine;
@@ -30,20 +33,44 @@ namespace LoveAlgo.LockScreen.UI
         [Tooltip("빈 문자열이면 날짜 미표시")]
         [SerializeField] string dateFormat = "";
 
-        float nextRefreshAt;
+        CancellationTokenSource _refreshCts;
 
         void OnEnable()
         {
             Refresh();
-            nextRefreshAt = Time.unscaledTime + 1f;
+            // 매 프레임 Update 조건 체크 대신 1초 주기 UniTask 루프 — Unity가 호출하는
+            // Update 자체를 없애 60Hz 조건 검사 비용 0으로.
+            _refreshCts?.Cancel();
+            _refreshCts?.Dispose();
+            _refreshCts = new CancellationTokenSource();
+            RefreshLoopAsync(_refreshCts.Token).Forget();
         }
 
-        void Update()
+        void OnDisable()
         {
-            if (Time.unscaledTime >= nextRefreshAt)
+            _refreshCts?.Cancel();
+            _refreshCts?.Dispose();
+            _refreshCts = null;
+        }
+
+        void OnDestroy()
+        {
+            _refreshCts?.Cancel();
+            _refreshCts?.Dispose();
+            _refreshCts = null;
+        }
+
+        async UniTaskVoid RefreshLoopAsync(CancellationToken ct)
+        {
+            while (!ct.IsCancellationRequested)
             {
+                try
+                {
+                    await UniTask.Delay(TimeSpan.FromSeconds(1f), DelayType.UnscaledDeltaTime, cancellationToken: ct);
+                }
+                catch (OperationCanceledException) { return; }
+                if (ct.IsCancellationRequested) return;
                 Refresh();
-                nextRefreshAt = Time.unscaledTime + 1f;
             }
         }
 

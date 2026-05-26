@@ -1,4 +1,5 @@
 using DG.Tweening;
+using LoveAlgo.Common;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -21,21 +22,29 @@ namespace LoveAlgo.UI
         [SerializeField] float hoverOffset = 20f;
         [SerializeField] float hoverDuration = 0.2f;
 
+        readonly ListenerBag _listeners = new();
+
         protected override void Awake()
         {
             base.Awake();
 
-            closeButton?.onClick.AddListener(Close);
+            _listeners.Bind(closeButton, Close);
 
             // 클릭 (추후 서브메뉴 진입)
-            sceneButton?.onClick.AddListener(OnSceneClick);
-            cgButton?.onClick.AddListener(OnCGClick);
-            collectionButton?.onClick.AddListener(OnCollectionClick);
+            _listeners.Bind(sceneButton, OnSceneClick);
+            _listeners.Bind(cgButton, OnCGClick);
+            _listeners.Bind(collectionButton, OnCollectionClick);
 
             // 호버 이펙트 바인딩
             BindHoverEffect(sceneButton);
             BindHoverEffect(cgButton);
             BindHoverEffect(collectionButton);
+        }
+
+        protected override void OnDestroy()
+        {
+            _listeners.Dispose();
+            base.OnDestroy();
         }
 
         // Show/Hide는 PopupBase 기본 구현 사용 (NotifyOpened/Closed·사운드·KillSequence 포함)
