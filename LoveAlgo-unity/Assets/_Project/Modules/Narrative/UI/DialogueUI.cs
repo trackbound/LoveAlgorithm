@@ -152,13 +152,13 @@ namespace LoveAlgo.Story
         void OnEnable()
         {
             // 대사 UI 살아있는 동안 폰 알림 노출 (대사 출력 = 스토리 진행 컨텍스트)
-            LoveAlgo.Common.Services.TryGet<LoveAlgo.Phone.IPhone>()?.SetNotificationVisible(true);
+            LoveAlgo.Common.Services.TryGet<LoveAlgo.Contracts.IPhone>()?.SetNotificationVisible(true);
         }
 
         void OnDisable()
         {
             // 대사 UI 종료(Title/Schedule 등 전환) 시 폰 알림 숨김
-            LoveAlgo.Common.Services.TryGet<LoveAlgo.Phone.IPhone>()?.SetNotificationVisible(false);
+            LoveAlgo.Common.Services.TryGet<LoveAlgo.Contracts.IPhone>()?.SetNotificationVisible(false);
         }
 
         void SetupButtons()

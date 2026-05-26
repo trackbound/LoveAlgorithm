@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Cysharp.Threading.Tasks;
+using LoveAlgo.Contracts;
 using LoveAlgo.Core;
 using LoveAlgo.Story;
 using LoveAlgo.UI;
@@ -425,7 +426,7 @@ namespace LoveAlgo.DevTools
 
         void ResetToFirstStart()
         {
-            var ls = LoveAlgo.Common.Services.TryGet<LoveAlgo.LockScreen.ILockScreen>()
+            var ls = LoveAlgo.Common.Services.TryGet<LoveAlgo.Contracts.ILockScreen>()
                      as LoveAlgo.LockScreen.LockScreenController;
             if (ls != null)
             {

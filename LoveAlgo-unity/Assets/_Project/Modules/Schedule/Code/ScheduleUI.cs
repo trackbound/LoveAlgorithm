@@ -655,7 +655,7 @@ namespace LoveAlgo.Schedule
         /// <summary>폰 열기 (행동 소비 없음)</summary>
         void OnPhoneClick()
         {
-            LoveAlgo.Common.Services.TryGet<Phone.IPhone>()?.ShowPhoneUI();
+            LoveAlgo.Common.Services.TryGet<LoveAlgo.Contracts.IPhone>()?.ShowPhoneUI();
         }
 
         #endregion

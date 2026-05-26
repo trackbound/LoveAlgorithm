@@ -1,4 +1,5 @@
 using LoveAlgo.Common;
+using LoveAlgo.Contracts;
 using LoveAlgo.Narrative;
 using LoveAlgo.Schedule;
 using LoveAlgo.Shop;

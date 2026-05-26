@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using DG.Tweening;
 using LoveAlgo.Common;
+using LoveAlgo.Contracts;
 using LoveAlgo.Core;
 using LoveAlgo.Phone;
 using LoveAlgo.Save;

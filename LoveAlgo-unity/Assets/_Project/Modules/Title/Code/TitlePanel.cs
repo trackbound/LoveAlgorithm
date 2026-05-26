@@ -85,7 +85,7 @@ namespace LoveAlgo.UI
         {
             // 첫 시작 LockScreen 흐름에서는 EntryRouter가 white_noise를 띄움 — 충돌 방지.
             // GameManager.Start()도 같은 IsPasswordSet 체크로 Title phase 전환을 보류함.
-            var ls = LoveAlgo.Common.Services.TryGet<LoveAlgo.LockScreen.ILockScreen>();
+            var ls = LoveAlgo.Common.Services.TryGet<LoveAlgo.Contracts.ILockScreen>();
             if (ls != null && !ls.IsPasswordSet)
             {
                 // 첫 진입 LockScreen 흐름 — Title BGM 재생 보류 (LockScreen Outro 후 자연 재진입 시 다시 시도)
