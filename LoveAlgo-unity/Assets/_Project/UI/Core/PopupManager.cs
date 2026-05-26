@@ -202,11 +202,26 @@ namespace LoveAlgo.UI
 
         public bool IsAnyPopupOpen => openStack.Count > 0;
 
+        /// <summary>일반 닫기 — 각 popup이 자기 fade 트윈을 진행 후 비활성화.
+        /// UI 흐름 안에서 정상 종료 시 사용. 트윈이 끝나기 전에 호출자가 다음 작업을 하면
+        /// popup이 잠시 보일 수 있음 — 점프/씬 전환에는 <see cref="CloseAllImmediate"/> 사용.</summary>
         public void CloseAll()
         {
             var snapshot = openStack.ToArray();
             for (int i = snapshot.Length - 1; i >= 0; i--)
                 snapshot[i]?.Hide();
+        }
+
+        /// <summary>
+        /// 외부 강제 종료 — 모든 popup의 fade 트윈을 죽이고 즉시 비활성화.
+        /// GameFlowJumper.TearDownEverythingAsync 등 화면 전환 직전에 사용.
+        /// </summary>
+        public void CloseAllImmediate()
+        {
+            var snapshot = openStack.ToArray();
+            for (int i = snapshot.Length - 1; i >= 0; i--)
+                snapshot[i]?.ForceHideImmediate();
+            openStack.Clear();  // ForceHideImmediate가 NotifyClosed로 비우긴 하지만 안전망
         }
     }
 }

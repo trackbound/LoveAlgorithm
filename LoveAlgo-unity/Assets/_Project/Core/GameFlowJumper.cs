@@ -169,6 +169,15 @@ namespace LoveAlgo.Core
                 lsPanel.Close();
             }
 
+            // 2-b. Phone 모듈 강제 닫기 — CloseAll의 Hide는 fade 트윈 진행 중이라 즉시 사라지지 않음.
+            //      ForceCloseImmediate는 트윈 무시 + openStack 동기화까지 처리.
+            var phoneModule = UnityEngine.Object.FindAnyObjectByType<LoveAlgo.Phone.PhoneModule>();
+            if (phoneModule != null && phoneModule.IsOpen)
+            {
+                StageSyncLog.Section(Tag, "Phone 강제 닫음");
+                phoneModule.ForceCloseImmediate();
+            }
+
             // 3. UI 전체 정리 — Title/Schedule/Shop/Username/Ending 등 모든 메인 UI
             UIManager.Instance?.HideAll();
 

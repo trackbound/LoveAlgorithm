@@ -1,4 +1,5 @@
 using LoveAlgo.Common;
+using LoveAlgo.UI;
 using UnityEngine;
 
 namespace LoveAlgo.Phone
@@ -36,14 +37,25 @@ namespace LoveAlgo.Phone
         public void OpenChat(string heroineId)
         {
             if (phonePanel == null) return;
-            phonePanel.gameObject.SetActive(true);
+            // base.Show 경유로 PopupManager.NotifyOpened를 트리거해야 CloseAll/ESC 등이 잡음.
+            // 이전엔 SetActive(true) 직접 호출로 openStack 등록이 누락되어 외부 일괄 정리에서 빠졌었음.
+            if (!phonePanel.IsVisible) phonePanel.Show();
             phonePanel.OpenChatRoom(heroineId);
         }
 
         public void Close()
         {
             if (phonePanel == null) return;
+            if (phonePanel.IsVisible) phonePanel.Hide();
+        }
+
+        /// <summary>점프/전환 시 외부에서 호출 — fade 트윈 무시 즉시 종료. openStack 동기화 포함.</summary>
+        public void ForceCloseImmediate()
+        {
+            if (phonePanel == null) return;
+            if (!phonePanel.gameObject.activeSelf) return;
             phonePanel.gameObject.SetActive(false);
+            PopupManager.Instance?.NotifyClosed(phonePanel);
         }
 
         public void ShowPhoneUI()

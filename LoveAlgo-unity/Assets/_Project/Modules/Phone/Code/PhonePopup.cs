@@ -72,6 +72,9 @@ namespace LoveAlgo.Phone
         protected override void OnDestroy()
         {
             MessengerManager.OnNewMessage -= OnExternalNewMessage;
+            if (tabGroup != null) tabGroup.OnTabChanged -= SwitchTab;
+            if (backButton != null) backButton.onClick.RemoveListener(OnBackClick);
+            if (profileCloseButton != null) profileCloseButton.onClick.RemoveListener(HideProfile);
             base.OnDestroy();
         }
 

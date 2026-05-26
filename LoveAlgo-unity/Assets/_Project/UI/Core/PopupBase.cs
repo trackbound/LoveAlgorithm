@@ -183,6 +183,21 @@ namespace LoveAlgo.UI
         /// <summary>닫기 버튼/외부 호출용.</summary>
         public void Close() => TryCloseAndDismiss().Forget();
 
+        /// <summary>
+        /// 외부 강제 종료 — fade 트윈 무시 즉시 비활성화 + openStack 동기화.
+        /// 점프/씬 전환 시 PopupManager.CloseAllImmediate가 일괄 호출.
+        /// </summary>
+        public void ForceHideImmediate()
+        {
+            KillSequence();
+            if (panelRect != null) panelRect.localScale = Vector3.one;
+            if (canvasGroup != null) canvasGroup.alpha = 1f;
+            gameObject.SetActive(false);
+            PopupManager.Instance?.NotifyClosed(this);
+            hideCompletionSource?.TrySetResult();
+            hideCompletionSource = null;
+        }
+
         async UniTaskVoid TryCloseAndDismiss()
         {
             bool canClose = await TryCloseAsync();
