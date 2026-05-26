@@ -359,14 +359,14 @@ namespace LoveAlgo.Core
                 if (_gm.IsDemoMode)
                 {
                     _gm.SetCurrentPhase(GamePhase.DayLoop);
-                    await _gm.AutoSaveAsync();
+                    await _gm.AutoSaveAsync("phase:DayLoop-demo");
                     _isTransitioning = false;
                     OnContentEnd();
                     return;
                 }
 
                 ChangePhase(GamePhase.DayLoop);
-                await _gm.AutoSaveAsync();
+                await _gm.AutoSaveAsync("phase:DayLoop");
 
                 await UniTask.Yield(ct);
 
@@ -397,7 +397,7 @@ namespace LoveAlgo.Core
             dialogueUI?.HideImmediate();
 
             // 자동저장 (화면이 보이는 상태에서 스크린샷 캡처)
-            await _gm.AutoSaveAsync();
+            await _gm.AutoSaveAsync("content-end");
 
             // 데모 종료 안내 (페이드 전 — ScreenFX가 PopupManager 위 레이어라 페이드 후엔 안 보임)
             if (UI.PopupManager.Instance != null)

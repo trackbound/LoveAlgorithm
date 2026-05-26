@@ -121,9 +121,9 @@ namespace LoveAlgo.Core
                 LoveAlgo.Story.StageSyncLog.Section("LoadFromSave", "Yield 1 frame for cancellation propagation");
                 await UniTask.Yield();
 
-                // 이전 장면 정리 (1차)
-                LoveAlgo.Story.StageSyncLog.Section("LoadFromSave", "Cleanup stage (1차)");
-                _gm.CleanupStage();
+                // 이전 장면 정리 — 로드 직후 메모리 안정성 위해 UnloadUnusedAssets 완료까지 await (L8/A4)
+                LoveAlgo.Story.StageSyncLog.Section("LoadFromSave", "Cleanup stage (Async)");
+                await _gm.CleanupStageAsync(_gm.GetCancellationTokenOnDestroy());
 
                 // 2차 명시 정리 — race 잔여 작업이 또 무대를 건드렸을 수도 있으므로
                 LoveAlgo.Story.StageSyncLog.Section("LoadFromSave", "Cleanup stage (2차)");
@@ -204,13 +204,21 @@ namespace LoveAlgo.Core
         }
 
         /// <summary>
-        /// 자동저장 (슬롯 0) — 비동기: UI 숨김 → 1프레임 대기 → 스크린샷 → 저장
+        /// 자동저장 (슬롯 0) — 비동기: UI 숨김 → 1프레임 대기 → 스크린샷 → 저장.
+        ///
+        /// 호출 정책 (모든 진입점이 reason을 전달):
+        /// - "day-end"   : DayLoopController.EndDayAsync, day 증가 직후
+        /// - "phase:X"   : GameFlowController가 Phase 전환 직후 (X = 대상 phase)
+        /// - "macro:X"   : 매크로(DayEnd 등)가 호출
+        /// - "scripted"  : 스크립트가 직접 트리거한 명시적 저장점
+        /// 어디서 자동저장이 일어나는지 콘솔에서 추적 가능. 향후 정책 변경(빈도 제한·
+        /// 진행률 임계치 등)이 필요하면 이 reason을 분기 키로 활용.
         /// </summary>
-        public async UniTask AutoSaveAsync()
+        public async UniTask AutoSaveAsync(string reason = "unspecified")
         {
             await SaveThumbnailManager.CapturePendingScreenshotAsync();
             Save(SaveManager.AutoSaveSlot, usePendingThumbnail: true);
-            Debug.Log("[GameManager] 자동저장 완료");
+            Debug.Log($"[GameManager] 자동저장 완료 (reason={reason})");
         }
 
         /// <summary>
@@ -236,6 +244,24 @@ namespace LoveAlgo.Core
                 ? customLabel
                 : GetSaveChapterName(scriptName);
 
+            // 썸네일을 먼저 commit한 뒤에만 JSON 저장 — 데이터/썸네일 불일치 방지 (M8).
+            // pending 우선(수동저장 팝업): commit 실패 시 옛 슬롯 유지(데이터 저장도 보류) →
+            // 사용자가 잘못된 시각화 + 새 데이터 조합을 보지 않도록 보수적으로 차단.
+            // 자동저장: 즉시 캡처(CaptureScreenshot) — 캡처 실패는 내부에서 LogWarning만 하고
+            // 데이터 저장은 계속 (자동저장은 데이터 보존 우선, 썸네일은 best-effort).
+            if (usePendingThumbnail)
+            {
+                if (!SaveManager.TryCommitPendingScreenshot(slot))
+                {
+                    Debug.LogError($"[SessionController] 슬롯 {slot} pending 썸네일 commit 실패 — 데이터 저장도 보류 (옛 슬롯 유지)");
+                    return;
+                }
+            }
+            else
+            {
+                SaveManager.CaptureScreenshot(slot);
+            }
+
             SaveManager.Save(
                 slot,
                 _gm.CurrentPhase,
@@ -246,22 +272,6 @@ namespace LoveAlgo.Core
                 lineIndex,
                 chapterName
             );
-
-            // 스크린샷 저장
-            // - 수동 저장 팝업: ShowSave에서 미리 캡처한 pending 썸네일 우선 사용
-            //   (commit 실패 시 즉시 재캡처는 SaveLoadPopup/Confirm/딤이 찍힐 위험이 있어 생략)
-            // - 자동저장/기타: pending 미사용 시 즉시 캡처
-            if (usePendingThumbnail)
-            {
-                if (!SaveManager.TryCommitPendingScreenshot(slot))
-                {
-                    Debug.LogWarning($"[SessionController] 슬롯 {slot} pending 썸네일 commit 실패 — 기존 썸네일 유지");
-                }
-            }
-            else
-            {
-                SaveManager.CaptureScreenshot(slot);
-            }
         }
 
         /// <summary>
@@ -277,9 +287,27 @@ namespace LoveAlgo.Core
         }
 
         /// <summary>
-        /// 장면 정리 (타이틀 복귀 / 로드 시)
+        /// 장면 정리 (타이틀 복귀 / 로드 시). Resources.UnloadUnusedAssets는 fire-and-forget —
+        /// AsyncOperation을 그대로 무시하므로 백그라운드에서 진행되며 호출 자체는 비-블로킹.
+        /// 정리 완료를 await하려면 <see cref="CleanupStageAsync"/>.
         /// </summary>
         public void CleanupStage()
+        {
+            CleanupStageSyncPart();
+            _ = Resources.UnloadUnusedAssets();
+        }
+
+        /// <summary>
+        /// CleanupStage의 비동기 버전 — Resources.UnloadUnusedAssets 완료까지 대기.
+        /// 씬 전환·로드 직후 메모리 안정성이 필요할 때만 사용 (일반 정리는 CleanupStage로 충분).
+        /// </summary>
+        public async UniTask CleanupStageAsync(System.Threading.CancellationToken ct = default)
+        {
+            CleanupStageSyncPart();
+            await Resources.UnloadUnusedAssets().ToUniTask(cancellationToken: ct);
+        }
+
+        void CleanupStageSyncPart()
         {
             // 레이어 정리
             StageModule.Instance?.Character?.SetVisibleImmediate(true);  // SD 숨김 상태 복원
@@ -306,9 +334,6 @@ namespace LoveAlgo.Core
 
             // 캐릭터 스프라이트 캐시 정리
             CharacterSlot.ClearSpriteCache();
-
-            // 미사용 에셋 메모리 해제
-            Resources.UnloadUnusedAssets();
         }
 
         /// <summary>
