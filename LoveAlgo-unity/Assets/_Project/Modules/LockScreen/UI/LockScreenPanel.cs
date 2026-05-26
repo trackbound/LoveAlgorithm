@@ -202,9 +202,33 @@ namespace LoveAlgo.LockScreen.UI
             withFadeOutOverride = value;
         }
 
+        /// <summary>
+        /// 외부 강제 종료 — GameFlowJumper.TearDownEverythingAsync 등이 화면 전환 직전에 호출.
+        /// 진행 중인 모든 코루틴(Intro/EnterLogin/Outro/Slide/Fade 등 seqCo로 추적되지 않는 것 포함)을
+        /// 정리하고 다음 진입을 위해 시각 상태도 초기화.
+        ///
+        /// OnFlowComplete는 호출하지 않음 — 외부에서 Close를 부른다는 건 이미 외부가 다음 화면을
+        /// 직접 처리하겠다는 의미. waiter(LockScreenFlowCommand 등)는 panel.gameObject.activeSelf
+        /// 체크로 자체 탈출.
+        /// </summary>
         public void Close()
         {
-            if (seqCo != null) StopCoroutine(seqCo);
+            StopAllCoroutines();
+            seqCo = null;
+
+            if (roaMessage != null) roaMessage.HideAllImmediate();
+
+            // 시각 상태 reset — 다음 OpenXxx 호출 시 잔재 없도록
+            if (loginStage != null) loginStage.SetActive(false);
+            if (loginDim != null) loginDim.alpha = 0f;
+            if (inputCatcher != null) inputCatcher.gameObject.SetActive(false);
+            if (blackOverlay != null) blackOverlay.alpha = 0f;
+            if (rootCanvasGroup != null) rootCanvasGroup.alpha = 1f;
+
+            ResetLeftWidgetPositions();
+
+            withFadeOutOverride = null;
+
             gameObject.SetActive(false);
         }
 

@@ -102,7 +102,8 @@ namespace LoveAlgo.Story.StoryEngine.Flow
                 return;
             }
 
-            // OnFlowComplete까지 대기
+            // OnFlowComplete까지 대기. 외부 강제 종료(GameFlowJumper.TearDownEverythingAsync 등)
+            // 안전망: panel이 inactive면 탈출 — Close()가 OnFlowComplete를 발행하지 않으므로 필수.
             bool done = false;
             System.Action onComplete = () => done = true;
             panel.OnFlowComplete += onComplete;
@@ -111,12 +112,13 @@ namespace LoveAlgo.Story.StoryEngine.Flow
                 while (!done)
                 {
                     if (ct.IsCancellationRequested) break;
+                    if (panel == null || !panel.gameObject.activeSelf) break;
                     await UniTask.Yield(PlayerLoopTiming.Update, ct);
                 }
             }
             finally
             {
-                panel.OnFlowComplete -= onComplete;
+                if (panel != null) panel.OnFlowComplete -= onComplete;
                 ls.SetClockOverride(""); // 다음 호출에 영향 X
             }
 

@@ -86,6 +86,12 @@ namespace LoveAlgo.Core
             fx?.EyeOpenImmediate();
             // SetClear 호출 안 함 — 이미 검정이면 다음 단계 fade-out이 합리적 시작
 
+            // [B1] 전체화면 비디오 즉시 강제 정지 — VideoLayer는 sortingOrder=32000으로
+            // ScreenFX fade-out 검정보다 위에 그려지므로, 여기서 먼저 끊지 않으면
+            // 다음 단계 fade-out 동안 영상이 계속 보임. PlayAsync await loop도
+            // player.isPlaying=false로 곧 탈출되어 호출자 cancel 전파됨.
+            StopVideoLayer();
+
             // [A] 페이드 아웃 — 사용자에겐 검은 화면만
             if (withFade && fx != null && !fx.IsFadeBlack)
             {

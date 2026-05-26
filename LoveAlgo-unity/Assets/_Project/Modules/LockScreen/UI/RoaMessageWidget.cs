@@ -66,6 +66,18 @@ namespace LoveAlgo.LockScreen.UI
                 if (slots[i] != null && slots[i].rect != null)
                     slots[i].originalAnchoredPos = slots[i].rect.anchoredPosition;
             }
+
+            // 슬롯을 Y 내림차순으로 자동 정렬 → 코드 가정(slots[0]=가장 위, slots[N-1]=가장 아래) 보장.
+            // prefab/Builder에서 어떤 순서로 추가됐든 baseline·depth·큐 매핑이 일관되게 동작.
+            // null 슬롯은 뒤로 밀어 깨끗한 인덱스 유지.
+            slots.Sort((a, b) =>
+            {
+                if (a == null && b == null) return 0;
+                if (a == null) return 1;
+                if (b == null) return -1;
+                return b.originalAnchoredPos.y.CompareTo(a.originalAnchoredPos.y);
+            });
+
             HideAllImmediate();
         }
 
