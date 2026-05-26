@@ -152,8 +152,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cfabb0440166ab443bba8876756fdfa9, type: 3}
   m_Name:
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Shadow
-  m_EffectColor: {r: 1, g: 0.412, b: 0.706, a: 0.45}
-  m_EffectDistance: {x: 0, y: -1.5}
+  m_EffectColor: {r: 1, g: 0.15, b: 0.55, a: 0.9}
+  m_EffectDistance: {x: 0, y: -2}
   m_UseGraphicAlpha: 1
 --- !u!114 &2678150914202383621
 MonoBehaviour:
@@ -167,8 +167,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cfabb0440166ab443bba8876756fdfa9, type: 3}
   m_Name:
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Shadow
-  m_EffectColor: {r: 1, g: 0.6, b: 0.8, a: 0.3}
-  m_EffectDistance: {x: 1, y: -2.5}
+  m_EffectColor: {r: 1, g: 0.4, b: 0.7, a: 0.7}
+  m_EffectDistance: {x: 2, y: -4}
   m_UseGraphicAlpha: 1
 --- !u!114 &2678150914202383622
 MonoBehaviour:
@@ -182,8 +182,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cfabb0440166ab443bba8876756fdfa9, type: 3}
   m_Name:
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Shadow
-  m_EffectColor: {r: 1, g: 0.78, b: 0.87, a: 0.22}
-  m_EffectDistance: {x: -1, y: -3.5}
+  m_EffectColor: {r: 1, g: 0.6, b: 0.82, a: 0.5}
+  m_EffectDistance: {x: -2, y: -6}
   m_UseGraphicAlpha: 1
 --- !u!1 &4914969853302668076
 GameObject:

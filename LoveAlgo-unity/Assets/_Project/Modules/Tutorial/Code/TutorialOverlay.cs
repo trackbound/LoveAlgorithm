@@ -102,9 +102,24 @@ namespace LoveAlgo.UI
                 dialogueText.text = "";
                 dialogueText.alpha = 0f;
             }
-            // 텍스트박스도 처음에는 숨겨둔 상태로 시작 (첫 스텝에서 텍스트와 함께 페이드 인)
+            // 텍스트박스 — 9-slice 동적 리사이즈 보장 (prefab 설정 무시 강제):
+            //  • Type=Sliced 가 아니면 늘릴 때 sprite 통째로 stretch → 모서리/꼬리 늘어남
+            //  • Sprite Border 미설정이면 Sliced여도 Simple과 동일 → 경고
             if (textboxImage != null)
             {
+                textboxImage.type = Image.Type.Sliced;
+                textboxImage.preserveAspect = false;
+                textboxImage.fillCenter = true;
+                var sp = textboxImage.sprite;
+                if (sp != null && sp.border == Vector4.zero)
+                {
+                    Debug.LogWarning(
+                        $"[TutorialOverlay] textboxImage 스프라이트 '{sp.name}' 의 Sprite Border 가 0입니다. " +
+                        "Project 창에서 스프라이트 선택 → Sprite Editor → Border 4값 설정 필요. " +
+                        "(권장: 좌/하/우/상 ≥ 30, 꼬리 있으면 꼬리쪽 더 크게)", this);
+                }
+
+                // 처음에는 숨김 (첫 스텝에서 텍스트와 함께 페이드)
                 var c = textboxImage.color;
                 textboxImage.color = new Color(c.r, c.g, c.b, 0f);
             }

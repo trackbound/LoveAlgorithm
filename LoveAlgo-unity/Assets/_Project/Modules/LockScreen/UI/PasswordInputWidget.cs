@@ -48,6 +48,8 @@ namespace LoveAlgo.LockScreen.UI
 
         readonly ListenerBag _listeners = new();
 
+        bool _normalizing;   // 한글→두벌식 치환 중 onValueChanged 재진입 방지
+
         void Awake()
         {
             if (inputField != null)
@@ -55,10 +57,10 @@ namespace LoveAlgo.LockScreen.UI
                 inputField.characterLimit = maxLength;
                 _listeners.Bind(inputField.onSubmit, ConfirmFromSubmit);
 
-                // 한글 IME 조합 중간 문자가 들어가서 마스킹 ***가 누적되는 문제 차단.
-                // 비밀번호는 영문/숫자/특수문자(ASCII printable) 만 허용 — 한글 입력 시 IME가
-                // 자모 단위로 콜백을 호출해 마스킹이 부풀려지고, 저장·비교 인코딩 의존 문제도 회피.
-                inputField.onValidateInput = OnValidatePasswordChar;
+                // 한글 입력 시 두벌식 영문으로 자동 변환 — OS 한/영 전환과 무관하게 일관된 비번 처리.
+                // 예) "한" → "gks" (ㅎ+ㅏ+ㄴ). ASCII는 그대로.
+                // onValidateInput으로는 1글자 반환만 가능해 한글 분해 불가 → onValueChanged 후처리.
+                _listeners.Bind(inputField.onValueChanged, NormalizeToDubeolsik);
             }
             _listeners.Bind(confirmButton, Confirm);
             if (revealToggle != null) _listeners.Bind(revealToggle.onValueChanged, OnRevealChanged);
@@ -67,13 +69,23 @@ namespace LoveAlgo.LockScreen.UI
         }
 
         /// <summary>
-        /// ASCII 0x20(공백)~0x7E(~) 범위만 허용. 한글/이모지/제어문자 등은 '\0' 반환으로 거부.
-        /// TMP_InputField.onValidateInput 시그니처: (text, charIndex, addedChar) → 적용할 문자 (\0 = 거부)
+        /// 입력 텍스트의 한글 char를 두벌식 영문으로 치환.
+        /// SetTextWithoutNotify로 갱신하여 onValueChanged 재진입 방지(_normalizing 플래그도 안전망).
+        /// 변환 후 maxLength 초과분 잘라냄.
         /// </summary>
-        static char OnValidatePasswordChar(string text, int charIndex, char addedChar)
+        void NormalizeToDubeolsik(string text)
         {
-            if (addedChar < 0x20 || addedChar > 0x7E) return '\0';
-            return addedChar;
+            if (_normalizing || inputField == null) return;
+            if (!HangulToDubeolsik.ContainsHangul(text)) return;   // 빠른 경로
+
+            string converted = HangulToDubeolsik.Convert(text);
+            if (converted.Length > maxLength) converted = converted.Substring(0, maxLength);
+            if (converted == text) return;
+
+            _normalizing = true;
+            inputField.SetTextWithoutNotify(converted);
+            inputField.caretPosition = converted.Length;
+            _normalizing = false;
         }
 
         void OnDestroy()
