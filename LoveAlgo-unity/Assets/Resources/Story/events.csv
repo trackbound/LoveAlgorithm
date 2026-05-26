@@ -1,0 +1,44 @@
+# 데이루프 이벤트 슬롯 매니페스트 (Phase D1)
+# 각 행 = (Day, Timing) 시점에 발동할 스크립트.
+#
+# 컬럼:
+#   Day        — 정수(고정 일자). 빈 값이면 '글로벌(매일 체크)' 슬롯.
+#   Timing     — Morning | Evening.
+#   ScriptName — Resources/Story/{이름}.csv 의 파일명 (확장자 없음).
+#   Condition  — GameState.EvaluateCondition 형식. 빈 값이면 무조건 발동.
+#                예: Love:Roa>=30, Stat:Int>=20, Flag:Met_HaYeEun, !Flag:Confessed, EndingCount>=2.
+#   Priority   — 같은 (Day,Timing) 슬롯 안에서 평가 순서 (정수, 클수록 먼저). 기본 0.
+#   Notes      — 기획자 메모. 코드 무시 — 자유롭게 사용.
+#
+# 큰 이벤트(Day 6/10-12/16/20-22/26/30 = Event1/Festival/Event2/MT/Event3/Confession/Ending)는
+# GameTimeline에서 처리되므로 이 파일에 적지 않는다. 일상/조우/예고/여운 같은 day-scoped 슬롯만.
+#
+# 새 이벤트 추가하려면:
+#   1) Resources/Story/{ScriptName}.csv 스크립트 파일을 만든다
+#   2) 이 파일에 한 줄 추가, 저장
+#   3) Unity 에디터 콘솔에 "[DayEventTable] events.csv에서 N개 이벤트 로드"가 늘었는지 확인
+#
+# 파일이 없거나 비어 있으면 코드의 DayEventTable.BuildTable() fallback이 동작 — 역호환.
+
+Day,Timing,ScriptName,Condition,Priority,Notes
+1,Morning,Day1_Morning,,0,개강 첫날
+2,Morning,Day2_Morning,,0,서다은 + 하예은 첫 조우
+2,Evening,Day2_Evening,,0,
+3,Morning,Day3_Morning,,0,이봄 + 도희원 첫 조우
+3,Evening,Day3_Evening,,0,
+4,Morning,Day4_Morning,,0,루틴 정착
+5,Evening,Day5_Evening,,0,1차 이벤트 예고
+7,Morning,Day7_Morning,,0,1차 이벤트 후 여운
+9,Evening,Day9_Evening,,0,축제 전날
+13,Morning,Day13_Morning,,0,축제 후 일상 복귀
+15,Evening,Day15_Evening,,0,서다은과 도서관
+17,Morning,Day17_Morning,,0,2차 이벤트 후 감상
+19,Evening,Day19_Evening,,0,MT 전날
+23,Morning,Day23_Morning,,0,MT 후 일상 복귀
+25,Evening,Day25_Evening,,0,3차 이벤트 전날
+27,Morning,Day27_Morning,,0,마지막 자유기간
+29,Evening,Day29_Evening,,0,고백 전날 밤
+
+# ── 조건부 글로벌 슬롯 예시 (Day 칸 비우고 작성) ──
+# ,Evening,Roa_Love30,Love:Roa>=30,10,로아 호감도 30 도달 시 1회 특별 이벤트
+# ,Morning,HaYeEun_Friend,Love:HaYeEun>=20,5,하예은 친구 등급 도달 후 아침 이벤트

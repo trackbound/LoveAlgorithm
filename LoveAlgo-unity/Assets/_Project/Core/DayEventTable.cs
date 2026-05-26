@@ -1,6 +1,8 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using LoveAlgo.Core;
+using LoveAlgo.Story;
 
 namespace LoveAlgo.Core
 {
@@ -66,9 +68,20 @@ namespace LoveAlgo.Core
         /// </summary>
         static readonly HashSet<string> firedEvents = new();
 
+        /// <summary>
+        /// CSV 매니페스트 경로 (Resources 상대).
+        /// 비어 있거나 파일이 없으면 BuildTable() fallback이 동작 — 역호환.
+        /// </summary>
+        const string ManifestPath = "Story/events";
+
         static DayEventTable()
         {
-            BuildTable();
+            int loaded = LoadFromCsv();
+            if (loaded == 0)
+            {
+                Debug.Log("[DayEventTable] events.csv 비어있음/없음 — 코드 BuildTable() fallback");
+                BuildTable();
+            }
         }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
@@ -76,6 +89,76 @@ namespace LoveAlgo.Core
         {
             firedEvents.Clear();
         }
+
+        /// <summary>
+        /// Resources/Story/events.csv를 파싱해서 events/globalEvents에 등록.
+        /// 반환: 로드 성공한 행 수. 파일 없거나 모든 행 실패면 0.
+        /// 잘못된 행은 LogError 하고 그 행만 skip — 부분 로드 허용.
+        /// </summary>
+        static int LoadFromCsv()
+        {
+            var asset = Resources.Load<TextAsset>(ManifestPath);
+            if (asset == null) return 0;
+
+            var records = CsvUtility.SplitRecords(asset.text);
+            int loaded = 0;
+            foreach (var rec in records)
+            {
+                var raw = rec.Text.Trim();
+                if (string.IsNullOrEmpty(raw)) continue;
+                if (raw.StartsWith("#")) continue;                                  // 주석
+                if (raw.StartsWith("Day,", StringComparison.OrdinalIgnoreCase))     // 헤더
+                    continue;
+
+                var cols = CsvUtility.SplitCsv(raw);
+                if (cols.Length < 3)
+                {
+                    Debug.LogError($"[DayEventTable] events.csv L{rec.StartLine}: 컬럼 부족 ({cols.Length}/3 필수: Day,Timing,ScriptName) — '{Truncate(raw)}'");
+                    continue;
+                }
+
+                string dayStr     = cols[0].Trim();
+                string timingStr  = cols[1].Trim();
+                string scriptName = cols[2].Trim();
+                string condition  = cols.Length >= 4 ? cols[3].Trim() : "";
+                int priority      = 0;
+                if (cols.Length >= 5 && int.TryParse(cols[4].Trim(), out int p))
+                    priority = p;
+
+                if (string.IsNullOrEmpty(scriptName))
+                {
+                    Debug.LogError($"[DayEventTable] events.csv L{rec.StartLine}: ScriptName 비어 있음");
+                    continue;
+                }
+                if (!Enum.TryParse<DayTiming>(timingStr, true, out var timing))
+                {
+                    Debug.LogError($"[DayEventTable] events.csv L{rec.StartLine}: Timing '{timingStr}' (Morning|Evening 만 허용)");
+                    continue;
+                }
+
+                var evt = new DayEvent(scriptName, condition, priority);
+                if (string.IsNullOrEmpty(dayStr))
+                {
+                    RegisterGlobal(timing, evt);
+                    loaded++;
+                }
+                else if (int.TryParse(dayStr, out int day))
+                {
+                    Register(day, timing, evt);
+                    loaded++;
+                }
+                else
+                {
+                    Debug.LogError($"[DayEventTable] events.csv L{rec.StartLine}: Day는 정수 또는 빈 값 (got '{dayStr}')");
+                }
+            }
+
+            Debug.Log($"[DayEventTable] events.csv에서 {loaded}개 이벤트 로드");
+            return loaded;
+        }
+
+        static string Truncate(string s, int max = 80)
+            => s == null ? "" : (s.Length <= max ? s : s.Substring(0, max) + "…");
 
         /// <summary>
         /// 이벤트 테이블 구성
