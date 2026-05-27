@@ -149,17 +149,15 @@ namespace LoveAlgo.Core
             GameState.IncrementEndingCount();
 
             string endingHeroine = _gm.DetermineEndingHeroine();
-            string scriptName;
+            bool isHappy = !string.IsNullOrEmpty(endingHeroine) && _gm.IsHappyEnding(endingHeroine);
 
-            if (string.IsNullOrEmpty(endingHeroine))
+            // D4: endings.csv 매니페스트 우선. 매핑 없으면 프로시져 폴백.
+            string scriptName = EndingTable.ResolveScriptName(endingHeroine, isHappy);
+            if (string.IsNullOrEmpty(scriptName))
             {
-                scriptName = "Ending_Normal";
-            }
-            else
-            {
-                // 해피/새드 분기: 포인트가 임계치 이상이면 해피
-                string suffix = _gm.IsHappyEnding(endingHeroine) ? "Happy" : "Sad";
-                scriptName = $"Ending_{endingHeroine}_{suffix}";
+                scriptName = string.IsNullOrEmpty(endingHeroine)
+                    ? "Ending_Normal"
+                    : $"Ending_{endingHeroine}_{(isHappy ? "Happy" : "Sad")}";
             }
 
             Debug.Log($"[GameManager] Ending started: {scriptName}");

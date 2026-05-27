@@ -1,0 +1,33 @@
+# 엔딩 슬롯 매니페스트 (Phase D4)
+# 각 행 = "(엔딩 히로인, 해피여부) → 어떤 CSV 스크립트로 진입할지"의 매핑.
+# DetermineEndingHeroine() + IsHappyEnding() 결과로 EndingTable.ResolveScriptName이 검색.
+#
+# 컬럼:
+#   HeroineId   — 히로인 ID (Roa/HaYeEun/SeoDaEun/LeeBom/DoHeewon). 빈 값 = 노 고백 노멀.
+#   IsHappy     — 1 = 해피, 0 = 새드. (HeroineId 빈 행에선 무시.)
+#   ScriptName  — Resources/Story/{이름}.csv 의 파일명 (확장자 없음).
+#   DisplayName — 갤러리/엑스트라 메뉴 표시용 한글명.
+#   Notes       — 기획자 메모. 코드 무시.
+#
+# 새 엔딩 추가하려면:
+#   1) Resources/Story/{ScriptName}.csv 스크립트 파일을 만든다
+#   2) 이 파일에 한 줄 추가, 저장
+#   3) Unity 에디터 콘솔에 "[EndingTable] endings.csv에서 N개 엔딩 로드"가 늘었는지 확인
+#
+# 파일이 없거나 매핑이 없으면 GameFlowController.EnterEnding의 프로시져 로직이 fallback
+# ("Ending_Normal" / "Ending_{heroine}_Happy" / "Ending_{heroine}_Sad") — 역호환.
+
+HeroineId,IsHappy,ScriptName,DisplayName,Notes
+,0,Ending_Normal,노 고백,누구에게도 고백하지 않거나 임계치 미달
+Roa,1,Ending_Roa_MeriBad,로아 메리배드,피로>=70 + 임계치 충족 시 진입 (전용 스크립트)
+HaYeEun,1,Ending_HaYeEun_Happy,하예은 해피,
+HaYeEun,0,Ending_HaYeEun_Sad,하예은 새드,
+SeoDaEun,1,Ending_SeoDaEun_Happy,서다은 해피,
+SeoDaEun,0,Ending_SeoDaEun_Sad,서다은 새드,
+LeeBom,1,Ending_LeeBom_Happy,이봄 해피,
+LeeBom,0,Ending_LeeBom_Sad,이봄 새드,
+DoHeewon,1,Ending_DoHeewon_Happy,도희원 해피,
+DoHeewon,0,Ending_DoHeewon_Sad,도희원 새드,
+
+# ── 시크릿/회차 엔딩 예시 (HeroineId 비우고 ScriptName만) ──
+# ,1,Ending_TrueRoute,트루 루트,여러 히로인 동시 임계치 도달 시 (별도 조건 게이팅 필요)
