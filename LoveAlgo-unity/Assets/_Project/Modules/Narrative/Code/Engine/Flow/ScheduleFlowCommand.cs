@@ -1,6 +1,7 @@
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using LoveAlgo.Common;
+using LoveAlgo.Contracts;
 using UnityEngine;
 using LoveAlgo.Core;
 using LoveAlgo.UI;
@@ -37,7 +38,7 @@ namespace LoveAlgo.Story.StoryEngine.Flow
             }
 
             var fx = ScreenFX.Instance;
-            var dialogueUI = UIManager.Instance?.DialogueUI;
+            var dialogueUI = Services.TryGet<INarrative>()?.DialogueUI;
 
             // 페이드 아웃 → UI 전환 → 페이드 인
             if (fx != null) await fx.FadeOutAsync(FadeDuration, ct);

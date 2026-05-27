@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using LoveAlgo.Common;
+using LoveAlgo.Contracts;
 using UnityEngine;
 using LoveAlgo.Core;
 using LoveAlgo.UI;
@@ -63,7 +64,7 @@ namespace LoveAlgo.Story.StoryEngine.Handlers
 
             // 자동 선택 경로 — UI 없거나 Headless면 첫 선택지를 즉시 선택 (ADR §ChoiceLineExecutor).
             // 두 경로(UI null vs Headless toggle)가 같은 자동 분기로 통합.
-            var choiceUI = UIManager.Instance?.ChoicePopup;
+            var choiceUI = Services.TryGet<INarrative>()?.ChoicePopup;
             bool useAutoFirst = choiceUI == null || Headless.IsEnabled;
 
             if (!useAutoFirst)

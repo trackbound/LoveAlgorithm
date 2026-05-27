@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
+using LoveAlgo.Common;
 using LoveAlgo.Modules.Audio;
 using LoveAlgo.UI;
 using LoveAlgo.Core;
@@ -25,7 +26,7 @@ namespace LoveAlgo.Story.StoryEngine
             get
             {
                 if (_dialogueUI == null)
-                    _dialogueUI = UIManager.Instance?.DialogueUI;
+                    _dialogueUI = Services.TryGet<INarrative>()?.DialogueUI;
                 return _dialogueUI;
             }
         }
