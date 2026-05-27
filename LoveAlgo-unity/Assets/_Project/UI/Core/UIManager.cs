@@ -30,7 +30,7 @@ namespace LoveAlgo.UI
         // ── UI 인스턴스 호환성 wrapper (모듈 위임) ───────────────────
         // 옛 호출자(UIManager.Instance.X)를 위한 1줄 wrapper. 새 코드는 Services.Get<I*>() 직접 사용.
         public DialogueUI DialogueUI => Services.TryGet<INarrative>()?.DialogueUI;
-        public DialogueShowButton DialogueShowButton => Services.TryGet<INarrative>()?.DialogueShowButton;
+        // Phase B-7a: DialogueShowButton wrapper 제거 — 외부 호출자 0, NarrativeModule 내부 전용.
         public ChoicePopup ChoicePopup => Services.TryGet<INarrative>()?.ChoicePopup;
         // ISchedule.ScheduleUI 는 IScheduleUI(인터페이스) 반환 — 옛 호출자 구체 타입 호환 위해 cast.
         public ScheduleUI ScheduleUI => Services.TryGet<ISchedule>()?.ScheduleUI as ScheduleUI;
