@@ -9,6 +9,7 @@ using LoveAlgo.Modules.Affinity;
 using LoveAlgo.Modules.Audio;
 using Newtonsoft.Json;
 using LoveAlgo.Core;
+using LoveAlgo.Save;
 using LoveAlgo.Stage;
 using LoveAlgo.UI;
 
