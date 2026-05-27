@@ -22,7 +22,7 @@ namespace LoveAlgo.Schedule
     /// 스케줄 선택 UI
     /// 탭 3개(알바/운동/공부) × 슬롯 3개 + 상점 크로스페이드 패널
     /// </summary>
-    public class ScheduleUI : MonoBehaviour
+    public class ScheduleUI : MonoBehaviour, IScheduleUI
     {
         [Header("애니메이션")]
         [SerializeField] CanvasGroup canvasGroup;

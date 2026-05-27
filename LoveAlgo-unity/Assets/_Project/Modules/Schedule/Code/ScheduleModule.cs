@@ -22,22 +22,22 @@ namespace LoveAlgo.Schedule
 
         ScheduleUI _scheduleUI;
 
-        public ScheduleUI ScheduleUI
+        // ISchedule.ScheduleUI 는 IScheduleUI 반환 — concrete ScheduleUI 가 인터페이스 구현.
+        public IScheduleUI ScheduleUI => EnsureScheduleUI();
+
+        ScheduleUI EnsureScheduleUI()
         {
-            get
+            if (_scheduleUI != null) return _scheduleUI;
+            if (scheduleUISceneInstance != null) { _scheduleUI = scheduleUISceneInstance; return _scheduleUI; }
+            if (scheduleUIPrefab != null)
             {
-                if (_scheduleUI != null) return _scheduleUI;
-                if (scheduleUISceneInstance != null) { _scheduleUI = scheduleUISceneInstance; return _scheduleUI; }
-                if (scheduleUIPrefab != null)
-                {
-                    var parent = UIManager.Instance?.GetGroupRoot(UIGroup.Simulation);
-                    _scheduleUI = parent != null ? Instantiate(scheduleUIPrefab, parent) : Instantiate(scheduleUIPrefab);
-                    _scheduleUI.name = scheduleUIPrefab.name;
-                    _scheduleUI.gameObject.SetActive(false);
-                    UISoundManager.Instance?.BindButtonsInTransform(_scheduleUI.transform);
-                }
-                return _scheduleUI;
+                var parent = UIManager.Instance?.GetGroupRoot(UIGroup.Simulation);
+                _scheduleUI = parent != null ? Instantiate(scheduleUIPrefab, parent) : Instantiate(scheduleUIPrefab);
+                _scheduleUI.name = scheduleUIPrefab.name;
+                _scheduleUI.gameObject.SetActive(false);
+                UISoundManager.Instance?.BindButtonsInTransform(_scheduleUI.transform);
             }
+            return _scheduleUI;
         }
 
         public LoveAlgo.Contracts.SimulationMode Mode => LoveAlgo.Contracts.SimulationMode.Schedule;
@@ -57,7 +57,7 @@ namespace LoveAlgo.Schedule
         // ── ISimulationSubMode ───────────────────────
         public void Enter()
         {
-            var ui = ScheduleUI;
+            var ui = EnsureScheduleUI(); // 구체 ScheduleUI — gameObject 직접 접근
             if (ui != null) ui.gameObject.SetActive(true);
         }
 

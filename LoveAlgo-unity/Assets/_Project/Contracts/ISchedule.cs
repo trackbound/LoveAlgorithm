@@ -1,11 +1,9 @@
-using LoveAlgo.Schedule;
-
 namespace LoveAlgo.Contracts
 {
     /// <summary>
     /// 스케줄(자유행동) 모듈 외부 계약.
     /// 효과 데이터 조회, 카테고리 타입 목록 제공.
-    /// 구현: <see cref="ScheduleModule"/>.
+    /// 구현: <see cref="LoveAlgo.Schedule.ScheduleModule"/>.
     /// </summary>
     public interface ISchedule
     {
@@ -22,6 +20,6 @@ namespace LoveAlgo.Contracts
         ScheduleCategory GetCategory(ScheduleType type);
 
         /// <summary>ScheduleUI 인스턴스 (lazy spawn).</summary>
-        ScheduleUI ScheduleUI { get; }
+        IScheduleUI ScheduleUI { get; }
     }
 }
