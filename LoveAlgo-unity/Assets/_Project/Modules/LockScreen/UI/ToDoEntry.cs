@@ -1,4 +1,4 @@
-using LoveAlgo.LockScreen.Data;
+using LoveAlgo.Contracts;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;

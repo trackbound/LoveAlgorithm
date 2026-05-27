@@ -1,6 +1,7 @@
 using UnityEngine;
 
-namespace LoveAlgo.LockScreen.Data
+// C4-Phase C-1a: LoveAlgo.LockScreen.Data → LoveAlgo.Contracts (ILockScreen 표면 의존성).
+namespace LoveAlgo.Contracts
 {
     /// <summary>
     /// PC잠금 화면 투두리스트 단일 항목.

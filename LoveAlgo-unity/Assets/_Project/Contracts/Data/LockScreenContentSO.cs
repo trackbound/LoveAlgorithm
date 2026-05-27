@@ -1,6 +1,8 @@
 using UnityEngine;
 
-namespace LoveAlgo.LockScreen.Data
+// C4-Phase C-1a: LoveAlgo.LockScreen.Data → LoveAlgo.Contracts (ILockScreen 표면 의존성).
+// .meta GUID 보존 (git mv) — SO asset binding 안전.
+namespace LoveAlgo.Contracts
 {
     /// <summary>
     /// PC잠금 화면 콘텐츠 — 로아 메시지 + 안내 문구 + 시계 + 사운드.
