@@ -6,11 +6,31 @@ namespace LoveAlgo.Story.StoryEngine
 {
     /// <summary>
     /// 파싱된 ScriptLine 리스트에 대해 Preflight 검증 수행.
-    /// 알 수 없는 FX/매크로 명령, 인자 갯수 부족·과다, 잘못된 NextType 등을 잡아 Violation 리스트 반환.
+    /// 알 수 없는 FX/매크로 명령, 인자 갯수 부족·과다, 잘못된 NextType, D9/D13 태그 균형 등을
+    /// 잡아 Violation 리스트 반환.
     /// Editor 메뉴 `Tools/Story/Validate Story CSV`에서 호출하거나, 런타임 디버그 시 사용.
     /// </summary>
     public static class ScriptValidator
     {
+        /// <summary>
+        /// D18: Strict 모드. true면 D9/D13 태그 검증 결과의 Warning을 Error로 격상.
+        /// 빌드 preflight에서 켜고 작가가 깨뜨린 채로 출시되지 않도록 게이팅.
+        /// </summary>
+        public static bool Strict { get; set; }
+
+        /// <summary>
+        /// D18: color palette — &lt;color=name&gt; 검증용. null이면 palette 검증 스킵 (hex만 통과).
+        /// Editor preflight가 SO 로드해서 주입.
+        /// </summary>
+        public static IDictionary<string, Color> ColorPalette { get; set; }
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void ResetStaticStateOnLoad()
+        {
+            Strict = false;
+            ColorPalette = null;
+        }
+
         public class Violation
         {
             public int LineNumber;     // 1-base CSV 줄 (ScriptLine.SourceLine 기반)
@@ -123,6 +143,37 @@ namespace LoveAlgo.Story.StoryEngine
             else if (line.Type == LineType.Char && !string.IsNullOrEmpty(line.Value))
             {
                 ValidateChar(line, result);
+            }
+
+            // D18: 대사/선택지/Place 본문의 D9/D13 태그 검증
+            // 대사(Text) Value, 선택지(Option) Value의 '|' 앞 부분(ButtonText), Place Value 본문
+            if (line.Type == LineType.Text && !string.IsNullOrEmpty(line.Value))
+            {
+                InspectDialogueBody(line, line.Value, result);
+            }
+            else if (line.Type == LineType.Option && !string.IsNullOrEmpty(line.Value))
+            {
+                int pipe = line.Value.IndexOf('|');
+                string buttonText = pipe >= 0 ? line.Value.Substring(0, pipe) : line.Value;
+                InspectDialogueBody(line, buttonText, result);
+            }
+            else if (line.Type == LineType.Place && !string.IsNullOrEmpty(line.Value))
+            {
+                InspectDialogueBody(line, line.Value, result);
+            }
+        }
+
+        /// <summary>D18: 본문 한 줄의 D9/D13 태그를 inspector에 넘기고 issue를 Violation으로 변환.</summary>
+        static void InspectDialogueBody(ScriptLine line, string body, List<Violation> result)
+        {
+            var issues = DialogueTagInspector.Inspect(body, ColorPalette);
+            if (issues.Count == 0) return;
+
+            string severity = Strict ? "Error" : "Warning";
+            for (int i = 0; i < issues.Count; i++)
+            {
+                var iss = issues[i];
+                Add(result, line, severity, $"태그 {iss.TagName} — {iss.Detail} ({iss.Kind})");
             }
         }
 

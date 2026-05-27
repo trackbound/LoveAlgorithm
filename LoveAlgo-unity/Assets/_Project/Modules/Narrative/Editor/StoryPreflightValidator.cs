@@ -59,7 +59,13 @@ namespace LoveAlgo.Story.Editor
             }
 
             bool prevStrict = ScriptParser.Strict;
+            bool prevValidatorStrict = ScriptValidator.Strict;
+            var prevPalette = ScriptValidator.ColorPalette;
             ScriptParser.Strict = true;
+            ScriptValidator.Strict = true;
+            // D18: palette SO가 있으면 color name 검증에 사용 (없으면 hex만 통과)
+            var paletteSO = Resources.Load<DialogueColorPaletteSO>("Data/DialogueColorPalette");
+            ScriptValidator.ColorPalette = paletteSO != null ? paletteSO.BuildLookup() : null;
             try
             {
                 foreach (var path in csvPaths)
@@ -93,6 +99,8 @@ namespace LoveAlgo.Story.Editor
             finally
             {
                 ScriptParser.Strict = prevStrict;
+                ScriptValidator.Strict = prevValidatorStrict;
+                ScriptValidator.ColorPalette = prevPalette;
             }
             return summary;
         }
