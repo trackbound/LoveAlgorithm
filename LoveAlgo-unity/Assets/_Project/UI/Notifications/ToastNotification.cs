@@ -29,6 +29,11 @@ namespace LoveAlgo.UI
 
         CancellationTokenSource cts;
 
+        // D8: 토스트 큐 — 빠른 연속 호출이 서로 cancel하지 않고 순차 재생되도록.
+        // 같은 메시지 dedup + 큐 길이 cap. ShowSequence는 자체 시퀀스라 큐 우회.
+        readonly ToastQueue _queue = new(maxPending: 4);
+        bool _pumpRunning;
+
         protected override void Awake()
         {
             base.Awake();
@@ -40,14 +45,35 @@ namespace LoveAlgo.UI
         }
 
         /// <summary>
-        /// 토스트 표시 (단일 메시지)
+        /// 토스트 표시 (단일 메시지). D8: 진행 중이면 큐에 추가, dedup/cap 적용.
         /// </summary>
         public void Show(string title, string message, float duration = 2f)
         {
+            var req = new ToastRequest(title, message, duration);
+            if (!_queue.TryEnqueue(req)) return; // dedup/cap → 드롭
+            if (_pumpRunning) return; // 펌프가 알아서 처리
+
             cts?.Cancel();
             cts = new CancellationTokenSource();
+            PumpAsync(cts.Token).Forget();
+        }
 
-            ShowAsync(title, message, duration, cts.Token).Forget();
+        /// <summary>토스트 큐 펌프 — 큐가 빌 때까지 한 개씩 재생.</summary>
+        async UniTaskVoid PumpAsync(CancellationToken ct)
+        {
+            _pumpRunning = true;
+            try
+            {
+                while (_queue.TryDequeueNext(out var req))
+                {
+                    await ShowAsync(req.Title, req.Message, req.Duration, ct);
+                }
+            }
+            finally
+            {
+                _queue.MarkCurrentFinished();
+                _pumpRunning = false;
+            }
         }
 
         /// <summary>
@@ -64,6 +90,8 @@ namespace LoveAlgo.UI
                 return;
             }
 
+            // ShowSequence는 preempt 의미 — 큐 청소 + 진행 중인 펌프/시퀀스 모두 중단
+            _queue.Clear();
             cts?.Cancel();
             cts = new CancellationTokenSource();
 
