@@ -1,5 +1,7 @@
 using System.Threading;
 using UnityEngine;
+using LoveAlgo.Common;
+using LoveAlgo.Contracts;
 using LoveAlgo.Modules.Affinity;
 using LoveAlgo.Modules.Audio;
 using Cysharp.Threading.Tasks;
@@ -219,6 +221,7 @@ namespace LoveAlgo.Core
             await SaveThumbnailManager.CapturePendingScreenshotAsync();
             Save(SaveManager.AutoSaveSlot, usePendingThumbnail: true);
             Debug.Log($"[GameManager] 자동저장 완료 (reason={reason})");
+            EventBus.Publish(new AutoSaveCompletedEvent(reason, SaveManager.AutoSaveSlot));
         }
 
         /// <summary>
