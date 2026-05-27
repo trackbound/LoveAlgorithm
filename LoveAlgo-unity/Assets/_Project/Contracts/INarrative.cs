@@ -1,15 +1,13 @@
 using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
-using LoveAlgo.Story;
-using LoveAlgo.UI;
 using UnityEngine;
 
 namespace LoveAlgo.Contracts
 {
     /// <summary>
     /// 내러티브(스크립트 엔진) 모듈 외부 계약.
-    /// 구현: <see cref="LoveAlgo.Narrative.NarrativeModule"/>. 내부 위임: <see cref="ScriptRunner"/>.
+    /// 구현: <see cref="LoveAlgo.Narrative.NarrativeModule"/>. 내부 위임: <see cref="LoveAlgo.Story.ScriptRunner"/>.
     /// </summary>
     public interface INarrative
     {
@@ -54,7 +52,8 @@ namespace LoveAlgo.Contracts
         // ── UI 인스턴스 노출 (모듈 응집 — UIManager.lazy spawn에서 이전) ────
         // Phase B-7a: DialogueShowButton 은 NarrativeModule 내부 동반 spawn(DialogueUI getter)
         //             전용이라 외부 호출자 0. INarrative 멤버 제거.
-        DialogueUI DialogueUI { get; }
+        // Phase B-7b/c: ChoicePopup/DialogueUI 반환 타입 → IChoicePopup/IDialogueUI 인터페이스.
+        IDialogueUI DialogueUI { get; }
         IChoicePopup ChoicePopup { get; }
     }
 }

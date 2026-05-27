@@ -24,7 +24,7 @@ namespace LoveAlgo.Story
     /// <summary>
     /// 대사창 UI
     /// </summary>
-    public class DialogueUI : MonoBehaviour
+    public class DialogueUI : MonoBehaviour, IDialogueUI
     {
         [Header("필수 바인딩")]
         [SerializeField] TMP_Text nameText;
@@ -78,8 +78,8 @@ namespace LoveAlgo.Story
         [SerializeField] float ellipsisDotPause = 0.07f;      // 연속 점(.) 각각의 딜레이
         [SerializeField] float jitterAmount = 0.04f;          // 미세 리듬 변동 (±4%)
 
-        // 인라인 태그 콜백
-        public Action<string> OnEmoteTag;   // 표정 변경 요청
+        // 인라인 태그 콜백 — Phase B-7c: field → auto-property (IDialogueUI 구현 매칭)
+        public Action<string> OnEmoteTag { get; set; }   // 표정 변경 요청
 
         bool isTyping;
         bool skipRequested;

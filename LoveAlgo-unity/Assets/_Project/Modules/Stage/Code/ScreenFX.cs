@@ -40,7 +40,8 @@ namespace LoveAlgo.Core
         {
             get
             {
-                var ui = Services.TryGet<INarrative>()?.DialogueUI;
+                // Phase B-7c: IDialogueUI(인터페이스) → MonoBehaviour cast 로 transform 접근.
+                var ui = Services.TryGet<INarrative>()?.DialogueUI as MonoBehaviour;
                 return ui != null ? ui.transform as RectTransform : null;
             }
         }

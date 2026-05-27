@@ -17,11 +17,12 @@ namespace LoveAlgo.Story.StoryEngine
     /// </summary>
     public static class ExecutionDependencies
     {
-        static DialogueUI _dialogueUI;
+        // Phase B-7c: 구체 DialogueUI → IDialogueUI(인터페이스).
+        static IDialogueUI _dialogueUI;
         static IStage _stage;
         static AudioManager _audio;
 
-        public static DialogueUI DialogueUI
+        public static IDialogueUI DialogueUI
         {
             get
             {

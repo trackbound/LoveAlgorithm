@@ -34,32 +34,32 @@ namespace LoveAlgo.Narrative
         DialogueShowButton _dialogueShowButton;
         ChoicePopup _choicePopup;
 
-        public DialogueUI DialogueUI
-        {
-            get
-            {
-                if (_dialogueUI != null) return _dialogueUI;
-                _dialogueUI = ResolveOrSpawn(dialogueUISceneInstance, dialogueUIPrefab, UIGroup.Narrative);
+        // INarrative.DialogueUI 는 IDialogueUI 반환 — concrete DialogueUI 가 인터페이스 구현.
+        public IDialogueUI DialogueUI => EnsureDialogueUI();
 
-                // DialogueShowButton 동반 (대사창 항상 동반)
-                if (_dialogueShowButton == null)
+        DialogueUI EnsureDialogueUI()
+        {
+            if (_dialogueUI != null) return _dialogueUI;
+            _dialogueUI = ResolveOrSpawn(dialogueUISceneInstance, dialogueUIPrefab, UIGroup.Narrative);
+
+            // DialogueShowButton 동반 (대사창 항상 동반) — concrete 직접 Bind
+            if (_dialogueShowButton == null)
+            {
+                _dialogueShowButton = ResolveOrSpawn(dialogueShowButtonSceneInstance, dialogueShowButtonPrefab, UIGroup.Narrative);
+                if (_dialogueShowButton != null && _dialogueUI != null)
                 {
-                    _dialogueShowButton = ResolveOrSpawn(dialogueShowButtonSceneInstance, dialogueShowButtonPrefab, UIGroup.Narrative);
-                    if (_dialogueShowButton != null && _dialogueUI != null)
-                    {
-                        _dialogueShowButton.Bind(_dialogueUI);
-                        _dialogueShowButton.gameObject.SetActive(true);
-                    }
+                    _dialogueShowButton.Bind(_dialogueUI);
+                    _dialogueShowButton.gameObject.SetActive(true);
                 }
-                return _dialogueUI;
             }
+            return _dialogueUI;
         }
 
         public DialogueShowButton DialogueShowButton
         {
             get
             {
-                if (_dialogueShowButton == null) _ = DialogueUI; // 동반 spawn 트리거
+                if (_dialogueShowButton == null) _ = EnsureDialogueUI(); // 동반 spawn 트리거
                 return _dialogueShowButton;
             }
         }
@@ -151,7 +151,7 @@ namespace LoveAlgo.Narrative
         public void SetTextSpeed(float normalized)
         {
             // DialogueUI는 lazy spawn — 준비 안 됐으면 silent no-op (다음 호출에 반영됨)
-            DialogueUI?.SetTextSpeed(normalized);
+            DialogueUI?.SetTextSpeed(normalized); // IDialogueUI.SetTextSpeed 인터페이스 디스패치
         }
 
         // ── UI 진입점 ────────────────────────────────

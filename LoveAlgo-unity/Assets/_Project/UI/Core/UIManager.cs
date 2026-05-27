@@ -29,7 +29,8 @@ namespace LoveAlgo.UI
 
         // ── UI 인스턴스 호환성 wrapper (모듈 위임) ───────────────────
         // 옛 호출자(UIManager.Instance.X)를 위한 1줄 wrapper. 새 코드는 Services.Get<I*>() 직접 사용.
-        public DialogueUI DialogueUI => Services.TryGet<INarrative>()?.DialogueUI;
+        // INarrative.DialogueUI 는 IDialogueUI(인터페이스) 반환 — 옛 호출자 구체 타입 호환 위해 cast.
+        public DialogueUI DialogueUI => Services.TryGet<INarrative>()?.DialogueUI as DialogueUI;
         // Phase B-7a: DialogueShowButton wrapper 제거 — 외부 호출자 0, NarrativeModule 내부 전용.
         // INarrative.ChoicePopup 는 IChoicePopup(인터페이스) 반환 — 옛 호출자 구체 타입 호환 위해 cast.
         public ChoicePopup ChoicePopup => Services.TryGet<INarrative>()?.ChoicePopup as ChoicePopup;
@@ -84,7 +85,7 @@ namespace LoveAlgo.UI
         public void HideAll()
         {
             var narr = Services.Get<INarrative>();
-            SetActiveIfExists(narr?.DialogueUI, false);
+            SetActiveIfExists(narr?.DialogueUI as MonoBehaviour, false); // IDialogueUI → 구체 cast (Phase B-7c)
 
             // 시뮬레이션 컨텍스트 종료 — ScheduleUI/ShopUI/QuickMenu 모두 정리
             var sim = Services.Get<ISimulation>();
