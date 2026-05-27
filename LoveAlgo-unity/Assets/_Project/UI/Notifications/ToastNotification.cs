@@ -150,7 +150,7 @@ namespace LoveAlgo.UI
             gameObject.SetActive(false);
         }
 
-        async UniTaskVoid ShowAsync(string title, string message, float duration, CancellationToken ct)
+        async UniTask ShowAsync(string title, string message, float duration, CancellationToken ct)
         {
             if (titleText != null)
                 titleText.text = title;
