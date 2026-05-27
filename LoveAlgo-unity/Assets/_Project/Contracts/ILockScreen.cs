@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using LoveAlgo.LockScreen;
 using LoveAlgo.LockScreen.Data;
 
 namespace LoveAlgo.Contracts

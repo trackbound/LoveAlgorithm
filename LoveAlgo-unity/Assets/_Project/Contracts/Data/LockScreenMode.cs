@@ -1,5 +1,7 @@
-namespace LoveAlgo.LockScreen
+namespace LoveAlgo.Contracts
 {
+    // C4-Phase A: LoveAlgo.LockScreen → LoveAlgo.Contracts 로 이동.
+
     /// <summary>
     /// PC잠금 진입 모드.
     /// </summary>

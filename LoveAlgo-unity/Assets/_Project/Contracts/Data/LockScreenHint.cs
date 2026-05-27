@@ -1,5 +1,7 @@
-namespace LoveAlgo.LockScreen
+namespace LoveAlgo.Contracts
 {
+    // C4-Phase A: LoveAlgo.LockScreen → LoveAlgo.Contracts 로 이동.
+
     /// <summary>
     /// 잠금화면 입력창 위 안내 문구 종류.
     /// </summary>

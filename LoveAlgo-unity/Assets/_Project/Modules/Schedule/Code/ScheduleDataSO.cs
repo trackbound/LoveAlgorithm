@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using LoveAlgo.Contracts;
 using UnityEngine;
 
 namespace LoveAlgo.Schedule

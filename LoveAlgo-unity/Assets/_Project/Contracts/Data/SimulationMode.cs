@@ -1,5 +1,7 @@
-namespace LoveAlgo.Simulation
+namespace LoveAlgo.Contracts
 {
+    // C4-Phase A: LoveAlgo.Simulation → LoveAlgo.Contracts 로 이동.
+
     /// <summary>
     /// 시뮬레이션 컨텍스트의 sub-mode.
     /// 새 sub-mode 추가 시 여기에 값만 추가하면 됨 (SimulationModule 무수정).
