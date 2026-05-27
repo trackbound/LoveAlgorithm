@@ -13,20 +13,12 @@ using DG.Tweening;
 
 namespace LoveAlgo.Story
 {
-    /// <summary>
-    /// 캐릭터 슬롯 위치
-    /// </summary>
-    public enum SlotPosition
-    {
-        L,  // 왼쪽
-        C,  // 중앙
-        R   // 오른쪽
-    }
+    // C4-Phase B-8c-2: SlotPosition 은 LoveAlgo.Contracts 로 이동 (ICharacterLayer.GetSlot 매개변수).
 
     /// <summary>
     /// 개별 캐릭터 슬롯 (이미지 2개로 크로스페이드 지원)
     /// </summary>
-    public class CharacterSlot : MonoBehaviour
+    public class CharacterSlot : MonoBehaviour, ICharacterSlot
     {
         /// <summary>
         /// 스프라이트 캐시 (Resources.Load 중복 호출 방지)

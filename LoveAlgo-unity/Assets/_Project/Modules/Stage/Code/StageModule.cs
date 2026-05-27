@@ -81,7 +81,7 @@ namespace LoveAlgo.Stage
         public IBackgroundLayer Background => Rig?.Background;
         // Phase B-8a/b: 6개 sub-UI 반환 타입을 인터페이스로 (StageRig는 concrete 유지 — 인스펙터 바인딩).
         public IVirtualBGOverlay VirtualBG => Rig?.VirtualBG;
-        public CharacterLayer Character => Rig?.Character;
+        public ICharacterLayer Character => Rig?.Character;
         public IMonologueDim MonologueDim => Rig?.MonologueDim;
         public ISDCutsceneLayer SDCutscene => Rig?.SDCutscene;
         public ICGLayer CG => Rig?.CG;

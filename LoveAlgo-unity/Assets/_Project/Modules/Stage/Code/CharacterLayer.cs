@@ -16,7 +16,7 @@ namespace LoveAlgo.Story
     /// 캐릭터 레이어 - 3개 슬롯(L/C/R) 관리
     /// SD 컷씬 표시 시 레이어 전체를 페이드아웃하고, SD 종료 시 복원
     /// </summary>
-    public class CharacterLayer : MonoBehaviour
+    public class CharacterLayer : MonoBehaviour, ICharacterLayer
     {
         [Header("슬롯 바인딩")]
         [SerializeField] CharacterSlot slotL;
@@ -288,6 +288,9 @@ namespace LoveAlgo.Story
         {
             return slots.TryGetValue(position, out var slot) ? slot : null;
         }
+
+        // ICharacterLayer.GetSlot 은 ICharacterSlot 반환 — concrete public GetSlot 위임 (Phase B-8c-2).
+        ICharacterSlot ICharacterLayer.GetSlot(SlotPosition position) => GetSlot(position);
 
         /// <summary>
         /// 모든 캐릭터 퇴장
