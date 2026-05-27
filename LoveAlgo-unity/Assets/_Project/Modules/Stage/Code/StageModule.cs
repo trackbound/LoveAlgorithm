@@ -86,12 +86,11 @@ namespace LoveAlgo.Stage
         public ISDCutsceneLayer SDCutscene => Rig?.SDCutscene;
         public ICGLayer CG => Rig?.CG;
         public IEyeMask EyeMask => Rig?.EyeMask;
+        // Phase B-8 cleanup: CharacterStage 는 IStage 비노출이지만 Stage 모듈 내부(CharacterSlot)
+        // 호출 위해 public property 유지.
         public CharacterStageDatabase CharacterStage => characterStageDatabase;
 
         public void CharacterEmote(string slot, string emote)
             => Character?.ChangeEmote(slot, emote);
-
-        public void ClearAllCharacters()
-            => Character?.ClearAll();
     }
 }
