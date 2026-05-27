@@ -1,4 +1,5 @@
 #if UNITY_EDITOR
+using LoveAlgo.Contracts;
 using LoveAlgo.Core;
 using LoveAlgo.Modules.Affinity;
 using UnityEditor;
