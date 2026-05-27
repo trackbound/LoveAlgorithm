@@ -1,4 +1,3 @@
-using LoveAlgo.Story;
 using UnityEngine;
 
 namespace LoveAlgo.Contracts
