@@ -4,6 +4,7 @@ using Cysharp.Threading.Tasks;
 using LoveAlgo.Common;
 using UnityEngine;
 using LoveAlgo.Core;
+using LoveAlgo.Stage;
 
 namespace LoveAlgo.Story.StoryEngine.Handlers
 {
@@ -57,6 +58,11 @@ namespace LoveAlgo.Story.StoryEngine.Handlers
                 case "DialogueShow":
                     dialogueUI?.Clear();
                     dialogueUI?.Show();
+                    return true;
+                case "CamPreset":
+                    // D5: 카메라 프리셋 호출 — CameraPresets.asset 또는 내장 폴백 프리셋
+                    string presetId = parts.Length > 1 ? parts[1] : "";
+                    await CameraPresetRunner.RunAsync(presetId, ct);
                     return true;
             }
 

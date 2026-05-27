@@ -43,6 +43,10 @@ namespace LoveAlgo.Story.StoryEngine
             { "CharDim",     "CharDim" },
             { "CharGlitch",  "CharGlitch" },
 
+            // Camera Preset (D5) — Preset: 짧은 alias도 허용
+            { "CamPreset",   "CamPreset" },
+            { "Preset",      "CamPreset" },
+
             // 매크로
             { "DayStart",    "DayStart" },
             { "DayEnd",      "DayEnd" },

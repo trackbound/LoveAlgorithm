@@ -39,6 +39,9 @@ namespace LoveAlgo.Story.StoryEngine
             // Tint
             { "ColorTint", new Sig(1, 3, "preset[:alpha[:duration]]") },
 
+            // Camera Preset (D5) — CameraPresets.asset 또는 내장 폴백 프리셋 호출
+            { "CamPreset", new Sig(1, 1, "presetId") },
+
             // Eye
             { "EyeOpen",           new Sig(0, 1, "[duration]") },
             { "EyeClose",          new Sig(0, 1, "[duration]") },
