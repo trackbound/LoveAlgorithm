@@ -64,7 +64,8 @@ namespace LoveAlgo.Narrative
             }
         }
 
-        public ChoicePopup ChoicePopup
+        // INarrative.ChoicePopup 는 IChoicePopup 반환 — concrete ChoicePopup 가 인터페이스 구현.
+        public IChoicePopup ChoicePopup
         {
             get
             {

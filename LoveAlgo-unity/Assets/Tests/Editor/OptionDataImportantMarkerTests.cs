@@ -1,5 +1,5 @@
 using NUnit.Framework;
-using LoveAlgo.Story;
+using LoveAlgo.Contracts;
 
 namespace LoveAlgo.Tests.Editor
 {

@@ -55,6 +55,6 @@ namespace LoveAlgo.Contracts
         // Phase B-7a: DialogueShowButton 은 NarrativeModule 내부 동반 spawn(DialogueUI getter)
         //             전용이라 외부 호출자 0. INarrative 멤버 제거.
         DialogueUI DialogueUI { get; }
-        ChoicePopup ChoicePopup { get; }
+        IChoicePopup ChoicePopup { get; }
     }
 }
