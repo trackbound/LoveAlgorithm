@@ -1,7 +1,8 @@
-namespace LoveAlgo.Modules.Affinity
+namespace LoveAlgo.Contracts
 {
     /// <summary>
     /// 게임 엔딩 종류 — 총 10가지 (기획서 기준).
+    /// C4-A에서 LoveAlgo.Modules.Affinity → LoveAlgo.Contracts로 이동.
     ///
     /// 4 일반 히로인 × (해피/새드) = 8
     /// 로아 메리배드(전용) = 1

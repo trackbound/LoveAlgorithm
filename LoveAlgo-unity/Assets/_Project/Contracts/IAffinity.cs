@@ -1,5 +1,3 @@
-using LoveAlgo.Modules.Affinity;
-
 namespace LoveAlgo.Contracts
 {
     /// <summary>

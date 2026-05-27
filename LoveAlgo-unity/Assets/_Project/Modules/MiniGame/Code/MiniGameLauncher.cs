@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
+using LoveAlgo.Contracts;
 using LoveAlgo.Modules.Affinity;
 using LoveAlgo.Core;
 
