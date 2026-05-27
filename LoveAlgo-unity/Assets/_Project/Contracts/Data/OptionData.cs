@@ -60,7 +60,8 @@ namespace LoveAlgo.Contracts
         /// D10: 버튼텍스트에서 중요 마커('*' 접두사 또는 '[important]' 토큰)를 추출.
         /// 마커가 발견되면 isImportant=true, 마커 strip된 텍스트 반환. 양쪽 공백 trim.
         /// </summary>
-        internal static string ExtractImportantMarker(string raw, out bool isImportant)
+        // C4-Phase C-1b: asmdef 분리 후 cross-assembly 접근 위해 internal → public.
+        public static string ExtractImportantMarker(string raw, out bool isImportant)
         {
             isImportant = false;
             if (string.IsNullOrEmpty(raw)) return raw ?? "";

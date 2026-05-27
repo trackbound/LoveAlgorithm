@@ -41,13 +41,13 @@ namespace LoveAlgo.Contracts
     [Serializable]
     public class ScriptLine
     {
-        public string LineID { get; internal set; }       // 점프 대상 앵커
-        public LineType Type { get; internal set; }       // 라인 종류
-        public string Speaker { get; internal set; }      // 화자
-        public string Value { get; internal set; }        // 데이터
-        public NextType NextType { get; internal set; }   // 진행 방식
-        public float DelaySeconds { get; internal set; }  // Delay 시 대기 시간
-        public int SourceLine { get; internal set; }      // 원본 CSV 라인 번호 (디버그용)
+        public string LineID { get; set; }       // 점프 대상 앵커
+        public LineType Type { get; set; }       // 라인 종류
+        public string Speaker { get; set; }      // 화자
+        public string Value { get; set; }        // 데이터
+        public NextType NextType { get; set; }   // 진행 방식
+        public float DelaySeconds { get; set; }  // Delay 시 대기 시간
+        public int SourceLine { get; set; }      // 원본 CSV 라인 번호 (디버그용)
 
         public ScriptLine() { }
 
