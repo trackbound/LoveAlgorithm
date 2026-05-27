@@ -11,7 +11,7 @@ namespace LoveAlgo.Contracts
     public interface IStage
     {
         Canvas StageCanvas { get; }
-        BackgroundLayer Background { get; }
+        IBackgroundLayer Background { get; }
         IVirtualBGOverlay VirtualBG { get; }
         CharacterLayer Character { get; }
         IMonologueDim MonologueDim { get; }

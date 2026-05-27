@@ -13,7 +13,7 @@ namespace LoveAlgo.Story
     /// <summary>
     /// 배경 레이어 - 크로스페이드 지원
     /// </summary>
-    public class BackgroundLayer : MonoBehaviour
+    public class BackgroundLayer : MonoBehaviour, IBackgroundLayer
     {
         [Header("바인딩")]
         [SerializeField] Image imageFront;
