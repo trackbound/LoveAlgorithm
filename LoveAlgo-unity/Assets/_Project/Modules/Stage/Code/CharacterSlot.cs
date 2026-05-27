@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
+using LoveAlgo.Common;
+using LoveAlgo.Contracts;
 using LoveAlgo.Core;
 using LoveAlgo.Modules.Audio;
 using LoveAlgo.Stage;
@@ -133,7 +135,7 @@ namespace LoveAlgo.Story
 
             await seq.ToUniTask(cancellationToken: ct);
 
-            AudioManager.Instance?.OnCharacterEnter(characterName);
+            EventBus.Publish(new CharacterEnteredEvent(characterName));
         }
 
         /// <summary>
@@ -166,7 +168,7 @@ namespace LoveAlgo.Story
 
             await sequence.ToUniTask(cancellationToken: ct);
 
-            AudioManager.Instance?.OnCharacterEnter(characterName);
+            EventBus.Publish(new CharacterEnteredEvent(characterName));
         }
 
         /// <summary>
@@ -268,7 +270,7 @@ namespace LoveAlgo.Story
             currentCharacter = null;
             currentEmote = null;
 
-            AudioManager.Instance?.OnCharacterExit(exitingCharacter);
+            EventBus.Publish(new CharacterExitedEvent(exitingCharacter));
         }
 
         /// <summary>
@@ -299,7 +301,7 @@ namespace LoveAlgo.Story
             currentCharacter = null;
             currentEmote = null;
 
-            AudioManager.Instance?.OnCharacterExit(exitingCharacter);
+            EventBus.Publish(new CharacterExitedEvent(exitingCharacter));
         }
 
         /// <summary>

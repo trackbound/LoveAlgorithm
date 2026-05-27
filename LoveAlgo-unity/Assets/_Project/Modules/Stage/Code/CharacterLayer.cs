@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
+using LoveAlgo.Common;
+using LoveAlgo.Contracts;
 using LoveAlgo.Core;
 using LoveAlgo.Stage;
 using UnityEngine;
@@ -130,7 +132,7 @@ namespace LoveAlgo.Story
 
                         // 캐릭터별 시그니처 SFX (로아=글리치 등, AudioManager 인스펙터에 바인딩)
                         if (IsOverlayCharacter(character))
-                            AudioManager.Instance?.PlayCharacterEntrySFX(character);
+                            EventBus.Publish(new CharacterEntrySFXRequestedEvent(character));
 
                         if (!string.IsNullOrEmpty(overlay))
                         {
@@ -156,7 +158,7 @@ namespace LoveAlgo.Story
                         string overlay = ResolveEnterOverlay(character, emote, fifth);
 
                         if (IsOverlayCharacter(character))
-                            AudioManager.Instance?.PlayCharacterEntrySFX(character);
+                            EventBus.Publish(new CharacterEntrySFXRequestedEvent(character));
 
                         if (!string.IsNullOrEmpty(overlay))
                         {
@@ -224,7 +226,7 @@ namespace LoveAlgo.Story
 
                         if (shouldHideOverlay)
                         {
-                            AudioManager.Instance?.PlayCharacterEntrySFX(exitingChar);
+                            EventBus.Publish(new CharacterEntrySFXRequestedEvent(exitingChar));
                             await UniTask.WhenAll(
                                 slot.ExitAsync(ct),
                                 HideOverlayAsync(ct)
@@ -259,7 +261,7 @@ namespace LoveAlgo.Story
 
                         if (shouldHideOverlay)
                         {
-                            AudioManager.Instance?.PlayCharacterEntrySFX(exitingChar);
+                            EventBus.Publish(new CharacterEntrySFXRequestedEvent(exitingChar));
                             await UniTask.WhenAll(
                                 slot.ExitSlideDownAsync(ct),
                                 HideOverlayAsync(ct)
@@ -307,14 +309,14 @@ namespace LoveAlgo.Story
 
             if (exitingOverlayChar != null)
             {
-                AudioManager.Instance?.PlayCharacterEntrySFX(exitingOverlayChar);
+                EventBus.Publish(new CharacterEntrySFXRequestedEvent(exitingOverlayChar));
                 tasks.Add(HideOverlayAsync(ct));
             }
 
             await UniTask.WhenAll(tasks);
 
             overlayModes.Clear();
-            AudioManager.Instance?.OnAllCharactersExit();
+            EventBus.Publish(new AllCharactersExitedEvent());
         }
 
         /// <summary>
@@ -337,7 +339,7 @@ namespace LoveAlgo.Story
             }
 
             overlayModes.Clear();
-            AudioManager.Instance?.OnAllCharactersExit();
+            EventBus.Publish(new AllCharactersExitedEvent());
         }
 
         /// <summary>

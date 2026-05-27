@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using LoveAlgo.Common;
+using LoveAlgo.Contracts;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -127,9 +128,9 @@ namespace LoveAlgo.MiniGame
             score += points;
             UpdateScoreUI();
 
-            // 효과음
+            // 효과음 — C3-5: AudioClip 직접 전달은 EventBus 경유
             if (catchSound != null)
-                LoveAlgo.Modules.Audio.AudioManager.Instance?.PlaySFXClip(catchSound);
+                EventBus.Publish(new SFXClipRequestedEvent(catchSound));
 
             // 클릭 효과 (스케일 후 제거)
             var rt = petal.GetComponent<RectTransform>();
@@ -167,9 +168,9 @@ namespace LoveAlgo.MiniGame
         {
             ClearAllPetals();
 
-            // 종료 효과음
+            // 종료 효과음 — C3-5: AudioClip 직접 전달은 EventBus 경유
             if (endSound != null)
-                LoveAlgo.Modules.Audio.AudioManager.Instance?.PlaySFXClip(endSound);
+                EventBus.Publish(new SFXClipRequestedEvent(endSound));
 
             base.EndGame();
         }

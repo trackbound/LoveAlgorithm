@@ -1,3 +1,4 @@
+using System;
 using LoveAlgo.Contracts;
 using Cysharp.Threading.Tasks;
 using LoveAlgo.Common;
@@ -9,20 +10,57 @@ namespace LoveAlgo.Modules.Audio
     /// 오디오 모듈 진입점.
     /// 기존 AudioManager(Singleton MonoBehaviour)를 IAudio로 래핑.
     /// BGM 재생/정지 시 BGMChangedEvent 발행.
+    /// C3-5: Stage/MiniGame이 발행하는 Character* 이벤트 + SFXClipRequestedEvent 구독.
     /// 씬 하이어라키: _Modules/AudioModule
     /// </summary>
     [DefaultExecutionOrder(-500)]
     public class AudioModule : MonoBehaviour, IAudio
     {
+        IDisposable _subCharEntered;
+        IDisposable _subCharExited;
+        IDisposable _subAllExited;
+        IDisposable _subEntrySFX;
+        IDisposable _subSFXClip;
+
         void Awake()
         {
             Services.Register<IAudio>(this);
+            // C3-5: Stage→Audio 라이프사이클 이벤트 구독 (수동 — 부착처 GO 파괴와 별개로 모듈 수명 동안 유지)
+            _subCharEntered = EventBus.Subscribe<CharacterEnteredEvent>(OnCharacterEntered);
+            _subCharExited  = EventBus.Subscribe<CharacterExitedEvent>(OnCharacterExited);
+            _subAllExited   = EventBus.Subscribe<AllCharactersExitedEvent>(OnAllCharactersExited);
+            _subEntrySFX    = EventBus.Subscribe<CharacterEntrySFXRequestedEvent>(OnCharacterEntrySFXRequested);
+            _subSFXClip     = EventBus.Subscribe<SFXClipRequestedEvent>(OnSFXClipRequested);
         }
 
         void OnDestroy()
         {
+            _subCharEntered?.Dispose();
+            _subCharExited?.Dispose();
+            _subAllExited?.Dispose();
+            _subEntrySFX?.Dispose();
+            _subSFXClip?.Dispose();
             if (Services.TryGet<IAudio>() == (IAudio)this)
                 Services.Unregister<IAudio>();
+        }
+
+        // ── C3-5 EventBus 핸들러 ─────────────────────────────────
+        void OnCharacterEntered(CharacterEnteredEvent e)
+            => AudioManager.Instance?.OnCharacterEnter(e.Character);
+
+        void OnCharacterExited(CharacterExitedEvent e)
+            => AudioManager.Instance?.OnCharacterExit(e.Character);
+
+        void OnAllCharactersExited(AllCharactersExitedEvent _)
+            => AudioManager.Instance?.OnAllCharactersExit();
+
+        void OnCharacterEntrySFXRequested(CharacterEntrySFXRequestedEvent e)
+            => AudioManager.Instance?.PlayCharacterEntrySFX(e.Character);
+
+        void OnSFXClipRequested(SFXClipRequestedEvent e)
+        {
+            if (e.Clip != null)
+                AudioManager.Instance?.PlaySFXClip(e.Clip);
         }
 
         public void PlayBGM(string name, float fadeDuration = -1f)
