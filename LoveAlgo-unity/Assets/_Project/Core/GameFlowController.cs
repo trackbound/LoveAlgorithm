@@ -136,7 +136,7 @@ namespace LoveAlgo.Core
             var bg = StageModule.Instance?.Background;
             if (bg != null && string.IsNullOrEmpty(bg.CurrentBackground))
             {
-                bg.ChangeBackgroundAsync("BG_Title", Story.BGTransition.Cut, 0f).Forget();
+                bg.ChangeBackgroundAsync("BG_Title", BGTransition.Cut, 0f).Forget();
             }
 
             UIManager.Instance?.ShowOnly(MainUIType.Schedule);
