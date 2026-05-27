@@ -194,6 +194,9 @@ namespace LoveAlgo.Story
             // 화자 설정 (Show 전에 호출 → 이전 텍스트 잔상 방지)
             SetSpeaker(speaker);
 
+            // D13: named color → hex 치환을 가장 먼저 (이후 단계들이 모두 hex만 보도록)
+            text = DialogueColorPalette.ApplyNamedColors(text);
+
             // 인라인 태그 파싱 (directive: <wait>/<pause>/<sfx>/<emote>/<speed>)
             var segments = ParseInlineTags(text);
 
