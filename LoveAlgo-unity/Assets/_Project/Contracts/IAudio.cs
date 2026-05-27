@@ -13,6 +13,9 @@ namespace LoveAlgo.Contracts
         /// <summary>BGM 정지 (페이드 아웃).</summary>
         void StopBGM(float fadeDuration = -1f);
 
+        /// <summary>BGM 즉시 정지 (페이드 없음). 씬 전환·세션 리셋 등 끊김이 필요한 경우.</summary>
+        void StopBGMImmediate();
+
         /// <summary>SFX 1회 재생.</summary>
         void PlaySFX(string name);
 

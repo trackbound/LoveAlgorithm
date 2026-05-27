@@ -1,4 +1,5 @@
 using UnityEngine;
+using LoveAlgo.Contracts;
 using LoveAlgo.Modules.Audio;
 using UnityEngine.UI;
 using TMPro;
@@ -207,7 +208,7 @@ namespace LoveAlgo.UI
         async UniTaskVoid ShowError(NameValidator.Result result)
         {
             // 1. 에러 사운드
-            AudioManager.Instance?.PlaySFX("Error");
+            Services.TryGet<IAudio>()?.PlaySFX("Error");
 
             // 2. InputBox 흔들기
             if (inputBox != null)

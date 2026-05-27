@@ -381,7 +381,7 @@ namespace LoveAlgo.Story
                     // SFX:Name
                     if (parts.Length >= 2)
                     {
-                        AudioManager.Instance?.PlaySFX(parts[1]);
+                        Services.TryGet<IAudio>()?.PlaySFX(parts[1]);
                     }
                     break;
             }

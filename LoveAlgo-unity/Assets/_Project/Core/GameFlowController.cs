@@ -1,5 +1,6 @@
 using System.Threading;
 using UnityEngine;
+using LoveAlgo.Common;
 using LoveAlgo.Contracts;
 using LoveAlgo.Modules.Audio;
 using Cysharp.Threading.Tasks;
@@ -48,7 +49,7 @@ namespace LoveAlgo.Core
             // 타이틀에서 나갈 때 BGM 즉시 중단 (이후 CSV가 새 BGM 담당)
             if (prevPhase == GamePhase.Title && newPhase != GamePhase.Title)
             {
-                AudioManager.Instance?.StopBGMImmediate();
+                Services.TryGet<IAudio>()?.StopBGMImmediate();
             }
 
             switch (newPhase)

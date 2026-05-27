@@ -1,6 +1,8 @@
 using System;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
+using LoveAlgo.Common;
+using LoveAlgo.Contracts;
 using LoveAlgo.Modules.Audio;
 using LoveAlgo.Stage;
 using LoveAlgo.Story;
@@ -195,8 +197,9 @@ namespace LoveAlgo.Core
             GameManager.Instance?.CleanupStage();
 
             // 7. 오디오 명시 정리
-            AudioManager.Instance?.StopBGMImmediate();
-            AudioManager.Instance?.StopVoice();
+            var audio = Services.TryGet<IAudio>();
+            audio?.StopBGMImmediate();
+            audio?.StopVoice();
 
             // 8. 2차 yield + 재정리 (in-flight async 잔여)
             await UniTask.Yield();
@@ -241,7 +244,7 @@ namespace LoveAlgo.Core
             StageSyncLog.Section(Tag, "DOTween.KillAll");
             DOTween.KillAll();
             // 진행 중 BGM 페이드도 죽으므로 직후 StopBGMImmediate 한 번 더 (이중 안전).
-            AudioManager.Instance?.StopBGMImmediate();
+            Services.TryGet<IAudio>()?.StopBGMImmediate();
         }
 
         static void EnsurePlayerName(GameManager gm)

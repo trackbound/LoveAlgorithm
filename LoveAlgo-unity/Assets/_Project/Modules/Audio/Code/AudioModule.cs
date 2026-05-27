@@ -41,6 +41,14 @@ namespace LoveAlgo.Modules.Audio
             EventBus.Publish(new BGMChangedEvent(null));
         }
 
+        public void StopBGMImmediate()
+        {
+            var am = AudioManager.Instance;
+            if (am == null) return;
+            am.StopBGMImmediate();
+            EventBus.Publish(new BGMChangedEvent(null));
+        }
+
         public void PlaySFX(string name) => AudioManager.Instance?.PlaySFX(name);
         public void PlayVoice(string character, string voiceName) => AudioManager.Instance?.PlayVoice(character, voiceName);
         public void StopVoice() => AudioManager.Instance?.StopVoice();

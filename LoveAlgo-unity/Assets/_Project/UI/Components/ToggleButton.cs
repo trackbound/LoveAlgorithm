@@ -3,6 +3,8 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using DG.Tweening;
+using LoveAlgo.Common;
+using LoveAlgo.Contracts;
 
 namespace LoveAlgo.UI
 {
@@ -154,7 +156,7 @@ namespace LoveAlgo.UI
             if (playSound && Application.isPlaying)
             {
                 var sfx = isOn ? toggleOnSfx : toggleOffSfx;
-                LoveAlgo.Modules.Audio.AudioManager.Instance?.PlaySFX(sfx);
+                Services.TryGet<IAudio>()?.PlaySFX(sfx);
             }
 
             // 이벤트

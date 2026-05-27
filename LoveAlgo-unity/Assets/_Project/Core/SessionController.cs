@@ -36,7 +36,7 @@ namespace LoveAlgo.Core
         public void StartNewGame()
         {
             // 이전 BGM 즉시 정리
-            AudioManager.Instance?.StopBGMImmediate();
+            Services.TryGet<IAudio>()?.StopBGMImmediate();
             ScriptRunner.Instance?.Stop();
 
             // 장면 정리
@@ -112,10 +112,7 @@ namespace LoveAlgo.Core
                 UIManager.Instance?.ChoicePopup?.ResetImmediate();
 
                 // 이전 BGM 정리 (페이드아웃 완료 대기)
-                if (AudioManager.Instance != null)
-                {
-                    AudioManager.Instance.StopBGMImmediate();
-                }
+                Services.TryGet<IAudio>()?.StopBGMImmediate();
                 LoveAlgo.Story.StageSyncLog.Section("LoadFromSave", "Stop ScriptRunner");
                 ScriptRunner.Instance?.Stop();
 
@@ -332,8 +329,9 @@ namespace LoveAlgo.Core
             LoadingScreen.Instance?.HideImmediate();
 
             // 오디오 정리
-            AudioManager.Instance?.StopBGMImmediate();
-            AudioManager.Instance?.StopVoice();
+            var audio = Services.TryGet<IAudio>();
+            audio?.StopBGMImmediate();
+            audio?.StopVoice();
 
             // 캐릭터 스프라이트 캐시 정리
             CharacterSlot.ClearSpriteCache();
@@ -350,7 +348,7 @@ namespace LoveAlgo.Core
         /// </summary>
         public void SkipToDayLoop()
         {
-            AudioManager.Instance?.StopBGMImmediate();
+            Services.TryGet<IAudio>()?.StopBGMImmediate();
             ScriptRunner.Instance?.Stop();
             CleanupStage();
 

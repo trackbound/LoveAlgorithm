@@ -94,7 +94,7 @@ namespace LoveAlgo.UI
 
             if (!string.IsNullOrEmpty(titleBGM))
             {
-                AudioManager.Instance?.PlayBGMAsync(titleBGM).Forget();  // 기본 3초 페이드인
+                Services.TryGet<IAudio>()?.PlayBGM(titleBGM);  // 기본 3초 페이드인 — IAudio가 내부적으로 .Forget()
             }
         }
 

@@ -294,7 +294,7 @@ namespace LoveAlgo.Story
                             break;
 
                         case SegmentType.SFX:
-                            AudioManager.Instance?.PlaySFX(seg.Content);
+                            Services.TryGet<IAudio>()?.PlaySFX(seg.Content);
                             break;
 
                         case SegmentType.Emote:

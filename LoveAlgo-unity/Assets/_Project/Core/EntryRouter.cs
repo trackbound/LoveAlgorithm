@@ -145,7 +145,7 @@ namespace LoveAlgo.Core
             panel.OnFlowComplete += onComplete;
 
             // 게임 첫 시작 BGM (PC 잠금화면 백색소음 — 기획서 §진입 정보)
-            LoveAlgo.Modules.Audio.AudioManager.Instance?.PlayBGMAsync("white_noise").Forget();
+            Services.TryGet<IAudio>()?.PlayBGM("white_noise");
 
             // 게임 첫 시작: 5초 페이드인 + fade-out reveal (이후 Prologue가 자연스럽게 등장)
             panel.SetFadeOutAfter(true);
