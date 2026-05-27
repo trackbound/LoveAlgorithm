@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
-using LoveAlgo.Story;
 using LoveAlgo.UI;
 using UnityEngine;
 

@@ -19,15 +19,7 @@ using LoveAlgo.UI;
 
 namespace LoveAlgo.Story
 {
-    /// <summary>
-    /// 대사 로그 항목
-    /// </summary>
-    public struct DialogueLogEntry
-    {
-        public string Speaker;       // 표시 이름 (한글)
-        public string Text;
-        public string CharacterId;   // 영문 ID (썸네일 로드용)
-    }
+    // C4-Phase A: DialogueLogEntry는 LoveAlgo.Contracts.Data 로 이동.
 
     /// <summary>
     /// 대사창 UI

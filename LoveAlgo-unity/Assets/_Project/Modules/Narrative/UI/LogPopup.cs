@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using Cysharp.Threading.Tasks;
 using LoveAlgo.Common;
+using LoveAlgo.Contracts;
 using LoveAlgo.Story;
 
 namespace LoveAlgo.UI
