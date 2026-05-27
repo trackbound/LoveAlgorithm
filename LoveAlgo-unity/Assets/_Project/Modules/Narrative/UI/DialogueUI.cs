@@ -14,6 +14,7 @@ using LoveAlgo.Core;
 using LoveAlgo.Narrative;
 using LoveAlgo.Save;
 using LoveAlgo.Settings;
+using LoveAlgo.Story.StoryEngine;
 using LoveAlgo.UI;
 
 namespace LoveAlgo.Story
@@ -127,10 +128,13 @@ namespace LoveAlgo.Story
         public IReadOnlyList<DialogueLogEntry> DialogueLog => dialogueLog;
 
         // 인라인 태그 정규식 (값에 / 가 포함될 수 있으므로 [^>]+ 사용, trailing / 는 후처리로 제거)
-        static readonly Regex InlineTagRegex = new(@"<(wait|sfx|emote|speed)=([^>]+)>|</speed>", RegexOptions.Compiled);
+        static readonly Regex InlineTagRegex = new(@"<(wait|pause|sfx|emote|speed)=([^>]+)>|</speed>", RegexOptions.Compiled);
         static readonly Regex SpeedEndRegex = new(@"</speed>", RegexOptions.Compiled);
-        // 로그용: 모든 인라인 태그 제거
-        static readonly Regex StripTagsRegex = new(@"<(wait|sfx|emote|speed)=[^>]+>|</speed>", RegexOptions.Compiled);
+        // 로그용: 모든 인라인 태그 제거 (D9 visual 태그 포함)
+        static readonly Regex StripTagsRegex = new(@"<(wait|pause|sfx|emote|speed)=[^>]+>|</speed>|</?(shake|wave|emph)(?:=[^>]+)?>", RegexOptions.Compiled);
+
+        // D9: 대사 시각 효과 렌더러 — lazy bind (TMP가 있는 한 자동 부착)
+        DialogueEffectsRenderer effectsRenderer;
 
         readonly ListenerBag _listeners = new();
 
@@ -190,11 +194,15 @@ namespace LoveAlgo.Story
             // 화자 설정 (Show 전에 호출 → 이전 텍스트 잔상 방지)
             SetSpeaker(speaker);
 
-            // 인라인 태그 파싱
+            // 인라인 태그 파싱 (directive: <wait>/<pause>/<sfx>/<emote>/<speed>)
             var segments = ParseInlineTags(text);
 
-            // 타이핑 준비
-            fullText = GetCleanText(segments);
+            // 타이핑 준비 — directive 태그가 strip된 텍스트 (시각 태그는 아직 남아 있음)
+            string textWithVisualTags = GetCleanText(segments);
+
+            // D9: 시각 효과 태그(<shake>/<wave>/<emph>) 파싱 → CleanText + EffectRange
+            var parsed = DialogueEffectsParser.Parse(textWithVisualTags);
+            fullText = parsed.CleanText;
             isTyping = true;
             skipRequested = false;
             HideNextIndicator();
@@ -203,6 +211,10 @@ namespace LoveAlgo.Story
             dialogueText.text = fullText;
             dialogueText.ForceMeshUpdate();
             dialogueText.maxVisibleCharacters = 0;
+
+            // D9: 효과 렌더러에 새 effect range 전달 (없으면 이전 효과 클리어)
+            EnsureEffectsRenderer();
+            effectsRenderer?.SetEffects(parsed.Effects);
 
             // 대사창 표시 — 페이드인과 타이핑을 동시 시작 (대기 제거)
             if (!isHidden)
@@ -381,6 +393,7 @@ namespace LoveAlgo.Story
                 switch (tagName)
                 {
                     case "wait":
+                    case "pause":   // D9: <pause=N>을 <wait=N>의 별칭으로 인정
                         segments.Add(new TextSegment { Type = SegmentType.Wait, Content = tagValue });
                         break;
                     case "sfx":
@@ -417,6 +430,21 @@ namespace LoveAlgo.Story
                     sb.Append(seg.Content);
             }
             return sb.ToString();
+        }
+
+        /// <summary>
+        /// D9: DialogueEffectsRenderer가 dialogueText에 부착돼 있는지 확인하고 없으면 부착.
+        /// Headless 모드에선 시각 효과 의미 없으므로 부착도 생략 (TMP 메시 비용 절약).
+        /// </summary>
+        void EnsureEffectsRenderer()
+        {
+            if (effectsRenderer != null) return;
+            if (dialogueText == null) return;
+            if (LoveAlgo.Common.Headless.IsEnabled) return;
+
+            effectsRenderer = dialogueText.GetComponent<DialogueEffectsRenderer>();
+            if (effectsRenderer == null)
+                effectsRenderer = dialogueText.gameObject.AddComponent<DialogueEffectsRenderer>();
         }
 
         string SubstituteVariables(string text)

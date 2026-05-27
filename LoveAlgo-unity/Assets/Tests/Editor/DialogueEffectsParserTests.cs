@@ -162,7 +162,7 @@ namespace LoveAlgo.Tests.Editor
             Assert.AreEqual("A<b>B</b>", r.CleanText);
             Assert.AreEqual(1, r.Effects.Count);
             Assert.AreEqual(0, r.Effects[0].Start);
-            Assert.AreEqual(8, r.Effects[0].End, "A<b>B</b> 길이 8 전체에 효과");
+            Assert.AreEqual(9, r.Effects[0].End, "A<b>B</b> 길이 9 전체에 효과");
         }
 
         [Test]
