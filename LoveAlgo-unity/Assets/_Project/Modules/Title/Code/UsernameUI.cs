@@ -15,7 +15,7 @@ namespace LoveAlgo.UI
     /// <summary>
     /// 이름 입력 UI
     /// </summary>
-    public class UsernameUI : MonoBehaviour
+    public class UsernameUI : MonoBehaviour, IUsernameUI
     {
         [Header("입력")]
         [SerializeField] TMP_InputField inputField;

@@ -37,7 +37,8 @@ namespace LoveAlgo.Title
             }
         }
 
-        public UsernameUI UsernameUI
+        // ITitle.UsernameUI 는 IUsernameUI 반환 — concrete UsernameUI 가 인터페이스 구현.
+        public IUsernameUI UsernameUI
         {
             get
             {

@@ -9,7 +9,7 @@ namespace LoveAlgo.Contracts
     public interface ITitle
     {
         TitlePanel TitlePanel { get; }
-        UsernameUI UsernameUI { get; }
+        IUsernameUI UsernameUI { get; }
 
         /// <summary>Extra 팝업 표시 (모달).</summary>
         void ShowExtraUI();
