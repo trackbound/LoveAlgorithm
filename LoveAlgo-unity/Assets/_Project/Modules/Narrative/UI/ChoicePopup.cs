@@ -32,6 +32,26 @@ namespace LoveAlgo.Story
         [SerializeField] float choiceAppearDuration = 0.3f;
         [SerializeField] Ease choiceAppearEase = Ease.OutQuad;
 
+        [Header("D10: stagger / hover / important")]
+        [Tooltip("선택지가 위에서 아래로 등장할 때 버튼 간 지연(초). 0이면 동시 등장 (옛 동작).")]
+        [SerializeField] float staggerDelaySec = 0.06f;
+
+        [Tooltip("호버 시 버튼 스케일 (1.0=고정). 모바일 터치에서는 잠깐 적용되고 사라짐 — 무해.")]
+        [SerializeField] float hoverScale = 1.05f;
+
+        [Tooltip("호버 중인 버튼 외 나머지 버튼들의 dim alpha. 1=dim 안 함.")]
+        [Range(0f, 1f)]
+        [SerializeField] float dimSiblingsAlpha = 0.55f;
+
+        [Tooltip("호버 트랜지션 시간(초).")]
+        [SerializeField] float hoverTransitionSec = 0.12f;
+
+        [Tooltip("중요 선택지 펄스 — 최대 스케일.")]
+        [SerializeField] float importantPulseScale = 1.04f;
+
+        [Tooltip("중요 선택지 펄스 1싸이클(왕복) 시간.")]
+        [SerializeField] float importantPulseDuration = 1.1f;
+
         List<GameObject> spawnedButtons = new();
         int selectedIndex = -1;
         bool isWaitingForChoice;
@@ -70,14 +90,25 @@ namespace LoveAlgo.Story
             // 패널 페이드인
             await ShowAsync(ct);
 
-            // 전체 선택지 동시 페이드인 (스케일 없이 깔끔하게)
-            foreach (var btn in spawnedButtons)
+            // D10: stagger 등장 — 위에서 아래로 0.06s 간격 페이드인
+            for (int i = 0; i < spawnedButtons.Count; i++)
             {
-                var cg = btn.GetComponent<CanvasGroup>();
-                if (cg != null)
-                    _ = cg.DOFade(1f, choiceAppearDuration).SetEase(choiceAppearEase);
+                var btn = spawnedButtons[i];
+                var cg = btn != null ? btn.GetComponent<CanvasGroup>() : null;
+                if (cg == null) continue;
+                float delay = i * staggerDelaySec;
+                _ = cg.DOFade(1f, choiceAppearDuration).SetEase(choiceAppearEase).SetDelay(delay);
             }
-            await UniTask.Delay(TimeSpan.FromSeconds(choiceAppearDuration), cancellationToken: ct);
+            float staggerTotal = (spawnedButtons.Count - 1) * staggerDelaySec + choiceAppearDuration;
+            if (staggerTotal < 0) staggerTotal = 0;
+            await UniTask.Delay(TimeSpan.FromSeconds(staggerTotal), cancellationToken: ct);
+
+            // D10: 모든 fadein 완료 후 important 펄스 시작 (등장 도중 펄스 안 보이게)
+            for (int i = 0; i < spawnedButtons.Count && i < validOptions.Count; i++)
+            {
+                if (validOptions[i].IsImportant)
+                    StartImportantPulse(spawnedButtons[i]);
+            }
 
             // 선택 대기
             selectedIndex = -1;
@@ -158,18 +189,97 @@ namespace LoveAlgo.Story
                         OnButtonClicked(index);
                     });
 
-                    // 선택지 전용 호버 사운드
+                    // 선택지 전용 호버 사운드 + D10 시각 호버(스케일 + 형제 dim)
                     var trigger = buttonObj.GetComponent<UnityEngine.EventSystems.EventTrigger>();
                     if (trigger == null)
                         trigger = buttonObj.AddComponent<UnityEngine.EventSystems.EventTrigger>();
-                    var hoverEntry = new UnityEngine.EventSystems.EventTrigger.Entry
+
+                    int capturedIndex = i;
+                    var enterEntry = new UnityEngine.EventSystems.EventTrigger.Entry
                         { eventID = UnityEngine.EventSystems.EventTriggerType.PointerEnter };
-                    hoverEntry.callback.AddListener(_ => soundMgr?.PlayChoiceHover());
-                    trigger.triggers.Add(hoverEntry);
+                    enterEntry.callback.AddListener(_ =>
+                    {
+                        soundMgr?.PlayChoiceHover();
+                        OnButtonHoverEnter(capturedIndex);
+                    });
+                    trigger.triggers.Add(enterEntry);
+
+                    var exitEntry = new UnityEngine.EventSystems.EventTrigger.Entry
+                        { eventID = UnityEngine.EventSystems.EventTriggerType.PointerExit };
+                    exitEntry.callback.AddListener(_ => OnButtonHoverExit(capturedIndex));
+                    trigger.triggers.Add(exitEntry);
                 }
 
                 spawnedButtons.Add(buttonObj);
             }
+        }
+
+        // ── D10: 호버 / 중요 펄스 ─────────────────────────────────
+
+        /// <summary>호버 진입 — 본인 스케일업 + 형제 dim.</summary>
+        void OnButtonHoverEnter(int index)
+        {
+            if (index < 0 || index >= spawnedButtons.Count) return;
+            for (int i = 0; i < spawnedButtons.Count; i++)
+            {
+                var btn = spawnedButtons[i];
+                if (btn == null) continue;
+                var rt = btn.transform as RectTransform;
+                var cg = btn.GetComponent<CanvasGroup>();
+                if (i == index)
+                {
+                    if (rt != null)
+                    {
+                        DOTween.Kill(rt, complete: false);
+                        _ = rt.DOScale(hoverScale, hoverTransitionSec).SetEase(Ease.OutQuad).SetId(rt);
+                    }
+                    if (cg != null) _ = cg.DOFade(1f, hoverTransitionSec).SetId(cg);
+                }
+                else
+                {
+                    if (cg != null)
+                    {
+                        DOTween.Kill(cg);
+                        _ = cg.DOFade(dimSiblingsAlpha, hoverTransitionSec).SetId(cg);
+                    }
+                }
+            }
+        }
+
+        /// <summary>호버 이탈 — 전부 원복.</summary>
+        void OnButtonHoverExit(int index)
+        {
+            for (int i = 0; i < spawnedButtons.Count; i++)
+            {
+                var btn = spawnedButtons[i];
+                if (btn == null) continue;
+                var rt = btn.transform as RectTransform;
+                var cg = btn.GetComponent<CanvasGroup>();
+                if (rt != null)
+                {
+                    DOTween.Kill(rt, complete: false);
+                    _ = rt.DOScale(1f, hoverTransitionSec).SetEase(Ease.OutQuad).SetId(rt);
+                }
+                if (cg != null)
+                {
+                    DOTween.Kill(cg);
+                    _ = cg.DOFade(1f, hoverTransitionSec).SetId(cg);
+                }
+            }
+        }
+
+        /// <summary>중요 선택지 펄스 — 무한 yoyo 스케일.</summary>
+        void StartImportantPulse(GameObject buttonObj)
+        {
+            if (buttonObj == null) return;
+            var rt = buttonObj.transform as RectTransform;
+            if (rt == null) return;
+            // 호버 시 OnButtonHoverEnter가 같은 transform 대상 트윈을 kill → 펄스 일시 정지.
+            // 호버 해제 후엔 펄스 재시작 안 함 (한 번 끊기면 그대로) — 단순화 정책.
+            _ = rt.DOScale(importantPulseScale, importantPulseDuration * 0.5f)
+                .SetEase(Ease.InOutSine)
+                .SetLoops(-1, LoopType.Yoyo)
+                .SetId(rt);
         }
 
         void SetButtonText(GameObject buttonObj, string text)
@@ -278,13 +388,18 @@ namespace LoveAlgo.Story
         }
 
         /// <summary>
-        /// 버튼 정리
+        /// 버튼 정리 — D10 펄스/호버 트윈도 함께 kill (DOTween orphan 경고 방지).
         /// </summary>
         void ClearButtons()
         {
             foreach (var btn in spawnedButtons)
             {
-                if (btn != null) Destroy(btn);
+                if (btn == null) continue;
+                var rt = btn.transform as RectTransform;
+                var cg = btn.GetComponent<CanvasGroup>();
+                if (rt != null) DOTween.Kill(rt, complete: false);
+                if (cg != null) DOTween.Kill(cg);
+                Destroy(btn);
             }
             spawnedButtons.Clear();
             LoveAlgo.UI.UISoundManager.Instance?.ClearExcludedButtons();
@@ -376,10 +491,16 @@ namespace LoveAlgo.Story
         public string JumpTarget;
         public List<string> Effects = new();
         public string Condition;
+        /// <summary>
+        /// D10: 중요 선택지 마커. 기획자가 ButtonText 앞에 '*' 또는 안에 '[important]'를
+        /// 적으면 true. 파싱 시 마커는 ButtonText에서 strip됨.
+        /// </summary>
+        public bool IsImportant;
 
         /// <summary>
         /// Option Value 파싱
         /// 형식: 버튼텍스트|점프대상|효과1|효과2|...|if:조건
+        /// 중요 마커: 버튼텍스트 앞 '*' 또는 텍스트 내 '[important]'
         /// </summary>
         public static OptionData Parse(string value)
         {
@@ -387,7 +508,7 @@ namespace LoveAlgo.Story
             var parts = value.Split('|');
 
             if (parts.Length >= 1)
-                data.ButtonText = parts[0];
+                data.ButtonText = ExtractImportantMarker(parts[0], out data.IsImportant);
 
             if (parts.Length >= 2)
                 data.JumpTarget = parts[1];
@@ -410,6 +531,37 @@ namespace LoveAlgo.Story
             }
 
             return data;
+        }
+
+        /// <summary>
+        /// D10: 버튼텍스트에서 중요 마커('*' 접두사 또는 '[important]' 토큰)를 추출.
+        /// 마커가 발견되면 isImportant=true, 마커 strip된 텍스트 반환. 양쪽 공백 trim.
+        /// </summary>
+        internal static string ExtractImportantMarker(string raw, out bool isImportant)
+        {
+            isImportant = false;
+            if (string.IsNullOrEmpty(raw)) return raw ?? "";
+
+            string s = raw;
+
+            // [important] 토큰 (대소문자 무시) — 텍스트 어디든
+            const string TokenLower = "[important]";
+            int idx = s.IndexOf(TokenLower, StringComparison.OrdinalIgnoreCase);
+            if (idx >= 0)
+            {
+                isImportant = true;
+                s = s.Remove(idx, TokenLower.Length);
+            }
+
+            // '*' 접두사 (공백 허용)
+            string trimmed = s.TrimStart();
+            if (trimmed.StartsWith("*"))
+            {
+                isImportant = true;
+                trimmed = trimmed.Substring(1);
+            }
+
+            return trimmed.Trim();
         }
     }
 
