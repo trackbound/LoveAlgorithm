@@ -81,10 +81,12 @@ namespace LoveAlgo.Stage
         public BackgroundLayer Background => Rig?.Background;
         public VirtualBGOverlay VirtualBG => Rig?.VirtualBG;
         public CharacterLayer Character => Rig?.Character;
-        public MonologueDim MonologueDim => Rig?.MonologueDim;
+        // Phase B-8a: MonologueDim/EyeMask 반환 타입 → IMonologueDim/IEyeMask 인터페이스.
+        // StageRig.MonologueDim/EyeMask 는 concrete 유지 (인스펙터 SerializeField 바인딩).
+        public IMonologueDim MonologueDim => Rig?.MonologueDim;
         public SDCutsceneLayer SDCutscene => Rig?.SDCutscene;
         public CGLayer CG => Rig?.CG;
-        public EyeMask EyeMask => Rig?.EyeMask;
+        public IEyeMask EyeMask => Rig?.EyeMask;
         public CharacterStageDatabase CharacterStage => characterStageDatabase;
 
         public void CharacterEmote(string slot, string emote)

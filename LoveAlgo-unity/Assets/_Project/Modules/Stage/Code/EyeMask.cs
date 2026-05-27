@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using System.Threading;
+using LoveAlgo.Contracts;
 
 namespace LoveAlgo.Core
 {
@@ -11,7 +12,7 @@ namespace LoveAlgo.Core
     /// Stage 캔버스 하위에 배치되어 BG/캐릭터는 가리되 대화창(상위 캔버스)은 가리지 않음.
     /// 바 자체와 트윈 로직 모두 본 컴포넌트가 소유. ScreenFX는 위임만.
     /// </summary>
-    public class EyeMask : MonoBehaviour
+    public class EyeMask : MonoBehaviour, IEyeMask
     {
         [SerializeField] Image top;
         [SerializeField] Image bottom;

@@ -3,6 +3,7 @@ using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 using DG.Tweening;
+using LoveAlgo.Contracts;
 
 namespace LoveAlgo.Story
 {
@@ -10,7 +11,7 @@ namespace LoveAlgo.Story
     /// 독백 딤 레이어 - 독백 시 화면 외곽에 어두운 비네팅/테두리 표시
     /// Stage 계층: Background → VirtualBG → Character → MonologueDim → CG → EyeEffect
     /// </summary>
-    public class MonologueDim : MonoBehaviour
+    public class MonologueDim : MonoBehaviour, IMonologueDim
     {
         [Header("바인딩")]
         [SerializeField] Image dimImage;

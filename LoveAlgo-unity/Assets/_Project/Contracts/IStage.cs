@@ -16,10 +16,10 @@ namespace LoveAlgo.Contracts
         BackgroundLayer Background { get; }
         VirtualBGOverlay VirtualBG { get; }
         CharacterLayer Character { get; }
-        MonologueDim MonologueDim { get; }
+        IMonologueDim MonologueDim { get; }
         SDCutsceneLayer SDCutscene { get; }
         CGLayer CG { get; }
-        EyeMask EyeMask { get; }
+        IEyeMask EyeMask { get; }
         CharacterStageDatabase CharacterStage { get; }
 
         /// <summary>캐릭터 슬롯에 이모트 적용.</summary>
