@@ -1,5 +1,4 @@
 using System;
-using LoveAlgo.UI;
 
 namespace LoveAlgo.Contracts
 {
@@ -28,7 +27,7 @@ namespace LoveAlgo.Contracts
         bool IsActive { get; }
 
         /// <summary>시뮬레이션 컨텍스트 사이드바 (QuickMenu) 인스턴스 (lazy spawn).</summary>
-        QuickMenu QuickMenu { get; }
+        IQuickMenu QuickMenu { get; }
 
         /// <summary>Sub-mode가 Awake에서 자기 등록 (모듈 독립성 — SimulationModule이 sub-mode 구현 모름).</summary>
         void RegisterSubMode(ISimulationSubMode subMode);

@@ -32,7 +32,8 @@ namespace LoveAlgo.Simulation
         public SimulationMode CurrentMode { get; private set; } = SimulationMode.None;
         public bool IsActive => CurrentMode != SimulationMode.None;
 
-        public QuickMenu QuickMenu
+        // ISimulation.QuickMenu 는 IQuickMenu 반환 — concrete QuickMenu 가 인터페이스 구현.
+        public IQuickMenu QuickMenu
         {
             get { EnsureQuickMenu(); return _quickMenu; }
         }
