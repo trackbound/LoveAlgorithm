@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using LoveAlgo.Common;
 using LoveAlgo.UI;
 using UnityEngine;
+// C4-A G: UnityEngine.SimulationMode 와 모호 — alias로 해결
+using SimulationMode = LoveAlgo.Contracts.SimulationMode;
 
 namespace LoveAlgo.Simulation
 {

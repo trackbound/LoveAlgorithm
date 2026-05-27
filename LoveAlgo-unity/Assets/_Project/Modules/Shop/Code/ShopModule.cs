@@ -3,6 +3,8 @@ using LoveAlgo.Common;
 using LoveAlgo.Simulation;
 using LoveAlgo.UI;
 using UnityEngine;
+// C4-A G: UnityEngine.SimulationMode 와 모호 — alias로 해결
+using SimulationMode = LoveAlgo.Contracts.SimulationMode;
 
 namespace LoveAlgo.Shop
 {
@@ -40,7 +42,7 @@ namespace LoveAlgo.Shop
             }
         }
 
-        public LoveAlgo.Simulation.SimulationMode Mode => LoveAlgo.Simulation.SimulationMode.Shop;
+        public LoveAlgo.Contracts.SimulationMode Mode => LoveAlgo.Contracts.SimulationMode.Shop;
 
         void Awake()
         {
