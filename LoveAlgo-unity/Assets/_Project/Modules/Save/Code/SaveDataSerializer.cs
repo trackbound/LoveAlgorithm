@@ -162,8 +162,8 @@ namespace LoveAlgo.Story.SaveSystem
             // 배경
             data.CurrentBG = stage?.Background?.CurrentBackground ?? "";
 
-            // BGM
-            data.CurrentBGM = AudioManager.Instance?.CurrentBGM ?? "";
+            // BGM — C3-6: AudioManager 직접 참조 대신 BGMChangedEvent 구독 캐시
+            data.CurrentBGM = LastBGMTracker.CurrentBGM;
 
             // 캐릭터 슬롯
             data.Characters.Clear();

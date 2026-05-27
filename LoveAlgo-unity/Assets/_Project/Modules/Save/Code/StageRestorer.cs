@@ -1,5 +1,7 @@
 using System.Diagnostics;
 using Cysharp.Threading.Tasks;
+using LoveAlgo.Common;
+using LoveAlgo.Contracts;
 using LoveAlgo.Core;
 using LoveAlgo.Modules.Audio;
 using LoveAlgo.Stage;
@@ -57,8 +59,9 @@ namespace LoveAlgo.Story.SaveSystem
                         if (slot != null)
                         {
                             // 오버레이 캐릭터(로아 등) 복원 시 시그니처 SFX (정상 Enter와 동일)
+                            // C3-5: EventBus 경유 — Audio 모듈이 구독해서 처리
                             if (StoryMappings.GetOverlay(charInfo.Character) != null)
-                                AudioManager.Instance?.PlayCharacterEntrySFX(charInfo.Character);
+                                EventBus.Publish(new CharacterEntrySFXRequestedEvent(charInfo.Character));
 
                             var sw = Stopwatch.StartNew();
                             await slot.EnterAsync(charInfo.Character, charInfo.Emote);
@@ -131,14 +134,20 @@ namespace LoveAlgo.Story.SaveSystem
                 else                         fx.SetClear();
             }
 
-            // BGM 복원
-            if (!string.IsNullOrEmpty(data.CurrentBGM) && AudioManager.Instance != null)
+            // BGM 복원 — C3-6: Services.IAudio.PlayBGM 경유 (fade-in 0.5s)
+            // 기존엔 PlayBGMAsync().await로 fade 완료까지 기다렸지만, IAudio.PlayBGM은
+            // fire-and-forget — 복원 직후 fade 진행 중에도 다음 작업이 계속됨 (UX 동일).
+            if (!string.IsNullOrEmpty(data.CurrentBGM))
             {
-                var sw = Stopwatch.StartNew();
-                await AudioManager.Instance.PlayBGMAsync(data.CurrentBGM, 0.5f);
-                sw.Stop();
-                applied++;
-                StageSyncLog.Detail(Tag, $"BGM: {data.CurrentBGM} ({sw.Elapsed.TotalMilliseconds:0.0}ms)");
+                var audio = Services.TryGet<IAudio>();
+                if (audio != null)
+                {
+                    var sw = Stopwatch.StartNew();
+                    audio.PlayBGM(data.CurrentBGM, 0.5f);
+                    sw.Stop();
+                    applied++;
+                    StageSyncLog.Detail(Tag, $"BGM: {data.CurrentBGM} ({sw.Elapsed.TotalMilliseconds:0.0}ms, fire-and-forget)");
+                }
             }
 
             total.Stop();
