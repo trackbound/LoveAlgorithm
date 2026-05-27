@@ -14,11 +14,11 @@ namespace LoveAlgo.Contracts
     {
         Canvas StageCanvas { get; }
         BackgroundLayer Background { get; }
-        VirtualBGOverlay VirtualBG { get; }
+        IVirtualBGOverlay VirtualBG { get; }
         CharacterLayer Character { get; }
         IMonologueDim MonologueDim { get; }
-        SDCutsceneLayer SDCutscene { get; }
-        CGLayer CG { get; }
+        ISDCutsceneLayer SDCutscene { get; }
+        ICGLayer CG { get; }
         IEyeMask EyeMask { get; }
         CharacterStageDatabase CharacterStage { get; }
 

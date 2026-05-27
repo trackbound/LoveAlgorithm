@@ -3,6 +3,7 @@ using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 using DG.Tweening;
+using LoveAlgo.Contracts;
 
 namespace LoveAlgo.Story
 {
@@ -17,7 +18,7 @@ namespace LoveAlgo.Story
     ///   ,SD,,SD_Roa_Chibi_02:Cross:0.3,await       — 다른 SD로 크로스페이드 전환
     ///   ,SD,,Exit:0.5,await                        — SD 숨기기
     /// </summary>
-    public class SDCutsceneLayer : MonoBehaviour
+    public class SDCutsceneLayer : MonoBehaviour, ISDCutsceneLayer
     {
         [Header("바인딩")]
         [SerializeField] Image sdImageFront;

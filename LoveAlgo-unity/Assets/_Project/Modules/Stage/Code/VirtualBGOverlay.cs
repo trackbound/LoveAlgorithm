@@ -5,6 +5,7 @@ using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 using DG.Tweening;
+using LoveAlgo.Contracts;
 
 namespace LoveAlgo.Story
 {
@@ -23,7 +24,7 @@ namespace LoveAlgo.Story
     /// 가상 배경 오버레이 - 배경 위에 옅은 보조 배경 표시
     /// 로아의 가상공간 테마 배경에 사용. 표정에 따라 자동 전환됨 (CharacterLayer → GetOverlayName)
     /// </summary>
-    public class VirtualBGOverlay : MonoBehaviour
+    public class VirtualBGOverlay : MonoBehaviour, IVirtualBGOverlay
     {
         [Header("바인딩")]
         [SerializeField] Image overlayImage;

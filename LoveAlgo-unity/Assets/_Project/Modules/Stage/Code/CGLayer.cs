@@ -3,6 +3,7 @@ using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 using DG.Tweening;
+using LoveAlgo.Contracts;
 
 namespace LoveAlgo.Story
 {
@@ -10,7 +11,7 @@ namespace LoveAlgo.Story
     /// CG 레이어 - 배경 위에 오버레이로 표시되는 CG 이미지 관리
     /// CG 표시 시 캐릭터 자동 퇴장 + 대사창 자동 숨김
     /// </summary>
-    public class CGLayer : MonoBehaviour
+    public class CGLayer : MonoBehaviour, ICGLayer
     {
         [Header("바인딩")]
         [SerializeField] Image cgImage;
