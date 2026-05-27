@@ -86,8 +86,8 @@ namespace LoveAlgo.Schedule
         [Tooltip("스케줄 콘텐츠 그룹 (Schedule 프리합 내부). ShopUI는 UIManager가 별도 관리.")]
         [SerializeField] CanvasGroup scheduleContent;
 
-        // Shop은 IShop.ShopUI 로 lazy 접근 (C3-4 — Services 경로)
-        Shop.ShopUI shopPanel => Services.TryGet<IShop>()?.ShopUI;
+        // Shop은 IShop.ShopUI 로 lazy 접근 (C3-4 — Services 경로 / Phase B-5: IShopUI 인터페이스).
+        IShopUI shopPanel => Services.TryGet<IShop>()?.ShopUI;
         CanvasGroup shopContent => shopPanel != null ? shopPanel.CanvasGroup : null;
 
         readonly ListenerBag _listeners = new();

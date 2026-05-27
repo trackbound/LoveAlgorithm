@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using LoveAlgo.Common;
+using LoveAlgo.Contracts;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -21,7 +22,7 @@ namespace LoveAlgo.Shop
     ///   - 클릭: 토글 선택/해제 (체크마크)
     /// </summary>
     [RequireComponent(typeof(CanvasGroup))]
-    public class ShopUI : MonoBehaviour
+    public class ShopUI : MonoBehaviour, IShopUI
     {
         CanvasGroup _canvasGroup;
         public CanvasGroup CanvasGroup => _canvasGroup != null ? _canvasGroup : (_canvasGroup = GetComponent<CanvasGroup>());

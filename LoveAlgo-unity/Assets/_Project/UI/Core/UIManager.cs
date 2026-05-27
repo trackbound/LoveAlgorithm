@@ -33,7 +33,8 @@ namespace LoveAlgo.UI
         public DialogueShowButton DialogueShowButton => Services.TryGet<INarrative>()?.DialogueShowButton;
         public ChoicePopup ChoicePopup => Services.TryGet<INarrative>()?.ChoicePopup;
         public ScheduleUI ScheduleUI => Services.TryGet<ISchedule>()?.ScheduleUI;
-        public ShopUI ShopUI => Services.TryGet<IShop>()?.ShopUI;
+        // IShop.ShopUI 는 IShopUI(인터페이스) 반환 — 옛 호출자 구체 타입 호환 위해 cast.
+        public ShopUI ShopUI => Services.TryGet<IShop>()?.ShopUI as ShopUI;
         // ITitle.TitlePanel 는 ITitlePanel(인터페이스) 반환 — 옛 호출자 구체 타입 호환 위해 cast.
         public TitlePanel TitlePanel => Services.TryGet<ITitle>()?.TitlePanel as TitlePanel;
         // ITitle.UsernameUI 는 IUsernameUI(인터페이스) 반환 — 옛 호출자 구체 타입 호환 위해 cast.
@@ -89,7 +90,7 @@ namespace LoveAlgo.UI
             else
             {
                 SetActiveIfExists(Services.TryGet<ISchedule>()?.ScheduleUI, false);
-                SetActiveIfExists(Services.TryGet<IShop>()?.ShopUI, false);
+                SetActiveIfExists(Services.TryGet<IShop>()?.ShopUI as MonoBehaviour, false); // IShopUI → 구체 cast (Phase B-5)
             }
 
             var title = Services.Get<ITitle>();

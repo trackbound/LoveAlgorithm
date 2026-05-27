@@ -1,10 +1,8 @@
-using LoveAlgo.Shop;
-
 namespace LoveAlgo.Contracts
 {
     /// <summary>
     /// 상점/인벤토리 모듈 외부 계약.
-    /// 구현: <see cref="ShopModule"/>.
+    /// 구현: <see cref="LoveAlgo.Shop.ShopModule"/>.
     /// </summary>
     public interface IShop
     {
@@ -21,6 +19,6 @@ namespace LoveAlgo.Contracts
         bool UseSessionBuff(string itemId, int currentDay);
 
         /// <summary>ShopUI 인스턴스 (lazy spawn).</summary>
-        ShopUI ShopUI { get; }
+        IShopUI ShopUI { get; }
     }
 }

@@ -24,22 +24,22 @@ namespace LoveAlgo.Shop
 
         ShopUI _shopUI;
 
-        public ShopUI ShopUI
+        // IShop.ShopUI 는 IShopUI 반환 — concrete ShopUI 가 인터페이스 구현.
+        public IShopUI ShopUI => EnsureShopUI();
+
+        ShopUI EnsureShopUI()
         {
-            get
+            if (_shopUI != null) return _shopUI;
+            if (shopUISceneInstance != null) { _shopUI = shopUISceneInstance; return _shopUI; }
+            if (shopUIPrefab != null)
             {
-                if (_shopUI != null) return _shopUI;
-                if (shopUISceneInstance != null) { _shopUI = shopUISceneInstance; return _shopUI; }
-                if (shopUIPrefab != null)
-                {
-                    var parent = UIManager.Instance?.GetGroupRoot(UIGroup.Simulation);
-                    _shopUI = parent != null ? Instantiate(shopUIPrefab, parent) : Instantiate(shopUIPrefab);
-                    _shopUI.name = shopUIPrefab.name;
-                    _shopUI.gameObject.SetActive(false);
-                    UISoundManager.Instance?.BindButtonsInTransform(_shopUI.transform);
-                }
-                return _shopUI;
+                var parent = UIManager.Instance?.GetGroupRoot(UIGroup.Simulation);
+                _shopUI = parent != null ? Instantiate(shopUIPrefab, parent) : Instantiate(shopUIPrefab);
+                _shopUI.name = shopUIPrefab.name;
+                _shopUI.gameObject.SetActive(false);
+                UISoundManager.Instance?.BindButtonsInTransform(_shopUI.transform);
             }
+            return _shopUI;
         }
 
         public LoveAlgo.Contracts.SimulationMode Mode => LoveAlgo.Contracts.SimulationMode.Shop;
@@ -59,7 +59,7 @@ namespace LoveAlgo.Shop
         // ── ISimulationSubMode ───────────────────────
         public void Enter()
         {
-            var ui = ShopUI;
+            var ui = EnsureShopUI(); // 구체 ShopUI — gameObject 직접 접근
             if (ui != null) ui.gameObject.SetActive(true);
         }
 
