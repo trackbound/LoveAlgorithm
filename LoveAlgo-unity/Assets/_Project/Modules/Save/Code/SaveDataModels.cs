@@ -1,4 +1,5 @@
 using System;
+using LoveAlgo.Contracts;
 using System.Collections.Generic;
 using UnityEngine;
 using LoveAlgo.Modules.Affinity;

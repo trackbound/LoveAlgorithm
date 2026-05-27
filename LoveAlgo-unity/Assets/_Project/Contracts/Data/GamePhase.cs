@@ -1,7 +1,8 @@
-namespace LoveAlgo.Core
+namespace LoveAlgo.Contracts
 {
     /// <summary>
-    /// 게임 Phase
+    /// 게임 Phase.
+    /// C4-Phase A에서 LoveAlgo.Core → LoveAlgo.Contracts 로 이동.
     /// </summary>
     public enum GamePhase
     {

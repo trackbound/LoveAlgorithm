@@ -1,4 +1,5 @@
 using UnityEditor;
+using LoveAlgo.Contracts;
 using UnityEngine;
 using LoveAlgo.Core;
 using LoveAlgo.Story;
