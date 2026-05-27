@@ -3,19 +3,12 @@ using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 using DG.Tweening;
+using LoveAlgo.Contracts;
 using LoveAlgo.Core;
 
 namespace LoveAlgo.Story
 {
-    /// <summary>
-    /// 배경 전환 타입
-    /// </summary>
-    public enum BGTransition
-    {
-        Cut,    // 즉시 교체
-        Fade,   // 페이드 (검은색 경유)
-        Cross   // 크로스페이드
-    }
+    // C4-Phase A: BGTransition enum은 LoveAlgo.Contracts.Data 로 이동.
 
     /// <summary>
     /// 배경 레이어 - 크로스페이드 지원
