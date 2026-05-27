@@ -3,6 +3,8 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
+using LoveAlgo.Common;
+using LoveAlgo.Contracts;
 using LoveAlgo.Story;
 using LoveAlgo.UI;
 
@@ -51,7 +53,7 @@ namespace LoveAlgo.Core
                 return;
 
             var runner = ScriptRunner.Instance;
-            var dialogueUI = UIManager.Instance?.DialogueUI;
+            var dialogueUI = Services.TryGet<INarrative>()?.DialogueUI;
 
             // ── Space / 마우스 클릭: 다음 대사 ──
             bool spacePressed = keyboard.spaceKey.wasPressedThisFrame;

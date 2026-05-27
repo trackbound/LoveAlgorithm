@@ -75,7 +75,7 @@ namespace LoveAlgo.Core
         void EnterTitle()
         {
             UIManager.Instance?.ShowOnly(MainUIType.Title);
-            UIManager.Instance?.TitlePanel?.PlayTitleBGM();
+            Services.TryGet<ITitle>()?.TitlePanel?.PlayTitleBGM();
             // 타이틀/이름입력 화면에는 폰 알림 안 보임
             Common.Services.TryGet<LoveAlgo.Contracts.IPhone>()?.SetNotificationVisible(false);
         }
@@ -93,7 +93,7 @@ namespace LoveAlgo.Core
             Common.Services.TryGet<LoveAlgo.Contracts.IPhone>()?.SetNotificationVisible(true);
 
             // 대화창을 숨김 상태로 시작 (첨 대사 시점에 자동 표시)
-            var dialogueUI = UIManager.Instance?.DialogueUI;
+            var dialogueUI = Services.TryGet<INarrative>()?.DialogueUI;
             dialogueUI?.Clear();
             dialogueUI?.HideImmediate();
 
@@ -140,7 +140,7 @@ namespace LoveAlgo.Core
             }
 
             UIManager.Instance?.ShowOnly(MainUIType.Schedule);
-            var scheduleUI = UIManager.Instance?.ScheduleUI;
+            var scheduleUI = Services.TryGet<ISchedule>()?.ScheduleUI;
             scheduleUI?.ShowAsync(_gm.OnScheduleSelected).Forget();
         }
 
@@ -165,7 +165,7 @@ namespace LoveAlgo.Core
 
             // 대화 UI로 엔딩 스크립트 재생
             UIManager.Instance?.ShowOnly(MainUIType.Dialogue);
-            var dialogueUI = UIManager.Instance?.DialogueUI;
+            var dialogueUI = Services.TryGet<INarrative>()?.DialogueUI;
             dialogueUI?.Clear();
             dialogueUI?.HideImmediate();
 
@@ -392,7 +392,7 @@ namespace LoveAlgo.Core
             var ct = _gm.GetCancellationTokenOnDestroy();
 
             // 대화 UI 숨기기 (마지막 대사가 남아있을 수 있음)
-            var dialogueUI = UIManager.Instance?.DialogueUI;
+            var dialogueUI = Services.TryGet<INarrative>()?.DialogueUI;
             dialogueUI?.HideImmediate();
 
             // 자동저장 (화면이 보이는 상태에서 스크린샷 캡처)

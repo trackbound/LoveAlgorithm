@@ -184,7 +184,7 @@ namespace LoveAlgo.Core
             UIManager.Instance?.HideAll();
 
             // 4. DialogueUI 초기화
-            var dui = UIManager.Instance?.DialogueUI;
+            var dui = Services.TryGet<INarrative>()?.DialogueUI;
             dui?.Clear();
             dui?.ClearLog();
             dui?.HideImmediate();

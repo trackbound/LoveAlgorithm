@@ -109,7 +109,7 @@ namespace LoveAlgo.Core
                 PopupManager.Instance?.CloseAll();
 
                 // 진행 중이던 선택지 UI 잔상 제거 (스케줄/팝업과 함께 저장된 케이스)
-                UIManager.Instance?.ChoicePopup?.ResetImmediate();
+                Services.TryGet<INarrative>()?.ChoicePopup?.ResetImmediate();
 
                 // 이전 BGM 정리 (페이드아웃 완료 대기)
                 Services.TryGet<IAudio>()?.StopBGMImmediate();
@@ -149,7 +149,7 @@ namespace LoveAlgo.Core
                     UIManager.Instance?.ShowOnly(MainUIType.Dialogue);
 
                     // 대화창을 숨김 상태로 시작 (첨 대사 시점에 자동 표시)
-                    var dialogueUI = UIManager.Instance?.DialogueUI;
+                    var dialogueUI = Services.TryGet<INarrative>()?.DialogueUI;
                     dialogueUI?.Clear();
                     dialogueUI?.ClearLog();  // 이전 세션 로그 제거 (중복 방지)
                     dialogueUI?.HideImmediate();

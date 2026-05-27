@@ -181,7 +181,7 @@ namespace LoveAlgo.Core
         {
             _inlineScheduleTcs = new UniTaskCompletionSource();
 
-            var scheduleUI = UIManager.Instance?.ScheduleUI;
+            var scheduleUI = Services.TryGet<ISchedule>()?.ScheduleUI;
             scheduleUI?.ShowAsync(OnScheduleSelected).Forget();
 
             using (ct.Register(() => _inlineScheduleTcs?.TrySetCanceled()))
@@ -224,7 +224,7 @@ namespace LoveAlgo.Core
 
                 _gm.CurrentDay++;
                 _gm.RemainingActions = GameConstants.ActionsPerDay;
-                UIManager.Instance?.ScheduleUI?.ResetDailyLimits();
+                Services.TryGet<ISchedule>()?.ScheduleUI?.ResetDailyLimits();
                 Debug.Log($"[GameManager] {_gm.CurrentDay}일차 시작");
 
                 if (_gm.CurrentDay > GameConstants.MaxDay)
@@ -263,7 +263,7 @@ namespace LoveAlgo.Core
             DayEventTable.MarkFired(evt.ScriptName);
 
             UIManager.Instance?.ShowOnly(MainUIType.Dialogue);
-            var dialogueUI = UIManager.Instance?.DialogueUI;
+            var dialogueUI = Services.TryGet<INarrative>()?.DialogueUI;
             dialogueUI?.Clear();
             dialogueUI?.HideImmediate();
 
