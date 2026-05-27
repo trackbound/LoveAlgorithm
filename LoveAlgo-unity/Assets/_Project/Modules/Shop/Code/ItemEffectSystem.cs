@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using LoveAlgo.Contracts;
 using LoveAlgo.Core;
 
 namespace LoveAlgo.Shop
@@ -227,18 +228,5 @@ namespace LoveAlgo.Shop
         }
 
         #endregion
-    }
-
-    /// <summary>ItemEffectSystem 세이브 데이터</summary>
-    [Serializable]
-    public class ItemEffectSaveData
-    {
-        public string ActiveBuffStat;
-        public int ActiveBuffValue;
-        public string ActiveSubBuffStat;
-        public int ActiveSubBuffValue;
-        public bool HasActiveBuff;
-        public int LastTrackedDay;
-        public Dictionary<string, int> DayUsageCount = new();
     }
 }

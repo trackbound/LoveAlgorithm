@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using LoveAlgo.Contracts;
 using LoveAlgo.Core;
 
 namespace LoveAlgo.Phone
@@ -292,19 +293,4 @@ namespace LoveAlgo.Phone
         }
     }
 
-    /// <summary>
-    /// 메신저 세이브 데이터
-    /// </summary>
-    [Serializable]
-    public class MessengerSaveData
-    {
-        /// <summary>대화방별 메시지 기록</summary>
-        public Dictionary<string, List<ChatMessage>> ChatRooms = new();
-
-        /// <summary>안 읽은 메시지 수</summary>
-        public Dictionary<string, int> UnreadCounts = new();
-
-        /// <summary>상태 메시지</summary>
-        public Dictionary<string, string> StatusMessages = new();
-    }
 }

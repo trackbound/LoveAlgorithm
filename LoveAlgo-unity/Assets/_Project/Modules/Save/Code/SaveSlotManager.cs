@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using Newtonsoft.Json;
+using LoveAlgo.Contracts;
 
 namespace LoveAlgo.Story.SaveSystem
 {

@@ -1,5 +1,6 @@
 using TMPro;
 using UnityEngine;
+using LoveAlgo.Contracts;
 
 namespace LoveAlgo.Phone
 {

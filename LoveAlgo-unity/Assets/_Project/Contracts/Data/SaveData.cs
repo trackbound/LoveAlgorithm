@@ -1,14 +1,11 @@
 using System;
-using LoveAlgo.Contracts;
 using System.Collections.Generic;
-using UnityEngine;
-using LoveAlgo.Modules.Affinity;
-using LoveAlgo.Core;
 
-namespace LoveAlgo.Story.SaveSystem
+namespace LoveAlgo.Contracts
 {
     /// <summary>
-    /// 세이브 데이터 구조
+    /// 세이브 데이터 구조.
+    /// C4-Phase A Group H에서 LoveAlgo.Story.SaveSystem → LoveAlgo.Contracts 로 이동.
     /// </summary>
     [Serializable]
     public class SaveData
@@ -69,10 +66,10 @@ namespace LoveAlgo.Story.SaveSystem
         public PointTrackerSaveData PointTracker;
 
         // 상점/인벤토리 데이터
-        public Shop.ShopSaveData ShopData;
+        public ShopSaveData ShopData;
 
         // 메신저 데이터
-        public Phone.MessengerSaveData MessengerData;
+        public MessengerSaveData MessengerData;
 
         // 선택지 이력 (로그 복원용)
         public List<string> ChoiceHistory = new();
@@ -82,7 +79,8 @@ namespace LoveAlgo.Story.SaveSystem
     }
 
     /// <summary>
-    /// 캐릭터 슬롯 저장 정보
+    /// 캐릭터 슬롯 저장 정보.
+    /// C4-Phase A Group H에서 LoveAlgo.Story.SaveSystem → LoveAlgo.Contracts 로 이동.
     /// </summary>
     [Serializable]
     public class CharacterSaveInfo

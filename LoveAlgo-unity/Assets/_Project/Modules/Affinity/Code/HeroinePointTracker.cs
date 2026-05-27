@@ -211,20 +211,4 @@ namespace LoveAlgo.Modules.Affinity
 
         #endregion
     }
-
-    /// <summary>
-    /// 포인트 트래커 세이브 데이터
-    /// </summary>
-    [Serializable]
-    public class PointTrackerSaveData
-    {
-        /// <summary>히로인별 카테고리별 포인트</summary>
-        public Dictionary<string, Dictionary<string, int>> Points = new();
-
-        /// <summary>히로인별 이벤트 선택 횟수</summary>
-        public Dictionary<string, int> EventSelectionCount = new();
-
-        /// <summary>이벤트별 선택 히로인</summary>
-        public Dictionary<string, string> EventChoices = new();
-    }
 }
