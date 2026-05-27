@@ -1,5 +1,7 @@
-namespace LoveAlgo.Modules.DayLoop
+namespace LoveAlgo.Contracts
 {
+    // C4-Phase A: LoveAlgo.Modules.DayLoop → LoveAlgo.Contracts 로 이동.
+
     /// <summary>
     /// 게임 진행 페이즈 — 학기 흐름.
     /// 기획서: 개강 → 1차 → 축제 → 2차 → MT → 3차 → 고백 → 엔딩

@@ -1,4 +1,5 @@
 using NUnit.Framework;
+using LoveAlgo.Contracts;
 using LoveAlgo.Modules.DayLoop;
 
 namespace LoveAlgo.Tests.Editor
