@@ -8,6 +8,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 using LoveAlgo.Story;
+using LoveAlgo.Contracts;
 using LoveAlgo.Core;
 
 namespace LoveAlgo.UI
@@ -22,10 +23,10 @@ namespace LoveAlgo.UI
     /// CSV 헤더 형식: dim,chr,text
     ///
     /// 사용:
-    ///   var ov = UIManager.Instance.TutorialOverlay;
+    ///   var ov = Services.TryGet&lt;ITutorial&gt;()?.Overlay; // ITutorialOverlay
     ///   await ov.RunAsync("Story/ScheduleTutorial", "HasSeenScheduleTutorial", ct);
     /// </summary>
-    public class TutorialOverlay : MonoBehaviour
+    public class TutorialOverlay : MonoBehaviour, ITutorialOverlay
     {
         [Header("오버레이 레이어")]
         [SerializeField] CanvasGroup overlayGroup;
@@ -285,6 +286,9 @@ namespace LoveAlgo.UI
             if (string.IsNullOrEmpty(seenFlagKey)) return false;
             return PlayerPrefs.GetInt("Tutorial_" + seenFlagKey, 0) == 1;
         }
+
+        // ITutorialOverlay 인스턴스 표면 — static과 동명 회피 위해 explicit impl.
+        bool ITutorialOverlay.HasSeen(string seenFlagKey) => HasSeen(seenFlagKey);
 
         /// <summary>딤 이미지 적용 (빈값=숨김, keep=유지, 이름=새 스프라이트) + 위치 프리셋</summary>
         void ApplyDim(string dimValue)

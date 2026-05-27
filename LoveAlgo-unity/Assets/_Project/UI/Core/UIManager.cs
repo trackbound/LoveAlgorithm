@@ -36,7 +36,8 @@ namespace LoveAlgo.UI
         public ShopUI ShopUI => Services.TryGet<IShop>()?.ShopUI;
         public TitlePanel TitlePanel => Services.TryGet<ITitle>()?.TitlePanel;
         public UsernameUI UsernameUI => Services.TryGet<ITitle>()?.UsernameUI;
-        public TutorialOverlay TutorialOverlay => Services.TryGet<ITutorial>()?.Overlay;
+        // ITutorial.Overlay 는 ITutorialOverlay(인터페이스) 반환 — 옛 호출자 구체 타입 호환 위해 cast.
+        public TutorialOverlay TutorialOverlay => Services.TryGet<ITutorial>()?.Overlay as TutorialOverlay;
         public QuickMenu QuickMenu => Services.TryGet<ISimulation>()?.QuickMenu;
 
         /// <summary>UI 인스턴스 부모 그룹 — 모듈이 자기 UI를 spawn할 때 사용.</summary>

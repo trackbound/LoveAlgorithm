@@ -18,7 +18,8 @@ namespace LoveAlgo.Tutorial
 
         TutorialOverlay _overlay;
 
-        public TutorialOverlay Overlay
+        // ITutorial.Overlay 는 ITutorialOverlay 반환 — concrete TutorialOverlay 가 인터페이스 구현.
+        public ITutorialOverlay Overlay
         {
             get
             {

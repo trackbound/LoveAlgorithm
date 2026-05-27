@@ -74,8 +74,9 @@ namespace LoveAlgo.Schedule
         [Header("헬프 패널")]
         [SerializeField] ScheduleHelpPopup helpPanel;
 
-        // 튜토리얼 오버레이는 화면 전체 dim을 위해 ScheduleUI 외부 — Tutorial 모듈이 관리
-        LoveAlgo.UI.TutorialOverlay tutorialOverlay => Services.TryGet<ITutorial>()?.Overlay;
+        // 튜토리얼 오버레이는 화면 전체 dim을 위해 ScheduleUI 외부 — Tutorial 모듈이 관리.
+        // Phase B-1: 구체 타입(LoveAlgo.UI.TutorialOverlay) → 인터페이스(ITutorialOverlay).
+        ITutorialOverlay tutorialOverlay => Services.TryGet<ITutorial>()?.Overlay;
 
         [Header("세션 버프 표시")]
         [SerializeField] GameObject buffIndicator;
@@ -204,7 +205,7 @@ namespace LoveAlgo.Schedule
             // 첫 진입 시 튜토리얼 표시 (스케줄 UI 등장 후 3초 뒤)
             // GameState 플래그(현재 세션) + PlayerPrefs(영구) 둘 다 확인 — 새 게임으로 ResetAll 해도 안 뜸.
             if (tutorialOverlay != null
-                && !LoveAlgo.UI.TutorialOverlay.HasSeen("HasSeenScheduleTutorial")
+                && !tutorialOverlay.HasSeen("HasSeenScheduleTutorial")
                 && GameState.Instance != null
                 && !GameState.Instance.GetFlag("HasSeenScheduleTutorial"))
             {

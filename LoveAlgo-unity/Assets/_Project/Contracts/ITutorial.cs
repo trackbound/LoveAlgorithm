@@ -1,5 +1,3 @@
-using LoveAlgo.UI;
-
 namespace LoveAlgo.Contracts
 {
     /// <summary>
@@ -8,6 +6,6 @@ namespace LoveAlgo.Contracts
     /// </summary>
     public interface ITutorial
     {
-        TutorialOverlay Overlay { get; }
+        ITutorialOverlay Overlay { get; }
     }
 }
