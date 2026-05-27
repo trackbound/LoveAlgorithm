@@ -34,7 +34,8 @@ namespace LoveAlgo.UI
         public ChoicePopup ChoicePopup => Services.TryGet<INarrative>()?.ChoicePopup;
         public ScheduleUI ScheduleUI => Services.TryGet<ISchedule>()?.ScheduleUI;
         public ShopUI ShopUI => Services.TryGet<IShop>()?.ShopUI;
-        public TitlePanel TitlePanel => Services.TryGet<ITitle>()?.TitlePanel;
+        // ITitle.TitlePanel 는 ITitlePanel(인터페이스) 반환 — 옛 호출자 구체 타입 호환 위해 cast.
+        public TitlePanel TitlePanel => Services.TryGet<ITitle>()?.TitlePanel as TitlePanel;
         // ITitle.UsernameUI 는 IUsernameUI(인터페이스) 반환 — 옛 호출자 구체 타입 호환 위해 cast.
         public UsernameUI UsernameUI => Services.TryGet<ITitle>()?.UsernameUI as UsernameUI;
         // ITutorial.Overlay 는 ITutorialOverlay(인터페이스) 반환 — 옛 호출자 구체 타입 호환 위해 cast.
@@ -92,7 +93,7 @@ namespace LoveAlgo.UI
             }
 
             var title = Services.Get<ITitle>();
-            SetActiveIfExists(title?.TitlePanel, false);
+            SetActiveIfExists(title?.TitlePanel as MonoBehaviour, false); // ITitlePanel → 구체 cast (Phase B-4)
             SetActiveIfExists(title?.UsernameUI as MonoBehaviour, false); // IUsernameUI → 구체 cast (Phase B-2)
             PopupManager.Instance?.Get<PlaceNotification>()?.HideImmediate();
         }

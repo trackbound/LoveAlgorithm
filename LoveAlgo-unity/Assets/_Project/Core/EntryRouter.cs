@@ -86,7 +86,8 @@ namespace LoveAlgo.Core
                 Debug.LogError("[EntryRouter] ITitle 미등록 — 첫 화면 표출 실패");
                 return;
             }
-            var panel = title.TitlePanel;
+            // Phase B-4: ITitle.TitlePanel 은 ITitlePanel 반환 — GameObject 활성화는 구체 cast.
+            var panel = title.TitlePanel as MonoBehaviour;
             if (panel == null) return;
             panel.gameObject.SetActive(true);
         }

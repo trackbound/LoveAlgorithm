@@ -1,5 +1,3 @@
-using LoveAlgo.UI;
-
 namespace LoveAlgo.Contracts
 {
     /// <summary>
@@ -8,7 +6,7 @@ namespace LoveAlgo.Contracts
     /// </summary>
     public interface ITitle
     {
-        TitlePanel TitlePanel { get; }
+        ITitlePanel TitlePanel { get; }
         IUsernameUI UsernameUI { get; }
 
         /// <summary>Extra 팝업 표시 (모달).</summary>

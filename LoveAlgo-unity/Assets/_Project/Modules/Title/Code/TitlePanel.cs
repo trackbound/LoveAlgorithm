@@ -17,7 +17,7 @@ namespace LoveAlgo.UI
     /// <summary>
     /// 타이틀 UI
     /// </summary>
-    public class TitlePanel : MonoBehaviour
+    public class TitlePanel : MonoBehaviour, ITitlePanel
     {
         [Header("메뉴 버튼")]
         [SerializeField] Button startButton;

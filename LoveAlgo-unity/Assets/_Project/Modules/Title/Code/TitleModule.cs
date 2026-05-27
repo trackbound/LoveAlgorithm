@@ -27,7 +27,8 @@ namespace LoveAlgo.Title
         UsernameUI _usernameUI;
         ExtraPopup _extraPopupInstance;
 
-        public TitlePanel TitlePanel
+        // ITitle.TitlePanel 는 ITitlePanel 반환 — concrete TitlePanel 가 인터페이스 구현.
+        public ITitlePanel TitlePanel
         {
             get
             {
