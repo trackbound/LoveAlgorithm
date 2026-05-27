@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using UnityEngine;
+using LoveAlgo.Common;
+using LoveAlgo.Contracts;
 using LoveAlgo.Modules.Affinity;
 using LoveAlgo.Modules.Audio;
 using Newtonsoft.Json;
@@ -253,7 +255,7 @@ namespace LoveAlgo.Story.SaveSystem
             GameState.Instance.SetChoiceHistory(data.ChoiceHistory);
 
             // 스케줄 상태 복원
-            var scheduleUI = UIManager.Instance?.ScheduleUI;
+            var scheduleUI = Services.TryGet<ISchedule>()?.ScheduleUI;
             if (scheduleUI != null)
                 scheduleUI.UsedLoadingToday = data.UsedLoadingToday;
         }
@@ -307,7 +309,7 @@ namespace LoveAlgo.Story.SaveSystem
                 data.ChoiceHistory = GameState.Instance.GetChoiceHistory();
 
             // 스케줄 상태 저장
-            var scheduleUI = UIManager.Instance?.ScheduleUI;
+            var scheduleUI = Services.TryGet<ISchedule>()?.ScheduleUI;
             if (scheduleUI != null)
                 data.UsedLoadingToday = scheduleUI.UsedLoadingToday;
 

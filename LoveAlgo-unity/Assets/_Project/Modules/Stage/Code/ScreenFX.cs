@@ -1,6 +1,8 @@
 using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using LoveAlgo.Common;
+using LoveAlgo.Contracts;
 using LoveAlgo.Stage;
 using LoveAlgo.Story;
 using UnityEngine;
@@ -38,7 +40,7 @@ namespace LoveAlgo.Core
         {
             get
             {
-                var ui = LoveAlgo.UI.UIManager.Instance?.DialogueUI;
+                var ui = Services.TryGet<INarrative>()?.DialogueUI;
                 return ui != null ? ui.transform as RectTransform : null;
             }
         }

@@ -108,9 +108,8 @@ namespace LoveAlgo.Settings
             set
             {
                 textSpeed = value;
-                // DialogueUI는 INarrative에 없으므로 직접 호출 — UIManager 경유
-                var ui = LoveAlgo.UI.UIManager.Instance;
-                if (ui != null && ui.DialogueUI != null) ui.DialogueUI.SetTextSpeed(value);
+                // C3-4: INarrative.SetTextSpeed로 라우팅 (NarrativeModule이 DialogueUI lazy 처리)
+                LoveAlgo.Common.Services.TryGet<LoveAlgo.Contracts.INarrative>()?.SetTextSpeed(value);
             }
         }
 
@@ -211,9 +210,8 @@ namespace LoveAlgo.Settings
             foreach (var kv in characterVoices)
                 audioSvc?.SetCharacterVoiceVolume(kv.Key, kv.Value);
             narrative?.SetAutoDelay(autoSpeed);
-            // TextSpeed는 DialogueUI 준비 시점 따라 setter 호출이 안전 — 직접 호출
-            var ui = LoveAlgo.UI.UIManager.Instance;
-            if (ui != null && ui.DialogueUI != null) ui.DialogueUI.SetTextSpeed(textSpeed);
+            // C3-4: TextSpeed도 INarrative 경유 (NarrativeModule이 DialogueUI lazy 처리)
+            narrative?.SetTextSpeed(textSpeed);
         }
 
         public void ResetToDefaults()

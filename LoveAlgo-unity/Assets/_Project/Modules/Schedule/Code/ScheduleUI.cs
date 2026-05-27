@@ -74,8 +74,8 @@ namespace LoveAlgo.Schedule
         [Header("헬프 패널")]
         [SerializeField] ScheduleHelpPopup helpPanel;
 
-        // 튜토리얼 오버레이는 화면 전체 dim을 위해 ScheduleUI 외부 — UIManager가 별도 관리
-        LoveAlgo.UI.TutorialOverlay tutorialOverlay => LoveAlgo.UI.UIManager.Instance?.TutorialOverlay;
+        // 튜토리얼 오버레이는 화면 전체 dim을 위해 ScheduleUI 외부 — Tutorial 모듈이 관리
+        LoveAlgo.UI.TutorialOverlay tutorialOverlay => Services.TryGet<ITutorial>()?.Overlay;
 
         [Header("세션 버프 표시")]
         [SerializeField] GameObject buffIndicator;
@@ -85,8 +85,8 @@ namespace LoveAlgo.Schedule
         [Tooltip("스케줄 콘텐츠 그룹 (Schedule 프리합 내부). ShopUI는 UIManager가 별도 관리.")]
         [SerializeField] CanvasGroup scheduleContent;
 
-        // Shop은 UIManager.Instance.ShopUI 로 lazy 접근
-        Shop.ShopUI shopPanel => LoveAlgo.UI.UIManager.Instance?.ShopUI;
+        // Shop은 IShop.ShopUI 로 lazy 접근 (C3-4 — Services 경로)
+        Shop.ShopUI shopPanel => Services.TryGet<IShop>()?.ShopUI;
         CanvasGroup shopContent => shopPanel != null ? shopPanel.CanvasGroup : null;
 
         readonly ListenerBag _listeners = new();
@@ -129,7 +129,7 @@ namespace LoveAlgo.Schedule
             _listeners.Bind(helpButton, OnHelpClick);
 
             // 퀵메뉴 돌아가기 — UIManager가 관리하는 공용 인스턴스
-            var quickMenu = LoveAlgo.UI.UIManager.Instance?.QuickMenu;
+            var quickMenu = Services.TryGet<ISimulation>()?.QuickMenu;
             if (quickMenu != null)
                 quickMenu.OnBackRequested += OnBackPressed;
 
@@ -671,7 +671,7 @@ namespace LoveAlgo.Schedule
             if (shopContent != null)
                 shopContent.DOKill();
 
-            var quickMenu = LoveAlgo.UI.UIManager.Instance?.QuickMenu;
+            var quickMenu = Services.TryGet<ISimulation>()?.QuickMenu;
             if (quickMenu != null)
                 quickMenu.OnBackRequested -= OnBackPressed;
         }

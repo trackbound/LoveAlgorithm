@@ -147,6 +147,11 @@ namespace LoveAlgo.Narrative
         public void ToggleAutoMode() => Runner?.ToggleAutoMode();
         public void SetAutoMode(bool enabled) => Runner?.SetAutoMode(enabled);
         public void SetAutoDelay(float normalized) => Runner?.SetAutoDelay(normalized);
+        public void SetTextSpeed(float normalized)
+        {
+            // DialogueUI는 lazy spawn — 준비 안 됐으면 silent no-op (다음 호출에 반영됨)
+            DialogueUI?.SetTextSpeed(normalized);
+        }
 
         // ── UI 진입점 ────────────────────────────────
         public void ShowLogUI(IReadOnlyList<DialogueLogEntry> log)

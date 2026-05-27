@@ -44,6 +44,9 @@ namespace LoveAlgo.Contracts
         void SetAutoMode(bool enabled);
         void SetAutoDelay(float normalized);
 
+        /// <summary>대사 타이핑 속도 (0=느림, 1=빠름 — 정규화된 슬라이더 값). Settings UI에서 호출.</summary>
+        void SetTextSpeed(float normalized);
+
         // ── UI 진입점 ────────────────────────────────
         /// <summary>대사 로그 팝업 표시.</summary>
         void ShowLogUI(IReadOnlyList<DialogueLogEntry> log);
