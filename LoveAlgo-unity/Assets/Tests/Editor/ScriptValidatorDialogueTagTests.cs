@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using LoveAlgo.Contracts;
 using NUnit.Framework;
 using LoveAlgo.Story;
 using LoveAlgo.Story.StoryEngine;

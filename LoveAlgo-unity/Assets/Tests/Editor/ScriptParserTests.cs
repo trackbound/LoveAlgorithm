@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using LoveAlgo.Contracts;
 using NUnit.Framework;
 using LoveAlgo.Story;
 using UnityEngine;

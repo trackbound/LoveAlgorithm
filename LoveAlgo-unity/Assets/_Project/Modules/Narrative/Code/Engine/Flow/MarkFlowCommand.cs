@@ -1,4 +1,5 @@
 using UnityEngine;
+using LoveAlgo.Contracts;
 
 namespace LoveAlgo.Story.StoryEngine.Flow
 {

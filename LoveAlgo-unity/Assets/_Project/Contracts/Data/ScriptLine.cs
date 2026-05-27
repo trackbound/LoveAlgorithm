@@ -1,7 +1,10 @@
 using System;
 
-namespace LoveAlgo.Story
+namespace LoveAlgo.Contracts
 {
+    // C4-Phase A: LoveAlgo.Story → LoveAlgo.Contracts 로 이동.
+    // ScriptLine + LineType + NextType — 데이터/enum이라 Contracts back-ref 안 만듦.
+
     /// <summary>
     /// CSV 라인 타입
     /// </summary>
