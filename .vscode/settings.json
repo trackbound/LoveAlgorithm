@@ -68,11 +68,6 @@
         "*.sln": "*.csproj",
         "*.slnx": "*.csproj"
     },
-    "chat.tools.terminal.autoApprove": {
-        "/^python -c \"\nimport csv, io\norig = open\\('시나리오 \\(업데이트\\)\\.csv', encoding='utf-8-sig'\\)\\.read\\(\\)\nclean = open\\('시나리오 \\(업데이트\\)_clean\\.csv', encoding='utf-8'\\)\\.read\\(\\)\no_rows = list\\(csv\\.reader\\(io\\.StringIO\\(orig\\)\\)\\)\nc_rows = list\\(csv\\.reader\\(io\\.StringIO\\(clean\\)\\)\\)\n# Value 컬럼\\(idx 3\\) 비교\ndiffs = \\[\\]\nfor i, \\(o, c\\) in enumerate\\(zip\\(o_rows, c_rows\\)\\):\n    ov = o\\[3\\]\\.strip\\(\\) if len\\(o\\) > 3 else ''\n    cv = c\\[3\\]\\.strip\\(\\) if len\\(c\\) > 3 else ''\n    if ov != cv and ov and cv:\n        diffs\\.append\\(\\(i\\+1, ov, cv\\)\\)\nprint\\(f'Value 변경 행 수: \\{len\\(diffs\\)\\}'\\)\nfor ln, ov, cv in diffs\\[:10\\]:\n    print\\(f'  Line \\{ln\\}:'\\)\n    print\\(f'    원본: \\{ov\\}'\\)\n    print\\(f'    정리: \\{cv\\}'\\)\n\"$/": {
-            "approve": true,
-            "matchCommandLine": true
-        }
-    },
+    "dotnet.defaultSolution": "LoveAlgorithm.sln",
     "workbench.browser.enableChatTools": true
 }
