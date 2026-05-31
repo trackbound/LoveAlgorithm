@@ -283,5 +283,15 @@ namespace LoveAlgo.Core
         /// 해피/새드 엔딩 분기 판정 - AffinityCalculator에 위임
         /// </summary>
         public bool IsHappyEnding(string heroineId) => AffinityCalculator.IsHappyEnding(heroineId);
+
+        /// <summary>
+        /// 이벤트일의 메인 스토리 종료 시 호출
+        /// 하루 마감 처리 (EndDay 호출)
+        /// </summary>
+        public void OnEventDayCompleted()
+        {
+            Debug.Log($"[DayLoopController] 이벤트일 완료. 하루 마감 진행.");
+            EndDay();
+        }
     }
 }

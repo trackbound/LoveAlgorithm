@@ -7,6 +7,8 @@ using LoveAlgo.UI;
 using LoveAlgo.Schedule;
 using LoveAlgo.Core;
 using LoveAlgo.Stage;
+using LoveAlgo.Contracts;
+using LoveAlgo.Modules.DayLoop;
 
 namespace LoveAlgo.Core
 {
@@ -62,7 +64,7 @@ namespace LoveAlgo.Core
                     EnterPrologue();
                     break;
                 case GamePhase.DayLoop:
-                    EnterDayLoop();
+                    EnterDayLoopAsync().Forget();
                     break;
                 case GamePhase.Ending:
                     EnterEnding();
@@ -104,7 +106,7 @@ namespace LoveAlgo.Core
             }
         }
 
-        void EnterDayLoop()
+        async UniTaskVoid EnterDayLoopAsync()
         {
             if (_gm.ShouldReturnToDemoEnd())
             {
@@ -112,17 +114,75 @@ namespace LoveAlgo.Core
                 return;
             }
 
-            var dayInfo = GameTimeline.GetDayInfo(_gm.CurrentDay);
+            var dayLoop = Common.Services.TryGet<IDayLoop>();
+            if (dayLoop == null)
+            {
+                Debug.LogError("[GameFlowController] IDayLoop 모듈이 서비스에 등록되지 않았습니다.");
+                ShowScheduleUI();
+                return;
+            }
+
+            int currentDay = _gm.CurrentDay;
 
             // ── 고백 이벤트 (Day 30) ──
-            if (dayInfo?.Type == DayType.Confession)
+            if (dayLoop.GetPhaseForDay(currentDay) == EventPhase.Confession)
             {
                 ChangePhase(GamePhase.Ending);
                 return;
             }
 
-            // 이벤트 날 / 아침 컷씬 / 메신저 메시지는 데모에서 스킵 → 바로 스케줄 UI
-            ShowScheduleUI();
+            // 1) 아침 이벤트 체크 & 실행
+            var morningEvent = DayEventTable.GetEvent(currentDay, DayTiming.Morning);
+            if (morningEvent != null)
+            {
+                Debug.Log($"[GameFlowController] 아침 이벤트 스크립트 실행: {morningEvent.ScriptName}");
+                DayEventTable.MarkFired(morningEvent.ScriptName);
+
+                UIManager.Instance?.ShowOnly(MainUIType.Dialogue);
+                var dialogueUI = UIManager.Instance?.DialogueUI;
+                dialogueUI?.Clear();
+                dialogueUI?.HideImmediate();
+
+                var runner = ScriptRunner.Instance;
+                if (runner != null)
+                {
+                    await runner.StartScript(morningEvent.ScriptName);
+                }
+            }
+
+            // 2) 메인 이벤트 스토리(이벤트일) vs 자유행동일 분기
+            if (dayLoop.IsEventDay(currentDay))
+            {
+                var dayInfo = GameTimeline.GetDayInfo(currentDay);
+                if (dayInfo != null && !string.IsNullOrEmpty(dayInfo.EventTag))
+                {
+                    Debug.Log($"[GameFlowController] 메인 이벤트 스크립트 실행: {dayInfo.EventTag}");
+
+                    UIManager.Instance?.ShowOnly(MainUIType.Dialogue);
+                    var dialogueUI = UIManager.Instance?.DialogueUI;
+                    dialogueUI?.Clear();
+                    dialogueUI?.HideImmediate();
+
+                    var runner = ScriptRunner.Instance;
+                    if (runner != null)
+                    {
+                        await runner.StartScript(dayInfo.EventTag);
+                    }
+
+                    // 이벤트 완료 후 하루 마감 처리
+                    _gm.DayLoop.OnEventDayCompleted();
+                }
+                else
+                {
+                    Debug.LogError($"[GameFlowController] 이벤트일({currentDay})인데 EventTag가 존재하지 않습니다.");
+                    ShowScheduleUI();
+                }
+            }
+            else
+            {
+                // 자유행동일
+                ShowScheduleUI();
+            }
         }
 
         /// <summary>
