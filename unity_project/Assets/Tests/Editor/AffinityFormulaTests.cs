@@ -1,0 +1,230 @@
+using NUnit.Framework;
+using UnityEngine;
+using LoveAlgo.Core;
+using LoveAlgo.Affinity;
+
+namespace LoveAlgo.Tests.Editor
+{
+    /// <summary>
+    /// M2 슬라이스1 검증 (REWRITE_FEATURE_INVENTORY §4·§5 공식 그대로 재현 증거).
+    /// 호감도 총점·스탯/피로 보너스·엔딩 판정·Event3 재선택·스탯 API 클램프를 회귀한다.
+    /// 순수 함수 + SO 인스턴스만 다루므로 EditMode로 충분(프로젝트 관행).
+    /// </summary>
+    [TestFixture]
+    public class AffinityFormulaTests
+    {
+        static GameStateSO MakeState()
+        {
+            var so = ScriptableObject.CreateInstance<GameStateSO>();
+            so.ResetRuntime();
+            return so;
+        }
+
+        // ── 스탯 API (Core 보강) ───────────────────────────────
+
+        [Test]
+        public void SetStat_Clamps_To_0_100()
+        {
+            var gs = MakeState();
+            gs.SetStat("Str", 150);
+            Assert.AreEqual(100, gs.GetStat("Str"));
+            gs.SetStat("Str", -5);
+            Assert.AreEqual(0, gs.GetStat("Str"));
+        }
+
+        [Test]
+        public void GetStat_Int_Maps_To_Intel_Field()
+        {
+            var gs = MakeState();
+            gs.SetStat("Int", 42);
+            Assert.AreEqual(42, gs.GetStat("Int"));
+        }
+
+        [Test]
+        public void AddStat_Accumulates_And_Clamps()
+        {
+            var gs = MakeState();
+            gs.AddStat("Per", 30);
+            gs.AddStat("Per", 80); // 110 → 100
+            Assert.AreEqual(100, gs.GetStat("Per"));
+        }
+
+        // ── 스탯 보너스 (로아 제외) ────────────────────────────
+
+        [Test]
+        public void StatBonus_SoloFirst_Plus3()
+        {
+            var gs = MakeState();
+            gs.SetStat("Str", 10); // HaYeEun 선호 = Str, 단독 1등
+            gs.SetStat("Int", 5);
+            Assert.AreEqual(3, AffinityFormula.StatBonus(gs, AffinityFormula.IndexOf("HaYeEun")));
+        }
+
+        [Test]
+        public void StatBonus_TiedFirst_Plus1()
+        {
+            var gs = MakeState();
+            gs.SetStat("Str", 10); // 공동 1등 (Str=Int=10)
+            gs.SetStat("Int", 10);
+            Assert.AreEqual(1, AffinityFormula.StatBonus(gs, AffinityFormula.IndexOf("HaYeEun")));
+        }
+
+        [Test]
+        public void StatBonus_SecondOrLower_Zero()
+        {
+            var gs = MakeState();
+            gs.SetStat("Str", 5);  // 선호 Str이 2등
+            gs.SetStat("Int", 10);
+            Assert.AreEqual(0, AffinityFormula.StatBonus(gs, AffinityFormula.IndexOf("HaYeEun")));
+        }
+
+        [Test]
+        public void StatBonus_PreferredZero_Zero()
+        {
+            var gs = MakeState(); // 모든 스탯 0
+            Assert.AreEqual(0, AffinityFormula.StatBonus(gs, AffinityFormula.IndexOf("HaYeEun")));
+        }
+
+        // ── 로아 피로 보너스 (스탯 보너스 대신) ─────────────────
+
+        [TestCase(69, 0)]
+        [TestCase(70, 3)]
+        [TestCase(79, 3)]
+        [TestCase(80, 6)]
+        [TestCase(89, 6)]
+        [TestCase(90, 10)]
+        [TestCase(100, 10)]
+        public void RoaFatigueBonus_Tiers(int fatigue, int expected)
+        {
+            var gs = MakeState();
+            gs.SetStat("Fatigue", fatigue);
+            Assert.AreEqual(expected, AffinityFormula.RoaFatigueBonus(gs));
+        }
+
+        // ── 총점 = 기본 + 보너스 ───────────────────────────────
+
+        [Test]
+        public void TotalScore_NonRoa_AddsStatBonus()
+        {
+            var gs = MakeState();
+            gs.SetStat("Str", 10); // HaYeEun 단독 1등 → +3
+            AffinityFormula.AddPoint(gs, "HaYeEun", PointCategory.Event, 20);
+            Assert.AreEqual(23, AffinityFormula.TotalScore(gs, "HaYeEun"));
+        }
+
+        [Test]
+        public void TotalScore_Roa_AddsFatigueBonus_NotStatBonus()
+        {
+            var gs = MakeState();
+            gs.SetStat("Str", 99);       // 로아는 스탯 보너스 무시
+            gs.SetStat("Fatigue", 80);   // +6
+            AffinityFormula.AddPoint(gs, "Roa", PointCategory.Event, 30);
+            Assert.AreEqual(36, AffinityFormula.TotalScore(gs, "Roa"));
+        }
+
+        // ── 티어 ───────────────────────────────────────────────
+
+        [TestCase(0, AffinityTier.Stranger)]
+        [TestCase(9, AffinityTier.Stranger)]
+        [TestCase(10, AffinityTier.Acquaintance)]
+        [TestCase(20, AffinityTier.Friend)]
+        [TestCase(30, AffinityTier.CloseFriend)]
+        [TestCase(40, AffinityTier.Love)]
+        [TestCase(99, AffinityTier.Love)]
+        public void Tier_Boundaries(int score, AffinityTier expected)
+        {
+            Assert.AreEqual(expected, AffinityFormula.Tier(score));
+        }
+
+        // ── Event3 재선택 +2 ───────────────────────────────────
+
+        [Test]
+        public void RecordEventChoice_Event3_Reselect_Plus2()
+        {
+            var gs = MakeState();
+            AffinityFormula.RecordEventChoice(gs, "HaYeEun", "Event1", 3);
+            AffinityFormula.RecordEventChoice(gs, "HaYeEun", "Event3", 9);
+            // 3 + 9 + 2(재선택) = 14
+            Assert.AreEqual(14, AffinityFormula.BasePoints(gs, "HaYeEun"));
+            Assert.AreEqual(2, AffinityFormula.EventSelections(gs, "HaYeEun"));
+        }
+
+        [Test]
+        public void RecordEventChoice_Event3_Roa_NoPlus2()
+        {
+            var gs = MakeState();
+            AffinityFormula.RecordEventChoice(gs, "Roa", "Event1", 3);
+            AffinityFormula.RecordEventChoice(gs, "Roa", "Event3", 9);
+            Assert.AreEqual(12, AffinityFormula.BasePoints(gs, "Roa")); // 보정 없음
+        }
+
+        [Test]
+        public void RecordEventChoice_Event3_DifferentHeroine_NoPlus2()
+        {
+            var gs = MakeState();
+            AffinityFormula.RecordEventChoice(gs, "HaYeEun", "Event1", 3);
+            AffinityFormula.RecordEventChoice(gs, "SeoDaEun", "Event3", 9);
+            Assert.AreEqual(9, AffinityFormula.BasePoints(gs, "SeoDaEun")); // 직전 선택 아님
+        }
+
+        // ── 엔딩 판정 ──────────────────────────────────────────
+
+        [Test]
+        public void DetermineEnding_RoaHidden_TakesPriority()
+        {
+            var gs = MakeState();
+            gs.SetStat("Fatigue", 70);
+            AffinityFormula.AddPoint(gs, "Roa", PointCategory.Event, 43); // 43+3=46 ≥ 46
+            // 동시에 다른 히로인을 큰 마진으로 자격 부여해도 로아 우선
+            AffinityFormula.RecordEventChoice(gs, "DoHeewon", "Event1", 80);
+            Assert.AreEqual("Roa", AffinityFormula.DetermineEndingHeroine(gs));
+        }
+
+        [Test]
+        public void DetermineEnding_PicksMaxMargin()
+        {
+            var gs = MakeState(); // 스탯 0 → 보너스 0, 총점 = 기본
+            AffinityFormula.RecordEventChoice(gs, "HaYeEun", "Event1", 35);  // 35-32 = 3
+            AffinityFormula.RecordEventChoice(gs, "SeoDaEun", "Event2", 40); // 40-35 = 5
+            Assert.AreEqual("SeoDaEun", AffinityFormula.DetermineEndingHeroine(gs));
+        }
+
+        [Test]
+        public void DetermineEnding_RequiresEventSelection()
+        {
+            var gs = MakeState();
+            // 임계치는 넘지만 이벤트 선택 0회 → 제외
+            AffinityFormula.AddPoint(gs, "HaYeEun", PointCategory.Dialogue, 40);
+            Assert.IsNull(AffinityFormula.DetermineEndingHeroine(gs));
+        }
+
+        [Test]
+        public void DetermineEnding_NobodyEligible_ReturnsNull()
+        {
+            var gs = MakeState();
+            AffinityFormula.RecordEventChoice(gs, "LeeBom", "Event1", 10); // 10 < 39
+            Assert.IsNull(AffinityFormula.DetermineEndingHeroine(gs));
+        }
+
+        [Test]
+        public void IsHappyEnding_ByThreshold()
+        {
+            var gs = MakeState();
+            AffinityFormula.AddPoint(gs, "LeeBom", PointCategory.Event, 39); // = 임계치 39
+            Assert.IsTrue(AffinityFormula.IsHappyEnding(gs, "LeeBom"));
+            AffinityFormula.AddPoint(gs, "LeeBom", PointCategory.Event, -1); // 38 < 39
+            Assert.IsFalse(AffinityFormula.IsHappyEnding(gs, "LeeBom"));
+        }
+
+        // ── lovePoints 동기화 ──────────────────────────────────
+
+        [Test]
+        public void AddPoint_SyncsLovePoints_WithBonus()
+        {
+            var gs = MakeState();
+            gs.SetStat("Str", 10); // HaYeEun +3
+            AffinityFormula.AddPoint(gs, "HaYeEun", PointCategory.Event, 20);
+            Assert.AreEqual(23, gs.GetLove("HaYeEun")); // 총점(보너스 포함)이 lovePoints에 반영
+        }
+    }
+}

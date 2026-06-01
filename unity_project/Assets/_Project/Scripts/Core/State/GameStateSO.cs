@@ -48,6 +48,40 @@ namespace LoveAlgo.Core
 
         public void AddLove(string heroineId, int delta) => SetLove(heroineId, GetLove(heroineId) + delta);
 
+        // ── 스탯 동기 접근 (REWRITE_FEATURE_INVENTORY §5: Str/Int/Soc/Per/Fatigue, 0~MaxStat 클램프) ──
+        // 문자열 id로 접근하는 이유: 호감도 공식·CSV 조건(Stat:Id>=N)이 id 기반이라 필드 직접 노출보다
+        // 일관적. "Int"는 예약어 회피로 내부 필드명이 intel이므로 여기서 매핑한다.
+        public const int MinStat = 0;
+        public const int MaxStat = 100;
+
+        public int GetStat(string statId)
+        {
+            switch (statId)
+            {
+                case "Str": return _runtime.str;
+                case "Int": return _runtime.intel;
+                case "Soc": return _runtime.soc;
+                case "Per": return _runtime.per;
+                case "Fatigue": return _runtime.fatigue;
+                default: return 0;
+            }
+        }
+
+        public void SetStat(string statId, int value)
+        {
+            int v = Mathf.Clamp(value, MinStat, MaxStat);
+            switch (statId)
+            {
+                case "Str": _runtime.str = v; break;
+                case "Int": _runtime.intel = v; break;
+                case "Soc": _runtime.soc = v; break;
+                case "Per": _runtime.per = v; break;
+                case "Fatigue": _runtime.fatigue = v; break;
+            }
+        }
+
+        public void AddStat(string statId, int delta) => SetStat(statId, GetStat(statId) + delta);
+
         // ── 플래그 동기 접근 ──
         public bool GetFlag(string name)
         {
