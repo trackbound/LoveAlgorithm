@@ -1,9 +1,8 @@
 {
-    "name": "LoveAlgo.Affinity",
+    "name": "LoveAlgo.Data",
     "rootNamespace": "",
     "references": [
-        "LoveAlgo.Core",
-        "LoveAlgo.Data"
+        "LoveAlgo.Core"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Reflection;
 using NUnit.Framework;
 using UnityEngine;
 using LoveAlgo.Core;
@@ -18,6 +20,20 @@ namespace LoveAlgo.Tests.Editor
             var so = ScriptableObject.CreateInstance<GameStateSO>();
             so.ResetRuntime();
             return so;
+        }
+
+        // 정의표는 전역 static이므로 각 테스트 후 폴백으로 복원 → 테스트 격리.
+        [TearDown]
+        public void RestoreFallbackDefs() => AffinityFormula.ResetToFallback();
+
+        /// <summary>private [SerializeField] heroines 리스트를 테스트용으로 주입.</summary>
+        static GameBalanceSO MakeBalance(params GameBalanceSO.HeroineEntry[] entries)
+        {
+            var bal = ScriptableObject.CreateInstance<GameBalanceSO>();
+            typeof(GameBalanceSO)
+                .GetField("heroines", BindingFlags.NonPublic | BindingFlags.Instance)
+                .SetValue(bal, new List<GameBalanceSO.HeroineEntry>(entries));
+            return bal;
         }
 
         // ── 스탯 API (Core 보강) ───────────────────────────────
@@ -225,6 +241,60 @@ namespace LoveAlgo.Tests.Editor
             gs.SetStat("Str", 10); // HaYeEun +3
             AffinityFormula.AddPoint(gs, "HaYeEun", PointCategory.Event, 20);
             Assert.AreEqual(23, gs.GetLove("HaYeEun")); // 총점(보너스 포함)이 lovePoints에 반영
+        }
+
+        // ── Definition 연결 (M2 slice2: GameBalanceSO → 정의표 교체) ──
+
+        [Test]
+        public void Configure_ReplacesDefs_FromSO()
+        {
+            var bal = MakeBalance(
+                new GameBalanceSO.HeroineEntry { id = "Roa",     endingThreshold = 11, preferredStat = "Fatigue" },
+                new GameBalanceSO.HeroineEntry { id = "TestGirl", endingThreshold = 77, preferredStat = "Str" });
+            AffinityFormula.Configure(bal);
+
+            Assert.AreEqual(2, AffinityFormula.Count);
+            Assert.AreEqual(77, AffinityFormula.ThresholdOf("TestGirl")); // SO 값이 폴백을 대체
+            Assert.AreEqual(11, AffinityFormula.ThresholdOf("Roa"));      // 폴백 46이 아님
+        }
+
+        [Test]
+        public void Configure_NullOrEmpty_KeepsFallback()
+        {
+            AffinityFormula.Configure(null);
+            Assert.AreEqual(5, AffinityFormula.Count);
+            Assert.AreEqual(46, AffinityFormula.ThresholdOf("Roa"));
+
+            AffinityFormula.Configure(MakeBalance()); // 빈 리스트
+            Assert.AreEqual(46, AffinityFormula.ThresholdOf("Roa"));
+        }
+
+        [Test]
+        public void ResetToFallback_RestoresConstants()
+        {
+            AffinityFormula.Configure(MakeBalance(
+                new GameBalanceSO.HeroineEntry { id = "X", endingThreshold = 1, preferredStat = "Str" }));
+            AffinityFormula.ResetToFallback();
+
+            Assert.AreEqual(5, AffinityFormula.Count);
+            Assert.AreEqual(46, AffinityFormula.ThresholdOf("Roa"));
+            Assert.AreEqual(32, AffinityFormula.ThresholdOf("HaYeEun"));
+        }
+
+        // 실제 GameBalance.asset 내용이 인벤토리 §4 임계치와 일치하는지(드리프트 검증).
+        [Test]
+        public void RealAsset_Thresholds_Match_Inventory()
+        {
+            var bal = Resources.Load<GameBalanceSO>("Data/GameBalance");
+            Assert.IsNotNull(bal, "Resources/Data/GameBalance.asset 로드 실패");
+            AffinityFormula.Configure(bal);
+
+            Assert.AreEqual(46, AffinityFormula.ThresholdOf("Roa"));
+            Assert.AreEqual(32, AffinityFormula.ThresholdOf("HaYeEun"));
+            Assert.AreEqual(35, AffinityFormula.ThresholdOf("SeoDaEun"));
+            Assert.AreEqual(39, AffinityFormula.ThresholdOf("LeeBom"));
+            Assert.AreEqual(43, AffinityFormula.ThresholdOf("DoHeewon"));
+            Assert.AreEqual("Roa", AffinityFormula.HeroineIdAt(0)); // 인덱스 0 = 로아(히든 루트) 유지
         }
     }
 }

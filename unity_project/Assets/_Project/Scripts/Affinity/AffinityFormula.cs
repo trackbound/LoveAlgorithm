@@ -36,7 +36,8 @@ namespace LoveAlgo.Affinity
         }
 
         // 인덱스 0 = 로아(히든 루트). 순서는 구 GameConstants와 동일.
-        static readonly HeroineDef[] Heroines =
+        // 검증된 폴백 상수표(인벤토리 §4). GameBalance.asset이 없거나 비었을 때(헤드리스/테스트) 사용.
+        static readonly HeroineDef[] FallbackHeroines =
         {
             new("Roa",      46, "Fatigue"),
             new("HaYeEun",  32, "Str"),
@@ -45,10 +46,41 @@ namespace LoveAlgo.Affinity
             new("DoHeewon", 43, "Per"),
         };
 
+        // 활성 정의표. 부팅 시 Configure(GameBalanceSO)로 교체, 미설정 시 폴백.
+        static HeroineDef[] Heroines = FallbackHeroines;
+
         // 스탯 보너스 산정 대상(피로 제외 4대 스탯).
         static readonly string[] CombatStats = { "Str", "Int", "Soc", "Per" };
 
         const string RoaId = "Roa";
+
+        // ── 정의 주입 (Definition 소스 연결) ───────────────────
+
+        /// <summary>
+        /// GameBalance.asset(Definition)으로 히로인 정의표를 교체한다.
+        /// 부팅 시 1회 호출(호출 주체=매니저, 후속 마일스톤). 순수 함수 원칙 유지를 위해
+        /// 이 메서드만 SO를 읽고(Resources.Load는 호출자 몫), 채점 함수는 GameStateSO만 받는다.
+        /// 인자가 null이거나 히로인 항목이 없으면 폴백 상수표로 되돌린다.
+        /// </summary>
+        public static void Configure(GameBalanceSO balance)
+        {
+            if (balance == null || balance.Heroines.Count == 0)
+            {
+                Heroines = FallbackHeroines;
+                return;
+            }
+
+            var defs = new HeroineDef[balance.Heroines.Count];
+            for (int i = 0; i < balance.Heroines.Count; i++)
+            {
+                var h = balance.Heroines[i];
+                defs[i] = new HeroineDef(h.id, h.endingThreshold, h.preferredStat);
+            }
+            Heroines = defs;
+        }
+
+        /// <summary>정의표를 검증된 폴백 상수표로 되돌린다(테스트 격리/부팅 리셋용).</summary>
+        public static void ResetToFallback() => Heroines = FallbackHeroines;
 
         // ── 정의 조회 ──────────────────────────────────────────
 
