@@ -36,7 +36,7 @@
 - 운영: 위험도 게이트 + 마일스톤 + 형태문서 금지 + 커밋 "왜". (ADR-010)
 - 구조: 코드 `_Project/Scripts/`(피처별 asmdef) + 아트/프리팹 타입별 중앙화. (ADR-011)
 - 재설계(전사 금지) + 세션 연속성 규율 + 연출 수치 SO화. (ADR-012)
-- asmdef 도입 진행: 현재 `LoveAlgo.Core`·`LoveAlgo.Data`·`LoveAlgo.Affinity` 3개(전부 autoReferenced, 체인 Core←Data←Affinity) + 옛 Assembly-CSharp 공존.
+- asmdef 도입 진행: 현재 `LoveAlgo.Core`·`LoveAlgo.Data`·`LoveAlgo.Affinity`·`LoveAlgo.Schedule` 4개(전부 autoReferenced; Data·Affinity·Schedule 모두 Core 의존, Affinity는 Data도 의존) + 옛 Assembly-CSharp 공존.
 
 ---
 
@@ -79,7 +79,11 @@
   - **범위 결정(과설계 게이트)**: 구 `DayLoopController`의 페이드/UI/ScriptRunner/AutoSave/세션버프/인라인스케줄=오케스트레이션(M4/M5), 스케줄 효과표·투자 RNG=Schedule 모듈(M4)로 분리. slice4는 진행 공식 순수 코어만.
   - **구 코드 무변경**: 구 `DayLoopController`/`GameState`/`ScheduleTable`은 옛 모듈이 사용 → 공존, 매니페스트 미변경.
   - **작동 증거**: 헤드리스 배치(6000.4.3f1) 컴파일 0에러 + **EditMode 71/71 통과**(63 + slice4 8: BeginRun/Consume/Advance/엔딩경계 30→31/Money바닥/직렬화 라운드트립).
-- ▶️ **다음 착수**: M2 공식 레이어(호감도·스탯·데이루프 코어) 마무리됨. 후보 — (a) M4 Schedule 모듈(ScheduleEffect 적용·투자 RNG·세션버프를 새 구조로) 또는 (b) M3 내러티브/스테이지 착수. 감독 우선순위 확인 후 진행.
+- ✅ **M4 slice1 커밋됨 (Schedule 데이터/공식층 이식)**: 감독이 다음 우선순위로 **M4 Schedule** 선택.
+  - **신규 asmdef `LoveAlgo.Schedule`(refs Core)** at `Scripts/Schedule/`. `ScheduleType.cs`(ScheduleType/Category/Effect + ScheduleTable)·`ScheduleDataSO.cs`를 `git mv`로 이식 — 네임스페이스 `LoveAlgo.Schedule`·GUID 보존(R100), `MoneyFormat`(Core)만 의존이라 깨짐 없음. 구 UI(`ScheduleUI`/`ScheduleSlot`/`ScheduleModule` 등, namespace 동일·Assembly-CSharp 잔류)는 auto-ref로 무변경 컴파일.
+  - **신규 순수 적용기 `ScheduleEffects.cs`**: `Apply(gs, effect)`(스탯/소지금 변화, 클램프)·`ApplyInvest(gs, multiplier)`(±50~100%, 배수=호출자 주입으로 RNG 분리, 0 바닥, 실반영액 반환). 구 `DayLoopController.OnScheduleSelected`의 순수 부분만 재현 — 토스트/세션버프/RNG/투자 게이트는 통합층(slice2)·Shop(별도) 소관.
+  - **작동 증거**: 헤드리스 배치(6000.4.3f1) 컴파일 0에러 + **EditMode 81/81 통과**(71 + slice1 10: 적용/클램프/투자 바닥/카테고리·9종·Loading제한).
+- ▶️ **다음 착수**: M4 slice2 — 🔴 Schedule **통합층 재작성**. 구 `ScheduleModule`(Service Locator `ISchedule`/`ISimulationSubMode`, Services.Register=금지선4)을 EventBus+State SO 패턴으로 교체. ScheduleEffects.Apply 직후 스탯변경 이벤트(EventBus) 발행 설계 포함. 이후 ScheduleUI(M5)·세션버프(Shop, M4) 연동. **설계부터 감독 검토 권장**.
 
 ### 워크플로우 규율 (directive)
 - 무언가 만들 때마다 **전용 테스트 씬 + 플레이모드로 작동 증거**(dev_guide 증거우선).
