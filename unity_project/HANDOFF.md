@@ -73,7 +73,13 @@
   - **무변경 이식**: `.meta` GUID·이력 보존(`git mv`, R100=내용 무변경), 네임스페이스(`LoveAlgo` / `LoveAlgo.Core`) 유지 → 구 모듈 57개 소비처 무변경 컴파일. `GameTimeline`(ns `LoveAlgo.Core`)은 부모 ns 탐색으로 `LoveAlgo.GameBalanceSO`를, Data→Core 참조로 `DayType`/`StoryArc`를 그대로 해소.
   - **폴백 유지(정리 결론)**: §4 폴백 상수(46/32/35/39/43, actionsPerDay/maxDay 등)는 헤드리스/테스트 격리용으로 보존 — `AffinityFormula` 폴백과 동일 근거. 삭제 시 SO 부재 상황에서 회귀 위험이라 미삭제가 정합적.
   - **작동 증거**: 에디터 미실행 → 헤드리스 배치(`Unity 6000.4.3f1 -batchmode -runTests -testPlatform EditMode`) 실행, 컴파일 0에러 + **EditMode 63/63 통과**(exit 0). 전 어셈블리 컴파일 확인.
-- ▶️ **다음 착수**: M2 slice4 — 스탯/데이루프 공식 모듈. 구 `DayLoopController`/`GameState`의 데이루프·스탯 진행 로직을 새 구조(GameStateSO + 순수함수/이벤트)로 재구현. `GameTimeline` 조회 API는 이제 Data asmdef에서 그대로 사용 가능.
+- ✅ **M2 slice4 커밋됨 (데이루프 진행 공식)**: 🔴 GameStateData/SO 스키마 추가 + 순수 진행 모듈.
+  - **스키마(세이브) 추가-온리**: `GameStateData.remainingActions`(int, §7 세이브 필드). `GameStateSO`에 `Day`/`RemainingActions` 카운터 접근자 + `Money`(long, 세터 0 바닥 클램프=구 `Mathf.Max(0,…)` 재현)/`AddMoney`. JsonUtility 누락 필드=기본값이라 기존 세이브 호환(현재 실세이브 없음).
+  - **신규 `Scripts/Data/DayLoop.cs`(ns `LoveAlgo.Core`, Data asmdef)**: 순수 정적 함수 `BeginRun`(1일차+행동 풀충전)·`ConsumeAction`(소모, 0이하면 하루종료 신호)·`AdvanceDay`(일차+1·풀충전·`MaxDay` 초과 시 `EnteredEnding`)·`IsEndingReached`·`IsFreeDay`/`IsEventDay`(GameTimeline 위임). MaxDay30/ActionsPerDay2는 GameConstants에서 로드 → Data asmdef 소속.
+  - **범위 결정(과설계 게이트)**: 구 `DayLoopController`의 페이드/UI/ScriptRunner/AutoSave/세션버프/인라인스케줄=오케스트레이션(M4/M5), 스케줄 효과표·투자 RNG=Schedule 모듈(M4)로 분리. slice4는 진행 공식 순수 코어만.
+  - **구 코드 무변경**: 구 `DayLoopController`/`GameState`/`ScheduleTable`은 옛 모듈이 사용 → 공존, 매니페스트 미변경.
+  - **작동 증거**: 헤드리스 배치(6000.4.3f1) 컴파일 0에러 + **EditMode 71/71 통과**(63 + slice4 8: BeginRun/Consume/Advance/엔딩경계 30→31/Money바닥/직렬화 라운드트립).
+- ▶️ **다음 착수**: M2 공식 레이어(호감도·스탯·데이루프 코어) 마무리됨. 후보 — (a) M4 Schedule 모듈(ScheduleEffect 적용·투자 RNG·세션버프를 새 구조로) 또는 (b) M3 내러티브/스테이지 착수. 감독 우선순위 확인 후 진행.
 
 ### 워크플로우 규율 (directive)
 - 무언가 만들 때마다 **전용 테스트 씬 + 플레이모드로 작동 증거**(dev_guide 증거우선).
