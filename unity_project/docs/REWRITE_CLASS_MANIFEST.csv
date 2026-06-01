@@ -1,0 +1,302 @@
+모듈,파일,클래스,종류,기능,처리추천,상태
+Core,Assets/_Project/Core/Bootstrap.cs,Bootstrap,static,"앱 라이프사이클 EventBus/Services 정리",유지,대기
+Core,Assets/_Project/Core/DayEventTable.cs,DayTiming,enum,"데이룹 이벤트 발생 시점(Morning/Evening)",재작성,대기
+Core,Assets/_Project/Core/DayEventTable.cs,DayEvent,class,"데이 이벤트 정의(스크립트명/조건/우선순위)",재작성,대기
+Core,Assets/_Project/Core/DayEventTable.cs,DayEventTable,static,"일자+시점→이벤트 테이블, 발동기록",재작성,대기
+Core,Assets/_Project/Core/DayLoopController.cs,DayLoopController,class,"하루 루프: 스케줄선택→스탯적용→행동소모→종료",재작성,대기
+Core,Assets/_Project/Core/Editor/GameStateInspectorWindow.cs,GameStateInspectorWindow,Editor,"GameState 디버그 인스펙터",유지,대기
+Core,Assets/_Project/Core/EntryRouter.cs,EntryRouter,MonoBehaviour,"진입 라우터 LockScreen/Title 분기",재작성,대기
+Core,Assets/_Project/Core/GameBalanceSO.cs,HeroineEntry,class,"히로인 설정 항목",재작성,대기
+Core,Assets/_Project/Core/GameBalanceSO.cs,DayEntry,class,"타임라인 데이 항목",재작성,대기
+Core,Assets/_Project/Core/GameBalanceSO.cs,GameBalanceSO,ScriptableObject,"게임 밸런스 SO(타임라인/히로인/상수)",유지,대기
+Core,Assets/_Project/Core/GameConstants.cs,HeroineConfig,struct,"히로인 설정 구조체",재작성,대기
+Core,Assets/_Project/Core/GameConstants.cs,GameConstants,static,"전역 상수(히로인/스탯/일수/임계치)",유지,대기
+Core,Assets/_Project/Core/GameFlowController.cs,GameFlowController,class,"Phase 전환 전담(Title~Ending)",재작성,대기
+Core,Assets/_Project/Core/GameFlowJumper.cs,GameFlowJumper,static,"디버그 통합 점프",재작성,대기
+Core,Assets/_Project/Core/GameManager.cs,GameManager,MonoBehaviour,"전체 진입점/상태 허브(매니저)",재작성,대기
+Core,Assets/_Project/Core/GamePhase.cs,GamePhase,enum,"게임 Phase 정의",유지,대기
+Core,Assets/_Project/Core/GameState.cs,GameState,MonoBehaviour,"런타임 상태(호감도/스탯/돈/플래그)+조건평가",재작성,대기
+Core,Assets/_Project/Core/GameTimeline.cs,StoryArc,enum,"스토리 아크",유지,대기
+Core,Assets/_Project/Core/GameTimeline.cs,DayType,enum,"날짜 타입",유지,대기
+Core,Assets/_Project/Core/GameTimeline.cs,DayInfo,class,"하루 일정 정보",재작성,대기
+Core,Assets/_Project/Core/GameTimeline.cs,GameTimeline,static,"30일 타임라인 정적 테이블(CRITICAL 수치)",재작성,대기
+Core,Assets/_Project/Core/LoadingScreen.cs,LoadingScreen,MonoBehaviour,"로딩 화면",재작성,대기
+Core,Assets/_Project/Core/QuickPlayLoader.cs,QuickPlayLoader,MonoBehaviour,"QuickPlay 데이터 로더(디버그)",재작성,대기
+Core,Assets/_Project/Core/QuickPlayLoader.cs,QuickPlayData,class,"QuickPlay 데이터",재작성,대기
+Core,Assets/_Project/Core/QuickPlayLoader.cs,StatEntry,class,"스탯 항목",재작성,대기
+Core,Assets/_Project/Core/SceneBootstrapper.cs,SceneBootstrapper,MonoBehaviour,"씬 부트스트랩",유지,대기
+Core,Assets/_Project/Core/SessionController.cs,SessionController,class,"새게임/이어하기/로드/자동저장 조정",재작성,대기
+Core,Assets/_Project/Core/StoryInputHandler.cs,StoryInputHandler,MonoBehaviour,"스토리 진행 입력(스페이스/클릭)",재작성,대기
+Common,Assets/_Project/Common/EventBus.cs,EventBus,static,"강타입 struct 이벤트 버스",유지,대기
+Common,Assets/_Project/Common/EventBus.cs,EventBusAutoUnsubscriber,class,"EventBus 자동해제 컴포넌트",유지,대기
+Common,Assets/_Project/Common/EventBus.cs,EventBusMonoExtensions,static,"자동해제 구독 확장",유지,대기
+Common,Assets/_Project/Common/HangulToDubeolsik.cs,HangulToDubeolsik,static,"한글→두벌식 변환",유지,대기
+Common,Assets/_Project/Common/Headless.cs,Headless,static,"헤드리스 모드 토글",유지,대기
+Common,Assets/_Project/Common/ListenerBag.cs,ListenerBag,class,"UI 리스너 일괄 정리",유지,대기
+Common,Assets/_Project/Common/Log.cs,Log,static,"Conditional 로거",유지,대기
+Common,Assets/_Project/Common/MoneyFormat.cs,MoneyFormat,static,"금액 포맷(₩)",유지,대기
+Common,Assets/_Project/Common/NameValidator.cs,NameValidator,static,"플레이어 이름 검증",유지,대기
+Common,Assets/_Project/Common/NameValidator.cs,Result,enum,"이름 검증 결과",유지,대기
+Common,Assets/_Project/Common/Services.cs,Services,static,"서비스 로케이터",폐기,대기
+Common,Assets/_Project/Common/Services.cs,ServiceNotRegisteredException,class,"Services 미등록 예외",폐기,대기
+Common,Assets/_Project/Common/SingletonMonoBehaviour.cs,SingletonMonoBehaviour<T>,abstract,"싱글톤 베이스",유지,대기
+Contracts,Assets/_Project/Contracts/IAffinity.cs,IAffinity,interface,"호감도 모듈 계약",폐기,대기
+Contracts,Assets/_Project/Contracts/IAudio.cs,IAudio,interface,"오디오 모듈 계약",폐기,대기
+Contracts,Assets/_Project/Contracts/IDayLoop.cs,IDayLoop,interface,"진행 흐름 모듈 계약",폐기,대기
+Contracts,Assets/_Project/Contracts/ILockScreen.cs,ILockScreen,interface,"PC잠금 모듈 계약",폐기,대기
+Contracts,Assets/_Project/Contracts/IMiniGame.cs,IMiniGame,interface,"미니게임 모듈 계약",폐기,대기
+Contracts,Assets/_Project/Contracts/INarrative.cs,INarrative,interface,"내러티브 모듈 계약",폐기,대기
+Contracts,Assets/_Project/Contracts/IPhone.cs,IPhone,interface,"폰 모듈 계약",폐기,대기
+Contracts,Assets/_Project/Contracts/ISave.cs,ISave,interface,"세이브 모듈 계약",폐기,대기
+Contracts,Assets/_Project/Contracts/ISchedule.cs,ISchedule,interface,"스케줄 모듈 계약",폐기,대기
+Contracts,Assets/_Project/Contracts/ISettings.cs,ISettings,interface,"설정 모듈 계약",폐기,대기
+Contracts,Assets/_Project/Contracts/IShop.cs,IShop,interface,"상점 모듈 계약",폐기,대기
+Contracts,Assets/_Project/Contracts/ISimulation.cs,ISimulationSubMode,interface,"시뮬 서브모드 계약",폐기,대기
+Contracts,Assets/_Project/Contracts/ISimulation.cs,ISimulation,interface,"시뮬 컨텍스트 계약",폐기,대기
+Contracts,Assets/_Project/Contracts/IStage.cs,IStage,interface,"스테이지 모듈 계약",폐기,대기
+Contracts,Assets/_Project/Contracts/IStats.cs,IStats,interface,"스탯 모듈 계약",폐기,대기
+Contracts,Assets/_Project/Contracts/ITitle.cs,ITitle,interface,"타이틀 모듈 계약",폐기,대기
+Contracts,Assets/_Project/Contracts/ITutorial.cs,ITutorial,interface,"튜토리얼 모듈 계약",폐기,대기
+Contracts,Assets/_Project/Contracts/Events/AffinityChangedEvent.cs,AffinityChangedEvent,struct,"호감도 변경 이벤트",유지,대기
+Contracts,Assets/_Project/Contracts/Events/BGMChangedEvent.cs,BGMChangedEvent,struct,"BGM 변경 이벤트",유지,대기
+Contracts,Assets/_Project/Contracts/Events/DayChangedEvent.cs,DayChangedEvent,struct,"일자 변경 이벤트",유지,대기
+Contracts,Assets/_Project/Contracts/Events/GamePhaseChangedEvent.cs,GamePhaseChangedEvent,struct,"Phase 변경 이벤트",유지,대기
+Contracts,Assets/_Project/Contracts/Events/PhaseChangedEvent.cs,PhaseChangedEvent,struct,"EventPhase 변경 이벤트",유지,대기
+Contracts,Assets/_Project/Contracts/Events/StatChangedEvent.cs,StatChangedEvent,struct,"스탯 변경 이벤트",유지,대기
+Narrative,Assets/_Project/Modules/Narrative/Code/BackupManager.cs,BackupManager,static,"CSV 자동 백업",유지,대기
+Narrative,Assets/_Project/Modules/Narrative/Code/ChangelogWriter.cs,ChangelogWriter,static,"시나리오 편집 이력 로깅",유지,대기
+Narrative,Assets/_Project/Modules/Narrative/Code/ChangelogWriter.cs,ChangeEvent,struct,"변경 이벤트 데이터",유지,대기
+Narrative,Assets/_Project/Modules/Narrative/Code/CsvUtility.cs,CsvUtility,static,"CSV 파싱 공통 유틸",유지,대기
+Narrative,Assets/_Project/Modules/Narrative/Code/CsvUtility.cs,CsvRecord,struct,"CSV 레코드",재작성,대기
+Narrative,Assets/_Project/Modules/Narrative/Code/Engine/CommandAliases.cs,CommandAliases,static,"FX/명령 별칭 정규화",재작성,대기
+Narrative,Assets/_Project/Modules/Narrative/Code/Engine/ExecutionDependencies.cs,ExecutionDependencies,static,"핸들러용 정적 서비스 주입",폐기,대기
+Narrative,Assets/_Project/Modules/Narrative/Code/Engine/ILineExecutor.cs,ILineExecutor,interface,"라인 실행기 인터페이스",폐기,대기
+Narrative,Assets/_Project/Modules/Narrative/Code/Engine/LineHandlerRegistry.cs,IResettableExecutor,interface,"상태 리셋 인터페이스",폐기,대기
+Narrative,Assets/_Project/Modules/Narrative/Code/Engine/LineHandlerRegistry.cs,LineHandlerRegistry,static,"타입→실행기 레지스트리",재작성,대기
+Narrative,Assets/_Project/Modules/Narrative/Code/Engine/MarkRegistry.cs,MarkRegistry,static,"Mark 라벨→인덱스 매핑",재작성,대기
+Narrative,Assets/_Project/Modules/Narrative/Code/Engine/ScriptEngine.cs,ScriptEngine,class,"스크립트 실행 루프(라인 디스패치)",재작성,대기
+Narrative,Assets/_Project/Modules/Narrative/Code/Engine/ScriptValidator.cs,ScriptValidator,static,"Preflight CSV 검증",유지,대기
+Narrative,Assets/_Project/Modules/Narrative/Code/Engine/ScriptValidator.cs,Violation,class,"검증 오류 항목",재작성,대기
+Narrative,Assets/_Project/Modules/Narrative/Code/Engine/FXCommandSignatures.cs,FXCommandSignatures,static,"FX 명령 시그니처",재작성,대기
+Narrative,Assets/_Project/Modules/Narrative/Code/Engine/FXCommandSignatures.cs,Sig,struct,"명령 인자 시그니처",재작성,대기
+Narrative,Assets/_Project/Modules/Narrative/Code/Engine/Handlers/TextLineExecutor.cs,TextLineExecutor,class,"대사/나레이션 표시",재작성,대기
+Narrative,Assets/_Project/Modules/Narrative/Code/Engine/Handlers/CharLineExecutor.cs,CharLineExecutor,class,"캐릭터 제어",재작성,대기
+Narrative,Assets/_Project/Modules/Narrative/Code/Engine/Handlers/BGLineExecutor.cs,BGLineExecutor,class,"배경 전환",재작성,대기
+Narrative,Assets/_Project/Modules/Narrative/Code/Engine/Handlers/CGLineExecutor.cs,CGLineExecutor,class,"CG 표시/종료",재작성,대기
+Narrative,Assets/_Project/Modules/Narrative/Code/Engine/Handlers/ChoiceLineExecutor.cs,ChoiceLineExecutor,class,"선택지 표시+분기",재작성,대기
+Narrative,Assets/_Project/Modules/Narrative/Code/Engine/Handlers/FXLineExecutor.cs,FXLineExecutor,class,"시각효과+매크로 디스패치",재작성,대기
+Narrative,Assets/_Project/Modules/Narrative/Code/Engine/Handlers/OverlayLineExecutor.cs,OverlayLineExecutor,class,"오버레이 제어",재작성,대기
+Narrative,Assets/_Project/Modules/Narrative/Code/Engine/Handlers/PlaceLineExecutor.cs,PlaceLineExecutor,class,"장소 배너(fire-and-forget)",재작성,대기
+Narrative,Assets/_Project/Modules/Narrative/Code/Engine/Handlers/SDLineExecutor.cs,SDLineExecutor,class,"SD 컷씬 표시",재작성,대기
+Narrative,Assets/_Project/Modules/Narrative/Code/Engine/Handlers/SoundLineExecutor.cs,SoundLineExecutor,class,"오디오 재생",재작성,대기
+Narrative,Assets/_Project/Modules/Narrative/Code/Engine/Flow/JumpFlowCommand.cs,JumpFlowCommand,static,"Jump(무한루프 방지)",재작성,대기
+Narrative,Assets/_Project/Modules/Narrative/Code/Engine/Flow/IfFlowCommand.cs,IfFlowCommand,static,"If 조건 분기",재작성,대기
+Narrative,Assets/_Project/Modules/Narrative/Code/Engine/Flow/MarkFlowCommand.cs,MarkFlowCommand,static,"Mark 경계 마커",재작성,대기
+Narrative,Assets/_Project/Modules/Narrative/Code/Engine/Flow/LoadingSceneFlowCommand.cs,LoadingSceneFlowCommand,static,"로딩화면 표시",재작성,대기
+Narrative,Assets/_Project/Modules/Narrative/Code/Engine/Flow/LockScreenFlowCommand.cs,LockScreenFlowCommand,static,"PC잠금 호출",재작성,대기
+Narrative,Assets/_Project/Modules/Narrative/Code/Engine/Flow/MessageFlowCommand.cs,MessageFlowCommand,static,"메신저 메시지 트리거",재작성,대기
+Narrative,Assets/_Project/Modules/Narrative/Code/Engine/Flow/DayFlowCommand.cs,DayFlowCommand,static,"CurrentDay 강제",재작성,대기
+Narrative,Assets/_Project/Modules/Narrative/Code/Engine/Flow/AffinityFlowCommand.cs,AffinityFlowCommand,static,"호감도 호출",재작성,대기
+Narrative,Assets/_Project/Modules/Narrative/Code/Engine/Flow/MiniGameFlowCommand.cs,MiniGameFlowCommand,static,"미니게임 실행(await)",재작성,대기
+Narrative,Assets/_Project/Modules/Narrative/Code/Engine/Flow/ScheduleFlowCommand.cs,ScheduleFlowCommand,static,"스케줄 UI+인라인",재작성,대기
+Narrative,Assets/_Project/Modules/Narrative/Code/Engine/Flow/UsernameFlowCommand.cs,UsernameFlowCommand,static,"이름 입력 UI",재작성,대기
+Narrative,Assets/_Project/Modules/Narrative/Code/Engine/Macros/DayStartMacroExecutor.cs,DayStartMacroExecutor,static,"하루 시작 매크로",재작성,대기
+Narrative,Assets/_Project/Modules/Narrative/Code/Engine/Macros/DayStartMacroExecutor.cs,DayStartMode,enum,"DayStart 모드",재작성,대기
+Narrative,Assets/_Project/Modules/Narrative/Code/Engine/Macros/DayEndMacroExecutor.cs,DayEndMacroExecutor,static,"하루 종료 연출",재작성,대기
+Narrative,Assets/_Project/Modules/Narrative/Code/Engine/Macros/DayEndMacroExecutor.cs,DayEndMode,enum,"DayEnd 모드",재작성,대기
+Narrative,Assets/_Project/Modules/Narrative/Code/Engine/Macros/NextDayMacroExecutor.cs,NextDayMacroExecutor,static,"DayEnd+DayStart sugar",재작성,대기
+Narrative,Assets/_Project/Modules/Narrative/Code/Engine/Macros/SceneStartMacroExecutor.cs,SceneStartMacroExecutor,static,"장면 시작 매크로",재작성,대기
+Narrative,Assets/_Project/Modules/Narrative/Code/Engine/Macros/SceneEndMacroExecutor.cs,SceneEndMacroExecutor,static,"장면 전환",재작성,대기
+Narrative,Assets/_Project/Modules/Narrative/Code/Engine/Macros/SetupMacroExecutor.cs,SetupMacroExecutor,static,"장면 즉시 세팅",재작성,대기
+Narrative,Assets/_Project/Modules/Narrative/Code/NarrativeModule.cs,NarrativeModule,MonoBehaviour,"내러티브 모듈 진입점",재작성,대기
+Narrative,Assets/_Project/Modules/Narrative/Code/ScriptCsvSerializer.cs,ScriptCsvSerializer,static,"ScriptLine↔CSV 직렬화",유지,대기
+Narrative,Assets/_Project/Modules/Narrative/Code/ScriptLine.cs,LineType,enum,"CSV 라인 타입",재작성,대기
+Narrative,Assets/_Project/Modules/Narrative/Code/ScriptLine.cs,NextType,enum,"진행 방식",재작성,대기
+Narrative,Assets/_Project/Modules/Narrative/Code/ScriptLine.cs,ScriptLine,class,"CSV 한 줄 데이터",재작성,대기
+Narrative,Assets/_Project/Modules/Narrative/Code/ScriptParser.cs,ScriptParser,static,"CSV 스토리 파서",유지,대기
+Narrative,Assets/_Project/Modules/Narrative/Code/ScriptRunner.cs,ScriptRunner,MonoBehaviour,"스토리 실행기(싱글톤)",재작성,대기
+Narrative,Assets/_Project/Modules/Narrative/Code/StageSyncLog.cs,StageSyncLog,static,"무대 동기화 로그",유지,대기
+Narrative,Assets/_Project/Modules/Narrative/Code/StoryAssetLoader.cs,StoryAssetLoader,static,"시나리오 CSV 로딩/저장",유지,대기
+Narrative,Assets/_Project/Modules/Narrative/Code/StoryMappings.cs,StoryMappings,static,"스토리 매핑(캐릭터/오버레이)",유지,대기
+Narrative,Assets/_Project/Modules/Narrative/Code/StoryMappings.cs,Character,class,"캐릭터 메타",재작성,대기
+Narrative,Assets/_Project/Modules/Narrative/Code/StoryMappings.cs,Overlay,class,"오버레이 메타",재작성,대기
+Narrative,Assets/_Project/Modules/Narrative/UI/DialogueUI.cs,DialogueUI,MonoBehaviour,"대사창 UI(타이핑+인라인태그)",재작성,대기
+Narrative,Assets/_Project/Modules/Narrative/UI/DialogueUI.cs,DialogueLogEntry,struct,"대사 로그 항목",재작성,대기
+Narrative,Assets/_Project/Modules/Narrative/UI/DialogueUI.cs,SegmentType,enum,"텍스트 세그먼트 타입",재작성,대기
+Narrative,Assets/_Project/Modules/Narrative/UI/DialogueUI.cs,TextSegment,struct,"파싱된 텍스트 세그먼트",재작성,대기
+Narrative,Assets/_Project/Modules/Narrative/UI/ChoicePopup.cs,ChoicePopup,MonoBehaviour,"선택지 UI",재작성,대기
+Narrative,Assets/_Project/Modules/Narrative/UI/ChoicePopup.cs,OptionData,class,"Option 파싱 데이터",재작성,대기
+Narrative,Assets/_Project/Modules/Narrative/UI/ChoicePopup.cs,ChoiceResult,class,"선택 결과",재작성,대기
+Narrative,Assets/_Project/Modules/Narrative/Data/ResourceCatalogSO.cs,ResourceCatalogSO,ScriptableObject,"스토리 리소스 카탈로그",유지,대기
+Narrative,Assets/_Project/Modules/Narrative/Data/ResourceCatalogSO.cs,SpriteEntry,class,"Sprite 엔트리",재작성,대기
+Narrative,Assets/_Project/Modules/Narrative/Data/ResourceCatalogSO.cs,AudioEntry,class,"Audio 엔트리",재작성,대기
+Narrative,Assets/_Project/Modules/Narrative/Data/ResourceCatalogSO.cs,CharacterEntry,class,"캐릭터 엔트리",재작성,대기
+Narrative,Assets/_Project/Modules/Narrative/Data/ResourceCatalogSO.cs,EmoteEntry,class,"표정 엔트리",재작성,대기
+Stage,Assets/_Project/Modules/Stage/Code/BackgroundLayer.cs,BackgroundLayer,MonoBehaviour,"배경 레이어(Cut/Fade/Cross)",유지,대기
+Stage,Assets/_Project/Modules/Stage/Code/CGLayer.cs,CGLayer,MonoBehaviour,"CG 오버레이",유지,대기
+Stage,Assets/_Project/Modules/Stage/Code/CharacterDatabase.cs,CharacterDatabase,ScriptableObject,"캐릭터 DB(구버전, 대체됨)",폐기,대기
+Stage,Assets/_Project/Modules/Stage/Code/CharacterLayer.cs,CharacterLayer,MonoBehaviour,"3슬롯(L/C/R) 캐릭터 관리",유지,대기
+Stage,Assets/_Project/Modules/Stage/Code/CharacterSlot.cs,CharacterSlot,MonoBehaviour,"개별 캐릭터 표시/이모트",유지,대기
+Stage,Assets/_Project/Modules/Stage/Code/CharacterStageDatabase.cs,CharacterStageDatabase,ScriptableObject,"캐릭터 트랜스폼 DB(수치 보존)",유지,대기
+Stage,Assets/_Project/Modules/Stage/Code/EyeMask.cs,EyeMask,MonoBehaviour,"아이마스크 애니",유지,대기
+Stage,Assets/_Project/Modules/Stage/Code/FXDefaultsConfig.cs,FXDefaultsConfig,ScriptableObject,"FX 타이밍 수치(CRITICAL 25+ 수치)",유지,대기
+Stage,Assets/_Project/Modules/Stage/Code/MonologueDim.cs,MonologueDim,MonoBehaviour,"독백 디밍",유지,대기
+Stage,Assets/_Project/Modules/Stage/Code/ScreenFX.cs,ScreenFX,MonoBehaviour,"화면FX(셰이크/틴트/페이드, CRITICAL 공식)",유지,대기
+Stage,Assets/_Project/Modules/Stage/Code/SDCutsceneLayer.cs,SDCutsceneLayer,MonoBehaviour,"SD 컷씬 크로스페이드",유지,대기
+Stage,Assets/_Project/Modules/Stage/Code/StageModule.cs,StageModule,MonoBehaviour,"스테이지 Service 래퍼",재작성,대기
+Stage,Assets/_Project/Modules/Stage/Code/StageRig.cs,StageRig,MonoBehaviour,"씬 레이어 바인더",유지,대기
+Stage,Assets/_Project/Modules/Stage/Code/VideoLayer.cs,VideoLayer,MonoBehaviour,"전체화면 비디오",유지,대기
+Stage,Assets/_Project/Modules/Stage/Code/VirtualBGOverlay.cs,VirtualBGOverlay,MonoBehaviour,"가상 배경 오버레이",유지,대기
+Stage,Assets/_Project/Modules/Stage/Code/Editor/CharacterStageTunerWindow.cs,CharacterStageTunerWindow,Editor,"캐릭터 트랜스폼 튜너",유지,대기
+Stage,Assets/_Project/Modules/Stage/Code/Editor/FXDefaultsConfigEditorTools.cs,FXDefaultsConfigEditorTools,Editor,"FXDefaults 에디터 도구",유지,대기
+Affinity,Assets/_Project/Modules/Affinity/Code/AffinityCalculator.cs,AffinityCalculator,static,"호감도 계산(CRITICAL 공식/보너스)",재작성,대기
+Affinity,Assets/_Project/Modules/Affinity/Code/AffinityCalculator.cs,AffinityTier,enum,"호감도 등급",재작성,대기
+Affinity,Assets/_Project/Modules/Affinity/Code/AffinityModule.cs,AffinityModule,MonoBehaviour,"호감도 Service 래퍼",재작성,대기
+Affinity,Assets/_Project/Modules/Affinity/Code/EndingType.cs,EndingType,enum,"10종 엔딩 타입",재작성,대기
+Affinity,Assets/_Project/Modules/Affinity/Code/HeroinePointTracker.cs,HeroinePointTracker,static,"포인트 추적(CRITICAL 카테고리상한/3차보너스)",재작성,대기
+Affinity,Assets/_Project/Modules/Affinity/Code/HeroinePointTracker.cs,PointCategory,enum,"포인트 카테고리",재작성,대기
+Affinity,Assets/_Project/Modules/Affinity/Editor/AffinityTunerWindow.cs,AffinityTunerWindow,Editor,"호감도 조정 도구",유지,대기
+Stats,Assets/_Project/Modules/Stats/Code/StatsModule.cs,StatsModule,MonoBehaviour,"스탯 Service 래퍼+이벤트",재작성,대기
+DayLoop,Assets/_Project/Modules/DayLoop/Code/DayLoopModule.cs,DayLoopModule,MonoBehaviour,"CurrentDay 폴링+페이즈 발행",재작성,대기
+DayLoop,Assets/_Project/Modules/DayLoop/Code/EventPhase.cs,EventPhase,enum,"13 게임 페이즈",재작성,대기
+Schedule,Assets/_Project/Modules/Schedule/Code/ScheduleDataSO.cs,ScheduleDataSO,ScriptableObject,"스케줄/카테고리 정보 SO",유지,대기
+Schedule,Assets/_Project/Modules/Schedule/Code/ScheduleHelpPopup.cs,ScheduleHelpPopup,MonoBehaviour,"도움말 팝업",유지,대기
+Schedule,Assets/_Project/Modules/Schedule/Code/ScheduleModule.cs,ScheduleModule,MonoBehaviour,"스케줄 Service 래퍼",재작성,대기
+Schedule,Assets/_Project/Modules/Schedule/Code/ScheduleSlot.cs,ScheduleSlot,MonoBehaviour,"스케줄 버튼 UI",유지,대기
+Schedule,Assets/_Project/Modules/Schedule/Code/ScheduleType.cs,ScheduleCategory,enum,"스케줄 카테고리",재작성,대기
+Schedule,Assets/_Project/Modules/Schedule/Code/ScheduleType.cs,ScheduleType,enum,"9 스케줄 타입",재작성,대기
+Schedule,Assets/_Project/Modules/Schedule/Code/ScheduleType.cs,ScheduleEffect,struct,"스케줄 효과(CRITICAL 수치)",재작성,대기
+Schedule,Assets/_Project/Modules/Schedule/Code/ScheduleType.cs,ScheduleTable,static,"스케줄 기본값(CRITICAL 금전/스탯/피로)",재작성,대기
+Schedule,Assets/_Project/Modules/Schedule/Code/ScheduleUI.cs,ScheduleUI,MonoBehaviour,"스케줄 선택 UI",재작성,대기
+Schedule,Assets/_Project/Modules/Schedule/Code/StatGauge.cs,StatGauge,MonoBehaviour,"스탯 게이지",유지,대기
+Simulation,Assets/_Project/Modules/Simulation/Code/SimulationModule.cs,SimulationModule,MonoBehaviour,"시뮬 호스트/서브모드 관리",재작성,대기
+Simulation,Assets/_Project/Modules/Simulation/Code/SimulationMode.cs,SimulationMode,enum,"시뮬 모드",재작성,대기
+Shop,Assets/_Project/Modules/Shop/Code/ItemCatalogSO.cs,ItemCatalogSO,ScriptableObject,"아이템 카탈로그 SO",유지,대기
+Shop,Assets/_Project/Modules/Shop/Code/ItemData.cs,ItemCategory,enum,"아이템 카테고리",재작성,대기
+Shop,Assets/_Project/Modules/Shop/Code/ItemData.cs,ItemAvailability,enum,"아이템 해금 시점",재작성,대기
+Shop,Assets/_Project/Modules/Shop/Code/ItemData.cs,ItemData,class,"아이템 정적 데이터(43개)",유지,대기
+Shop,Assets/_Project/Modules/Shop/Code/ItemDatabase.cs,ItemDatabase,static,"아이템 DB+폴백(43개)",유지,대기
+Shop,Assets/_Project/Modules/Shop/Code/ItemEffectSystem.cs,ItemEffectSystem,static,"아이템 효과(CRITICAL 중복50%/버프추적)",재작성,대기
+Shop,Assets/_Project/Modules/Shop/Code/ItemEffectSystem.cs,ItemEffectSaveData,class,"아이템 효과 세이브",유지,대기
+Shop,Assets/_Project/Modules/Shop/Code/ShopCartSlot.cs,ShopCartSlot,MonoBehaviour,"장바구니 슬롯 UI",유지,대기
+Shop,Assets/_Project/Modules/Shop/Code/ShopItemFilter.cs,ShopItemFilter,MonoBehaviour,"상점 노출 필터(테스트)",유지,대기
+Shop,Assets/_Project/Modules/Shop/Code/ShopItemFilter.cs,ShopItemFilter.ItemEntry,class,"필터 아이템 엔트리",유지,대기
+Shop,Assets/_Project/Modules/Shop/Code/ShopItemTooltip.cs,ShopItemTooltip,MonoBehaviour,"아이템 호버 툴팁",유지,대기
+Shop,Assets/_Project/Modules/Shop/Code/ShopManager.cs,ShopManager,static,"상점/인벤(CRITICAL 구매/효과 적용)",재작성,대기
+Shop,Assets/_Project/Modules/Shop/Code/ShopManager.cs,ShopSaveData,class,"상점 세이브",유지,대기
+Shop,Assets/_Project/Modules/Shop/Code/ShopModule.cs,ShopModule,MonoBehaviour,"상점 Service 래퍼",재작성,대기
+Shop,Assets/_Project/Modules/Shop/Code/ShopSaleSlot.cs,ShopSaleSlot,MonoBehaviour,"상점 판매 슬롯",유지,대기
+Shop,Assets/_Project/Modules/Shop/Code/ShopUI.cs,ShopUI,MonoBehaviour,"상점 패널 UI",재작성,대기
+Shop,Assets/_Project/Modules/Shop/Code/Editor/ShopItemFilterEditor.cs,ShopItemFilterEditor,Editor,"ShopItemFilter 인스펙터",유지,대기
+LockScreen,Assets/_Project/Modules/LockScreen/Code/Events/LockScreenOpenedEvent.cs,LockScreenOpenedEvent,struct,"잠금화면 진입/종료 이벤트",유지,대기
+LockScreen,Assets/_Project/Modules/LockScreen/Code/Events/PasswordFailedEvent.cs,PasswordFailedEvent,struct,"비번 오류 이벤트",유지,대기
+LockScreen,Assets/_Project/Modules/LockScreen/Code/Events/PasswordSetEvent.cs,PasswordSetEvent,struct,"비번 설정 완료 이벤트",유지,대기
+LockScreen,Assets/_Project/Modules/LockScreen/Code/Events/UnlockedEvent.cs,UnlockedEvent,struct,"잠금 해제 이벤트",유지,대기
+LockScreen,Assets/_Project/Modules/LockScreen/Data/ToDoItemSO.cs,ToDoItemSO,ScriptableObject,"할일 항목 SO",유지,대기
+LockScreen,Assets/_Project/Modules/LockScreen/Data/ToDoListSO.cs,ToDoListSO,ScriptableObject,"할일 목록 SO+랜덤선택",유지,대기
+LockScreen,Assets/_Project/Modules/LockScreen/Data/LockScreenContentSO.cs,LockScreenContentSO,ScriptableObject,"잠금화면 콘텐츠 SO",유지,대기
+LockScreen,Assets/_Project/Modules/LockScreen/Code/LockScreenController.cs,LockScreenController,MonoBehaviour,"비번검증/모드/상태 관리",재작성,대기
+LockScreen,Assets/_Project/Modules/LockScreen/UI/LockScreenPanel.cs,LockScreenPanel,MonoBehaviour,"잠금화면 시퀀스(Intro→Login→Outro)",재작성,대기
+LockScreen,Assets/_Project/Modules/LockScreen/UI/ClockWidget.cs,ClockWidget,MonoBehaviour,"시계(실시간/고정)",유지,대기
+LockScreen,Assets/_Project/Modules/LockScreen/UI/RoaMessageWidget.cs,RoaMessageWidget,MonoBehaviour,"로아 메시지 스택",유지,대기
+LockScreen,Assets/_Project/Modules/LockScreen/UI/ToDoWidget.cs,ToDoWidget,MonoBehaviour,"할일 3슬롯 표시",유지,대기
+LockScreen,Assets/_Project/Modules/LockScreen/UI/PasswordInputWidget.cs,PasswordInputWidget,MonoBehaviour,"비번 입력(IME/토글)",유지,대기
+LockScreen,Assets/_Project/Modules/LockScreen/UI/WarningShakeWidget.cs,WarningShakeWidget,MonoBehaviour,"진동 애니",유지,대기
+LockScreen,Assets/_Project/Modules/LockScreen/UI/ToDoEntry.cs,ToDoEntry,MonoBehaviour,"할일 항목 UI",유지,대기
+LockScreen,Assets/_Project/Modules/LockScreen/Editor/LockScreenPanelPrefabBuilder.cs,LockScreenPanelPrefabBuilder,Editor,"잠금화면 프리팹 빌더",유지,대기
+LockScreen,Assets/_Project/Modules/LockScreen/Code/LockScreenModule.cs,LockScreenModule,MonoBehaviour,"잠금화면 모듈 진입점",재작성,대기
+LockScreen,Assets/_Project/Modules/LockScreen/Code/PrefsKeys.cs,PrefsKeys,class,"PlayerPrefs 키 상수",유지,대기
+LockScreen,Assets/_Project/Modules/LockScreen/Code/LockScreenMode.cs,LockScreenMode,enum,"잠금화면 모드",유지,대기
+LockScreen,Assets/_Project/Modules/LockScreen/Code/LockScreenHint.cs,LockScreenHint,enum,"비번 힌트 종류",유지,대기
+LockScreen,Assets/_Project/Modules/LockScreen/Code/PasswordHasher.cs,PasswordHasher,class,"비번 해싱(SHA256+salt)",유지,대기
+MiniGame,Assets/_Project/Modules/MiniGame/Code/MiniGameBase.cs,MiniGameBase,abstract,"미니게임 기본 플로우",재작성,대기
+MiniGame,Assets/_Project/Modules/MiniGame/Code/JoggingGame.cs,JoggingGame,MonoBehaviour,"달리기 미니게임(하예은)",재작성,대기
+MiniGame,Assets/_Project/Modules/MiniGame/Code/CherryBlossomGame.cs,CherryBlossomGame,MonoBehaviour,"벚꽃 미니게임(로아)",재작성,대기
+MiniGame,Assets/_Project/Modules/MiniGame/Code/MiniGameLauncher.cs,MiniGameLauncher,class,"실행+점수→포인트 변환",재작성,대기
+MiniGame,Assets/_Project/Modules/MiniGame/Code/MiniGameModule.cs,MiniGameModule,MonoBehaviour,"미니게임 모듈 진입점",재작성,대기
+Phone,Assets/_Project/Modules/Phone/Code/MessengerManager.cs,MessengerManager,static,"메신저 데이터/상태 관리",재작성,대기
+Phone,Assets/_Project/Modules/Phone/Code/MessengerManager.cs,MessengerSaveData,class,"메신저 세이브 스키마",유지,대기
+Phone,Assets/_Project/Modules/Phone/Code/MessengerData.cs,MessageSender,enum,"메시지 송신자",유지,대기
+Phone,Assets/_Project/Modules/Phone/Code/MessengerData.cs,ChatMessage,class,"메시지 객체",유지,대기
+Phone,Assets/_Project/Modules/Phone/Code/MessengerData.cs,ChatRoom,class,"대화방",유지,대기
+Phone,Assets/_Project/Modules/Phone/Code/MessengerData.cs,FriendProfile,class,"친구 정보",유지,대기
+Phone,Assets/_Project/Modules/Phone/Code/PhonePopup.cs,PhonePopup,MonoBehaviour,"메신저 UI 팝업",재작성,대기
+Phone,Assets/_Project/Modules/Phone/Code/PhoneChatRoom.cs,PhoneChatRoom,MonoBehaviour,"채팅방 스크롤",재작성,대기
+Phone,Assets/_Project/Modules/Phone/Code/PhoneChatSlot.cs,PhoneChatSlot,MonoBehaviour,"채팅 목록 슬롯",재작성,대기
+Phone,Assets/_Project/Modules/Phone/Code/PhoneFriendSlot.cs,PhoneFriendSlot,MonoBehaviour,"친구 목록 슬롯",재작성,대기
+Phone,Assets/_Project/Modules/Phone/Code/ChatBubble.cs,ChatBubble,MonoBehaviour,"메시지 버블 UI",재작성,대기
+Phone,Assets/_Project/Modules/Phone/UI/PhoneNotificationButton.cs,PhoneNotificationButton,MonoBehaviour,"메신저 알림 버튼",재작성,대기
+Phone,Assets/_Project/Modules/Phone/Code/PhoneModule.cs,PhoneModule,MonoBehaviour,"폰 모듈 진입점",재작성,대기
+Phone,Assets/_Project/Modules/Phone/Editor/PhoneUIDesignConfig.cs,PhoneUIDesignConfig,ScriptableObject,"메신저 UI 디자인 상수",유지,대기
+Phone,Assets/_Project/Modules/Phone/Editor/PhoneUIDesignerWindow.cs,PhoneUIDesignerWindow,Editor,"UI 상수 튜닝",유지,대기
+Phone,Assets/_Project/Modules/Phone/Editor/ChatBubbleBuilder.cs,ChatBubbleBuilder,Editor,"버블 프리팹 빌더",유지,대기
+Phone,Assets/_Project/Modules/Phone/Editor/PhoneNotificationButtonPrefabBuilder.cs,PhoneNotificationButtonPrefabBuilder,Editor,"알림버튼 프리팹 빌더",유지,대기
+Audio,Assets/_Project/Modules/Audio/Code/AudioSettings.cs,AudioSettings,ScriptableObject,"오디오 기본값/캐릭터BGM 맵",유지,대기
+Audio,Assets/_Project/Modules/Audio/Code/AudioSettings.cs,CharacterBGMMapping,class,"캐릭터별 BGM 맵핑",유지,대기
+Audio,Assets/_Project/Modules/Audio/Code/AudioManager.cs,AudioManager,MonoBehaviour,"BGM/SFX/음성 재생(싱글톤)",재작성,대기
+Audio,Assets/_Project/Modules/Audio/Code/AudioModule.cs,AudioModule,MonoBehaviour,"오디오 모듈 진입점",재작성,대기
+Audio,Assets/_Project/Modules/Audio/Editor/AudioPreviewWindow.cs,AudioPreviewWindow,Editor,"BGM/SFX 미리듣기",유지,대기
+Title,Assets/_Project/Modules/Title/Code/ExtraPopup.cs,ExtraPopup,MonoBehaviour,"엑스트라(CG갤러리) 팝업",재작성,대기
+Title,Assets/_Project/Modules/Title/Code/TitlePanel.cs,TitlePanel,MonoBehaviour,"타이틀 메뉴 UI",재작성,대기
+Title,Assets/_Project/Modules/Title/Code/UsernameUI.cs,UsernameUI,MonoBehaviour,"이름 입력 UI",재작성,대기
+Title,Assets/_Project/Modules/Title/Code/TitleModule.cs,TitleModule,MonoBehaviour,"타이틀 모듈 진입점",재작성,대기
+Tutorial,Assets/_Project/Modules/Tutorial/Code/TutorialOverlay.cs,TutorialOverlay,MonoBehaviour,"튜토리얼 오버레이(CSV)",유지,대기
+Tutorial,Assets/_Project/Modules/Tutorial/Code/TutorialOverlay.cs,AnchorPreset,struct,"오버레이 위치 프리셋",유지,대기
+Tutorial,Assets/_Project/Modules/Tutorial/Code/TutorialModule.cs,TutorialModule,MonoBehaviour,"튜토리얼 모듈 진입점",재작성,대기
+Settings,Assets/_Project/Modules/Settings/Code/SettingsModule.cs,SettingsModule,MonoBehaviour,"설정 모듈(PlayerPrefs)",재작성,대기
+Settings,Assets/_Project/Modules/Settings/Code/SettingsPopup.cs,SettingsPopup,MonoBehaviour,"설정 팝업 UI",재작성,대기
+Save,Assets/_Project/Modules/Save/Code/SaveDataModels.cs,SaveData,class,"세이브 스키마(전체 보존)",유지,대기
+Save,Assets/_Project/Modules/Save/Code/SaveDataModels.cs,CharacterSaveInfo,class,"캐릭터 슬롯 세이브",유지,대기
+Save,Assets/_Project/Modules/Save/Code/SaveManager.cs,SaveManager,class,"세이브/로드 파사드",재작성,대기
+Save,Assets/_Project/Modules/Save/Code/SaveModule.cs,SaveModule,MonoBehaviour,"세이브 모듈 진입점",재작성,대기
+Save,Assets/_Project/Modules/Save/Code/SaveDataSerializer.cs,SaveDataSerializer,class,"JSON 직렬화+파일 I/O",재작성,대기
+Save,Assets/_Project/Modules/Save/Code/SaveSlotManager.cs,SaveSlotManager,class,"세이브 슬롯 관리",재작성,대기
+Save,Assets/_Project/Modules/Save/Code/SaveThumbnailManager.cs,SaveThumbnailManager,class,"세이브 스크린샷",재작성,대기
+Save,Assets/_Project/Modules/Save/Code/StageRestorer.cs,StageRestorer,class,"로드 시 무대 복원",재작성,대기
+Save,Assets/_Project/Modules/Save/Editor/SaveAdminWindow.cs,SaveAdminWindow,Editor,"세이브/PlayerPrefs 관리창",유지,대기
+Save,Assets/_Project/Modules/Save/Editor/SaveAdminWindow.cs,SlotInfo,struct,"슬롯 메타",유지,대기
+Save,Assets/_Project/Modules/Save/UI/SaveLoadPopup.cs,SaveLoadPopup,MonoBehaviour,"세이브/로드 팝업",재작성,대기
+Save,Assets/_Project/Modules/Save/UI/SaveLoadSlot.cs,SaveLoadSlot,MonoBehaviour,"세이브 슬롯 UI",재작성,대기
+UI,Assets/_Project/UI/Common/Editor/TextBubblePrefabBuilder.cs,TextBubblePrefabBuilder,static,"TextBubble 프리팹 빌더",폐기,대기
+UI,Assets/_Project/UI/Common/TextBubble.cs,TextBubble,MonoBehaviour,"9-slice 말풍선 위젯",유지,대기
+UI,Assets/_Project/UI/Components/ButtonEX.cs,ButtonEX,MonoBehaviour,"다중모드 통합 버튼",유지,대기
+UI,Assets/_Project/UI/Components/ButtonEX.cs,ButtonMode,enum,"버튼 모드",유지,대기
+UI,Assets/_Project/UI/Components/HoverButton.cs,HoverButton,MonoBehaviour,"호버 버튼",유지,대기
+UI,Assets/_Project/UI/Components/HoverButton.cs,HoverMode,enum,"호버 모드",유지,대기
+UI,Assets/_Project/UI/Components/PetalParticleUI.cs,PetalParticleUI,MonoBehaviour,"벚꽃잎 파티클(Perlin)",유지,대기
+UI,Assets/_Project/UI/Components/PetalParticleUI.cs,Petal,class,"꽃잎 상태",유지,대기
+UI,Assets/_Project/UI/Components/ScrollbarEX.cs,ScrollbarEX,MonoBehaviour,"확장 스크롤바",유지,대기
+UI,Assets/_Project/UI/Components/TabGroup.cs,TabGroup,MonoBehaviour,"탭 그룹 관리",유지,대기
+UI,Assets/_Project/UI/Components/TextMarquee.cs,TextMarquee,MonoBehaviour,"텍스트 마키",유지,대기
+UI,Assets/_Project/UI/Components/TextMarquee.cs,Phase,enum,"마키 단계",유지,대기
+UI,Assets/_Project/UI/Components/ToggleButton.cs,ToggleButton,MonoBehaviour,"토글 버튼",유지,대기
+UI,Assets/_Project/UI/Components/ToggleButton.cs,ToggleMode,enum,"토글 모드",유지,대기
+UI,Assets/_Project/UI/Components/ToggleButton.cs,ToggleVisualState,enum,"토글 시각 상태",유지,대기
+UI,Assets/_Project/UI/Contextual/QuickMenu.cs,QuickMenu,MonoBehaviour,"퀵메뉴(Service 의존)",재작성,대기
+UI,Assets/_Project/UI/Core/PopupBase.cs,PopupLayer,enum,"팝업 레이어",재작성,대기
+UI,Assets/_Project/UI/Core/PopupBase.cs,PopupAnimation,enum,"팝업 애니메이션",재작성,대기
+UI,Assets/_Project/UI/Core/PopupBase.cs,PopupBase,abstract,"팝업 베이스",재작성,대기
+UI,Assets/_Project/UI/Core/PopupBase.cs,PopupBase`1,abstract,"결과 반환 팝업",재작성,대기
+UI,Assets/_Project/UI/Core/PopupManager.cs,PopupManager,MonoBehaviour,"팝업 매니저(Service 의존)",재작성,대기
+UI,Assets/_Project/UI/Core/UIManager.cs,UIManager,MonoBehaviour,"UI 매니저(Service 의존)",재작성,대기
+UI,Assets/_Project/UI/Core/UIManager.cs,UIGroup,enum,"UI 그룹",재작성,대기
+UI,Assets/_Project/UI/Core/UIManager.cs,MainUIType,enum,"메인 UI 타입",재작성,대기
+UI,Assets/_Project/UI/Core/UISoundManager.cs,UISoundManager,MonoBehaviour,"UI 사운드 관리",유지,대기
+UI,Assets/_Project/UI/Notifications/PlaceNotification.cs,PlaceNotification,MonoBehaviour,"장소/이벤트 배너",재작성,대기
+UI,Assets/_Project/UI/Notifications/ToastNotification.cs,ToastNotification,MonoBehaviour,"자동소멸 토스트",재작성,대기
+UI,Assets/_Project/UI/Popups/AlertPopup.cs,AlertPopup,MonoBehaviour,"알림 팝업",재작성,대기
+UI,Assets/_Project/UI/Popups/ConfirmPopup.cs,ConfirmPopupData,struct,"확인 팝업 데이터",재작성,대기
+UI,Assets/_Project/UI/Popups/ConfirmPopup.cs,ConfirmPopup,MonoBehaviour,"확인/취소 팝업",재작성,대기
+DevTools,Assets/Scripts/Debug/DebugPanel.cs,DebugPanel,MonoBehaviour,"디버그 패널(IMGUI)",재작성,대기
+DevTools,Assets/Scripts/Debug/DebugPanel.cs,PanelMode,enum,"패널 모드",유지,대기
+DevTools,Assets/Scripts/Editor/DebugRemoteWindow.cs,DebugRemoteWindow,Editor,"플레이 디버그 원격창",폐기,대기
+DevTools,Assets/Scripts/Editor/WindowsBuildTool.cs,WindowsBuildTool,static,"Windows 빌드 도구",유지,대기
+DevTools,Assets/_Project/DevTools/Editor/ConsoleLogSummarizer.cs,ConsoleLogSummarizer,static,"콘솔 로그 요약",폐기,대기
+DevTools,Assets/_Project/DevTools/ScenarioEditor/Editor/ScenarioEditorWindow.cs,ScenarioEditorWindow,Editor,"시나리오 CSV 편집기",재작성,대기
+DevTools,Assets/_Project/DevTools/ScenarioEditor/Editor/ScenarioEditorWindow.cs,LogGroup,class,"콘솔 로그 그룹핑",폐기,대기
+DevTools,Assets/_Project/DevTools/ScenarioEditor/ScenarioEditorIMGUI.cs,ScenarioEditorIMGUI,MonoBehaviour,"빌드 내 시나리오 편집기(F8)",재작성,대기
+DevTools,Assets/_Project/DevTools/ScenarioEditor/ScenarioEditorIMGUI.cs,UndoEntry,struct,"Undo 스냅샷",유지,대기
+Tests,Assets/Tests/Editor/SaveLoadRoundTripTests.cs,SaveLoadRoundTripTests,Test,"세이브/로드 라운드트립 테스트",재작성,대기
+Tests,Assets/Tests/Editor/ScriptParserTests.cs,ScriptParserTests,Test,"CSV 파싱 테스트",재작성,대기
+Tests,Assets/Tests/Editor/ScriptValidatorTests.cs,ScriptValidatorTests,Test,"스크립트 검증 테스트",재작성,대기
+Root,Assets/InputSystem_Actions.cs,InputSystem_Actions,class,"입력 시스템 자동생성 액션맵",유지,대기
