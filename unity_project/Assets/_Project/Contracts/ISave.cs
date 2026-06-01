@@ -3,6 +3,8 @@ using Cysharp.Threading.Tasks;
 using LoveAlgo.Core;
 using LoveAlgo.Story.SaveSystem;
 using UnityEngine;
+// 재작성 전환기: 신규 LoveAlgo.Core.SaveData와 충돌 방지. 구 Save 모듈 폐기(M5) 시 함께 제거.
+using SaveData = LoveAlgo.Story.SaveSystem.SaveData;
 
 namespace LoveAlgo.Contracts
 {

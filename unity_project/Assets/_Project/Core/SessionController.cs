@@ -93,7 +93,8 @@ namespace LoveAlgo.Core
             LoadFromSaveData(data).Forget();
         }
 
-        async UniTaskVoid LoadFromSaveData(SaveData data)
+        // 재작성 전환기: 구 Save 모듈의 SaveData. 신규 LoveAlgo.Core.SaveData와 동명 → 한정. (M5 폐기 시 제거)
+        async UniTaskVoid LoadFromSaveData(LoveAlgo.Story.SaveSystem.SaveData data)
         {
             if (_isLoading)
             {
@@ -324,7 +325,7 @@ namespace LoveAlgo.Core
         /// 세이브 데이터에서 장면 상태 복원 (배경, 캐릭터, BGM, CG, 오버레이, 딤, FX).
         /// 실제 로직은 StageRestorer.RestoreAsync로 추출됨 — 디버그 점프 등에서도 공유 사용.
         /// </summary>
-        UniTask RestoreStageState(SaveData data) => StageRestorer.RestoreAsync(data);
+        UniTask RestoreStageState(LoveAlgo.Story.SaveSystem.SaveData data) => StageRestorer.RestoreAsync(data);
 
         /// <summary>
         /// 테스트용: 프롤로그 스킵하고 DayLoop 직행
