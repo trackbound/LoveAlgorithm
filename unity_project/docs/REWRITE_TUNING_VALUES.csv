@@ -1,0 +1,199 @@
+영역,파일,클래스,항목,값,단위,위치
+Stage,Assets/_Project/Modules/Stage/Code/FXDefaultsConfig.cs,FXDefaultsConfig,화면 페이드 기본,0.9,s,SO:FXDefaultsConfig
+Stage,Assets/_Project/Modules/Stage/Code/FXDefaultsConfig.cs,FXDefaultsConfig,FadeOut 후 여운,0.05,s,SO:FXDefaultsConfig
+Stage,Assets/_Project/Modules/Stage/Code/FXDefaultsConfig.cs,FXDefaultsConfig,플래시 기본,0.14,s,SO:FXDefaultsConfig
+Stage,Assets/_Project/Modules/Stage/Code/FXDefaultsConfig.cs,FXDefaultsConfig,카메라 줌 기본,0.5,s,SO:FXDefaultsConfig
+Stage,Assets/_Project/Modules/Stage/Code/FXDefaultsConfig.cs,FXDefaultsConfig,카메라 팬 기본,0.5,s,SO:FXDefaultsConfig
+Stage,Assets/_Project/Modules/Stage/Code/FXDefaultsConfig.cs,FXDefaultsConfig,카메라 리셋 기본,0.4,s,SO:FXDefaultsConfig
+Stage,Assets/_Project/Modules/Stage/Code/FXDefaultsConfig.cs,FXDefaultsConfig,약한 흔들림 강도,10,px,SO:FXDefaultsConfig
+Stage,Assets/_Project/Modules/Stage/Code/FXDefaultsConfig.cs,FXDefaultsConfig,중간 흔들림 강도,25,px,SO:FXDefaultsConfig
+Stage,Assets/_Project/Modules/Stage/Code/FXDefaultsConfig.cs,FXDefaultsConfig,강한 흔들림 강도,50,px,SO:FXDefaultsConfig
+Stage,Assets/_Project/Modules/Stage/Code/FXDefaultsConfig.cs,FXDefaultsConfig,흔들림 기본 지속,0.3,s,SO:FXDefaultsConfig
+Stage,Assets/_Project/Modules/Stage/Code/FXDefaultsConfig.cs,FXDefaultsConfig,색상 틴트 알파,0.25,0~1,SO:FXDefaultsConfig
+Stage,Assets/_Project/Modules/Stage/Code/FXDefaultsConfig.cs,FXDefaultsConfig,색상 틴트 지속,0.5,s,SO:FXDefaultsConfig
+Stage,Assets/_Project/Modules/Stage/Code/FXDefaultsConfig.cs,FXDefaultsConfig,눈 뜨기 기본,0.8,s,SO:FXDefaultsConfig
+Stage,Assets/_Project/Modules/Stage/Code/FXDefaultsConfig.cs,FXDefaultsConfig,눈 감기 기본,0.8,s,SO:FXDefaultsConfig
+Stage,Assets/_Project/Modules/Stage/Code/FXDefaultsConfig.cs,FXDefaultsConfig,깜빡임 감기,0.1,s,SO:FXDefaultsConfig
+Stage,Assets/_Project/Modules/Stage/Code/FXDefaultsConfig.cs,FXDefaultsConfig,깜빡임 뜨기,0.15,s,SO:FXDefaultsConfig
+Stage,Assets/_Project/Modules/Stage/Code/FXDefaultsConfig.cs,FXDefaultsConfig,깜빡임 유지,0.05,s,SO:FXDefaultsConfig
+Stage,Assets/_Project/Modules/Stage/Code/FXDefaultsConfig.cs,FXDefaultsConfig,캐릭터 등장 기본,0.5,s,SO:FXDefaultsConfig
+Stage,Assets/_Project/Modules/Stage/Code/FXDefaultsConfig.cs,FXDefaultsConfig,캐릭터 퇴장 기본,0.4,s,SO:FXDefaultsConfig
+Stage,Assets/_Project/Modules/Stage/Code/FXDefaultsConfig.cs,FXDefaultsConfig,표정 변경 기본,0.25,s,SO:FXDefaultsConfig
+Stage,Assets/_Project/Modules/Stage/Code/FXDefaultsConfig.cs,FXDefaultsConfig,캐릭터 흔들림 강도,18,px,SO:FXDefaultsConfig
+Stage,Assets/_Project/Modules/Stage/Code/FXDefaultsConfig.cs,FXDefaultsConfig,캐릭터 흔들림 지속,0.3,s,SO:FXDefaultsConfig
+Stage,Assets/_Project/Modules/Stage/Code/FXDefaultsConfig.cs,FXDefaultsConfig,캐릭터 점프 높이,35,px,SO:FXDefaultsConfig
+Stage,Assets/_Project/Modules/Stage/Code/FXDefaultsConfig.cs,FXDefaultsConfig,캐릭터 점프 지속,0.3,s,SO:FXDefaultsConfig
+Stage,Assets/_Project/Modules/Stage/Code/FXDefaultsConfig.cs,FXDefaultsConfig,캐릭터 어둡게 알파,0.4,0~1,SO:FXDefaultsConfig
+Stage,Assets/_Project/Modules/Stage/Code/FXDefaultsConfig.cs,FXDefaultsConfig,캐릭터 어둡게 지속,0.3,s,SO:FXDefaultsConfig
+Stage,Assets/_Project/Modules/Stage/Code/FXDefaultsConfig.cs,FXDefaultsConfig,캐릭터 글리치 강도,1.0,배수,SO:FXDefaultsConfig
+Stage,Assets/_Project/Modules/Stage/Code/FXDefaultsConfig.cs,FXDefaultsConfig,캐릭터 글리치 지속,0.6,s,SO:FXDefaultsConfig
+Stage,Assets/_Project/Modules/Stage/Code/FXDefaultsConfig.cs,FXDefaultsConfig,배경 전환 기본,0.5,s,SO:FXDefaultsConfig
+Stage,Assets/_Project/Modules/Stage/Code/FXDefaultsConfig.cs,FXDefaultsConfig,CG 페이드 기본,0.5,s,SO:FXDefaultsConfig
+Stage,Assets/_Project/Modules/Stage/Code/FXDefaultsConfig.cs,FXDefaultsConfig,오버레이 페이드 기본,0.5,s,SO:FXDefaultsConfig
+Stage,Assets/_Project/Modules/Stage/Code/FXDefaultsConfig.cs,FXDefaultsConfig,독백 딤 기본,0.3,s,SO:FXDefaultsConfig
+Stage,Assets/_Project/Modules/Stage/Code/FXDefaultsConfig.cs,FXDefaultsConfig,독백 딤 알파,1.0,0~1,SO:FXDefaultsConfig
+Stage,Assets/_Project/Modules/Stage/Code/FXDefaultsConfig.cs,FXDefaultsConfig,SD 페이드 기본,0.5,s,SO:FXDefaultsConfig
+Stage,Assets/_Project/Modules/Stage/Code/FXDefaultsConfig.cs,FXDefaultsConfig,DayEnd 페이드아웃,0.8,s,SO:FXDefaultsConfig
+Stage,Assets/_Project/Modules/Stage/Code/FXDefaultsConfig.cs,FXDefaultsConfig,DayEnd 페이드인,0.3,s,SO:FXDefaultsConfig
+Stage,Assets/_Project/Modules/Stage/Code/FXDefaultsConfig.cs,FXDefaultsConfig,SceneStart 페이드인 후 대기,0.4,s,SO:FXDefaultsConfig
+Stage,Assets/_Project/Modules/Stage/Code/FXDefaultsConfig.cs,FXDefaultsConfig,SceneStart 눈감은 페이드,0.3,s,SO:FXDefaultsConfig
+Stage,Assets/_Project/Modules/Stage/Code/FXDefaultsConfig.cs,FXDefaultsConfig,SceneStart 눈열린 페이드,0.6,s,SO:FXDefaultsConfig
+Stage,Assets/_Project/Modules/Stage/Code/FXDefaultsConfig.cs,FXDefaultsConfig,SceneEnd 페이드아웃 기본,0.5,s,SO:FXDefaultsConfig
+Stage,Assets/_Project/Modules/Stage/Code/FXDefaultsConfig.cs,FXDefaultsConfig,잠금화면 첫시작 페이드인,0.8,s,SO:FXDefaultsConfig
+Stage,Assets/_Project/Modules/Stage/Code/FXDefaultsConfig.cs,FXDefaultsConfig,잠금화면 Outro 검정 진입,0.5,s,SO:FXDefaultsConfig
+Stage,Assets/_Project/Modules/Stage/Code/FXDefaultsConfig.cs,FXDefaultsConfig,잠금화면 Outro 검정 퇴장,0.5,s,SO:FXDefaultsConfig
+Stage,Assets/_Project/Modules/Stage/Code/FXDefaultsConfig.cs,FXDefaultsConfig,잠금화면 메시지 시작 대기,5,s,SO:FXDefaultsConfig
+Stage,Assets/_Project/Modules/Stage/Code/FXDefaultsConfig.cs,FXDefaultsConfig,잠금화면 마지막 메시지 후 클릭 대기,3,s,SO:FXDefaultsConfig
+Stage,Assets/_Project/Modules/Stage/Code/FXDefaultsConfig.cs,FXDefaultsConfig,로딩 페이드인,0.3,s,SO:FXDefaultsConfig
+Stage,Assets/_Project/Modules/Stage/Code/FXDefaultsConfig.cs,FXDefaultsConfig,로딩 페이드아웃,0.3,s,SO:FXDefaultsConfig
+Stage,Assets/_Project/Modules/Stage/Code/FXDefaultsConfig.cs,FXDefaultsConfig,로딩 최소 유지,0.4,s,SO:FXDefaultsConfig
+Stage,Assets/_Project/Modules/Stage/Code/FXDefaultsConfig.cs,FXDefaultsConfig,단계전환 페이드,0.3,s,SO:FXDefaultsConfig
+Stage,Assets/_Project/Modules/Stage/Code/FXDefaultsConfig.cs,FXDefaultsConfig,단계전환 reveal 페이드,0.8,s,SO:FXDefaultsConfig
+Stage,Assets/_Project/Modules/Stage/Code/ScreenFX.cs,ScreenFX,기본 페이드(폴백),0.9,s,하드코딩
+Stage,Assets/_Project/Modules/Stage/Code/ScreenFX.cs,ScreenFX,기본 플래시(폴백),0.14,s,하드코딩
+Stage,Assets/_Project/Modules/Stage/Code/ScreenFX.cs,ScreenFX,FadeOut 후 여운(폴백),0.05,s,하드코딩
+Stage,Assets/_Project/Modules/Stage/Code/ScreenFX.cs,ScreenFX,흔들림 진동수,25,Hz,하드코딩
+Stage,Assets/_Project/Modules/Stage/Code/ScreenFX.cs,ScreenFX,초반 가속 구간 비율,0.12,0~1,하드코딩
+Stage,Assets/_Project/Modules/Stage/Code/ScreenFX.cs,ScreenFX,감쇠 곡선 지수,2.2,지수,하드코딩
+Stage,Assets/_Project/Modules/Stage/Code/ScreenFX.cs,ScreenFX,카메라 위치변환 스케일,0.01,배수,하드코딩
+Stage,Assets/_Project/Modules/Stage/Code/ScreenFX.cs,ScreenFX,스테이지 흔들림 X 배수,1.0,배수,하드코딩
+Stage,Assets/_Project/Modules/Stage/Code/ScreenFX.cs,ScreenFX,스테이지 흔들림 Y 배수,0.35,배수,하드코딩
+Stage,Assets/_Project/Modules/Stage/Code/ScreenFX.cs,ScreenFX,스테이지 흔들림 회전 배수,0.06,배수,하드코딩
+Stage,Assets/_Project/Modules/Stage/Code/ScreenFX.cs,ScreenFX,스테이지 임팩트 기본 진동수,5.0,Hz,하드코딩
+Stage,Assets/_Project/Modules/Stage/Code/ScreenFX.cs,ScreenFX,스테이지 임팩트 감쇠,5.2,계수,하드코딩
+Stage,Assets/_Project/Modules/Stage/Code/ScreenFX.cs,ScreenFX,대사창 흔들림 Y 배수,0.12,배수,하드코딩
+Stage,Assets/_Project/Modules/Stage/Code/ScreenFX.cs,ScreenFX,대사창 흔들림 회전 배수,0.02,배수,하드코딩
+Stage,Assets/_Project/Modules/Stage/Code/ScreenFX.cs,ScreenFX,대사창 임팩트 기본 진동수,6.0,Hz,하드코딩
+Stage,Assets/_Project/Modules/Stage/Code/ScreenFX.cs,ScreenFX,대사창 임팩트 감쇠,6.5,계수,하드코딩
+Stage,Assets/_Project/Modules/Stage/Code/ScreenFX.cs,ScreenFX,충격 직후 변위 유지(Hitlag),0.025,s,하드코딩
+Stage,Assets/_Project/Modules/Stage/Code/ScreenFX.cs,ScreenFX,임팩트 플래시 강도 임계값,20,px,하드코딩
+Stage,Assets/_Project/Modules/Stage/Code/ScreenFX.cs,ScreenFX,임팩트 플래시 최대 알파,0.30,0~1,하드코딩
+Stage,Assets/_Project/Modules/Stage/Code/ScreenFX.cs,ScreenFX,임팩트 플래시 지속,0.06,s,하드코딩
+Stage,Assets/_Project/Modules/Stage/Code/BackgroundLayer.cs,BackgroundLayer,배경 전환 기본,0.5,s,하드코딩
+Stage,Assets/_Project/Modules/Stage/Code/CharacterSlot.cs,CharacterSlot,캐릭터 등장 기본,0.5,s,하드코딩
+Stage,Assets/_Project/Modules/Stage/Code/CharacterSlot.cs,CharacterSlot,캐릭터 퇴장 기본,0.4,s,하드코딩
+Stage,Assets/_Project/Modules/Stage/Code/CharacterSlot.cs,CharacterSlot,표정 변경 기본,0.25,s,하드코딩
+Stage,Assets/_Project/Modules/Stage/Code/CharacterSlot.cs,CharacterSlot,등장 슬라이드 거리,40,px,하드코딩
+Stage,Assets/_Project/Modules/Stage/Code/CharacterSlot.cs,CharacterSlot,퇴장 슬라이드 거리,40,px,하드코딩
+Stage,Assets/_Project/Modules/Stage/Code/CharacterSlot.cs,CharacterSlot,등장 스케일 펀치 시작값,0.97,배수,하드코딩
+Stage,Assets/_Project/Modules/Stage/Code/CharacterSlot.cs,CharacterSlot,글리치 상승 비율,0.35,배수,하드코딩
+Stage,Assets/_Project/Modules/Stage/Code/CharacterSlot.cs,CharacterSlot,글리치 하강 비율,0.65,배수,하드코딩
+Stage,Assets/_Project/Modules/Stage/Code/CGLayer.cs,CGLayer,CG 표시 기본,0.5,s,하드코딩
+Stage,Assets/_Project/Modules/Stage/Code/CharacterLayer.cs,CharacterLayer,레이어 가시성 페이드,0.3,s,하드코딩
+Stage,Assets/_Project/Modules/Stage/Code/EyeMask.cs,EyeMask,눈뜨기 Peek 비율,0.15,0~1,하드코딩
+Stage,Assets/_Project/Modules/Stage/Code/EyeMask.cs,EyeMask,눈뜨기 Phase1 비율,0.30,0~1,하드코딩
+Stage,Assets/_Project/Modules/Stage/Code/EyeMask.cs,EyeMask,눈뜨기 Phase2 비율,0.70,0~1,하드코딩
+Stage,Assets/_Project/Modules/Stage/Code/MonologueDim.cs,MonologueDim,독백 딤 기본,0.3,s,하드코딩
+Stage,Assets/_Project/Modules/Stage/Code/MonologueDim.cs,MonologueDim,독백 딤 알파,1.0,0~1,하드코딩
+Stage,Assets/_Project/Modules/Stage/Code/SDCutsceneLayer.cs,SDCutsceneLayer,SD 표시 기본,0.5,s,하드코딩
+Stage,Assets/_Project/Modules/Stage/Code/VirtualBGOverlay.cs,VirtualBGOverlay,오버레이 기본 지속,0.5,s,하드코딩
+Stage,Assets/_Project/Modules/Stage/Code/VirtualBGOverlay.cs,VirtualBGOverlay,오버레이 기본 알파,0.7,0~1,하드코딩
+Stage,Assets/_Project/Modules/Stage/Code/VideoLayer.cs,VideoLayer,비디오 정렬 순서,32000,order,하드코딩
+Narrative,Assets/_Project/Modules/Narrative/Code/ScriptParser.cs,ScriptParser,BG 기본 페이드,0.5,s,하드코딩
+Narrative,Assets/_Project/Modules/Narrative/Code/ScriptParser.cs,ScriptParser,Char 기본 페이드,0.3,s,하드코딩
+Narrative,Assets/_Project/Modules/Narrative/Code/ScriptParser.cs,ScriptParser,CG 기본 페이드,0.5,s,하드코딩
+Narrative,Assets/_Project/Modules/Narrative/Code/ScriptParser.cs,ScriptParser,Sound 기본 페이드,1.0,s,하드코딩
+Narrative,Assets/_Project/Modules/Narrative/Code/ScriptRunner.cs,ScriptRunner,자동모드 느림 딜레이,6.0,s,하드코딩
+Narrative,Assets/_Project/Modules/Narrative/Code/ScriptRunner.cs,ScriptRunner,자동모드 빠름 딜레이,0.3,s,하드코딩
+Narrative,Assets/_Project/Modules/Narrative/UI/DialogueUI.cs,DialogueUI,다음 인디케이터 오프셋 X,10,px,하드코딩
+Narrative,Assets/_Project/Modules/Narrative/UI/DialogueUI.cs,DialogueUI,대사창 Show/Hide 페이드,0.3,s,하드코딩
+Narrative,Assets/_Project/Modules/Narrative/UI/DialogueUI.cs,DialogueUI,버튼 슬라이드 속도,0.25,s,하드코딩
+Narrative,Assets/_Project/Modules/Narrative/UI/DialogueUI.cs,DialogueUI,버튼 슬라이드 거리,200,px,하드코딩
+Narrative,Assets/_Project/Modules/Narrative/UI/DialogueUI.cs,DialogueUI,Show/Hide 수직 슬라이드 거리,15,px,하드코딩
+Narrative,Assets/_Project/Modules/Narrative/UI/DialogueUI.cs,DialogueUI,기본 타이핑 속도,0.03,s/char,하드코딩
+Narrative,Assets/_Project/Modules/Narrative/UI/DialogueUI.cs,DialogueUI,포스트포즈 기준 속도,0.044,s/char,하드코딩
+Narrative,Assets/_Project/Modules/Narrative/UI/DialogueUI.cs,DialogueUI,개행 후 일시정지,0.18,s상대,하드코딩
+Narrative,Assets/_Project/Modules/Narrative/UI/DialogueUI.cs,DialogueUI,마침표류 후 일시정지,0.12,s상대,하드코딩
+Narrative,Assets/_Project/Modules/Narrative/UI/DialogueUI.cs,DialogueUI,쉼표 후 일시정지,0.06,s상대,하드코딩
+Narrative,Assets/_Project/Modules/Narrative/UI/DialogueUI.cs,DialogueUI,연속 점 딜레이,0.07,s상대,하드코딩
+Narrative,Assets/_Project/Modules/Narrative/UI/DialogueUI.cs,DialogueUI,타이핑 미세 리듬 변동,0.04,±,하드코딩
+Narrative,Assets/_Project/Modules/Narrative/UI/DialogueUI.cs,DialogueUI,타이핑 느림(0),0.068,s/char,하드코딩
+Narrative,Assets/_Project/Modules/Narrative/UI/DialogueUI.cs,DialogueUI,타이핑 빠름(1),0.008,s/char,하드코딩
+Narrative,Assets/_Project/Modules/Narrative/UI/ChoicePopup.cs,ChoicePopup,선택지 패널 페이드,0.2,s,하드코딩
+Narrative,Assets/_Project/Modules/Narrative/UI/ChoicePopup.cs,ChoicePopup,선택지 등장 지속,0.3,s,하드코딩
+Narrative,Assets/_Project/Modules/Narrative/Code/Engine/Macros/DayEndMacroExecutor.cs,DayEndMacroExecutor,DayEnd 매크로 총 지속,5.0,s,하드코딩
+Narrative,Assets/_Project/Modules/Narrative/Code/Engine/Macros/SceneStartMacroExecutor.cs,SceneStartMacroExecutor,SceneStart 페이드인 후 여운,0.4,s,하드코딩
+Narrative,Assets/_Project/Modules/Narrative/Code/Engine/Macros/SceneEndMacroExecutor.cs,SceneEndMacroExecutor,SceneEnd 기본 페이드,0.5,s,하드코딩
+UI,Assets/_Project/UI/Core/PopupBase.cs,PopupBase,팝업 등장 페이드 진행률,0.6,배수,하드코딩
+UI,Assets/_Project/UI/Core/PopupBase.cs,PopupBase,팝업 표시 기본,0.35,s,SO:showDuration
+UI,Assets/_Project/UI/Core/PopupBase.cs,PopupBase,팝업 숨김 기본,0.28,s,SO:hideDuration
+UI,Assets/_Project/UI/Core/PopupBase.cs,PopupBase,팝업 슬라이드 오프셋,200,px,SO:slideOffset
+UI,Assets/_Project/UI/Core/PopupBase.cs,PopupBase,팝업 FloatUp 거리,15,px,SO:floatOffset
+UI,Assets/_Project/UI/Core/PopupBase.cs,PopupBase,팝업 스케일 시작값,0.97,배수,하드코딩
+UI,Assets/_Project/UI/Notifications/ToastNotification.cs,ToastNotification,토스트 페이드인,0.3,s,SO:fadeInDuration
+UI,Assets/_Project/UI/Notifications/ToastNotification.cs,ToastNotification,토스트 페이드아웃,0.4,s,SO:fadeOutDuration
+UI,Assets/_Project/UI/Notifications/ToastNotification.cs,ToastNotification,토스트 슬라이드 오프셋,15,px,SO:toastSlideOffset
+UI,Assets/_Project/UI/Notifications/ToastNotification.cs,ToastNotification,토스트 텍스트 교체 페이드,0.15,s,SO:textSwapDuration
+UI,Assets/_Project/UI/Notifications/ToastNotification.cs,ToastNotification,토스트 기본 표시,2,s,하드코딩
+UI,Assets/_Project/UI/Notifications/ToastNotification.cs,ToastNotification,순차 토스트 항목당 대기,0.8,s,하드코딩
+UI,Assets/_Project/UI/Notifications/ToastNotification.cs,ToastNotification,마지막 토스트 추가 대기,0.3,s,하드코딩
+UI,Assets/_Project/UI/Notifications/PlaceNotification.cs,PlaceNotification,배너 등장,0.45,s,SO:enterDuration
+UI,Assets/_Project/UI/Notifications/PlaceNotification.cs,PlaceNotification,배너 퇴장,0.35,s,SO:exitDuration
+UI,Assets/_Project/UI/Notifications/PlaceNotification.cs,PlaceNotification,배너 기본 유지,2,s,SO:defaultHoldDuration
+UI,Assets/_Project/UI/Components/ButtonEX.cs,ButtonEX,호버 스케일,1.05,배수,SO:hoverScale
+UI,Assets/_Project/UI/Components/ButtonEX.cs,ButtonEX,클릭 스케일,0.95,배수,SO:pressedScale
+UI,Assets/_Project/UI/Components/ButtonEX.cs,ButtonEX,스케일 애니 시간,0.1,s,SO:scaleDuration
+UI,Assets/_Project/UI/Components/ButtonEX.cs,ButtonEX,클릭 틴트 RGB,"0.85,0.85,0.85",0~1,SO:pressedTint
+UI,Assets/_Project/UI/Components/HoverButton.cs,HoverButton,호버 스케일,1.05,배수,SO:hoverScale
+UI,Assets/_Project/UI/Components/HoverButton.cs,HoverButton,클릭 스케일,0.95,배수,SO:pressedScale
+UI,Assets/_Project/UI/Components/HoverButton.cs,HoverButton,스케일 애니 시간,0.1,s,SO:scaleDuration
+UI,Assets/_Project/UI/Components/ToggleButton.cs,ToggleButton,색상 페이드,0.1,s,SO:colorFadeDuration
+UI,Assets/_Project/UI/Components/ToggleButton.cs,ToggleButton,호버 스케일,1.05,배수,SO:hoverScale
+UI,Assets/_Project/UI/Components/ToggleButton.cs,ToggleButton,스케일 애니 시간,0.1,s,SO:scaleDuration
+UI,Assets/_Project/UI/Components/TextMarquee.cs,TextMarquee,마키 기본 속도,40,px/s,하드코딩
+UI,Assets/_Project/UI/Components/TextMarquee.cs,TextMarquee,마키 초기 정지,0.7,s,하드코딩
+UI,Assets/_Project/UI/Components/TextMarquee.cs,TextMarquee,마키 루프 간 여백,48,px,하드코딩
+UI,Assets/_Project/UI/Components/TextMarquee.cs,TextMarquee,마키 가감속 시간,0.35,s,하드코딩
+UI,Assets/_Project/UI/Components/PetalParticleUI.cs,PetalParticleUI,최대 꽃잎 수,55,개,SO:maxPetals
+UI,Assets/_Project/UI/Components/PetalParticleUI.cs,PetalParticleUI,꽃잎 스폰 간격,0.3,s,SO:spawnInterval
+UI,Assets/_Project/UI/Components/PetalParticleUI.cs,PetalParticleUI,중력,5,단위,SO:gravity
+UI,Assets/_Project/UI/Components/PetalParticleUI.cs,PetalParticleUI,최대 낙하 속도,12,px/s,SO:terminalSpeed
+UI,Assets/_Project/UI/Components/PetalParticleUI.cs,PetalParticleUI,흔들림 강도,18,px,SO:swayStrength
+UI,Assets/_Project/UI/Components/PetalParticleUI.cs,PetalParticleUI,투명도 최대,0.85,0~1,SO:peakAlpha
+UI,Assets/_Project/UI/Components/PetalParticleUI.cs,PetalParticleUI,웜업 채우기 비율,0.7,0~1,SO:warmUpFill
+LockScreen,Assets/_Project/Modules/LockScreen/UI/LockScreenPanel.cs,LockScreenPanel,좌측 위젯 슬라이드아웃 거리,600,px,SO:leftSlideOutDistance
+LockScreen,Assets/_Project/Modules/LockScreen/UI/LockScreenPanel.cs,LockScreenPanel,좌측 위젯 슬라이드아웃 시간,0.5,s,SO:leftSlideOutDuration
+LockScreen,Assets/_Project/Modules/LockScreen/UI/LockScreenPanel.cs,LockScreenPanel,로그인 Dim 투명도,0.6,0~1,SO:loginDimAlpha
+LockScreen,Assets/_Project/Modules/LockScreen/UI/LockScreenPanel.cs,LockScreenPanel,로그인 Dim 페이드,0.4,s,SO:loginDimFadeDuration
+LockScreen,Assets/_Project/Modules/LockScreen/UI/LockScreenPanel.cs,LockScreenPanel,첫시작 페이드인,0.8,s,하드코딩
+LockScreen,Assets/_Project/Modules/LockScreen/UI/LockScreenPanel.cs,LockScreenPanel,메시지 시작 전 대기,5,s,하드코딩
+LockScreen,Assets/_Project/Modules/LockScreen/UI/LockScreenPanel.cs,LockScreenPanel,마지막 메시지 후 대기,3,s,하드코딩
+LockScreen,Assets/_Project/Modules/LockScreen/UI/LockScreenPanel.cs,LockScreenPanel,Outro 검정 페이드인,0.5,s,하드코딩
+LockScreen,Assets/_Project/Modules/LockScreen/UI/LockScreenPanel.cs,LockScreenPanel,Outro 검정 페이드아웃,0.5,s,하드코딩
+LockScreen,Assets/_Project/Modules/LockScreen/UI/WarningShakeWidget.cs,WarningShakeWidget,흔들기 사이클,0.6,s,SO:shakeDuration
+LockScreen,Assets/_Project/Modules/LockScreen/UI/WarningShakeWidget.cs,WarningShakeWidget,흔들기 사이 휴식,1.5,s,SO:restDuration
+LockScreen,Assets/_Project/Modules/LockScreen/UI/WarningShakeWidget.cs,WarningShakeWidget,회전 흔들기 강도,8,deg,SO:rotationStrength
+LockScreen,Assets/_Project/Modules/LockScreen/UI/WarningShakeWidget.cs,WarningShakeWidget,위치 흔들기 강도,4,px,SO:positionStrength
+LockScreen,Assets/_Project/Modules/LockScreen/UI/ClockWidget.cs,ClockWidget,시계 업데이트 간격,1,s,하드코딩
+LockScreen,Assets/_Project/Modules/LockScreen/UI/RoaMessageWidget.cs,RoaMessageWidget,메시지 출력 간격,1.0,s,SO:intervalSec
+LockScreen,Assets/_Project/Modules/LockScreen/UI/RoaMessageWidget.cs,RoaMessageWidget,메시지 슬라이드인,0.35,s,SO:slideInDuration
+LockScreen,Assets/_Project/Modules/LockScreen/UI/RoaMessageWidget.cs,RoaMessageWidget,메시지 슬라이드인 시작 오프셋,-60,px,SO:slideFromOffsetY
+LockScreen,Assets/_Project/Modules/LockScreen/UI/RoaMessageWidget.cs,RoaMessageWidget,메시지 스택 Y 오프셋,36,px,SO:stackOffsetY
+LockScreen,Assets/_Project/Modules/LockScreen/UI/RoaMessageWidget.cs,RoaMessageWidget,메시지 투명도 감소율,0.3,배수,SO:alphaDecay
+LockScreen,Assets/_Project/Modules/LockScreen/UI/RoaMessageWidget.cs,RoaMessageWidget,메시지 숨김 슬라이드 거리,200,px,SO:hideSlideDownDistance
+LockScreen,Assets/_Project/Modules/LockScreen/UI/RoaMessageWidget.cs,RoaMessageWidget,메시지 숨김 시간,0.4,s,SO:hideDuration
+Audio,Assets/_Project/Modules/Audio/Code/AudioManager.cs,AudioManager,BGM 기본 페이드,4.0,s,SO:defaultFadeDuration
+Audio,Assets/_Project/Modules/Audio/Code/AudioManager.cs,AudioManager,BGM 크로스페이드 아웃 비율,0.4,배수,하드코딩
+Audio,Assets/_Project/Modules/Audio/Code/AudioManager.cs,AudioManager,BGM 페이드아웃 Ease,InQuad,ease,하드코딩
+Audio,Assets/_Project/Modules/Audio/Code/AudioManager.cs,AudioManager,BGM 페이드인 Ease,OutQuad,ease,하드코딩
+MiniGame,Assets/_Project/Modules/MiniGame/Code/CherryBlossomGame.cs,CherryBlossomGame,게임 시간,30,s,하드코딩
+MiniGame,Assets/_Project/Modules/MiniGame/Code/CherryBlossomGame.cs,CherryBlossomGame,꽃잎 스폰 기본 간격,0.5,s,SO:baseSpawnInterval
+MiniGame,Assets/_Project/Modules/MiniGame/Code/CherryBlossomGame.cs,CherryBlossomGame,꽃잎 낙하 기본 시간,3,s,SO:baseFallDuration
+MiniGame,Assets/_Project/Modules/MiniGame/Code/CherryBlossomGame.cs,CherryBlossomGame,꽃 출현 확률,0.05,0~1,SO:flowerChance
+MiniGame,Assets/_Project/Modules/MiniGame/Code/CherryBlossomGame.cs,CherryBlossomGame,속도 증가 배수,1.5,배수,하드코딩
+MiniGame,Assets/_Project/Modules/MiniGame/Code/CherryBlossomGame.cs,CherryBlossomGame,속도 증가 간격,10,s,하드코딩
+MiniGame,Assets/_Project/Modules/MiniGame/Code/CherryBlossomGame.cs,CherryBlossomGame,꽃 낙하 속도 배수,5,배수,하드코딩
+MiniGame,Assets/_Project/Modules/MiniGame/Code/JoggingGame.cs,JoggingGame,게임 시간,60,s,하드코딩
+MiniGame,Assets/_Project/Modules/MiniGame/Code/JoggingGame.cs,JoggingGame,게이지 감소 속도,0.3,/s,SO:gaugeDecayRate
+MiniGame,Assets/_Project/Modules/MiniGame/Code/JoggingGame.cs,JoggingGame,스페이스바 게이지 증가,0.08,배수,SO:gaugeIncrement
+MiniGame,Assets/_Project/Modules/MiniGame/Code/JoggingGame.cs,JoggingGame,속도 레벨1,30,px/s,하드코딩
+MiniGame,Assets/_Project/Modules/MiniGame/Code/JoggingGame.cs,JoggingGame,속도 레벨2,50,px/s,하드코딩
+MiniGame,Assets/_Project/Modules/MiniGame/Code/JoggingGame.cs,JoggingGame,속도 레벨3,70,px/s,하드코딩
+MiniGame,Assets/_Project/Modules/MiniGame/Code/JoggingGame.cs,JoggingGame,속도 레벨4,90,px/s,하드코딩
+MiniGame,Assets/_Project/Modules/MiniGame/Code/JoggingGame.cs,JoggingGame,속도 레벨5,120,px/s,하드코딩
+MiniGame,Assets/_Project/Modules/MiniGame/Code/JoggingGame.cs,JoggingGame,불효과 활성 레벨,5,level,하드코딩
+MiniGame,Assets/_Project/Modules/MiniGame/Code/JoggingGame.cs,JoggingGame,성공 거의동시 점수,30,pts,하드코딩
+MiniGame,Assets/_Project/Modules/MiniGame/Code/JoggingGame.cs,JoggingGame,성공 거의동시 윈도우,0.5,s,하드코딩
+MiniGame,Assets/_Project/Modules/MiniGame/Code/JoggingGame.cs,JoggingGame,성공 근접 점수,20,pts,하드코딩
+MiniGame,Assets/_Project/Modules/MiniGame/Code/JoggingGame.cs,JoggingGame,성공 근접 윈도우,1.5,s,하드코딩
+MiniGame,Assets/_Project/Modules/MiniGame/Code/JoggingGame.cs,JoggingGame,성공 통과 점수,10,pts,하드코딩
