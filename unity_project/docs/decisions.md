@@ -5,6 +5,33 @@
 
 ---
 
+## ADR-010: 협업 운영 규율 도입 (Mortise 문서 차용) (2026-06-01)
+- **맥락**: 코드베이스 전체 재작성은 긴 다세션 작업. 표류·리뷰 병목 방지 장치 필요.
+- **결정**: 타 프로젝트(Mortise) 운영 문서에서 비판적으로 차용 —
+  - `HANDOFF.md`(세션 진입점: 직전 결론·금지선·다음 액션) 도입.
+  - **위험도 4단계 게이트**(🔴Critical/🟠High/🟡Medium/🟢Low) — 작업 착수 시 등급 먼저 선언.
+  - 마일스톤 분할(M1/M2…, 각 끝에 작동 증거+컨펌), 디렉토리 README, 형태 문서 금지(코드가 진실), 커밋 메시지에 "왜".
+- **비채택**: Mortise의 EventBus-전용(아래 ADR-007에서 별도 판단), eval-first "한 방 슬라이스"(LoveAlgo는 검증된 설계), 게임 픽션.
+- **이유**: 베테랑 감독의 리뷰를 위험도로 차등해 병목 제거 + 누적 표류 구조적 차단.
+
+## ADR-009: 내러티브 엔진 — Ink 비채택, 자체 CSV 스토리 엔진 재작성 (2026-06-01)
+- **맥락**: 재작성에 Ink(inkle) 도입 검토.
+- **결정**: **Ink 비채택.** 기존 CSV 명령 체계(REWRITE_FEATURE_INVENTORY.md §2)를 EventBus 명령 기반으로 재구현.
+- **이유**: ①연출·모듈호출 글루 비용이 Ink로도 동일(무대/오디오/FX/모듈호출은 결국 태그+디스패치) ②분기 로직이 C#/호감도 공식 기반이라 Ink 분기 강점 저활용 ③Ink 자체 상태 ↔ 호감도/세이브 이중화 회피(과설계 게이트).
+- **뒤집힐 조건**: 비개발자 작가 합류 또는 분기 복잡도가 스크립트로 크게 이동 시 재검토.
+
+## ADR-008: 코드베이스 전체 재작성 (아트/프리팹 유지) (2026-06-01)
+- **맥락**: 누적 문제 + 아키텍처 전환(ADR-007). 점진 리팩토링보다 깨끗한 재출발 선택.
+- **결정**: `Assets/_Project`·`Scripts`의 C#를 처음부터 재작성. **아트·프리팹·씬·SO 에셋 GUID는 보존**(자산 가치). 기능은 `REWRITE_FEATURE_INVENTORY.md` 기준 재현(특히 §4 호감도 공식·수치 그대로). main 미커밋 WIP는 `wip/pre-rewrite-snapshot`에 보존. 작업 브랜치 `rewrite/eventbus-so`.
+- **이유**: EventBus+SO 전환은 통신 골격을 전부 바꾸므로 점진 이주보다 재작성이 빠르고 깨끗.
+
+## ADR-007: 아키텍처 패턴 전환 — EventBus + ScriptableObject 단일 (2026-06-01)
+- **맥락**: 기존 ADR-002는 Service Locator + EventBus 조합. 재작성 기회에 더 단순한 단일 패턴으로 전환(감독 결정).
+- **결정**: 모듈 통신 = **EventBus**(일방 통지·명령) + **State SO 직접 읽기**(동기 GET). `Services`·인터페이스 계약(`I*`) 전면 폐기. 매니저 4개(GameManager/AudioManager/SaveManager/UIManager)만. 동기 결과가 필요한 소수(미니게임 점수, 인라인 Schedule/Username/LockScreen)는 **완료 핸들(UniTaskCompletionSource) 실은 이벤트**로.
+- **데이터**: Definition SO(불변, 런타임 읽기 전용) + State SO(런타임 상태 컨테이너, 부팅 리셋·세이브 직렬화). dev_guide §4-1a Definition/Instance 분리 준수.
+- **이유**: 17모듈 인터페이스 그물 제거, 1인 유지보수 단순화. 동기 요청-응답은 State SO 읽기 + 완료-이벤트로 충분.
+- **supersede**: ADR-002(Service Locator+EventBus 조합), ADR-006(Services 일원화). ADR-003(매니저 4개)은 유지하되 "Module을 Services에 등록" 항목만 무효.
+
 ## ADR-006: UI 직접 접근 래퍼의 Deprecate 및 Service Locator 사용 일원화 (2026-05-31)
 - **맥락**: `UIManager.Instance.DialogueUI`와 같은 방식은 UIManager 클래스가 프로젝트의 거의 모든 모듈 인터페이스를 참조 및 보관하게 하여 강한 결합을 발생시키고 모듈 분리를 방해함.
 - **결정**: 
