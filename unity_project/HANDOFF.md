@@ -57,9 +57,12 @@
 
 ### 지금 정확한 지점 (M1 진행 중)
 - ✅ **M1 step1 커밋됨**: `Scripts/Core` + `LoveAlgo.Core` asmdef + 무의존 인프라 6개 이식(EventBus·Log·MoneyFormat·NameValidator·Hangul·Headless). 콘솔 클린 확인됨.
-- 🟡 **M1 step2 — 작성됨, 미커밋, 컴파일 검증 대기**: `Scripts/Core/State/GameStateData.cs`·`GameStateSO.cs`(단일, [NonSerialized]+ResetRuntime), `Scripts/Core/Save/SaveData.cs`·`JsonSaveStore.cs`(JsonUtility, dict=엔트리리스트).
-  - **다음**: ① `mcp__...__recompile`로 0에러 확인 → atomic 커밋. ② **테스트 씬**(MCP create_scene): 탭 카운터→GameStateSO 저장→플레이종료→재생→복원 검증(작동 증거). ③ **썸네일 캡처**: 전용 카메라 cullingMask로 UI/제외레이어 빼고 RenderTexture 렌더(잡히면 안 될 UI 차단 — 옛 버그).
-- ⚠️ **MCP for Unity 도구가 세션에 미연결**(HTTP Local 8080, Claude Code 설정됨). `/mcp` reconnect 또는 세션 재시작 필요 → 그 후 recompile/씬/플레이모드 가능.
+- ✅ **M1 step2 커밋됨 (`136d831`)**: `Scripts/Core/State/GameStateData.cs`·`GameStateSO.cs`(단일, [NonSerialized]+ResetRuntime), `Scripts/Core/Save/SaveData.cs`·`JsonSaveStore.cs`(JsonUtility, dict=엔트리리스트). 0에러 컴파일 확인.
+  - **충돌 해소(전환기 한정, M5 구 Save 폐기 시 제거)**: 신규 `LoveAlgo.Core.SaveData`가 구 `LoveAlgo.Story.SaveSystem.SaveData`와 동명 → ISave/SaveModule/SaveManager는 `using` 별칭, 동일 네임스페이스라 별칭 무효인 SessionController는 타입 한정. 구 로직 무변경.
+  - **작동 증거**: `GameStateSaveRoundTripTests`(EditMode 7케이스) 신설 — 전체 EditMode **27/27 통과**. (감독 결정: 세이브 검증은 프로젝트 관행대로 EditMode, 플레이모드 씬 대신.)
+  - **썸네일 캡처(옛 step③)는 M5로 연기**: 캡처 코드는 Save 기능모듈 소관이고 현재 Core엔 `thumbnailFile` 필드 + 경로 헬퍼만 있음. 레이어 배제 캡처 요구사항은 아래 워크플로우 규율에 유지.
+- ✅ **MCP for Unity 연결됨** — recompile/콘솔/테스트 실행 가능 확인.
+- ▶️ **다음 착수**: M1 잔여 Common(아래) 처리 → 마무리 후 M2(Data SO + 호감도/스탯/데이루프 공식).
 
 ### 워크플로우 규율 (directive)
 - 무언가 만들 때마다 **전용 테스트 씬 + 플레이모드로 작동 증거**(dev_guide 증거우선).
