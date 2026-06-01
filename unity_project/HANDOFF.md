@@ -36,7 +36,7 @@
 - 운영: 위험도 게이트 + 마일스톤 + 형태문서 금지 + 커밋 "왜". (ADR-010)
 - 구조: 코드 `_Project/Scripts/`(피처별 asmdef) + 아트/프리팹 타입별 중앙화. (ADR-011)
 - 재설계(전사 금지) + 세션 연속성 규율 + 연출 수치 SO화. (ADR-012)
-- asmdef 도입 진행: 현재 `LoveAlgo.Core`·`LoveAlgo.Affinity` 2개(둘 다 autoReferenced) + 옛 Assembly-CSharp 공존.
+- asmdef 도입 진행: 현재 `LoveAlgo.Core`·`LoveAlgo.Data`·`LoveAlgo.Affinity` 3개(전부 autoReferenced, 체인 Core←Data←Affinity) + 옛 Assembly-CSharp 공존.
 
 ---
 
@@ -63,10 +63,13 @@
   - **썸네일 캡처(옛 step③)는 M5로 연기**: 캡처 코드는 Save 기능모듈 소관이고 현재 Core엔 `thumbnailFile` 필드 + 경로 헬퍼만 있음. 레이어 배제 캡처 요구사항은 아래 워크플로우 규율에 유지.
 - ✅ **MCP for Unity 연결됨** — recompile/콘솔/테스트 실행 가능 확인.
 - ✅ **M1 종료**: 잔여 Common 3개는 능동 이식 불가/시기상조로 **소비처(구 모듈) 이식 시점에 함께 처리**하기로 확정(파킹). 근거는 아래 "잔여 Common" 갱신 참조. Core 인프라 완료.
-- ✅ **M2 slice1 커밋대기 (호감도 엔진)**: ① Core `GameStateSO`에 스탯 API `GetStat/SetStat/AddStat`(0~100 클램프, "Int"→intel 매핑) 추가. ② `GameStateData`에 포인트추적 상태(`heroinePoints`/`eventChoices`) 직렬화 필드 추가 — 구 `HeroinePointTracker` static dict 대체. ③ 신규 asmdef `LoveAlgo.Affinity` + `AffinityFormula`(순수 함수): 총점·스탯보너스(+3/+1/0)·로아 피로(+3/+6/+10)·엔딩 판정(로아 히든 우선→마진 최대)·Event3 +2 재선택 = 인벤토리 §4 1:1 재현. 임계치/선호스탯은 검증된 폴백 상수표 내장(2차에서 GameBalanceSO로 대체 예정).
-  - **작동 증거**: `AffinityFormulaTests` 신설(§4·§5 전 케이스) — 전체 EditMode **59/59 통과**(M1 27 + M2 32), 0에러 컴파일.
+- ✅ **M2 slice1 커밋됨 (`918cdac` 호감도 엔진)**: ① Core `GameStateSO`에 스탯 API `GetStat/SetStat/AddStat`(0~100 클램프, "Int"→intel 매핑) 추가. ② `GameStateData`에 포인트추적 상태(`heroinePoints`/`eventChoices`) 직렬화 필드 추가 — 구 `HeroinePointTracker` static dict 대체. ③ 신규 asmdef `LoveAlgo.Affinity` + `AffinityFormula`(순수 함수): 총점·스탯보너스(+3/+1/0)·로아 피로(+3/+6/+10)·엔딩 판정(로아 히든 우선→마진 최대)·Event3 +2 재선택 = 인벤토리 §4 1:1 재현. 임계치/선호스탯은 검증된 폴백 상수표 내장.
   - **구 코드 무변경**: 구 `AffinityCalculator`/`HeroinePointTracker`(LoveAlgo.Modules.Affinity)는 옛 모듈이 아직 사용 → 그대로 공존, 매니페스트 상태 미변경.
-- ▶️ **다음 착수**: M2 slice2 — `GameBalanceSO.cs`를 새 `Scripts/Data` asmdef로 이식(.meta GUID 보존, DayType/StoryArc enum 의존 정리, `GameBalance.asset` 재바인딩 검증) → Definition 소스로 `AffinityFormula` 상수표 대체. 이후 스탯/데이루프 모듈.
+- ✅ **M2 slice2 커밋됨 (`969c9cb` GameBalanceSO 이식 + Definition 연결)**: ① `DayType`/`StoryArc` enum을 `LoveAlgo.Core`(신규 `Scripts/Core/GameFlowTypes.cs`)로 이전 — 도메인 타입이라 이후 모듈이 Data 의존 없이 참조. 구 `GameTimeline.cs`는 enum 정의만 제거(테이블 무변경), asmdef auto-ref로 계속 사용. ② 신규 asmdef `LoveAlgo.Data`(refs Core) + `GameBalanceSO.cs`를 `git mv`로 `Scripts/Data`에 이동 — **스크립트 .meta GUID `d1b5ea…` 보존** → `GameBalance.asset` m_Script 재바인딩·직렬화 데이터 보존. ③ `AffinityFormula.Configure(GameBalanceSO)`/`ResetToFallback()` 추가, 하드코딩 상수표는 `FallbackHeroines` 폴백으로 유지(헤드리스/테스트), 채점 함수 순수성 유지.
+  - **asmdef 의존 체인**: `LoveAlgo.Core ← LoveAlgo.Data ← LoveAlgo.Affinity`(전부 autoReferenced, 구 Assembly-CSharp과 공존).
+  - **작동 증거**: MCP force recompile 콘솔 0에러, EditMode **63/63 통과**(M1 27 + M2 32 + Definition 연결 4). 실제 `GameBalance.asset` 로드로 §4 임계치(46/32/35/39/43) 무드리프트 동시 검증.
+  - **보류(과설계 게이트)**: `Configure` 부팅 호출 주체(매니저)는 M4/M5 소관.
+- ▶️ **다음 착수**: M2 slice3 — 구 `GameConstants.cs`/`GameTimeline.cs`(아직 Assembly-CSharp)를 `LoveAlgo.Core`/`LoveAlgo.Data`로 재작성·이식. `GameBalanceSO`(Definition)에서 로드하는 현 구조 유지하되 asmdef 내부로 이동, 폴백 정리. 이후 스탯/데이루프 모듈.
 
 ### 워크플로우 규율 (directive)
 - 무언가 만들 때마다 **전용 테스트 씬 + 플레이모드로 작동 증거**(dev_guide 증거우선).
