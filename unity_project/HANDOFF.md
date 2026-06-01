@@ -53,16 +53,24 @@
 
 ## ▶️ 다음 액션
 
-**구조 확정(ADR-011). M1 착수.**
+**베이스 = WIP 스냅샷 위로 rebase 완료(컴파일되는 상태). State SO = 단일 확정.**
 
-- **M1 (🔴 Critical) — Core 인프라 + 구조 도입**:
-  1. `_Project/Scripts/{Core,Data,Features,UI,DevTools}` 골격 + Core asmdef(`LoveAlgo.Core`) 생성.
-  2. 의존성0 "유지" 인프라 이식: EventBus·Log·MoneyFormat·NameValidator·Hangul·ListenerBag·Singleton·Headless → `Scripts/Core`. **네임스페이스 보존**(공존 컴파일).
-  3. `GameStateSO`(런타임 상태) + `SaveData` 스키마(`REWRITE_FEATURE_INVENTORY.md §7`).
-  4. `recompile_scripts`로 0에러 확인 → atomic 커밋.
-  - 열린 질문: State SO 단일(`GameStateSO`) vs 도메인별 분할 — 감독 결정(미정 시 단일로 진행).
-- **마이그레이션 전략(컴파일 유지)**: 새 asmdef 코드는 기존 Assembly-CSharp과 공존(예: Assembly-CSharp이 새 asmdef 자동 참조). 피처를 하나씩 새 구조로 옮기고 **그 피처 옛 코드는 그때 삭제**(매니페스트 상태 갱신). 항상 컴파일 가능.
-- **마일스톤(잠정)**: M1 Core 인프라 → M2 Data(SO 정의)+호감도/스탯/데이루프 공식 → M3 내러티브/스테이지 → M4 기능모듈 → M5 UI/Save.
+### 지금 정확한 지점 (M1 진행 중)
+- ✅ **M1 step1 커밋됨**: `Scripts/Core` + `LoveAlgo.Core` asmdef + 무의존 인프라 6개 이식(EventBus·Log·MoneyFormat·NameValidator·Hangul·Headless). 콘솔 클린 확인됨.
+- 🟡 **M1 step2 — 작성됨, 미커밋, 컴파일 검증 대기**: `Scripts/Core/State/GameStateData.cs`·`GameStateSO.cs`(단일, [NonSerialized]+ResetRuntime), `Scripts/Core/Save/SaveData.cs`·`JsonSaveStore.cs`(JsonUtility, dict=엔트리리스트).
+  - **다음**: ① `mcp__...__recompile`로 0에러 확인 → atomic 커밋. ② **테스트 씬**(MCP create_scene): 탭 카운터→GameStateSO 저장→플레이종료→재생→복원 검증(작동 증거). ③ **썸네일 캡처**: 전용 카메라 cullingMask로 UI/제외레이어 빼고 RenderTexture 렌더(잡히면 안 될 UI 차단 — 옛 버그).
+- ⚠️ **MCP for Unity 도구가 세션에 미연결**(HTTP Local 8080, Claude Code 설정됨). `/mcp` reconnect 또는 세션 재시작 필요 → 그 후 recompile/씬/플레이모드 가능.
+
+### 워크플로우 규율 (directive)
+- 무언가 만들 때마다 **전용 테스트 씬 + 플레이모드로 작동 증거**(dev_guide 증거우선).
+- **썸네일은 레이어 배제 캡처**가 필수 요구사항(옛 개발 말썽: 안 잡혀야 할 UI 포함됨).
+
+### 잔여 Common (이식/처리 예정)
+- `_Project/Common/ListenerBag.cs`(UnityEngine.UI 의존)→`Scripts/UI`. `SingletonMonoBehaviour.cs`(DOTween 의존)→재설계 후 배치. `Services.cs`→폐기.
+
+### 마이그레이션 전략 / 마일스톤
+- 새 asmdef 코드는 옛 Assembly-CSharp과 공존(자동 참조). 피처 하나씩 새 구조로 옮기고 옛 코드는 그때 삭제(매니페스트 `상태` 갱신). 항상 컴파일 가능.
+- M1 Core 인프라 → M2 Data(SO)+호감도/스탯/데이루프 공식 → M3 내러티브/스테이지 → M4 기능모듈 → M5 UI/Save.
 
 ---
 
