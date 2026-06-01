@@ -22,6 +22,10 @@ namespace LoveAlgo.Core
         public int fatigue;
 
         public int day = 1;
+        // 그날 남은 자유행동 횟수(낮/밤=ActionsPerDay). 데이루프 진행 상태이므로 세이브 직렬화(§7).
+        // 기본 0 — 새 게임/하루 시작 시 DayLoop.BeginRun/AdvanceDay가 ActionsPerDay로 채운다
+        // (ActionsPerDay는 Data 레이어 GameConstants 소관이라 Core인 이 모델에서 기본값으로 못 박지 않는다).
+        public int remainingActions;
 
         // 호감도(히로인id→점수) / 플래그(이름→bool). dict 대용 엔트리 리스트.
         public List<IntEntry> lovePoints = new();

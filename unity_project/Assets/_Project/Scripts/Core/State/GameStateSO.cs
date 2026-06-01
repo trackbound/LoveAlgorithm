@@ -82,6 +82,15 @@ namespace LoveAlgo.Core
 
         public void AddStat(string statId, int delta) => SetStat(statId, GetStat(statId) + delta);
 
+        // ── 데이루프 카운터 / 소지금 동기 접근 ──
+        // 진행 로직(공식)은 Data 레이어 DayLoop가 담당하고, 여기선 상태 read/write만 노출한다.
+        public int Day { get => _runtime.day; set => _runtime.day = value; }
+        public int RemainingActions { get => _runtime.remainingActions; set => _runtime.remainingActions = value; }
+
+        // 소지금은 0 미만이 될 수 없다(구 GameState.AddMoney = Mathf.Max(0, …) 재현). 세터에서 바닥 클램프.
+        public long Money { get => _runtime.money; set => _runtime.money = value < 0 ? 0 : value; }
+        public void AddMoney(long delta) => Money = _runtime.money + delta;
+
         // ── 플래그 동기 접근 ──
         public bool GetFlag(string name)
         {
