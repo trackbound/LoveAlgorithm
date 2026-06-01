@@ -5,6 +5,23 @@
 
 ---
 
+## ADR-012: 재설계 원칙(전사 금지) + 세션 연속성 규율 (2026-06-01)
+- **맥락**: 재작성은 기존 클래스를 그대로 베끼면 같은 문제가 재발. 또 다세션에 걸쳐 진행되므로 컨텍스트가 끊겨도 일관돼야 함.
+- **결정**:
+  - **재설계(전사 아님)**: 클래스 매니페스트(`REWRITE_CLASS_MANIFEST.csv`)는 "재현할 기능"의 참조일 뿐, 1:1 복제 금지. 구조·기능을 파악해 더 단순·자동화된 형태로. "유지"=동작 보존이지 파일 그대로가 아님.
+  - **연출 수치 동결**: 하드코딩된 페이드/타이핑/FX 수치는 `REWRITE_TUNING_VALUES.csv`에 기록 후 SO(Definition)로 분리. 코드 매직넘버 금지.
+  - **세션 규율**: 단일 진실=docs. HANDOFF는 델타 갱신(통째 재작성 금지), 큰 결정=ADR, 커밋 메시지에 "왜", 한 작업=한 커밋(atomic), 형태 문서 금지(코드가 진실). 작업 종료 시 HANDOFF "다음 액션" 갱신.
+- **이유**: 문서를 잘 다뤄야 새 세션이 매끄럽게 이어받음(감독 지시). 재설계로 누적 결함 차단.
+
+## ADR-011: 폴더 구조 — 코드 Scripts/ 집중(피처별 asmdef) + 아트/프리팹 타입별 중앙화 (2026-06-01)
+- **맥락**: 기존은 `_Project/Modules/<X>/`에 코드+UI+Data+Prefabs 공동배치. 재작성에서 코드(휘발)와 자산(보존)을 가르는 게 안전·명료.
+- **결정**:
+  - **코드 = `_Project/Scripts/` 하위, 피처별 군집**: `Scripts/Core`(의존성0) · `Scripts/Data`(→Core) · `Scripts/Features/<X>`(→Core,Data) · `Scripts/UI`(→Core,Data) · `Scripts/DevTools`(Editor). 완전 타입별 분류는 지양(피처별 asmdef 경계 유지).
+  - **피처별 asmdef** → feature간 직접참조는 컴파일 에러로 자동 차단. 교차통신은 Core의 EventBus + State SO 경유. (현재 asmdef 0개 → 도입이 재작성의 일부.)
+  - **아트/오디오/프리팹 = 타입별 중앙화**, 코드 트리 밖: `_Project/Art` · `Audio` · `Prefabs/<X>`. GUID 폴더무관이라 안전. 단 우리 MonoBehaviour 단 프리팹은 재작성 후 재바인딩 필요 → 제자리 재작성 시 `.cs.meta` GUID 보존으로 최소화.
+  - SO `.asset` 인스턴스는 `Resources/Data` 유지(Resources.Load 경로 보존).
+- **이유**: 삭제할 코드와 보존 자산의 깨끗한 경계 + asmdef로 경계 자동 강제(감독 직관 채택). 코드만 Scripts/ 집중은 Mortise(`Scripts/Core`·`Scripts/<feature>`)와 정합.
+
 ## ADR-010: 협업 운영 규율 도입 (Mortise 문서 차용) (2026-06-01)
 - **맥락**: 코드베이스 전체 재작성은 긴 다세션 작업. 표류·리뷰 병목 방지 장치 필요.
 - **결정**: 타 프로젝트(Mortise) 운영 문서에서 비판적으로 차용 —

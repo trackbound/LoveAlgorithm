@@ -11,7 +11,7 @@
 - **프로젝트**: LoveAlgorithm — Unity 6 + URP 2D 비주얼노벨/연애 시뮬. 5히로인·30일 루프·CSV 스토리 엔진.
 - **지금**: **코드 전체 재작성**(아트/프리팹 유지). 아키텍처를 Service Locator → **EventBus + SO 단일**로 전환.
 - **브랜치**: `rewrite/eventbus-so`(작업) / `wip/pre-rewrite-snapshot` @ 9ac3c9e(재작성 전 미커밋 WIP 406파일 보존) / `main` b40964b.
-- **기준 문서**: `docs/REWRITE_FEATURE_INVENTORY.md`(재현할 전 기능·공식·수치). 결정 이유 = `docs/decisions.md` ADR-007~010.
+- **기준 문서(3종 시트 + ADR)**: `docs/REWRITE_FEATURE_INVENTORY.md`(기능·공식·수치) · `REWRITE_CLASS_MANIFEST.csv`(전 클래스 처리/상태 체크리스트) · `REWRITE_TUNING_VALUES.csv`(연출 수치 동결). 결정 이유 = `docs/decisions.md` ADR-007~012.
 - **환경**: Unity 에디터 + MCP(`mcp__mcp-unity__*`)가 **main 작업트리 = 현재 rewrite 브랜치**를 본다. 컴파일/콘솔 검증 가능.
 
 ---
@@ -34,6 +34,9 @@
 - 전체 재작성, 아트 보존, `rewrite/eventbus-so`. (ADR-008)
 - 내러티브: Ink 비채택, 자체 CSV 엔진 재구현. (ADR-009)
 - 운영: 위험도 게이트 + 마일스톤 + 형태문서 금지 + 커밋 "왜". (ADR-010)
+- 구조: 코드 `_Project/Scripts/`(피처별 asmdef) + 아트/프리팹 타입별 중앙화. (ADR-011)
+- 재설계(전사 금지) + 세션 연속성 규율 + 연출 수치 SO화. (ADR-012)
+- ⚠️ 현재 asmdef 0개(Assembly-CSharp 단일) → asmdef 도입이 M1의 일부.
 
 ---
 
@@ -50,10 +53,16 @@
 
 ## ▶️ 다음 액션
 
-- **M1 (🔴 Critical) 설계 컨펌 대기**: EventBus 이식 + `GameStateSO`(런타임 상태) + 세이브 스키마.
-  - 열린 질문: State SO를 **하나(`GameStateSO`)** vs **도메인별 분할**(Stats/Affinity/Progress) — 감독 결정.
-- 컨펌 후 코드 착수 → `recompile_scripts`로 0에러 확인 → atomic 커밋(메시지에 "왜").
-- 마일스톤(잠정): M1 코어 인프라(EventBus+State SO+Save) → M2 호감도/스탯/데이루프(공식) → M3 내러티브/스테이지 엔진 → M4 기능모듈 → M5 UI/Save UI.
+**구조 확정(ADR-011). M1 착수.**
+
+- **M1 (🔴 Critical) — Core 인프라 + 구조 도입**:
+  1. `_Project/Scripts/{Core,Data,Features,UI,DevTools}` 골격 + Core asmdef(`LoveAlgo.Core`) 생성.
+  2. 의존성0 "유지" 인프라 이식: EventBus·Log·MoneyFormat·NameValidator·Hangul·ListenerBag·Singleton·Headless → `Scripts/Core`. **네임스페이스 보존**(공존 컴파일).
+  3. `GameStateSO`(런타임 상태) + `SaveData` 스키마(`REWRITE_FEATURE_INVENTORY.md §7`).
+  4. `recompile_scripts`로 0에러 확인 → atomic 커밋.
+  - 열린 질문: State SO 단일(`GameStateSO`) vs 도메인별 분할 — 감독 결정(미정 시 단일로 진행).
+- **마이그레이션 전략(컴파일 유지)**: 새 asmdef 코드는 기존 Assembly-CSharp과 공존(예: Assembly-CSharp이 새 asmdef 자동 참조). 피처를 하나씩 새 구조로 옮기고 **그 피처 옛 코드는 그때 삭제**(매니페스트 상태 갱신). 항상 컴파일 가능.
+- **마일스톤(잠정)**: M1 Core 인프라 → M2 Data(SO 정의)+호감도/스탯/데이루프 공식 → M3 내러티브/스테이지 → M4 기능모듈 → M5 UI/Save.
 
 ---
 
