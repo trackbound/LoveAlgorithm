@@ -44,7 +44,7 @@ namespace LoveAlgo.Core
             GameState.Instance?.ResetAll();
             DayEventTable.ResetFired();
             HeroinePointTracker.Reset();
-            Phone.MessengerManager.Reset();
+            Phone.MessengerSystem.Reset();
 
             _gm.SetPlayerName("");
             _gm.CurrentDay = 1;
@@ -104,7 +104,7 @@ namespace LoveAlgo.Core
             try
             {
                 // 로드 시작 전 팝업 강제 정리 (CloseModalAsync 실패 시 안전장치)
-                PopupManager.Instance?.CloseAll();
+                PopupSystem.Instance?.CloseAll();
 
                 // 진행 중이던 선택지 UI 잔상 제거 (스케줄/팝업과 함께 저장된 케이스)
                 UIManager.Instance?.ChoicePopup?.ResetImmediate();
@@ -206,11 +206,11 @@ namespace LoveAlgo.Core
         /// <summary>
         /// 자동저장 (슬롯 0) — 비동기: UI 숨김 → 1프레임 대기 → 스크린샷 → 저장
         /// </summary>
-        public async UniTask AutoSaveAsync()
+        public async UniTask AutoSaveAsync(string reason = "unspecified")
         {
-            await SaveThumbnailManager.CapturePendingScreenshotAsync();
+            await SaveThumbnailSystem.CapturePendingScreenshotAsync();
             Save(SaveManager.AutoSaveSlot, usePendingThumbnail: true);
-            Debug.Log("[GameManager] 자동저장 완료");
+            Debug.Log($"[GameManager] 자동저장 완료 (이유: {reason})");
         }
 
         /// <summary>
@@ -277,6 +277,15 @@ namespace LoveAlgo.Core
         }
 
         /// <summary>
+        /// 장면 정리 (타이틀 복귀 / 로드 시) - 비동기
+        /// </summary>
+        public async UniTask CleanupStageAsync(System.Threading.CancellationToken ct = default)
+        {
+            CleanupStage();
+            await UniTask.CompletedTask;
+        }
+
+        /// <summary>
         /// 장면 정리 (타이틀 복귀 / 로드 시)
         /// </summary>
         public void CleanupStage()
@@ -329,7 +338,7 @@ namespace LoveAlgo.Core
             GameState.Instance?.ResetAll();
             DayEventTable.ResetFired();
             HeroinePointTracker.Reset();
-            Phone.MessengerManager.Reset();
+            Phone.MessengerSystem.Reset();
 
             _gm.SetPlayerName("테스터");
             GameState.Instance?.SetPlayerName(_gm.PlayerName);

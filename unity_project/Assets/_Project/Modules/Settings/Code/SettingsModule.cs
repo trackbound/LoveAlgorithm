@@ -59,8 +59,8 @@ namespace LoveAlgo.Settings
             Services.Register<ISettings>(this);
             audioSvc = Services.TryGet<IAudio>();
             narrative = Services.TryGet<INarrative>();
-            if (settingsPopupPrefab != null && PopupManager.Instance != null)
-                popupInstance = PopupManager.Instance.Register(settingsPopupPrefab);
+            if (settingsPopupPrefab != null && PopupSystem.Instance != null)
+                popupInstance = PopupSystem.Instance.Register(settingsPopupPrefab);
             Load();
         }
 
@@ -238,7 +238,7 @@ namespace LoveAlgo.Settings
         {
             if (popupInstance != null) return popupInstance;
             if (settingsPopupPrefab == null) return null;
-            var pm = PopupManager.Instance;
+            var pm = PopupSystem.Instance;
             if (pm == null) return null;
             popupInstance = pm.Register(settingsPopupPrefab);
             return popupInstance;

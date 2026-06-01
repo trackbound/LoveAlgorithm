@@ -31,6 +31,11 @@ namespace LoveAlgo.Core
         [Tooltip("디버그용 — 항상 타이틀로 진입 (잠금 우회). 빌드 전 false 확인.")]
         [SerializeField] bool skipLockScreen = false;
 
+        [Tooltip("첫 게임 진입 시 LockScreen을 띄울지 여부")]
+        [SerializeField] bool showLockScreenOnFirstStart = true;
+
+        public bool ShowLockScreenOnFirstStart => showLockScreenOnFirstStart;
+
         void Start()
         {
             // Start로 미룸 — Awake 단계에서는 다른 모듈 IService 등록이 끝나지 않을 수 있음
@@ -49,23 +54,31 @@ namespace LoveAlgo.Core
                 return;
             }
 
-            if (lockScreen == null)
-            {
-                Debug.LogWarning("[EntryRouter] ILockScreen 미등록 — 타이틀로 폴백");
-                ShowTitle(title);
-                return;
-            }
+            // 최초 진입 여부 판별 (PlayerPrefs 플래그 기반)
+            bool isFirstStart = forceFirstSetup || PlayerPrefs.GetInt(PrefsKeys.FirstStartDone, 0) == 0;
 
-            bool firstStart = forceFirstSetup || !lockScreen.IsPasswordSet;
-
-            if (firstStart)
+            if (isFirstStart && showLockScreenOnFirstStart)
             {
-                Debug.Log("[EntryRouter] 첫 시작 — LockScreenPanel.OpenFirstSetup (5초 페이드)");
+                if (lockScreen == null)
+                {
+                    Debug.LogWarning("[EntryRouter] ILockScreen 미등록 — 첫 시작이지만 타이틀로 폴백");
+                    PlayerPrefs.SetInt(PrefsKeys.FirstStartDone, 1);
+                    PlayerPrefs.Save();
+                    ShowTitle(title);
+                    return;
+                }
+
+                Debug.Log("[EntryRouter] 첫 시작 — LockScreenPanel.OpenFirstSetup");
                 ShowLockScreenFirstSetup();
             }
             else
             {
-                Debug.Log("[EntryRouter] 비번 설정됨 — TitlePanel 표출");
+                Debug.Log("[EntryRouter] 첫 시작이 아님 또는 LockScreen 미사용 — 타이틀로 진입");
+                if (isFirstStart)
+                {
+                    PlayerPrefs.SetInt(PrefsKeys.FirstStartDone, 1);
+                    PlayerPrefs.Save();
+                }
                 ShowTitle(title);
             }
         }
@@ -110,37 +123,39 @@ namespace LoveAlgo.Core
             }
 
             // Blackout(Outro Phase 1 끝) 시점에 타이틀 셋업 → fade-out으로 자연스러운 reveal
-            // OnFlowComplete는 추가 정리만.
             System.Action onBlackout = null;
             System.Action onComplete = null;
             onBlackout = () =>
             {
                 panel.OnBlackoutReached -= onBlackout;
-                Debug.Log("[EntryRouter] LockScreen blackout — 새 게임 즉시 시작 (Prologue 직진)");
-                // 첫 진입은 타이틀 거치지 않고 곧장 프롤로그 시작.
-                // StartNewGame → Flow.StartPrologueFromNewGame → TransitionToPrologueAsync (로딩+페이드)
-                GameManager.Instance?.StartNewGame();
+                Debug.Log("[EntryRouter] LockScreen blackout — 타이틀 화면 진입");
+                
+                PlayerPrefs.SetInt(PrefsKeys.FirstStartDone, 1);
+                PlayerPrefs.Save();
+
+                ShowTitle(Services.TryGet<ITitle>());
             };
-            // 안전망: OnBlackout 못 받고 OnFlowComplete 먼저 오면 거기서도 새 게임 시작
-            //         (Outro 페이드 옵션/순서 변경에 대한 미래 대비)
-            bool newGameTriggered = false;
+            
+            bool titleTransitionTriggered = false;
             onComplete = () =>
             {
                 panel.OnFlowComplete -= onComplete;
                 panel.OnBlackoutReached -= onBlackout;
-                if (!newGameTriggered)
+                if (!titleTransitionTriggered)
                 {
-                    Debug.LogWarning("[EntryRouter] OnBlackout 미수신 — OnFlowComplete에서 새 게임 시작 (안전망)");
-                    GameManager.Instance?.StartNewGame();
+                    Debug.LogWarning("[EntryRouter] OnBlackout 미수신 — OnFlowComplete에서 타이틀 화면 진입 (안전망)");
+                    PlayerPrefs.SetInt(PrefsKeys.FirstStartDone, 1);
+                    PlayerPrefs.Save();
+                    ShowTitle(Services.TryGet<ITitle>());
                 }
                 else
                 {
-                    Debug.Log("[EntryRouter] 첫 시작 잠금 해제 완료");
+                    Debug.Log("[EntryRouter] 첫 시작 잠금 해제 완료 및 타이틀 진입 완료");
                 }
             };
             // onBlackout 콜백 안에서 플래그 set
             var prevOnBlackout = onBlackout;
-            onBlackout = () => { newGameTriggered = true; prevOnBlackout(); };
+            onBlackout = () => { titleTransitionTriggered = true; prevOnBlackout(); };
             panel.OnBlackoutReached += onBlackout;
             panel.OnFlowComplete += onComplete;
 

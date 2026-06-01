@@ -104,7 +104,7 @@ namespace LoveAlgo.Story
         bool needsFadeIn;
 #pragma warning restore CS0414
 
-        // 타이핑 사운드 — 쿨다운은 UISoundManager에서 일괄 관리
+        // 타이핑 사운드 — 쿨다운은 LoveAlgo.Modules.Audio.AudioManager에서 일괄 관리
 
         /// <summary>
         /// 마지막 표시된 텍스트 길이 (Auto 딜레이 계산용)
@@ -152,13 +152,13 @@ namespace LoveAlgo.Story
         void OnEnable()
         {
             // 대사 UI 살아있는 동안 폰 알림 노출 (대사 출력 = 스토리 진행 컨텍스트)
-            LoveAlgo.Common.Services.TryGet<LoveAlgo.Phone.IPhone>()?.SetNotificationVisible(true);
+            LoveAlgo.Common.Services.TryGet<IPhone>()?.SetNotificationVisible(true);
         }
 
         void OnDisable()
         {
             // 대사 UI 종료(Title/Schedule 등 전환) 시 폰 알림 숨김
-            LoveAlgo.Common.Services.TryGet<LoveAlgo.Phone.IPhone>()?.SetNotificationVisible(false);
+            LoveAlgo.Common.Services.TryGet<IPhone>()?.SetNotificationVisible(false);
         }
 
         void SetupButtons()
@@ -249,8 +249,8 @@ namespace LoveAlgo.Story
                                     continue;
                                 }
 
-                                // 타이핑 사운드 (쿨다운은 UISoundManager에서 관리)
-                                LoveAlgo.UI.UISoundManager.Instance?.PlayTyping();
+                                // 타이핑 사운드 (쿨다운은 LoveAlgo.Modules.Audio.AudioManager에서 관리)
+                                LoveAlgo.Modules.Audio.AudioManager.Instance?.PlayTyping();
 
                                 // 기본 딜레이 (일정 속도) + 미세 지터
                                 float charDelay = currentSpeed * (1f + UnityEngine.Random.Range(-jitterAmount, jitterAmount));
@@ -906,7 +906,7 @@ namespace LoveAlgo.Story
         void OnTitleClick()
         {
             // 확인 팝업 후 타이틀로 이동
-            PopupManager.Instance?.Confirm("타이틀로 돌아가시겠습니까?", 
+            PopupSystem.Instance?.Confirm("타이틀로 돌아가시겠습니까?", 
                 () => GameManager.Instance.GoToTitle(),
                 null);
         }

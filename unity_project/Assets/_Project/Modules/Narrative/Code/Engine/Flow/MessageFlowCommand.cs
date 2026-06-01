@@ -1,4 +1,4 @@
-using LoveAlgo.Contracts;
+﻿using LoveAlgo.Contracts;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using LoveAlgo.Common;
@@ -19,7 +19,7 @@ namespace LoveAlgo.Story.StoryEngine.Flow
     ///   Flow,,Message:c01:안녕! 뭐해?,>
     ///   Flow,,Message:c03:중요한 얘기 있어:wait,await
     ///
-    /// characterId는 StoryMappings의 정전 ID(c01~c05). MessengerManager 친구 ID로 매핑됨.
+    /// characterId는 StoryMappings의 정전 ID(c01~c05). MessengerSystem 친구 ID로 매핑됨.
     /// </summary>
     public static class MessageFlowCommand
     {
@@ -39,8 +39,8 @@ namespace LoveAlgo.Story.StoryEngine.Flow
             // 현재 day 추출 (GameManager.CurrentDay 또는 기본 1)
             int day = GameManager.Instance != null ? GameManager.Instance.CurrentDay : 1;
 
-            // 메시지 수신 처리 (MessengerManager가 ChatRoom 업데이트 + OnNewMessage 발화 → PhoneNotificationButton 자동 반응)
-            MessengerManager.ReceiveMessage(characterId, text, day);
+            // 메시지 수신 처리 (MessengerSystem가 ChatRoom 업데이트 + OnNewMessage 발화 → PhoneNotificationButton 자동 반응)
+            MessengerSystem.ReceiveMessage(characterId, text, day);
             Log.Info($"[Flow] Message — '{characterId}' → \"{text}\"{(waitForResponse ? " (응답 대기)" : "")}");
 
             // 확인 필수 메시지: 폰 자동 오픈 + 사용자 응답 대기

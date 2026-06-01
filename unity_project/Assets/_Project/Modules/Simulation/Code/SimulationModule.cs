@@ -106,7 +106,7 @@ namespace LoveAlgo.Simulation
             _quickMenu = parent != null ? Instantiate(quickMenuPrefab, parent) : Instantiate(quickMenuPrefab);
             _quickMenu.name = quickMenuPrefab.name;
             _quickMenu.gameObject.SetActive(false);
-            UISoundManager.Instance?.BindButtonsInTransform(_quickMenu.transform);
+            LoveAlgo.Modules.Audio.AudioManager.Instance?.BindButtonsInTransform(_quickMenu.transform);
         }
     }
 }

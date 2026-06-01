@@ -25,8 +25,8 @@ namespace LoveAlgo.Core
         public GamePhase CurrentPhase => _currentPhase;
         // 잔여 상태도 외부 set 차단(같은 어셈블리 내부 setter만). 컨트롤러/디버그는 그대로 동작.
         // 향후 .asmdef로 모듈이 분리되면 외부 모듈에서 강제로 막힘.
-        public int CurrentDay { get; internal set; } = 1;
-        public int RemainingActions { get; internal set; }
+        public int CurrentDay { get; set; } = 1;
+        public int RemainingActions { get; set; }
         public string PlayerName { get; internal set; } = "";
 
         public GameFlowController Flow { get; private set; }
@@ -67,12 +67,10 @@ namespace LoveAlgo.Core
             DayLoop = new DayLoopController(this);
             Session = new SessionController(this);
 
-            // 게임 설치 후 최초 1회 진입: EntryRouter가 LockScreen GameStart 띄우는 중 → Title 전환 보류.
-            // LockScreen Outro Blackout 시점에 EntryRouter가 ChangePhase(Title)을 호출한다.
-            var ls = LoveAlgo.Common.Services.TryGet<LoveAlgo.Contracts.ILockScreen>();
-            if (ls != null && !ls.IsPasswordSet)
+            // EntryRouter가 씬에 존재하면 초기 라우팅을 위임합니다.
+            if (Object.FindAnyObjectByType<EntryRouter>() != null)
             {
-                Debug.Log("[GameManager] 첫 진입(LockScreen 흐름) — Title 전환 보류");
+                Debug.Log("[GameManager] EntryRouter 존재함 — 초기 라우팅을 EntryRouter에 위임");
                 return;
             }
 

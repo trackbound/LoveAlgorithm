@@ -7,7 +7,7 @@ namespace LoveAlgo.Title
 {
     /// <summary>
     /// 타이틀 모듈 진입점.
-    /// TitlePanel/UsernameUI lazy spawn + ExtraPopup PopupManager 등록.
+    /// TitlePanel/UsernameUI lazy spawn + ExtraPopup PopupSystem 등록.
     /// 씬 하이어라키: _Modules/TitleModule
     /// </summary>
     [DefaultExecutionOrder(-500)]
@@ -20,7 +20,7 @@ namespace LoveAlgo.Title
         [SerializeField] UsernameUI usernameUISceneInstance;
         [SerializeField] UsernameUI usernameUIPrefab;
 
-        [Header("Popups (PopupManager 등록)")]
+        [Header("Popups (PopupSystem 등록)")]
         [SerializeField] ExtraPopup extraPopupPrefab;
 
         TitlePanel _titlePanel;
@@ -50,8 +50,8 @@ namespace LoveAlgo.Title
         void Awake()
         {
             Services.Register<ITitle>(this);
-            if (extraPopupPrefab != null && PopupManager.Instance != null)
-                _extraPopupInstance = PopupManager.Instance.Register(extraPopupPrefab);
+            if (extraPopupPrefab != null && PopupSystem.Instance != null)
+                _extraPopupInstance = PopupSystem.Instance.Register(extraPopupPrefab);
         }
 
         void OnDestroy()
@@ -70,7 +70,7 @@ namespace LoveAlgo.Title
         {
             if (_extraPopupInstance != null) return _extraPopupInstance;
             if (extraPopupPrefab == null) return null;
-            var pm = PopupManager.Instance;
+            var pm = PopupSystem.Instance;
             if (pm == null) return null;
             _extraPopupInstance = pm.Register(extraPopupPrefab);
             return _extraPopupInstance;
@@ -82,7 +82,7 @@ namespace LoveAlgo.Title
             var parent = UIManager.Instance?.GetGroupRoot(group);
             var inst = parent != null ? Instantiate(prefab, parent) : Instantiate(prefab);
             inst.name = prefab.name;
-            UISoundManager.Instance?.BindButtonsInTransform(inst.transform);
+            LoveAlgo.Modules.Audio.AudioManager.Instance?.BindButtonsInTransform(inst.transform);
             return inst;
         }
     }

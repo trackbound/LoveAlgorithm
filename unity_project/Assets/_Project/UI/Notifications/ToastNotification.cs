@@ -81,7 +81,7 @@ namespace LoveAlgo.UI
             }
 
             gameObject.SetActive(true);
-            PopupManager.Instance?.NotifyOpened(this);
+            PopupSystem.Instance?.NotifyOpened(this);
 
             // ── 토스트 프레임 등장 ──
             await FadeInFrameAsync(ct);
@@ -118,7 +118,7 @@ namespace LoveAlgo.UI
             // ── 토스트 프레임 퇴장 ──
             await FadeOutFrameAsync(ct);
 
-            PopupManager.Instance?.NotifyClosed(this);
+            PopupSystem.Instance?.NotifyClosed(this);
             gameObject.SetActive(false);
         }
 
@@ -133,13 +133,13 @@ namespace LoveAlgo.UI
             }
 
             gameObject.SetActive(true);
-            PopupManager.Instance?.NotifyOpened(this);
+            PopupSystem.Instance?.NotifyOpened(this);
 
             await FadeInFrameAsync(ct);
             await UniTask.Delay(TimeSpan.FromSeconds(duration), cancellationToken: ct);
             await FadeOutFrameAsync(ct);
 
-            PopupManager.Instance?.NotifyClosed(this);
+            PopupSystem.Instance?.NotifyClosed(this);
             gameObject.SetActive(false);
         }
 

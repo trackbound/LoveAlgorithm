@@ -1,4 +1,4 @@
-using LoveAlgo.Contracts;
+﻿using LoveAlgo.Contracts;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
@@ -182,7 +182,7 @@ namespace LoveAlgo.UI
             // 자동 저장 슬롯(0)은 수동 저장 불가 — 안내 팝업 후 종료
             if (slotIndex == save.AutoSaveSlot)
             {
-                await PopupManager.Instance.AlertAsync("자동 저장 슬롯입니다.\n다른 슬롯에 저장해 주세요.");
+                await PopupSystem.Instance.AlertAsync("자동 저장 슬롯입니다.\n다른 슬롯에 저장해 주세요.");
                 return;
             }
 
@@ -203,14 +203,14 @@ namespace LoveAlgo.UI
                 string confirmMsg = hasData
                     ? "슬롯의 기존 데이터는 사라집니다.\n저장을 계속하시겠습니까?"
                     : "해당 슬롯에 저장하시겠습니까?";
-                bool confirm = await PopupManager.Instance.ConfirmAsync(confirmMsg);
+                bool confirm = await PopupSystem.Instance.ConfirmAsync(confirmMsg);
                 if (!confirm) return;
             }
 
             // ShowSave()에서 팝업 열기 전 미리 캡처한 pending 썸네일은 첫 commit 시 삭제됨.
             // 같은 SaveLoadPopup 세션에서 2번째 이후 저장에도 정확한 썸네일이 적용되도록
             // 매 저장 직전에 다시 캡처. (Confirm 팝업은 이미 닫혔고, SaveLoadPopup/Confirm 등
-            // PopupManager 하위 모든 팝업은 SaveThumbnailManager 화이트리스트 캡처에서
+            // PopupSystem 하위 모든 팝업은 SaveThumbnailSystem 화이트리스트 캡처에서
             // 자동으로 숨겨진다 — 화이트리스트: 캐릭터 CG, 배경 BG, ScheduleUI, ShopUI)
             await save.CapturePendingScreenshotAsync();
 
@@ -264,7 +264,7 @@ namespace LoveAlgo.UI
             if (!save.Exists(slotIndex)) return;
 
             // 로드 확인
-            bool confirm = await PopupManager.Instance.ConfirmAsync(
+            bool confirm = await PopupSystem.Instance.ConfirmAsync(
                 "이 부분부터 시작할까요?", "예", "아니오");
             if (!confirm) return;
 

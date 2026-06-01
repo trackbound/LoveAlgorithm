@@ -1,4 +1,4 @@
-using LoveAlgo.Contracts;
+﻿using LoveAlgo.Contracts;
 using LoveAlgo.Common;
 using LoveAlgo.UI;
 using UnityEngine;
@@ -7,7 +7,7 @@ namespace LoveAlgo.Phone
 {
     /// <summary>
     /// 폰(메신저) 모듈 진입점.
-    /// PhonePopup/MessengerManager를 IPhone 인터페이스로 노출.
+    /// PhonePopup/MessengerSystem를 IPhone 인터페이스로 노출.
     /// 씬 하이어라키: _Modules/PhoneModule
     /// </summary>
     [DefaultExecutionOrder(-500)]
@@ -38,7 +38,7 @@ namespace LoveAlgo.Phone
         public void OpenChat(string heroineId)
         {
             if (phonePanel == null) return;
-            // base.Show 경유로 PopupManager.NotifyOpened를 트리거해야 CloseAll/ESC 등이 잡음.
+            // base.Show 경유로 PopupSystem.NotifyOpened를 트리거해야 CloseAll/ESC 등이 잡음.
             // 이전엔 SetActive(true) 직접 호출로 openStack 등록이 누락되어 외부 일괄 정리에서 빠졌었음.
             if (!phonePanel.IsVisible) phonePanel.Show();
             phonePanel.OpenChatRoom(heroineId);
@@ -56,7 +56,7 @@ namespace LoveAlgo.Phone
             if (phonePanel == null) return;
             if (!phonePanel.gameObject.activeSelf) return;
             phonePanel.gameObject.SetActive(false);
-            PopupManager.Instance?.NotifyClosed(phonePanel);
+            PopupSystem.Instance?.NotifyClosed(phonePanel);
         }
 
         public void ShowPhoneUI()

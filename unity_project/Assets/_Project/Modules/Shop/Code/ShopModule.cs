@@ -1,4 +1,4 @@
-using LoveAlgo.Contracts;
+﻿using LoveAlgo.Contracts;
 using LoveAlgo.Common;
 using LoveAlgo.Simulation;
 using LoveAlgo.UI;
@@ -8,7 +8,7 @@ namespace LoveAlgo.Shop
 {
     /// <summary>
     /// 상점 모듈 진입점.
-    /// ShopManager 정적 클래스를 IShop 인터페이스로 노출 + ShopUI lazy spawn.
+    /// ShopSystem 정적 클래스를 IShop 인터페이스로 노출 + ShopUI lazy spawn.
     /// 시뮬레이션 sub-mode(Shop)로서 SimulationModule에 자기 등록.
     /// 씬 하이어라키: _Modules/ShopModule
     /// </summary>
@@ -34,7 +34,7 @@ namespace LoveAlgo.Shop
                     _shopUI = parent != null ? Instantiate(shopUIPrefab, parent) : Instantiate(shopUIPrefab);
                     _shopUI.name = shopUIPrefab.name;
                     _shopUI.gameObject.SetActive(false);
-                    UISoundManager.Instance?.BindButtonsInTransform(_shopUI.transform);
+                    LoveAlgo.Modules.Audio.AudioManager.Instance?.BindButtonsInTransform(_shopUI.transform);
                 }
                 return _shopUI;
             }
@@ -67,21 +67,21 @@ namespace LoveAlgo.Shop
         }
 
         // ── IShop (도메인) ───────────────────────────
-        public bool HasItem(string itemId) => ShopManager.GetItemCount(itemId) > 0;
-        public int GetItemCount(string itemId) => ShopManager.GetItemCount(itemId);
+        public bool HasItem(string itemId) => ShopSystem.GetItemCount(itemId) > 0;
+        public int GetItemCount(string itemId) => ShopSystem.GetItemCount(itemId);
 
         public int UseConsumable(string itemId, int currentDay = -1)
         {
             var item = ItemDatabase.Get(itemId);
             if (item == null || item.Category != ItemCategory.Consumable) return 0;
-            return ShopManager.UseConsumable(itemId, currentDay);
+            return ShopSystem.UseConsumable(itemId, currentDay);
         }
 
         public bool UseSessionBuff(string itemId, int currentDay)
         {
             var item = ItemDatabase.Get(itemId);
             if (item == null || item.Category != ItemCategory.SessionBuff) return false;
-            return ShopManager.UseSessionBuff(itemId, currentDay) > 0;
+            return ShopSystem.UseSessionBuff(itemId, currentDay) > 0;
         }
     }
 }

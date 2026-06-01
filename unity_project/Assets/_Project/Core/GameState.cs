@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 using LoveAlgo.Core;
@@ -224,7 +224,7 @@ namespace LoveAlgo.Core
             lovePoints.Clear();
             flags.Clear();
             choiceHistory.Clear();
-            Shop.ShopManager.Reset();
+            Shop.ShopSystem.Reset();
             NotifyChanged();
         }
 

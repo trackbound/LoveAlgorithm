@@ -34,7 +34,7 @@ namespace LoveAlgo.LockScreen
                 var parent = UIManager.Instance?.GetGroupRoot(UIGroup.Title);
                 _panel = parent != null ? Instantiate(panelPrefab, parent) : Instantiate(panelPrefab);
                 _panel.name = panelPrefab.name;
-                UISoundManager.Instance?.BindButtonsInTransform(_panel.transform);
+                LoveAlgo.Modules.Audio.AudioManager.Instance?.BindButtonsInTransform(_panel.transform);
                 _panel.gameObject.SetActive(false);
                 return _panel;
             }

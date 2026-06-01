@@ -1,4 +1,4 @@
-using LoveAlgo.Contracts;
+﻿using LoveAlgo.Contracts;
 using DG.Tweening;
 using LoveAlgo.Common;
 using LoveAlgo.Core;
@@ -82,7 +82,7 @@ namespace LoveAlgo.Phone
 
         void OnEnable()
         {
-            lastUnreadCount = MessengerManager.GetTotalUnreadCount();
+            lastUnreadCount = MessengerSystem.GetTotalUnreadCount();
             UpdateBadge();
             nextPollAt = pollInterval > 0f ? Time.unscaledTime + pollInterval : float.PositiveInfinity;
         }
@@ -141,7 +141,7 @@ namespace LoveAlgo.Phone
             if (LoadingScreen.Instance != null && LoadingScreen.Instance.IsShowing) return true;
 
             // 팝업 (Choice/Save/Load/Confirm — PopupBase 기반 모두 포함)
-            if (PopupManager.Instance != null && PopupManager.Instance.IsAnyPopupOpen) return true;
+            if (PopupSystem.Instance != null && PopupSystem.Instance.IsAnyPopupOpen) return true;
 
             return false;
         }
@@ -198,7 +198,7 @@ namespace LoveAlgo.Phone
         /// <summary>새 메시지 상태 갱신 — normalImage / newMessageImage 토글.</summary>
         public void UpdateBadge()
         {
-            int unread = MessengerManager.GetTotalUnreadCount();
+            int unread = MessengerSystem.GetTotalUnreadCount();
             bool hasNew = unread > 0;
             if (normalImage != null) normalImage.SetActive(!hasNew);
             if (newMessageImage != null) newMessageImage.SetActive(hasNew);

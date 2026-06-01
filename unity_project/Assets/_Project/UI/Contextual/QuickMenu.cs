@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using DG.Tweening;
 using LoveAlgo.Common;
+using LoveAlgo.Contracts;
 using LoveAlgo.Core;
 using LoveAlgo.Phone;
 using LoveAlgo.Save;
@@ -176,7 +177,7 @@ namespace LoveAlgo.UI
 
         void OnTitle()
         {
-            PopupManager.Instance?.Confirm("타이틀로 돌아가시겠습니까?",
+            PopupSystem.Instance?.Confirm("타이틀로 돌아가시겠습니까?",
                 () => GameManager.Instance?.GoToTitle(),
                 null);
         }
@@ -208,7 +209,7 @@ namespace LoveAlgo.UI
 
         async void OnExitAsync()
         {
-            bool confirmed = await PopupManager.Instance.ConfirmAsync("게임을 종료하시겠습니까?");
+            bool confirmed = await PopupSystem.Instance.ConfirmAsync("게임을 종료하시겠습니까?");
             if (confirmed)
             {
 #if UNITY_EDITOR

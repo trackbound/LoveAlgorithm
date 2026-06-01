@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -35,7 +35,7 @@ namespace LoveAlgo.Phone
             currentHeroineId = heroineId;
 
             // 헤더
-            var friend = MessengerManager.GetFriend(heroineId);
+            var friend = MessengerSystem.GetFriend(heroineId);
             if (headerNameText != null) headerNameText.text = friend?.DisplayName ?? heroineId;
             if (headerStatusText != null) headerStatusText.text = friend?.StatusMessage ?? "";
             if (headerProfileImage != null && friend != null && !string.IsNullOrEmpty(friend.ProfileImagePath))
@@ -45,7 +45,7 @@ namespace LoveAlgo.Phone
             }
 
             PopulateMessages();
-            MessengerManager.MarkAsRead(heroineId);
+            MessengerSystem.MarkAsRead(heroineId);
         }
 
         void PopulateMessages()
@@ -57,7 +57,7 @@ namespace LoveAlgo.Phone
 
             if (messageContainer == null) return;
 
-            var room = MessengerManager.GetChatRoom(currentHeroineId);
+            var room = MessengerSystem.GetChatRoom(currentHeroineId);
             if (room == null) return;
 
             foreach (var msg in room.Messages)
@@ -70,7 +70,7 @@ namespace LoveAlgo.Phone
         public void AppendLatestMessage()
         {
             if (string.IsNullOrEmpty(currentHeroineId)) return;
-            var room = MessengerManager.GetChatRoom(currentHeroineId);
+            var room = MessengerSystem.GetChatRoom(currentHeroineId);
             if (room == null || room.Messages.Count == 0) return;
 
             var latest = room.Messages[room.Messages.Count - 1];

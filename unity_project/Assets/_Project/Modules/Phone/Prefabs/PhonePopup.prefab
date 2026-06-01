@@ -2082,7 +2082,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &2881940944260229664
 RectTransform:
   m_ObjectHideFlags: 0
@@ -2116,11 +2116,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5b1c36bbc4554a947953c50daadd5673, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.Phone.PhonePopup
+  rootCanvasGroup: {fileID: 0}
   panelRect: {fileID: 0}
   canvasGroup: {fileID: 0}
+  animationType: 0
   showDuration: 0.35
   hideDuration: 0.28
   slideOffset: 200
+  floatOffset: 15
   tabGroup: {fileID: 7622580108369502997}
   friendListPanel: {fileID: 1074715001831138698}
   chatListPanel: {fileID: 5894925853765473087}

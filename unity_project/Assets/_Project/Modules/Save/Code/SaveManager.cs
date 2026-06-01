@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 using Cysharp.Threading.Tasks;
@@ -15,12 +15,12 @@ namespace LoveAlgo.Story
         /// <summary>
         /// 자동저장 슬롯 (Continue용)
         /// </summary>
-        public const int AutoSaveSlot = SaveSlotManager.AutoSaveSlot;
+        public const int AutoSaveSlot = SaveSlotSystem.AutoSaveSlot;
 
         /// <summary>
         /// 유저 저장 시작 슬롯
         /// </summary>
-        public const int UserSlotStart = SaveSlotManager.UserSlotStart;
+        public const int UserSlotStart = SaveSlotSystem.UserSlotStart;
 
         /// <summary>
         /// GameManager용 간단 저장 (스크립트 위치 없이)
@@ -61,7 +61,7 @@ namespace LoveAlgo.Story
         /// </summary>
         public static bool Exists(int slot)
         {
-            return SaveSlotManager.Exists(slot);
+            return SaveSlotSystem.Exists(slot);
         }
 
         /// <summary>
@@ -69,8 +69,8 @@ namespace LoveAlgo.Story
         /// </summary>
         public static void Delete(int slot)
         {
-            SaveSlotManager.Delete(slot);
-            SaveThumbnailManager.DeleteScreenshot(slot);
+            SaveSlotSystem.Delete(slot);
+            SaveThumbnailSystem.DeleteScreenshot(slot);
         }
 
         /// <summary>
@@ -78,7 +78,7 @@ namespace LoveAlgo.Story
         /// </summary>
         public static void DeleteAll()
         {
-            SaveSlotManager.DeleteAll();
+            SaveSlotSystem.DeleteAll();
         }
 
         /// <summary>
@@ -86,7 +86,7 @@ namespace LoveAlgo.Story
         /// </summary>
         public static List<(int slot, SaveData data)> GetAllUserSaves(int maxSlots = 30)
         {
-            return SaveSlotManager.GetAllUserSaves(maxSlots);
+            return SaveSlotSystem.GetAllUserSaves(maxSlots);
         }
 
         #region Screenshot
@@ -96,7 +96,7 @@ namespace LoveAlgo.Story
         /// </summary>
         public static async UniTask CapturePendingScreenshotAsync()
         {
-            await SaveThumbnailManager.CapturePendingScreenshotAsync();
+            await SaveThumbnailSystem.CapturePendingScreenshotAsync();
         }
 
         /// <summary>
@@ -104,7 +104,7 @@ namespace LoveAlgo.Story
         /// </summary>
         public static void CapturePendingScreenshot()
         {
-            SaveThumbnailManager.CapturePendingScreenshot();
+            SaveThumbnailSystem.CapturePendingScreenshot();
         }
 
         /// <summary>
@@ -112,7 +112,7 @@ namespace LoveAlgo.Story
         /// </summary>
         public static bool TryCommitPendingScreenshot(int slot)
         {
-            return SaveThumbnailManager.TryCommitPendingScreenshot(slot);
+            return SaveThumbnailSystem.TryCommitPendingScreenshot(slot);
         }
 
         /// <summary>
@@ -120,7 +120,7 @@ namespace LoveAlgo.Story
         /// </summary>
         public static void CaptureScreenshot(int slot)
         {
-            SaveThumbnailManager.CaptureScreenshot(slot);
+            SaveThumbnailSystem.CaptureScreenshot(slot);
         }
 
         /// <summary>
@@ -128,7 +128,7 @@ namespace LoveAlgo.Story
         /// </summary>
         public static Sprite LoadScreenshot(int slot)
         {
-            return SaveThumbnailManager.LoadScreenshot(slot);
+            return SaveThumbnailSystem.LoadScreenshot(slot);
         }
 
         /// <summary>
@@ -136,7 +136,7 @@ namespace LoveAlgo.Story
         /// </summary>
         public static void DeleteScreenshot(int slot)
         {
-            SaveThumbnailManager.DeleteScreenshot(slot);
+            SaveThumbnailSystem.DeleteScreenshot(slot);
         }
 
         #endregion

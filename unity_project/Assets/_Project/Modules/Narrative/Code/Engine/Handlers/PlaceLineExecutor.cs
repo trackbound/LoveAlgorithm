@@ -21,7 +21,7 @@ namespace LoveAlgo.Story.StoryEngine.Handlers
 
         public UniTask<bool> ExecuteAsync(ScriptLine line, CancellationToken ct)
         {
-            var placeUI = PopupManager.Instance?.Get<PlaceNotification>();
+            var placeUI = PopupSystem.Instance?.Get<PlaceNotification>();
             if (placeUI != null)
             {
                 // fire-and-forget: 의도된 동작. 클래스 주석 참조.

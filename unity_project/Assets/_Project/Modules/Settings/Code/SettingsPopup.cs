@@ -113,16 +113,16 @@ namespace LoveAlgo.UI
             if (autoSpeedSlider != null) _listeners.Bind(autoSpeedSlider.onValueChanged, OnAutoSpeedChanged);
         }
 
-        void OnMasterChanged(float v) { if (settings != null) settings.MasterVolume = v; UISoundManager.Instance?.PlayVolumePreview(); MarkDirty(); }
-        void OnBgmChanged(float v) { if (settings != null) settings.BGMVolume = v; UISoundManager.Instance?.PlayVolumePreview(); MarkDirty(); }
-        void OnSfxChanged(float v) { if (settings != null) settings.SFXVolume = v; UISoundManager.Instance?.PlayVolumePreview(); MarkDirty(); }
-        void OnVoiceYeunChanged(float v) { settings?.SetCharacterVoice("HaYeEun", v); UISoundManager.Instance?.PlayVolumePreview(v); MarkDirty(); }
-        void OnVoiceDaeunChanged(float v) { settings?.SetCharacterVoice("SeoDaEun", v); UISoundManager.Instance?.PlayVolumePreview(v); MarkDirty(); }
-        void OnVoiceBomChanged(float v) { settings?.SetCharacterVoice("LeeBom", v); UISoundManager.Instance?.PlayVolumePreview(v); MarkDirty(); }
-        void OnVoiceHeewonChanged(float v) { settings?.SetCharacterVoice("DoHeewon", v); UISoundManager.Instance?.PlayVolumePreview(v); MarkDirty(); }
-        void OnVoiceRoaChanged(float v) { settings?.SetCharacterVoice("Roa", v); UISoundManager.Instance?.PlayVolumePreview(v); MarkDirty(); }
-        void OnTextSpeedChanged(float v) { if (settings != null) settings.TextSpeed = v; UISoundManager.Instance?.PlayVolumePreview(); MarkDirty(); }
-        void OnAutoSpeedChanged(float v) { if (settings != null) settings.AutoSpeed = v; UISoundManager.Instance?.PlayVolumePreview(); MarkDirty(); }
+        void OnMasterChanged(float v) { if (settings != null) settings.MasterVolume = v; LoveAlgo.Modules.Audio.AudioManager.Instance?.PlayVolumePreview(); MarkDirty(); }
+        void OnBgmChanged(float v) { if (settings != null) settings.BGMVolume = v; LoveAlgo.Modules.Audio.AudioManager.Instance?.PlayVolumePreview(); MarkDirty(); }
+        void OnSfxChanged(float v) { if (settings != null) settings.SFXVolume = v; LoveAlgo.Modules.Audio.AudioManager.Instance?.PlayVolumePreview(); MarkDirty(); }
+        void OnVoiceYeunChanged(float v) { settings?.SetCharacterVoice("HaYeEun", v); LoveAlgo.Modules.Audio.AudioManager.Instance?.PlayVolumePreview(v); MarkDirty(); }
+        void OnVoiceDaeunChanged(float v) { settings?.SetCharacterVoice("SeoDaEun", v); LoveAlgo.Modules.Audio.AudioManager.Instance?.PlayVolumePreview(v); MarkDirty(); }
+        void OnVoiceBomChanged(float v) { settings?.SetCharacterVoice("LeeBom", v); LoveAlgo.Modules.Audio.AudioManager.Instance?.PlayVolumePreview(v); MarkDirty(); }
+        void OnVoiceHeewonChanged(float v) { settings?.SetCharacterVoice("DoHeewon", v); LoveAlgo.Modules.Audio.AudioManager.Instance?.PlayVolumePreview(v); MarkDirty(); }
+        void OnVoiceRoaChanged(float v) { settings?.SetCharacterVoice("Roa", v); LoveAlgo.Modules.Audio.AudioManager.Instance?.PlayVolumePreview(v); MarkDirty(); }
+        void OnTextSpeedChanged(float v) { if (settings != null) settings.TextSpeed = v; LoveAlgo.Modules.Audio.AudioManager.Instance?.PlayVolumePreview(); MarkDirty(); }
+        void OnAutoSpeedChanged(float v) { if (settings != null) settings.AutoSpeed = v; LoveAlgo.Modules.Audio.AudioManager.Instance?.PlayVolumePreview(); MarkDirty(); }
 
         void MarkDirty() => isDirty = true;
         void MarkResolutionDirty() => isResolutionDirty = true;
@@ -239,7 +239,7 @@ namespace LoveAlgo.UI
         {
             settings?.ApplyResolution();
             isResolutionDirty = false;
-            PopupManager.Instance?.Toast("해상도 적용", "해상도가 적용되었습니다.");
+            PopupSystem.Instance?.Toast("해상도 적용", "해상도가 적용되었습니다.");
         }
 
         #endregion
@@ -255,20 +255,20 @@ namespace LoveAlgo.UI
             }
             isDirty = false;
             isResolutionDirty = false;
-            PopupManager.Instance?.Toast("적용", "설정이 저장되었습니다.");
+            PopupSystem.Instance?.Toast("적용", "설정이 저장되었습니다.");
         }
 
         void OnResetClick() => ConfirmReset().Forget();
 
         async UniTaskVoid ConfirmReset()
         {
-            bool confirmed = await PopupManager.Instance.ConfirmAsync("모든 설정을 기본값으로\n초기화하시겠습니까?");
+            bool confirmed = await PopupSystem.Instance.ConfirmAsync("모든 설정을 기본값으로\n초기화하시겠습니까?");
             if (!confirmed) return;
 
             settings?.ResetToDefaults();
             SyncUIFromSettings();
             isDirty = true;
-            PopupManager.Instance?.Toast("초기화", "기본값으로 변경되었습니다.\n적용 버튼을 눌러 저장하세요.");
+            PopupSystem.Instance?.Toast("초기화", "기본값으로 변경되었습니다.\n적용 버튼을 눌러 저장하세요.");
         }
 
         #endregion
@@ -287,7 +287,7 @@ namespace LoveAlgo.UI
 
             if (!isDirty) return true;
 
-            bool save = await PopupManager.Instance.ConfirmAsync("변경된 정보가 있습니다.\n저장 하시겠습니까?");
+            bool save = await PopupSystem.Instance.ConfirmAsync("변경된 정보가 있습니다.\n저장 하시겠습니까?");
             if (save) settings?.Save();
             else settings?.RevertToSnapshot();
 

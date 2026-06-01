@@ -117,7 +117,7 @@ namespace LoveAlgo.UI
             // alpha=0 먼저 세팅 → SetActive 시 1프레임 깜빡임 방지
             if (placeCg != null) placeCg.alpha = 0f;
             gameObject.SetActive(true);
-            PopupManager.Instance?.NotifyOpened(this);
+            PopupSystem.Instance?.NotifyOpened(this);
             IsShowing = true;
 
             // 시퀀스: 페이드인 → 홀드 → 페이드아웃
@@ -142,7 +142,7 @@ namespace LoveAlgo.UI
             _ = currentSequence.OnComplete(() =>
             {
                 IsShowing = false;
-                PopupManager.Instance?.NotifyClosed(this);
+                PopupSystem.Instance?.NotifyClosed(this);
                 gameObject.SetActive(false);
                 awaitSource?.TrySetResult(true);
             });
@@ -168,7 +168,7 @@ namespace LoveAlgo.UI
 
             placeCg.alpha = 0f;
             IsShowing = false;
-            PopupManager.Instance?.NotifyClosed(this);
+            PopupSystem.Instance?.NotifyClosed(this);
             gameObject.SetActive(false);
             return UniTask.CompletedTask;
         }
@@ -181,7 +181,7 @@ namespace LoveAlgo.UI
             KillCurrentSequence();
             if (placeCg != null) placeCg.alpha = 0f;
             IsShowing = false;
-            PopupManager.Instance?.NotifyClosed(this);
+            PopupSystem.Instance?.NotifyClosed(this);
             gameObject.SetActive(false);
         }
 

@@ -6,6 +6,8 @@ using Cysharp.Threading.Tasks;
 using LoveAlgo.Story;
 using UnityEngine;
 using UnityEngine.Audio;
+using UnityEngine.UI;
+using UnityEngine.EventSystems;
 using DG.Tweening;
 
 namespace LoveAlgo.Modules.Audio
@@ -21,6 +23,33 @@ namespace LoveAlgo.Modules.Audio
         [SerializeField] AudioSource bgmSource;
         [SerializeField] AudioSource sfxSource;
         [SerializeField] AudioSource voiceSource;
+        [SerializeField] AudioSource uiAudioSource;
+        [SerializeField] AudioSource uiTypingSource;
+
+        [Header("UI Sound Settings")]
+        [SerializeField] AudioClip hoverClip;
+        [SerializeField] AudioClip clickClip;
+        [SerializeField] AudioClip typingClip;
+        [SerializeField] AudioClip dialogueNextClip;
+        [SerializeField] AudioClip choiceSelectClip;
+        [SerializeField] AudioClip choiceAppearClip;
+        [SerializeField] AudioClip choiceHoverClip;
+        [SerializeField] AudioClip popupOpenClip;
+        [SerializeField] AudioClip popupCloseClip;
+        [SerializeField] AudioClip saveCompleteClip;
+        [SerializeField] AudioClip loadCompleteClip;
+        [Tooltip("볼륨 슬라이더 프리뷰 전용 사운드 (미할당 시 clickClip 사용)")]
+        [SerializeField] AudioClip volumePreviewClip;
+        [SerializeField] AudioMixerGroup sfxMixerGroup;
+        [SerializeField] float hoverVolume = 0.5f;
+        [SerializeField] float clickVolume = 0.7f;
+        [SerializeField] float minTypingPitch = 0.9f;
+        [SerializeField] float maxTypingPitch = 1.1f;
+        [SerializeField] float minTypingVolume = 0.35f;
+        [SerializeField] float maxTypingVolume = 0.5f;
+        [SerializeField] float typingMinInterval = 0.035f;
+        [SerializeField] float volumePreviewDebounce = 0.08f;
+        [SerializeField] bool autoBindButtons = true;
 
         [Header("오디오 믹서")]
         [SerializeField] AudioMixer audioMixer;
@@ -61,6 +90,14 @@ namespace LoveAlgo.Modules.Audio
         
         readonly Dictionary<string, float> characterVoiceVolumes = new();
 
+        readonly HashSet<Button> registeredButtons = new();
+        readonly HashSet<Button> excludedButtons = new();
+        float lastTypingPlayTime = -999f;
+        float volumePreviewScheduledTime = -1f;
+        float volumePreviewScale = 1f;
+        int _registerCallsSincePrune;
+        const int PruneEveryN = 64;
+
         /// <summary>
         /// SFX 클립 캐시 (Awake에서 한 번만 로드)
         /// </summary>
@@ -74,6 +111,8 @@ namespace LoveAlgo.Modules.Audio
         {
             ValidateAudioSources();
             CacheSFXClips();
+            SetupUIAudioSources();
+            WarmUpUIClips();
 
             // 볼륨 복원은 SettingsModule.Load의 책임 — 마스터 설정 저장소를
             // 한 곳으로 통일하기 위해 AudioManager는 PlayerPrefs를 직접 읽지 않는다.
@@ -84,6 +123,49 @@ namespace LoveAlgo.Modules.Audio
             {
                 Debug.LogWarning("[AudioManager] AudioSettings가 할당되지 않았습니다.");
             }
+        }
+
+        void Start()
+        {
+            if (autoBindButtons)
+            {
+                BindAllButtons();
+            }
+        }
+
+        void SetupUIAudioSources()
+        {
+            if (uiAudioSource == null)
+            {
+                uiAudioSource = gameObject.AddComponent<AudioSource>();
+            }
+            uiAudioSource.playOnAwake = false;
+            uiAudioSource.priority = 0;
+
+            if (uiTypingSource == null)
+            {
+                uiTypingSource = gameObject.AddComponent<AudioSource>();
+            }
+            uiTypingSource.playOnAwake = false;
+            uiTypingSource.priority = 0;
+
+            if (sfxMixerGroup != null)
+            {
+                uiAudioSource.outputAudioMixerGroup = sfxMixerGroup;
+                uiTypingSource.outputAudioMixerGroup = sfxMixerGroup;
+            }
+            else if (sfxSource != null && sfxSource.outputAudioMixerGroup != null)
+            {
+                uiAudioSource.outputAudioMixerGroup = sfxSource.outputAudioMixerGroup;
+                uiTypingSource.outputAudioMixerGroup = sfxSource.outputAudioMixerGroup;
+            }
+        }
+
+        void WarmUpUIClips()
+        {
+            if (hoverClip != null && uiAudioSource != null) uiAudioSource.PlayOneShot(hoverClip, 0f);
+            if (clickClip != null && uiAudioSource != null) uiAudioSource.PlayOneShot(clickClip, 0f);
+            if (typingClip != null && uiTypingSource != null) uiTypingSource.PlayOneShot(typingClip, 0f);
         }
 
         /// <summary>
@@ -328,6 +410,8 @@ namespace LoveAlgo.Modules.Audio
                 if (bgmSource != null) bgmSource.Pause();
                 if (sfxSource != null) sfxSource.Pause();
                 if (voiceSource != null) voiceSource.Pause();
+                if (uiAudioSource != null) uiAudioSource.Stop();
+                if (uiTypingSource != null) uiTypingSource.Stop();
             }
             else
             {
@@ -345,6 +429,8 @@ namespace LoveAlgo.Modules.Audio
                 if (bgmSource != null) bgmSource.Pause();
                 if (sfxSource != null) sfxSource.Pause();
                 if (voiceSource != null) voiceSource.Pause();
+                if (uiAudioSource != null) uiAudioSource.Stop();
+                if (uiTypingSource != null) uiTypingSource.Stop();
             }
             else
             {
@@ -750,6 +836,125 @@ namespace LoveAlgo.Modules.Audio
 
         #endregion
 
+        #region UI Sound System (Merged from UISoundManager)
+
+        public void BindAllButtons()
+        {
+            PruneDestroyedButtons();
+            var buttons = FindObjectsByType<Button>(FindObjectsInactive.Include);
+            foreach (var button in buttons)
+            {
+                RegisterButton(button);
+            }
+        }
+
+        public void PruneDestroyedButtons()
+        {
+            registeredButtons.RemoveWhere(b => b == null);
+            excludedButtons.RemoveWhere(b => b == null);
+        }
+
+        public void RegisterButton(Button button)
+        {
+            if (++_registerCallsSincePrune >= PruneEveryN)
+            {
+                _registerCallsSincePrune = 0;
+                PruneDestroyedButtons();
+            }
+
+            if (button == null || registeredButtons.Contains(button)) return;
+
+            registeredButtons.Add(button);
+
+            button.onClick.AddListener(() => { if (!excludedButtons.Contains(button)) PlayClick(); });
+
+            var trigger = button.GetComponent<EventTrigger>();
+            if (trigger == null)
+            {
+                trigger = button.gameObject.AddComponent<EventTrigger>();
+            }
+
+            bool hasEnterEvent = false;
+            foreach (var entry in trigger.triggers)
+            {
+                if (entry.eventID == EventTriggerType.PointerEnter)
+                {
+                    entry.callback.AddListener(_ => { if (!excludedButtons.Contains(button)) PlayHover(); });
+                    hasEnterEvent = true;
+                    break;
+                }
+            }
+
+            if (!hasEnterEvent)
+            {
+                var enterEntry = new EventTrigger.Entry { eventID = EventTriggerType.PointerEnter };
+                enterEntry.callback.AddListener(_ => { if (!excludedButtons.Contains(button)) PlayHover(); });
+                trigger.triggers.Add(enterEntry);
+            }
+        }
+
+        public void ExcludeButton(Button button)
+        {
+            if (button != null) excludedButtons.Add(button);
+        }
+
+        public void ClearExcludedButtons()
+        {
+            excludedButtons.Clear();
+        }
+
+        public void BindButtonsInTransform(Transform root)
+        {
+            PruneDestroyedButtons();
+            var buttons = root.GetComponentsInChildren<Button>(true);
+            foreach (var button in buttons)
+            {
+                RegisterButton(button);
+            }
+        }
+
+        public void PlayHover() => PlayUIClipped(hoverClip, hoverVolume);
+        public void PlayClick() => PlayUIClipped(clickClip, clickVolume);
+
+        public void PlayTyping()
+        {
+            if (typingClip == null || uiTypingSource == null) return;
+            if (Time.unscaledTime - lastTypingPlayTime < typingMinInterval) return;
+            lastTypingPlayTime = Time.unscaledTime;
+
+            if (uiTypingSource.mute) uiTypingSource.mute = false;
+
+            uiTypingSource.clip = typingClip;
+            uiTypingSource.pitch = UnityEngine.Random.Range(minTypingPitch, maxTypingPitch);
+            uiTypingSource.volume = UnityEngine.Random.Range(minTypingVolume, maxTypingVolume);
+            uiTypingSource.Play();
+        }
+
+        public void PlayVolumePreview(float volumeScale = 1f)
+        {
+            volumePreviewScheduledTime = Time.unscaledTime + volumePreviewDebounce;
+            volumePreviewScale = Mathf.Clamp01(volumeScale);
+        }
+
+        public void PlayDialogueNext() => PlayUIClipped(dialogueNextClip, clickVolume);
+        public void PlayChoiceSelect() => PlayUIClipped(choiceSelectClip, clickVolume);
+        public void PlayChoiceHover() => PlayUIClipped(choiceHoverClip != null ? choiceHoverClip : hoverClip, hoverVolume);
+        public void PlayChoiceAppear() => PlayUIClipped(choiceAppearClip, clickVolume);
+        public void PlayPopupOpen() => PlayUIClipped(popupOpenClip, clickVolume);
+        public void PlayPopupClose() => PlayUIClipped(popupCloseClip, hoverVolume);
+        public void PlaySaveComplete() => PlayUIClipped(saveCompleteClip, clickVolume);
+        public void PlayLoadComplete() => PlayUIClipped(loadCompleteClip, clickVolume);
+
+        void PlayUIClipped(AudioClip clip, float volume)
+        {
+            if (clip != null && uiAudioSource != null)
+            {
+                uiAudioSource.PlayOneShot(clip, volume);
+            }
+        }
+
+        #endregion
+
         AudioClip LoadAudioClip(string path)
         {
             return Resources.Load<AudioClip>(path);
@@ -759,6 +964,7 @@ namespace LoveAlgo.Modules.Audio
         {
             base.OnDestroy();
             DOTween.Kill(bgmSource);
+            // 디바운스 트윈이 동작할 수 있으므로 DOTween이나 기타 정리
         }
     }
 }

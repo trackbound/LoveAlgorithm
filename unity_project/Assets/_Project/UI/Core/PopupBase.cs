@@ -80,17 +80,17 @@ namespace LoveAlgo.UI
         {
             KillSequence();
             gameObject.SetActive(true);
-            PopupManager.Instance?.NotifyOpened(this);
+            PopupSystem.Instance?.NotifyOpened(this);
             PlayShowAnimation();
-            UISoundManager.Instance?.PlayPopupOpen();
+            LoveAlgo.Modules.Audio.AudioManager.Instance?.PlayPopupOpen();
         }
 
         public virtual void Hide()
         {
             KillSequence();
             PlayHideAnimation();
-            PopupManager.Instance?.NotifyClosed(this);
-            UISoundManager.Instance?.PlayPopupClose();
+            PopupSystem.Instance?.NotifyClosed(this);
+            LoveAlgo.Modules.Audio.AudioManager.Instance?.PlayPopupClose();
         }
 
         /// <summary>Hide 애니메이션 완료까지 대기 가능한 버전.</summary>
@@ -185,7 +185,7 @@ namespace LoveAlgo.UI
 
         /// <summary>
         /// 외부 강제 종료 — fade 트윈 무시 즉시 비활성화 + openStack 동기화.
-        /// 점프/씬 전환 시 PopupManager.CloseAllImmediate가 일괄 호출.
+        /// 점프/씬 전환 시 PopupSystem.CloseAllImmediate가 일괄 호출.
         /// </summary>
         public void ForceHideImmediate()
         {
@@ -193,7 +193,7 @@ namespace LoveAlgo.UI
             if (panelRect != null) panelRect.localScale = Vector3.one;
             if (canvasGroup != null) canvasGroup.alpha = 1f;
             gameObject.SetActive(false);
-            PopupManager.Instance?.NotifyClosed(this);
+            PopupSystem.Instance?.NotifyClosed(this);
             hideCompletionSource?.TrySetResult();
             hideCompletionSource = null;
         }

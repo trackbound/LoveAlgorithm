@@ -158,7 +158,7 @@ namespace LoveAlgo.Core
         static async UniTask TearDownEverythingAsync()
         {
             // 1. 팝업/모달 정리
-            PopupManager.Instance?.CloseAll();
+            PopupSystem.Instance?.CloseAll();
 
             // 2. LockScreen 강제 닫기 (활성 시)
             var lsModule = UnityEngine.Object.FindAnyObjectByType<LoveAlgo.LockScreen.LockScreenModule>();

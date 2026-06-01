@@ -17,7 +17,7 @@ namespace LoveAlgo.Narrative
     [DefaultExecutionOrder(-500)]
     public class NarrativeModule : MonoBehaviour, INarrative
     {
-        [Header("Popups (lazy spawn — PopupManager 등록)")]
+        [Header("Popups (lazy spawn — PopupSystem 등록)")]
         [SerializeField] LogPopup logPopupPrefab;
 
         [Header("UI (씬 인스턴스 우선 / 없으면 prefab spawn)")]
@@ -77,8 +77,8 @@ namespace LoveAlgo.Narrative
         void Awake()
         {
             Services.Register<INarrative>(this);
-            if (logPopupPrefab != null && PopupManager.Instance != null)
-                logPopupInstance = PopupManager.Instance.Register(logPopupPrefab);
+            if (logPopupPrefab != null && PopupSystem.Instance != null)
+                logPopupInstance = PopupSystem.Instance.Register(logPopupPrefab);
         }
 
         /// <summary>씬에 미리 배치된 인스턴스가 있으면 그대로, 없으면 prefab으로 spawn.</summary>
@@ -95,7 +95,7 @@ namespace LoveAlgo.Narrative
             var inst = parent != null ? Instantiate(prefab, parent) : Instantiate(prefab);
             inst.name = prefab.name;
             inst.gameObject.SetActive(false);
-            UISoundManager.Instance?.BindButtonsInTransform(inst.transform);
+            LoveAlgo.Modules.Audio.AudioManager.Instance?.BindButtonsInTransform(inst.transform);
             return inst;
         }
 
@@ -159,7 +159,7 @@ namespace LoveAlgo.Narrative
         {
             if (logPopupInstance != null) return logPopupInstance;
             if (logPopupPrefab == null) return null;
-            var pm = PopupManager.Instance;
+            var pm = PopupSystem.Instance;
             if (pm == null) return null;
             logPopupInstance = pm.Register(logPopupPrefab);
             return logPopupInstance;

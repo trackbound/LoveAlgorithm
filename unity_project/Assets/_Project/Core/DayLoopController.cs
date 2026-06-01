@@ -51,7 +51,7 @@ namespace LoveAlgo.Core
                     string resultText = change >= 0
                         ? $"{MoneyFormat.SignedCurrency(change)} (수익!)"
                         : $"{MoneyFormat.SignedCurrency(change)} (손실...)";
-                    PopupManager.Instance?.Toast("투자 결과", resultText, 3f);
+                    PopupSystem.Instance?.Toast("투자 결과", resultText, 3f);
                     Debug.Log($"[GameManager] 투자: {MoneyFormat.Currency(currentMoney)} x {multiplier:P0} = {MoneyFormat.SignedCurrency(change)}");
                 }
                 else
@@ -85,7 +85,7 @@ namespace LoveAlgo.Core
                             buffText += $", {subStat} {subValue:+#;-#;0}";
                         feedbackItems.Add($"<color=#FFD700>{buffText}</color>");
                     }
-                    PopupManager.Instance?.ToastSequence(effect.displayName, feedbackItems, 0.8f);
+                    PopupSystem.Instance?.ToastSequence(effect.displayName, feedbackItems, 0.8f);
                 }
             }
 

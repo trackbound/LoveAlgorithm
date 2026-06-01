@@ -90,19 +90,19 @@ namespace LoveAlgo.UI
         void OnSceneClick()
         {
             Debug.Log("[ExtraPopup] SCENE 선택 — 씬 다시보기 (미구현)");
-            PopupManager.Instance?.Toast("SCENE", "씬 다시보기 기능은 추후 구현됩니다.");
+            PopupSystem.Instance?.Toast("SCENE", "씬 다시보기 기능은 추후 구현됩니다.");
         }
 
         void OnCGClick()
         {
             Debug.Log("[ExtraPopup] CG 선택 — 일러스트 보기 (미구현)");
-            PopupManager.Instance?.Toast("CG", "일러스트 보기 기능은 추후 구현됩니다.");
+            PopupSystem.Instance?.Toast("CG", "일러스트 보기 기능은 추후 구현됩니다.");
         }
 
         void OnCollectionClick()
         {
             Debug.Log("[ExtraPopup] 수집 선택 — 수집 요소 보기 (미구현)");
-            PopupManager.Instance?.Toast("수집", "수집 요소 보기 기능은 추후 구현됩니다.");
+            PopupSystem.Instance?.Toast("수집", "수집 요소 보기 기능은 추후 구현됩니다.");
         }
 
         #endregion

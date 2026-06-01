@@ -1,4 +1,4 @@
-using UnityEditor;
+﻿using UnityEditor;
 using UnityEngine;
 using LoveAlgo.Core;
 using LoveAlgo.Story;
@@ -129,18 +129,18 @@ namespace LoveAlgo.Editor
             EditorGUILayout.LabelField("상점 / 인벤토리", EditorStyles.boldLabel);
 
             if (GUILayout.Button("인벤토리 전체 클리어"))
-                Shop.ShopManager.Reset();
+                Shop.ShopSystem.Reset();
 
             if (GUILayout.Button("소모품 전부 1개씩 지급"))
             {
                 foreach (var item in Shop.ItemDatabase.GetByCategory(Shop.ItemCategory.Consumable))
-                    Shop.ShopManager.AddItem(item.Id);
+                    Shop.ShopSystem.AddItem(item.Id);
             }
 
             if (GUILayout.Button("세션버프 전부 1개씩 지급"))
             {
                 foreach (var item in Shop.ItemDatabase.GetByCategory(Shop.ItemCategory.SessionBuff))
-                    Shop.ShopManager.AddItem(item.Id);
+                    Shop.ShopSystem.AddItem(item.Id);
             }
 
             EditorGUILayout.Space(8);

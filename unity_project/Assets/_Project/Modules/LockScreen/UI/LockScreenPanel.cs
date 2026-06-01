@@ -446,10 +446,10 @@ namespace LoveAlgo.LockScreen.UI
             string yes   = content != null ? content.resetConfirmYes : "예";
             string no    = content != null ? content.resetConfirmNo : "아니오";
 
-            var pm = PopupManager.Instance;
+            var pm = PopupSystem.Instance;
             if (pm == null)
             {
-                Debug.LogWarning("[LockScreenPanel] PopupManager 미존재 — 재설정 직접 진행");
+                Debug.LogWarning("[LockScreenPanel] PopupSystem 미존재 — 재설정 직접 진행");
                 Begin(LockScreenMode.Reset, fadeIn: false);
                 return;
             }

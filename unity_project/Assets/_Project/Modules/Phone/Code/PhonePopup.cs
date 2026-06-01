@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using TMPro;
 using UnityEngine;
@@ -66,12 +66,12 @@ namespace LoveAlgo.Phone
             if (profileCloseButton != null) profileCloseButton.onClick.AddListener(HideProfile);
 
             // 메신저 이벤트 구독
-            MessengerManager.OnNewMessage += OnExternalNewMessage;
+            MessengerSystem.OnNewMessage += OnExternalNewMessage;
         }
 
         protected override void OnDestroy()
         {
-            MessengerManager.OnNewMessage -= OnExternalNewMessage;
+            MessengerSystem.OnNewMessage -= OnExternalNewMessage;
             if (tabGroup != null) tabGroup.OnTabChanged -= SwitchTab;
             if (backButton != null) backButton.onClick.RemoveListener(OnBackClick);
             if (profileCloseButton != null) profileCloseButton.onClick.RemoveListener(HideProfile);
@@ -86,7 +86,7 @@ namespace LoveAlgo.Phone
                 && string.Equals(openedChatRoomId, heroineId, System.StringComparison.OrdinalIgnoreCase))
             {
                 chatRoom?.AppendLatestMessage();
-                MessengerManager.MarkAsRead(heroineId);
+                MessengerSystem.MarkAsRead(heroineId);
                 return;
             }
             // 채팅 탭 활성이면 리스트 갱신 (New 뱃지 등)
@@ -140,7 +140,7 @@ namespace LoveAlgo.Phone
             }
 
             // 히로인 친구 목록
-            var allFriends = MessengerManager.GetAllFriends();
+            var allFriends = MessengerSystem.GetAllFriends();
             foreach (var friend in allFriends)
             {
                 var slot = Instantiate(friendSlotPrefab, friendListContent);
@@ -161,7 +161,7 @@ namespace LoveAlgo.Phone
 
             if (chatSlotPrefab == null || chatListContent == null) return;
 
-            var rooms = MessengerManager.GetActiveChatRooms();
+            var rooms = MessengerSystem.GetActiveChatRooms();
             foreach (var room in rooms)
             {
                 var slot = Instantiate(chatSlotPrefab, chatListContent);
@@ -195,7 +195,7 @@ namespace LoveAlgo.Phone
 
             chatRoom.Open(heroineId);
             openedChatRoomId = heroineId;
-            MessengerManager.MarkAsRead(heroineId);
+            MessengerSystem.MarkAsRead(heroineId);
         }
 
         void HideChatRoom()
@@ -210,7 +210,7 @@ namespace LoveAlgo.Phone
 
         void ShowProfile(string heroineId)
         {
-            var friend = MessengerManager.GetFriend(heroineId);
+            var friend = MessengerSystem.GetFriend(heroineId);
             if (friend == null) return;
 
             if (profileNameText != null) profileNameText.text = friend.DisplayName;

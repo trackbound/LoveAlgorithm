@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -86,7 +86,7 @@ namespace LoveAlgo.Story
 
         /// <summary>
         /// CSV 텍스트를 원본 파일에 덮어쓰기. 데스크톱·에디터에서만 동작.
-        /// 호출 전 BackupManager로 백업 권장.
+        /// 호출 전 BackupSystem로 백업 권장.
         /// </summary>
         public static void SaveCsv(string scriptName, string csv)
         {

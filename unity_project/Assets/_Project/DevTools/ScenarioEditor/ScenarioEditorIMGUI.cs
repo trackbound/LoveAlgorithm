@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using Cysharp.Threading.Tasks;
@@ -239,7 +239,7 @@ namespace LoveAlgo.DevTools.ScenarioEditor
             }
 
             // 3) 백업 (원본 저장 직전 스냅샷)
-            BackupManager.Snapshot(scriptName);
+            BackupSystem.Snapshot(scriptName);
 
             // 4) 직렬화 + 저장
             string csv = ScriptCsvSerializer.Serialize(workingLines);

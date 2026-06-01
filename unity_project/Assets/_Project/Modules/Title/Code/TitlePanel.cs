@@ -83,13 +83,14 @@ namespace LoveAlgo.UI
 
         public void PlayTitleBGM()
         {
-            // 첫 시작 LockScreen 흐름에서는 EntryRouter가 white_noise를 띄움 — 충돌 방지.
-            // GameManager.Start()도 같은 IsPasswordSet 체크로 Title phase 전환을 보류함.
-            var ls = LoveAlgo.Common.Services.TryGet<LoveAlgo.LockScreen.ILockScreen>();
-            if (ls != null && !ls.IsPasswordSet)
+            // 첫 시작 LockScreen 흐름에서 BGM 겹침 방지: EntryRouter가 LockScreen을 띄우는 중이라면 Title BGM 재생 보류
+            var router = Object.FindAnyObjectByType<EntryRouter>();
+            if (router != null && router.ShowLockScreenOnFirstStart)
             {
-                // 첫 진입 LockScreen 흐름 — Title BGM 재생 보류 (LockScreen Outro 후 자연 재진입 시 다시 시도)
-                return;
+                if (PlayerPrefs.GetInt(LoveAlgo.LockScreen.PrefsKeys.FirstStartDone, 0) == 0)
+                {
+                    return;
+                }
             }
 
             if (!string.IsNullOrEmpty(titleBGM))
@@ -236,7 +237,7 @@ namespace LoveAlgo.UI
                 // 저장 데이터가 있으면 확인 팝업
                 if (HasAnySaveData())
                 {
-                    bool confirmed = await PopupManager.Instance.ConfirmAsync(
+                    bool confirmed = await PopupSystem.Instance.ConfirmAsync(
                         "저장된 데이터가 있습니다.\n새 게임을 시작할까요?", "예", "아니오");
                     if (!confirmed) return;
                 }
@@ -266,7 +267,7 @@ namespace LoveAlgo.UI
                 if (hasAutoSave)
                 {
                     // 자동저장 데이터 있음 → 확인 후 로드
-                    bool confirmed = await PopupManager.Instance.ConfirmAsync(
+                    bool confirmed = await PopupSystem.Instance.ConfirmAsync(
                         "이 부분부터 시작할까요?", "예", "아니오");
                     if (!confirmed) return;
 
@@ -275,7 +276,7 @@ namespace LoveAlgo.UI
                 else
                 {
                     // 자동저장 데이터 없음 → 새 게임 안내
-                    bool confirmed = await PopupManager.Instance.ConfirmAsync(
+                    bool confirmed = await PopupSystem.Instance.ConfirmAsync(
                         "저장된 데이터가 없습니다.\n새 게임을 시작할까요?", "예", "아니오");
                     if (!confirmed) return;
 
@@ -318,7 +319,7 @@ namespace LoveAlgo.UI
             isBusy = true;
             try
             {
-                bool confirmed = await PopupManager.Instance.ConfirmAsync("게임을 종료하시겠습니까?");
+                bool confirmed = await PopupSystem.Instance.ConfirmAsync("게임을 종료하시겠습니까?");
                 
                 if (confirmed)
                 {

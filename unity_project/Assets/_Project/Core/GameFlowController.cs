@@ -77,20 +77,20 @@ namespace LoveAlgo.Core
             UIManager.Instance?.ShowOnly(MainUIType.Title);
             UIManager.Instance?.TitlePanel?.PlayTitleBGM();
             // 타이틀/이름입력 화면에는 폰 알림 안 보임
-            Common.Services.TryGet<Phone.IPhone>()?.SetNotificationVisible(false);
+            Common.Services.TryGet<IPhone>()?.SetNotificationVisible(false);
         }
 
         void EnterUsername()
         {
             UIManager.Instance?.ShowOnly(MainUIType.Username);
-            Common.Services.TryGet<Phone.IPhone>()?.SetNotificationVisible(false);
+            Common.Services.TryGet<IPhone>()?.SetNotificationVisible(false);
         }
 
         void EnterPrologue()
         {
             UIManager.Instance?.ShowOnly(MainUIType.Dialogue);
             // 스토리/대사 출력 중 폰 알림 활성
-            Common.Services.TryGet<Phone.IPhone>()?.SetNotificationVisible(true);
+            Common.Services.TryGet<IPhone>()?.SetNotificationVisible(true);
 
             // 대화창을 숨김 상태로 시작 (첨 대사 시점에 자동 표시)
             var dialogueUI = UIManager.Instance?.DialogueUI;
@@ -458,9 +458,9 @@ namespace LoveAlgo.Core
             // 자동저장 (화면이 보이는 상태에서 스크린샷 캡처)
             await _gm.AutoSaveAsync();
 
-            // 데모 종료 안내 (페이드 전 — ScreenFX가 PopupManager 위 레이어라 페이드 후엔 안 보임)
-            if (UI.PopupManager.Instance != null)
-                await UI.PopupManager.Instance.AlertAsync("데모 버전 플레이가 종료되었습니다.\n타이틀로 이동합니다.");
+            // 데모 종료 안내 (페이드 전 — ScreenFX가 PopupSystem 위 레이어라 페이드 후엔 안 보임)
+            if (UI.PopupSystem.Instance != null)
+                await UI.PopupSystem.Instance.AlertAsync("데모 버전 플레이가 종료되었습니다.\n타이틀로 이동합니다.");
             else
                 await UniTask.Delay(3000, cancellationToken: ct);
 

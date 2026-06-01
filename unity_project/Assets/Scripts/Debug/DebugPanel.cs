@@ -398,7 +398,7 @@ namespace LoveAlgo.DevTools
             }
 
             if (GUILayout.Button("인벤토리 전체 클리어"))
-                Shop.ShopManager.Reset();
+                Shop.ShopSystem.Reset();
 
             if (GUILayout.Button("잠금화면 비번 리셋 + 씬 리로드 (첫 실행 재현)  [Ctrl+Shift+R]"))
                 ResetToFirstStart();
@@ -425,7 +425,7 @@ namespace LoveAlgo.DevTools
 
         void ResetToFirstStart()
         {
-            var ls = LoveAlgo.Common.Services.TryGet<LoveAlgo.LockScreen.ILockScreen>()
+            var ls = LoveAlgo.Common.Services.TryGet<LoveAlgo.Contracts.ILockScreen>()
                      as LoveAlgo.LockScreen.LockScreenController;
             if (ls != null)
             {

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using LoveAlgo.Common;
@@ -229,7 +229,7 @@ namespace LoveAlgo.Shop
                 slot.SetSelected(true);
             }
 
-            UISoundManager.Instance?.PlayClick();
+            LoveAlgo.Modules.Audio.AudioManager.Instance?.PlayClick();
             RefreshCart();
         }
 
@@ -378,7 +378,7 @@ namespace LoveAlgo.Shop
             if (cart.Count == 0) return;
 
             // 확인 팝업: "구매하시겠습니까?"
-            bool confirmed = await PopupManager.Instance.ConfirmAsync(
+            bool confirmed = await PopupSystem.Instance.ConfirmAsync(
                 "구매하시겠습니까?",
                 "네", "아니오"
             );
@@ -391,9 +391,9 @@ namespace LoveAlgo.Shop
             //     · SessionBuff(스탯 증가): 주/보조 효과 즉시 AddStat (중복 패널티 적용, 인벤토리 X)
             //     · Gift(선물): 인벤토리에 적재, 2차/3차 이벤트에서 사용
             int currentDay = GameManager.Instance != null ? GameManager.Instance.CurrentDay : 0;
-            if (!ShopManager.BuyBatchAndApply(cart, currentDay, out var feedbackParts))
+            if (!ShopSystem.BuyBatchAndApply(cart, currentDay, out var feedbackParts))
             {
-                PopupManager.Instance?.Toast("구매 실패", "소지금이 부족합니다!");
+                PopupSystem.Instance?.Toast("구매 실패", "소지금이 부족합니다!");
                 return;
             }
 
@@ -404,11 +404,11 @@ namespace LoveAlgo.Shop
             RefreshCart();
             RefreshMoneyDisplay();
 
-            UISoundManager.Instance?.PlayClick();
+            LoveAlgo.Modules.Audio.AudioManager.Instance?.PlayClick();
 
             // 효과 피드백 토스트 — 아이템별로 "이름\n효과들" 블록을 차례로 표시
             //   예) "오렌지사탕\n체력 +1 지성 +2" → "딸기사탕\n체력 +2 지성 +1"
-            PopupManager.Instance?.ToastSequence("구매 완료", feedbackParts, 1.2f);
+            PopupSystem.Instance?.ToastSequence("구매 완료", feedbackParts, 1.2f);
         }
 
         #endregion

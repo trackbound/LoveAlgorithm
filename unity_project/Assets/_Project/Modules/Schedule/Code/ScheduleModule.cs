@@ -34,7 +34,7 @@ namespace LoveAlgo.Schedule
                     _scheduleUI = parent != null ? Instantiate(scheduleUIPrefab, parent) : Instantiate(scheduleUIPrefab);
                     _scheduleUI.name = scheduleUIPrefab.name;
                     _scheduleUI.gameObject.SetActive(false);
-                    UISoundManager.Instance?.BindButtonsInTransform(_scheduleUI.transform);
+                    LoveAlgo.Modules.Audio.AudioManager.Instance?.BindButtonsInTransform(_scheduleUI.transform);
                 }
                 return _scheduleUI;
             }

@@ -264,7 +264,7 @@ namespace LoveAlgo.Schedule
 
             // 폰 새 메시지 뱃지
             if (phoneNewBadge != null)
-                phoneNewBadge.SetActive(Phone.MessengerManager.GetTotalUnreadCount() > 0);
+                phoneNewBadge.SetActive(Phone.MessengerSystem.GetTotalUnreadCount() > 0);
 
             // 세션 버프 표시
             RefreshBuffIndicator();
@@ -338,21 +338,21 @@ namespace LoveAlgo.Schedule
                 // 상하차 하루 1회 제한
                 if (type == ScheduleType.PartTime_Loading && UsedLoadingToday)
                 {
-                    LoveAlgo.UI.PopupManager.Instance?.Toast("제한", "상하차는 하루에 1번만 가능합니다.");
+                    LoveAlgo.UI.PopupSystem.Instance?.Toast("제한", "상하차는 하루에 1번만 가능합니다.");
                     return;
                 }
 
                 // 이번 스케줄 세션에서 알바/운동/공부 통합 1회만 선택 가능
                 if (usedScheduleThisSession)
                 {
-                    LoveAlgo.UI.PopupManager.Instance?.Toast("제한", "이번 스케줄에서는 이미 하나를 선택했습니다.");
+                    LoveAlgo.UI.PopupSystem.Instance?.Toast("제한", "이번 스케줄에서는 이미 하나를 선택했습니다.");
                     return;
                 }
 
                 // 투자 조건: 자산 ≥ 30,000원
                 if (type == ScheduleType.Invest && (gs == null || gs.Money < 30000))
                 {
-                    LoveAlgo.UI.PopupManager.Instance?.Toast("자산 부족", $"투자는 자산 {MoneyFormat.Currency(30000)} 이상일 때 가능합니다.");
+                    LoveAlgo.UI.PopupSystem.Instance?.Toast("자산 부족", $"투자는 자산 {MoneyFormat.Currency(30000)} 이상일 때 가능합니다.");
                     return;
                 }
 
@@ -363,7 +363,7 @@ namespace LoveAlgo.Schedule
                 string effectText = BuildEffectText(type, effect);
 
                 // 기획서: dim + 확인 팝업
-                var confirmed = await LoveAlgo.UI.PopupManager.Instance.ConfirmAsync(
+                var confirmed = await LoveAlgo.UI.PopupSystem.Instance.ConfirmAsync(
                     new LoveAlgo.UI.ConfirmPopupData { mainText = message, sub1 = effectText }
                 );
 
@@ -532,7 +532,7 @@ namespace LoveAlgo.Schedule
             // 인라인 스케줄 모드: 확인 후 스토리 복귀 (페이드는 ScheduleFlowCommand에서 처리)
             if (gm.DayLoop.IsInlineSchedule)
             {
-                bool proceed = await LoveAlgo.UI.PopupManager.Instance.ConfirmAsync(
+                bool proceed = await LoveAlgo.UI.PopupSystem.Instance.ConfirmAsync(
                     "일정을 진행하지 않고 돌아가시겠습니까?");
                 if (!proceed) return;
 
@@ -543,7 +543,7 @@ namespace LoveAlgo.Schedule
             // 데모 종료 조건: 확인 후 타이틀로
             if (gm.ShouldReturnToDemoEnd())
             {
-                bool confirmed = await LoveAlgo.UI.PopupManager.Instance.ConfirmAsync(
+                bool confirmed = await LoveAlgo.UI.PopupSystem.Instance.ConfirmAsync(
                     "데모 플레이가 종료되었습니다.\n타이틀로 돌아가시겠습니까?");
                 if (!confirmed) return;
 
@@ -552,7 +552,7 @@ namespace LoveAlgo.Schedule
                 return;
             }
 
-            bool proceedStory = await LoveAlgo.UI.PopupManager.Instance.ConfirmAsync(
+            bool proceedStory = await LoveAlgo.UI.PopupSystem.Instance.ConfirmAsync(
                 "일정을 진행하지 않고 돌아가시겠습니까?");
             if (!proceedStory) return;
             gm.RemainingActions = 0;
@@ -655,7 +655,7 @@ namespace LoveAlgo.Schedule
         /// <summary>폰 열기 (행동 소비 없음)</summary>
         void OnPhoneClick()
         {
-            LoveAlgo.Common.Services.TryGet<Phone.IPhone>()?.ShowPhoneUI();
+            LoveAlgo.Common.Services.TryGet<IPhone>()?.ShowPhoneUI();
         }
 
         #endregion

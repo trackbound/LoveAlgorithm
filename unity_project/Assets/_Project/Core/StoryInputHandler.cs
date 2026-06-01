@@ -42,7 +42,7 @@ namespace LoveAlgo.Core
             if (keyboard == null) return;
 
             // 팝업이 열려 있으면 스토리 입력 차단
-            if (PopupManager.Instance != null && PopupManager.Instance.IsAnyPopupOpen)
+            if (PopupSystem.Instance != null && PopupSystem.Instance.IsAnyPopupOpen)
                 return;
 
             // 스토리 진행 Phase일 때만 처리
@@ -69,7 +69,7 @@ namespace LoveAlgo.Core
                 }
                 else if (runner != null && runner.IsWaitingForClick)
                 {
-                    UISoundManager.Instance?.PlayDialogueNext();
+                    LoveAlgo.Modules.Audio.AudioManager.Instance?.PlayDialogueNext();
                     runner.OnClick();
                 }
             }
@@ -79,7 +79,7 @@ namespace LoveAlgo.Core
             {
                 runner?.ToggleAutoMode();
                 var mode = runner?.IsAutoMode == true ? "ON" : "OFF";
-                PopupManager.Instance?.Toast("Auto Mode", mode);
+                PopupSystem.Instance?.Toast("Auto Mode", mode);
             }
 
             // ── Ctrl 꾹: 초고속 재생 (Shift보다 빠름) ──

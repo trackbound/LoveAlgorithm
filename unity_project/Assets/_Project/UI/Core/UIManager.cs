@@ -1,4 +1,5 @@
 using LoveAlgo.Common;
+using LoveAlgo.Contracts;
 using LoveAlgo.Narrative;
 using LoveAlgo.Schedule;
 using LoveAlgo.Shop;
@@ -25,6 +26,11 @@ namespace LoveAlgo.UI
         [SerializeField] Transform simulationRoot;
         [UnityEngine.Serialization.FormerlySerializedAs("sceneRoot")]
         [SerializeField] Transform titleRoot;
+
+        [Header("Sub-Systems")]
+        [SerializeField] PopupSystem popupSystem;
+
+        public PopupSystem Popups => popupSystem;
 
         // ── UI 인스턴스 호환성 wrapper (모듈 위임) ───────────────────
         // 옛 호출자(UIManager.Instance.X)를 위한 1줄 wrapper. 새 코드는 Services.Get<I*>() 직접 사용.
@@ -90,7 +96,7 @@ namespace LoveAlgo.UI
             var title = Services.Get<ITitle>();
             SetActiveIfExists(title?.TitlePanel, false);
             SetActiveIfExists(title?.UsernameUI, false);
-            PopupManager.Instance?.Get<PlaceNotification>()?.HideImmediate();
+            PopupSystem.Instance?.Get<PlaceNotification>()?.HideImmediate();
         }
 
         /// <summary>특정 UI만 표시. Schedule은 시뮬레이션 컨텍스트 진입(QuickMenu 자동 활성).</summary>

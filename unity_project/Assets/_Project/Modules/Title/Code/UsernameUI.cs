@@ -139,7 +139,7 @@ namespace LoveAlgo.UI
 
         async UniTaskVoid ConfirmName(string name)
         {
-            bool confirmed = await PopupManager.Instance.ConfirmAsync(
+            bool confirmed = await PopupSystem.Instance.ConfirmAsync(
                 $"'{name}'(으)로 시작할까요?"
             );
 
@@ -221,7 +221,7 @@ namespace LoveAlgo.UI
 
             // 4. 에러 알림
             string message = NameValidator.GetErrorMessage(result);
-            await PopupManager.Instance.AlertAsync(message);
+            await PopupSystem.Instance.AlertAsync(message);
 
             // 5. 다시 포커스
             FocusInput();

@@ -181,7 +181,7 @@ namespace LoveAlgo.Story.StoryEngine
                 case NextType.Await:
                     if (line.Type == LineType.Place)
                     {
-                        var placeUI = PopupManager.Instance?.Get<PlaceNotification>();
+                        var placeUI = PopupSystem.Instance?.Get<PlaceNotification>();
                         if (placeUI != null && placeUI.IsShowing)
                             await UniTask.WaitUntil(() => !placeUI.IsShowing, cancellationToken: ct);
                     }
@@ -243,7 +243,7 @@ namespace LoveAlgo.Story.StoryEngine
                 var clickTask = UniTask.WaitUntil(() => _getClickReceived(), cancellationToken: ct);
                 await UniTask.WhenAny(delayTask, clickTask);
 
-                var popupMgr = PopupManager.Instance;
+                var popupMgr = PopupSystem.Instance;
                 if (popupMgr != null && popupMgr.IsAnyPopupOpen)
                     await UniTask.WaitUntil(() => !popupMgr.IsAnyPopupOpen, cancellationToken: ct);
             }

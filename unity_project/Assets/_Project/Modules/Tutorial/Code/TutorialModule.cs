@@ -28,7 +28,7 @@ namespace LoveAlgo.Tutorial
                     _overlay = parent != null ? Instantiate(overlayPrefab, parent) : Instantiate(overlayPrefab);
                     _overlay.name = overlayPrefab.name;
                     _overlay.gameObject.SetActive(false);
-                    UISoundManager.Instance?.BindButtonsInTransform(_overlay.transform);
+                    LoveAlgo.Modules.Audio.AudioManager.Instance?.BindButtonsInTransform(_overlay.transform);
                 }
                 return _overlay;
             }

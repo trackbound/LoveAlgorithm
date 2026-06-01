@@ -135,7 +135,7 @@ namespace LoveAlgo.Story
         /// </summary>
         void CreateButtons(List<OptionData> options)
         {
-            var soundMgr = LoveAlgo.UI.UISoundManager.Instance;
+            var soundMgr = LoveAlgo.Modules.Audio.AudioManager.Instance;
 
             for (int i = 0; i < options.Count; i++)
             {
@@ -287,7 +287,7 @@ namespace LoveAlgo.Story
                 if (btn != null) Destroy(btn);
             }
             spawnedButtons.Clear();
-            LoveAlgo.UI.UISoundManager.Instance?.ClearExcludedButtons();
+            LoveAlgo.Modules.Audio.AudioManager.Instance?.ClearExcludedButtons();
         }
 
         void OnDestroy()

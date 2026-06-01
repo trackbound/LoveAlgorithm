@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -239,15 +239,15 @@ namespace LoveAlgo.Story.SaveSystem
 
             // 상점/인벤토리 데이터 복원
             if (data.ShopData != null)
-                Shop.ShopManager.RestoreFromSave(data.ShopData);
+                Shop.ShopSystem.RestoreFromSave(data.ShopData);
             else
-                Shop.ShopManager.Reset();
+                Shop.ShopSystem.Reset();
 
             // 메신저 데이터 복원
             if (data.MessengerData != null)
-                Phone.MessengerManager.RestoreFromSave(data.MessengerData);
+                Phone.MessengerSystem.RestoreFromSave(data.MessengerData);
             else
-                Phone.MessengerManager.Reset();
+                Phone.MessengerSystem.Reset();
 
             // 선택지 이력 복원
             GameState.Instance.SetChoiceHistory(data.ChoiceHistory);
@@ -297,10 +297,10 @@ namespace LoveAlgo.Story.SaveSystem
             data.PointTracker = HeroinePointTracker.GetSaveData();
 
             // 상점/인벤토리 데이터 저장
-            data.ShopData = Shop.ShopManager.GetSaveData();
+            data.ShopData = Shop.ShopSystem.GetSaveData();
 
             // 메신저 데이터 저장
-            data.MessengerData = Phone.MessengerManager.GetSaveData();
+            data.MessengerData = Phone.MessengerSystem.GetSaveData();
 
             // 선택지 이력 저장
             if (GameState.Instance != null)

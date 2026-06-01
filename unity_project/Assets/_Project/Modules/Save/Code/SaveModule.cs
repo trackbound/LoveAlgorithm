@@ -25,8 +25,8 @@ namespace LoveAlgo.Save
         void Awake()
         {
             Services.Register<ISave>(this);
-            if (saveLoadPopupPrefab != null && PopupManager.Instance != null)
-                popupInstance = PopupManager.Instance.Register(saveLoadPopupPrefab);
+            if (saveLoadPopupPrefab != null && PopupSystem.Instance != null)
+                popupInstance = PopupSystem.Instance.Register(saveLoadPopupPrefab);
         }
 
         void OnDestroy()
@@ -89,8 +89,8 @@ namespace LoveAlgo.Save
             popup?.ShowSave((slot, customLabel) =>
             {
                 GameManager.Instance?.Save(slot, customLabel: customLabel);
-                UISoundManager.Instance?.PlaySaveComplete();
-                PopupManager.Instance?.Toast("저장 완료", $"슬롯 {slot}에 저장했습니다.");
+                LoveAlgo.Modules.Audio.AudioManager.Instance?.PlaySaveComplete();
+                PopupSystem.Instance?.Toast("저장 완료", $"슬롯 {slot}에 저장했습니다.");
             });
         }
 
@@ -100,8 +100,8 @@ namespace LoveAlgo.Save
             popup?.ShowLoad((slot, _) =>
             {
                 GameManager.Instance?.LoadGame(slot);
-                UISoundManager.Instance?.PlayLoadComplete();
-                PopupManager.Instance?.Toast("로드 완료", $"슬롯 {slot}에서 불러왔습니다.");
+                LoveAlgo.Modules.Audio.AudioManager.Instance?.PlayLoadComplete();
+                PopupSystem.Instance?.Toast("로드 완료", $"슬롯 {slot}에서 불러왔습니다.");
             });
         }
 
@@ -109,7 +109,7 @@ namespace LoveAlgo.Save
         {
             if (popupInstance != null) return popupInstance;
             if (saveLoadPopupPrefab == null) return null;
-            var pm = PopupManager.Instance;
+            var pm = PopupSystem.Instance;
             if (pm == null) return null;
             popupInstance = pm.Register(saveLoadPopupPrefab);
             return popupInstance;

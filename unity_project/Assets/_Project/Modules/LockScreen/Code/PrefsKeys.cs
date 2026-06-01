@@ -7,5 +7,6 @@ namespace LoveAlgo.LockScreen
     {
         public const string PasswordHash = "lock_screen.password_hash";
         public const string PasswordSalt = "lock_screen.password_salt";
+        public const string FirstStartDone = "lock_screen.first_start_done";
     }
 }

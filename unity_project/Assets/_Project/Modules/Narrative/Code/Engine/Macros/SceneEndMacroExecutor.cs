@@ -27,7 +27,7 @@ namespace LoveAlgo.Story.StoryEngine.Macros
             dialogueUI?.HideImmediate();
             stage?.Character?.ClearAll();
             stage?.VirtualBG?.HideImmediate();
-            PopupManager.Instance?.Get<PlaceNotification>()?.HideImmediate();
+            PopupSystem.Instance?.Get<PlaceNotification>()?.HideImmediate();
 
             if (ExecutionDependencies.Audio != null)
                 await ExecutionDependencies.Audio.ExecuteAsync("BGM:Stop:Fade:1.0", ct);
