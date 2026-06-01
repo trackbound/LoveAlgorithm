@@ -69,7 +69,11 @@
   - **asmdef 의존 체인**: `LoveAlgo.Core ← LoveAlgo.Data ← LoveAlgo.Affinity`(전부 autoReferenced, 구 Assembly-CSharp과 공존).
   - **작동 증거**: MCP force recompile 콘솔 0에러, EditMode **63/63 통과**(M1 27 + M2 32 + Definition 연결 4). 실제 `GameBalance.asset` 로드로 §4 임계치(46/32/35/39/43) 무드리프트 동시 검증.
   - **보류(과설계 게이트)**: `Configure` 부팅 호출 주체(매니저)는 M4/M5 소관.
-- ▶️ **다음 착수**: M2 slice3 — 구 `GameConstants.cs`/`GameTimeline.cs`(아직 Assembly-CSharp)를 `LoveAlgo.Core`/`LoveAlgo.Data`로 재작성·이식. `GameBalanceSO`(Definition)에서 로드하는 현 구조 유지하되 asmdef 내부로 이동, 폴백 정리. 이후 스탯/데이루프 모듈.
+- ✅ **M2 slice3 커밋됨 (GameConstants·GameTimeline 이식)**: 구 `GameConstants.cs`/`GameTimeline.cs`(Assembly-CSharp의 마지막 밸런스 진입점)를 `git mv`로 `Scripts/Data`(=`LoveAlgo.Data` asmdef)로 이동. 둘 다 `GameBalanceSO`(Definition)에 의존 → Data 레이어가 정확한 소속(Core는 Data 참조 불가=순환). **새 asmdef 추가 없음**(체인 그대로 Core←Data←Affinity).
+  - **무변경 이식**: `.meta` GUID·이력 보존(`git mv`, R100=내용 무변경), 네임스페이스(`LoveAlgo` / `LoveAlgo.Core`) 유지 → 구 모듈 57개 소비처 무변경 컴파일. `GameTimeline`(ns `LoveAlgo.Core`)은 부모 ns 탐색으로 `LoveAlgo.GameBalanceSO`를, Data→Core 참조로 `DayType`/`StoryArc`를 그대로 해소.
+  - **폴백 유지(정리 결론)**: §4 폴백 상수(46/32/35/39/43, actionsPerDay/maxDay 등)는 헤드리스/테스트 격리용으로 보존 — `AffinityFormula` 폴백과 동일 근거. 삭제 시 SO 부재 상황에서 회귀 위험이라 미삭제가 정합적.
+  - **작동 증거**: 에디터 미실행 → 헤드리스 배치(`Unity 6000.4.3f1 -batchmode -runTests -testPlatform EditMode`) 실행, 컴파일 0에러 + **EditMode 63/63 통과**(exit 0). 전 어셈블리 컴파일 확인.
+- ▶️ **다음 착수**: M2 slice4 — 스탯/데이루프 공식 모듈. 구 `DayLoopController`/`GameState`의 데이루프·스탯 진행 로직을 새 구조(GameStateSO + 순수함수/이벤트)로 재구현. `GameTimeline` 조회 API는 이제 Data asmdef에서 그대로 사용 가능.
 
 ### 워크플로우 규율 (directive)
 - 무언가 만들 때마다 **전용 테스트 씬 + 플레이모드로 작동 증거**(dev_guide 증거우선).
