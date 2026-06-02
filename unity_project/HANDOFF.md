@@ -52,7 +52,7 @@
 
 ## 📍 현재 상태 (한눈에)
 
-**골격이 broad하게 섰다** — 4매니저 + 순수/공식층 + 기능모듈 슬라이스1 + 부팅 컴포지션 루트. 각 슬라이스 EventBus+SO 패턴, 항상 컴파일, EditMode+PlayMode 테스트 통과. **현재 EditMode 133 / PlayMode 10 그린, 컴파일 0에러.** (슬라이스별 상세 = git log.)
+**엔드투엔드 시뮬레이션 루프가 섰다** — 골격(4매니저+순수/공식층+슬라이스1) 위에 실 게임 씬 `Assets/_Project/Scenes/Game.unity`가 신 매니저들로 돈다: 부팅→스케줄 선택(실 UI)→행동 소진→하루 전환→오토세이브→반복→30일 엔딩. 각 슬라이스 EventBus+SO 패턴, 항상 컴파일, EditMode+PlayMode 테스트 통과. **현재 EditMode 133 / PlayMode 14 그린, 컴파일 0에러.** (슬라이스별 상세 = git log.)
 
 | 영역 | 상태 | asmdef |
 |---|---|---|
@@ -65,11 +65,15 @@
 | 매니저 GameManager(하루전환)·SaveManager(오토세이브)·AudioManager(재생)·UIManager(그룹) | ✅ 슬라이스1 | Game/Save/Audio/UI |
 | HUD (Day/Money/Affinity/Stat/Status) | ✅ 슬라이스1·2 | UI |
 | Shop (구매 트랜잭션+Consumable 즉시효과) | ✅ 슬라이스1 | Shop |
-| 부팅 (GameBoot·GameBootstrap 컴포지션 루트) | ✅ 시작 | Game |
+| 부팅 (GameBoot·GameBootstrap 컴포지션 루트) | ✅ 완성 | Game |
+| **실 게임 씬 시뮬레이션 루프** (부팅+4매니저+ScheduleController+HUD+ScheduleUI+EndingPanel) | ✅ **엔드투엔드** | `Assets/_Project/Scenes/Game.unity` |
+| 스케줄 선택 UI (ScheduleUI·ScheduleSlot, 슬롯 클릭→명령) | ✅ | Schedule(피처 응집) |
+| 엔딩 화면 (EndingPanel, 30일 종료점) | ✅ 최소 | UI |
 | 통합 dev 씬 (전 매니저 EventBus 협업 + HUD 시각화) | ✅ | `Assets/_Dev/Integration/IntegrationTest.unity` |
 
 **아직 안 된 것 / 다음 우선순위 후보**:
-- **🟡 엔드투엔드 플레이 루프 없음(가장 큰 갭)**: 위 컴포넌트는 테스트 + 통합 dev 씬에서만 돈다. 실제 게임 씬 `Main.unity`는 **아직 구 아키텍처**로 돈다. → 신 매니저들로 도는 최소 플레이 루프(부팅 씬 조립: 매니저 State 인스펙터 배선 + GameBootstrap)가 다음 큰 통합.
+- **✅ 엔드투엔드 시뮬레이션 루프 해소**(이번 세션): `Game.unity`가 신 매니저로 실제 플레이된다(부팅→스케줄선택→하루전환→오토세이브→30일 엔딩). 단 **내러티브(대사/선택지)는 제외** — 시뮬레이션 페이즈만. 구 `Main.unity`는 여전히 구 아키텍처로 공존(미폐기).
+- **🟢 HUD/슬롯 시각 레이아웃 미조정**: 기능 배선만 됨(위치/폰트/스타일은 감독이 Play로 다듬는 영역). 엔딩 결과 디테일(최고 호감도 등)도 최소.
 - **M3 내러티브 런타임 미이식**: `ScriptRunner`/`ScriptEngine`/`Engine/Handlers`(대사 표시·선택지)·UI(`DialogueUI`/`ChoicePopup`) — UI(M5) 결합이 커서 남은 최대 덩어리. 현재 파서/검증/FlowCommandRouter까지만.
 - **Shop 슬라이스2(감독 결정 필요)**: SessionBuff 적용 경계(구 코드: 다음 스케줄 base효과 직후) / Gift 인벤토리(🔴 세이브 스키마) / 중복 50% 페널티(상태 위치).
 - **GameManager 잔여 seam**: 저녁이벤트(M3)·페이드(M5 UI)·페이즈전환(GamePhase 상태머신). (오토세이브 seam은 완료.)
@@ -82,6 +86,7 @@
 - **전환기 공존**: 구 Assembly-CSharp 모듈 다수 잔존(ShopSystem/ShopUI·DialogueUI·ScriptRunner·구 GameManager/SaveManager/UIManager/AudioManager 등). 신규 asmdef는 `git mv`(ns/GUID 보존)+autoref로 공존. **항상 컴파일 가능** 유지가 절대 원칙 — 피처 하나 옮기고 옛 코드는 그때 삭제.
 - **autoRef=false 2개**(`LoveAlgo.Save`·`LoveAlgo.UI`): 구 동명 네임스페이스/타입 충돌 회피용. 신규 코드가 이들을 참조하려면 **명시적 asmdef 참조 추가**(테스트 asmdef엔 이미 추가됨). 구 모듈 폐기 시 true 복귀 검토.
 - **이름 충돌 패턴**: 신규 타입이 구 동명 타입과 겹치면 → 다른 ns(예: 구 Modules.Audio vs 신 LoveAlgo.Audio) 또는 asmdef 격리(autoRef=false, 예: UIManager). **MCP로 씬에 컴포넌트 부착 시 전체 타입명**(`LoveAlgo.Game.GameManager`)으로 모호성 주의.
+- **MCP 씬 작업 팁**(이번 세션 시행착오): 신 asmdef 타입을 MCP로 부착/배선 시 **assembly-qualified 이름** 필요 — `"LoveAlgo.UI.UIManager, LoveAlgo.UI"` 형식(단순명은 "not found"). 컴포넌트 ref 배선(`set_property`)은 **GO instanceID**를 주면 해당 GO에서 컴포넌트(TMP_Text·Button 등) 자동 추출. 프리팹화는 `manage_prefabs create_from_gameobject`(target=이름). **프로젝트는 Input System 패키지** — EventSystem엔 `InputSystemUIInputModule`(구 `StandaloneInputModule`은 런타임 `Input` 예외로 전 PlayMode 오염).
 - **IVT 가교**: `Scripts/Narrative/AssemblyInfo.cs`가 `Assembly-CSharp`에 internal 노출(구 ScenarioEditor가 ScriptLine setter 접근). 해당 소비처 이식/삭제 시 제거.
 - **테스트 = Test Runner 어셈블리만**(임시 dev 하니스/씬 금지): EditMode=순수/공식층, PlayMode=MonoBehaviour 라이프사이클·OnEnable 구독·씬 와이어링. 구 코드 테스트 3개(ScriptParser·ScriptValidator·SaveLoadRoundTrip)는 `Assets/Tests/Editor/`(Assembly-CSharp-Editor) 잔류.
 - **State SO 바인딩**: 매니저/컨트롤러는 `State` 프로퍼티(GameStateSO)를 인스펙터/부팅으로 주입받음. 통합 dev 씬이 그 배선 예시. 런타임 초기화(공식 Configure + DayLoop.BeginRun)는 `GameBoot.NewGame`/`GameBootstrap`.
@@ -90,12 +95,12 @@
 
 ## ▶️ 다음 액션
 
-세션 막판에 **Shop 슬라이스2 세 갈래가 감독 결정 필요라 멈춤**. 감독이 방향 택1:
+이번 세션 **시뮬레이션 루프 엔드투엔드 완성**(구 #2 "부팅 씬 조립" 달성) + **아키텍처 문서 동기화**(ADR-007/011: dev_guide·CLAUDE.md의 Service Locator/Modules 잔재 제거). 감독이 다음 방향 택1:
 
-1. **Shop 슬라이스2** — SessionBuff / Gift 인벤토리(🔴 스키마) / 중복페널티 중 택1 + 설계 결정.
-2. **진짜 게임 부팅 씬 조립** — 신 매니저들로 도는 최소 플레이 루프. 통합 dev 씬을 실 게임 흐름으로 승격(엔드투엔드 갭 해소).
-3. **M3 내러티브 런타임**(ScriptEngine/executor → 대사·선택지). 최대 덩어리, UI 결합 설계 선행.
-4. **GameManager seam 채우기**(페이즈전환=GamePhase 등) / **AudioManager 슬라이스2**(볼륨↔Settings) / 기타.
+1. **M3 내러티브 런타임** — ScriptEngine/executor → 대사·선택지 + DialogueUI/ChoicePopup. 최대 덩어리, UI 결합 설계 선행. 시뮬↔내러티브 페이즈 전환(UIManager 그룹 `ShowUiGroupCommand`)도 여기서.
+2. **Shop 슬라이스2** — SessionBuff / Gift 인벤토리(🔴 스키마) / 중복페널티 중 택1 + 설계 결정. (지난 세션 멈췄던 갈래.)
+3. **시뮬레이션 루프 심화** — 카테고리 탭 UI 배선(현재 슬롯 동적생성만, 탭 버튼 미연결) / HUD·슬롯 시각 레이아웃 / 엔딩 결과 디테일(최고 호감도 등) / GameManager seam(페이즈전환=GamePhase).
+4. **구 아키텍처 폐기 착수** — 소비처 이식 끝난 구 모듈·Service Locator 제거, `Main.unity` 신 씬으로 교체 검토.
 
 ### 워크플로우 규율 (directive)
 - 무언가 만들 때마다 **작동 증거**: 순수/공식층=EditMode 테스트, MonoBehaviour 라이프사이클·구독·씬 와이어링=PlayMode 테스트. 임시 dev 하니스 금지 — Test Runner 어셈블리로. 위험도 등급 선언 + 커밋 "왜".
