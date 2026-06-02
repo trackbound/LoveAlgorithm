@@ -101,4 +101,14 @@ namespace LoveAlgo.Events
         public readonly string ScriptName;
         public NarrativeFinishedEvent(string scriptName) { ScriptName = scriptName; }
     }
+
+    /// <summary>
+    /// 오토(자동 진행) 모드 토글 명령(M3 슬라이스2). <see cref="On"/>=true면 대사 뷰가 클릭 없이 타이핑 완료 후
+    /// 지연을 두고 자동 진행한다(클릭 시 즉시). DialogueView가 구독. 토글 UI/설정 영속화는 후속.
+    /// </summary>
+    public readonly struct SetAutoModeCommand
+    {
+        public readonly bool On;
+        public SetAutoModeCommand(bool on) { On = on; }
+    }
 }

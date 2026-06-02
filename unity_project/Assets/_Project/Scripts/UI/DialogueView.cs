@@ -25,25 +25,35 @@ namespace LoveAlgo.UI
         [SerializeField] TMP_Text bodyText;
         [Tooltip("글자당 타이핑 간격(초). 0이면 즉시 표시.")]
         [SerializeField] float charInterval = 0.02f;
+        [Tooltip("오토 모드에서 타이핑 완료 후 자동 진행까지 지연(초). 클릭하면 즉시 진행.")]
+        [SerializeField] float autoAdvanceDelay = 1.2f;
 
         public GameObject Root { get => root; set => root = value; }
         public TMP_Text SpeakerText { get => speakerText; set => speakerText = value; }
         public TMP_Text BodyText { get => bodyText; set => bodyText = value; }
         public float CharInterval { get => charInterval; set => charInterval = value; }
+        public float AutoAdvanceDelay { get => autoAdvanceDelay; set => autoAdvanceDelay = value; }
+        public bool AutoMode { get => _auto; set => _auto = value; }
 
-        IDisposable _sub;
+        IDisposable _sub, _autoSub;
         Coroutine _typeRoutine;
         DialogueRequest _active;
         bool _typing;
         bool _skipTyping;
         bool _awaitingClick;
+        bool _auto;
 
-        void OnEnable() => _sub = EventBus.Subscribe<ShowDialogueCommand>(OnShow);
+        void OnEnable()
+        {
+            _sub = EventBus.Subscribe<ShowDialogueCommand>(OnShow);
+            _autoSub = EventBus.Subscribe<SetAutoModeCommand>(e => _auto = e.On);
+        }
 
         void OnDisable()
         {
             _sub?.Dispose();
-            _sub = null;
+            _autoSub?.Dispose();
+            _sub = _autoSub = null;
         }
 
         void OnShow(ShowDialogueCommand e)
@@ -86,7 +96,21 @@ namespace LoveAlgo.UI
             if (requireClick)
             {
                 _awaitingClick = true;
-                yield return new WaitUntil(() => !_awaitingClick);
+                if (_auto)
+                {
+                    // 오토: 지연만큼 대기하되 클릭(_awaitingClick=false)이 오면 즉시 진행.
+                    float t = 0f;
+                    while (_awaitingClick && t < autoAdvanceDelay)
+                    {
+                        t += Time.deltaTime;
+                        yield return null;
+                    }
+                    _awaitingClick = false;
+                }
+                else
+                {
+                    yield return new WaitUntil(() => !_awaitingClick);
+                }
             }
 
             _typeRoutine = null;
