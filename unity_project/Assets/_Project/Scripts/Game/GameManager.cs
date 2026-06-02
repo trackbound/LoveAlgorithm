@@ -63,7 +63,9 @@ namespace LoveAlgo.Game
                 return;
             }
 
-            // seam(Save 슬라이스): 슬롯0 오토세이브("day-end") — 썸네일 캡처 포함은 M5 UI 이후.
+            // 오토세이브 요청(슬롯0). 실제 직렬화는 SaveManager 구독자가 수행(SaveRequestedEvent→SaveService).
+            // 구 EndDayAsync의 day++ 직후 오토세이브 순서 재현. 썸네일 캡처 포함은 M5 UI 이후.
+            EventBus.Publish(new SaveRequestedEvent(JsonSaveStore.AutoSaveSlot, "day-end"));
             // seam(M5 UI): 로딩 이탈 → 페이드인.
 
             EventBus.Publish(new DayChangedEvent(prevDay, r.Day));

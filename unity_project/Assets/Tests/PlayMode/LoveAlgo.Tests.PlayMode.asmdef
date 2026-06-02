@@ -6,6 +6,7 @@
         "LoveAlgo.Data",
         "LoveAlgo.Schedule",
         "LoveAlgo.Game",
+        "LoveAlgo.Save",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"
     ],

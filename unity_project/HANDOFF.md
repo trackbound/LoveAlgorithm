@@ -38,7 +38,7 @@
 - 운영: 위험도 게이트 + 마일스톤 + 형태문서 금지 + 커밋 "왜". (ADR-010)
 - 구조: 코드 `_Project/Scripts/`(피처별 asmdef) + 아트/프리팹 타입별 중앙화. (ADR-011)
 - 재설계(전사 금지) + 세션 연속성 규율 + 연출 수치 SO화. (ADR-012)
-- asmdef 도입 진행: 현재 `LoveAlgo.Core`·`LoveAlgo.Data`·`LoveAlgo.Affinity`·`LoveAlgo.Schedule`·`LoveAlgo.Game`·`LoveAlgo.Narrative` 6개(전부 autoReferenced) + 옛 Assembly-CSharp 공존. 체인: `Core ← Data ← {Affinity, Schedule, Game}`. `Narrative`는 의존 없는 자기완결 리프(System+UnityEngine만 — 파서/모델/검증기 순수층). 테스트 어셈블리: `LoveAlgo.Tests.EditMode`·`LoveAlgo.Tests.PlayMode`(autoRef=false).
+- asmdef 도입 진행: 현재 `LoveAlgo.Core`·`LoveAlgo.Data`·`LoveAlgo.Affinity`·`LoveAlgo.Schedule`·`LoveAlgo.Game`·`LoveAlgo.Narrative`·`LoveAlgo.Save` 7개 + 옛 Assembly-CSharp 공존. 체인: `Core ← Data ← {Affinity, Schedule, Game}`, `Core ← Save`. `Narrative`=의존 없는 자기완결 리프(파서/모델/검증기 순수층). **`Save`만 autoReferenced=false**(구 `LoveAlgo.Save`(SaveModule)·`LoveAlgo.Story.SaveManager`와 단순명 충돌 회피 — 구 Save 폐기 시 true 복귀), 나머지는 autoReferenced=true. 테스트 어셈블리: `LoveAlgo.Tests.EditMode`·`LoveAlgo.Tests.PlayMode`(autoRef=false).
 
 ---
 
@@ -114,9 +114,18 @@
   - **테스트 이식**: 기존 `ScriptParserTests`(6)·`ScriptValidatorTests`(9)를 `Assets/Tests/EditMode/`(asmdef)로 `git mv`, EditMode asmdef에 `LoveAlgo.Narrative` 참조 추가. 구 `SaveLoadRoundTripTests`만 `Assets/Tests/Editor/`(Assembly-CSharp-Editor) 잔류(구 SaveSystem 의존).
   - **작동 증거**: MCP force recompile 0에러 + EditMode **95/95**(이동 후 총합 불변).
   - **다음 narrative 슬라이스 후보**: ① 명령 파이프(ILineExecutor/handlers)와 Flow 커맨드(`Affinity:`/`Schedule:`/`Day:` 등)를 EventBus+State로 재작성 → AffinityFormula·ScheduleService·GameManager 연결. ② ScriptRunner→내러티브 진행을 GameManager seam(저녁이벤트)과 연결. UI(DialogueUI)는 M5.
+- ✅ **Save 슬라이스 커밋됨 (SaveManager + GameManager 오토세이브 seam)**: 🔴 설계안 감독 승인(트리거=GameManager가 SaveRequested 발행 / asmdef=신규 LoveAlgo.Save) 후 구현.
+  - **신규 asmdef `LoveAlgo.Save`(refs Core, autoRef=false)** at `Scripts/Save/`. ScheduleController 패턴 미러: 순수 static + 얇은 MonoBehaviour 어댑터.
+  - **순수 `SaveService`(static)**: `Capture(gs,label)→SaveData` / `Save(slot,gs,label)→bool`(JsonSaveStore 위임) / `Load(slot,gs)→bool`(`gs.Load(data.state)`). Core 타입만 의존 = 결정적·EditMode 테스트.
+  - **`SaveManager : MonoBehaviour`**: `SaveRequestedEvent` 구독 → `SaveService.Save` → `SaveCompletedEvent` 발행. `State` 프로퍼티 부팅 와이어링. 라벨=`Day N`(임시).
+  - **신규 Core 이벤트**: `SaveRequestedEvent(slot,reason)` · `SaveCompletedEvent(slot,success)`(`LoveAlgo.Events`).
+  - **GameManager 오토세이브 seam 채움**: 하루전환 시 `AdvanceDay` 직후 `SaveRequestedEvent(AutoSaveSlot,"day-end")` 발행 → `DayChangedEvent`(구 EndDayAsync day++→오토세이브 순서 재현).
+  - **범위 밖**: 썸네일 캡처(M5 UI)·로드 트리거(타이틀/이어하기=M5, SaveService.Load는 있으나 미배선)·슬롯 메타 라벨 확장. 구 `LoveAlgo.Save`(SaveModule)·`LoveAlgo.Story.SaveManager`는 공존(autoRef=false로 충돌 회피).
+  - **작동 증거**: 컴파일 0에러 + EditMode **101/101**(95+SaveService 6) + PlayMode **4/4**(GameManager 3 + 하루전환→오토세이브 슬롯0 파일생성·재로드 일차 영구화 1).
 - ▶️ **다음 착수(다음 세션)**: 감독이 다음 마일스톤 선택. 남은 연결고리:
   - **`DayChangedEvent`/`EnteredEndingEvent` 구독자**: HUD·페이즈 UI(M5 UI), 엔딩 화면(M5).
-  - **GameManager 잔여 seam 채우기**: 저녁이벤트(M3 내러티브 이식 후)·페이드(M5 UI)·오토세이브(Save 슬라이스)·페이즈전환(GamePhase). 부팅 와이어링(GameStateSO를 ScheduleController.State 등에 주입)도 GameManager 소관(후속).
+  - **GameManager 잔여 seam 채우기**: 저녁이벤트(M3 내러티브 이식 후)·페이드(M5 UI)·페이즈전환(GamePhase). ~~오토세이브~~=Save 슬라이스에서 완료. 부팅 와이어링(GameStateSO를 ScheduleController/SaveManager.State 등에 주입)도 GameManager 소관(후속).
+  - **`SaveCompletedEvent` 구독자**: 저장 토스트 UI(M5). 로드 트리거(`SaveService.Load`)는 타이틀/이어하기 흐름(M5)에서 배선.
   - **세션버프**: Shop 슬라이스에서 `ScheduleAppliedEvent` 구독으로 적용(적용 순서=구 코드 base효과 직후 → 경계 확정 필요).
   - **UI**: M5에서 ScheduleUI가 `ScheduleSelectedCommand` 발행 + `ScheduleApplied/Rejected/StatChanged` 구독(토스트·HUD). `ScheduleTable` 정적 질의 직접 사용(ISchedule 불필요).
 
