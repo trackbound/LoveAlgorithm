@@ -28,6 +28,8 @@ namespace LoveAlgo.UI
         }
 
         [Header("배경 (front/back 크로스페이드)")]
+        [Tooltip("BG 표시 중 뒤에 깔리는 검은 backdrop(Background 컨테이너 Image). Fade가 검정을 경유하도록. BG 없을 땐 꺼서 시뮬 화면이 까매지지 않게 함.")]
+        [SerializeField] Image backdrop;
         [SerializeField] Image bgFront;
         [SerializeField] CanvasGroup bgFrontGroup;
         [SerializeField] Image bgBack;
@@ -42,6 +44,7 @@ namespace LoveAlgo.UI
         [SerializeField] string bgRoot = "BG";
         [SerializeField] string charRoot = "Characters";
 
+        public Image Backdrop { get => backdrop; set => backdrop = value; }
         public Image BgFront { get => bgFront; set => bgFront = value; }
         public CanvasGroup BgFrontGroup { get => bgFrontGroup; set => bgFrontGroup = value; }
         public Image BgBack { get => bgBack; set => bgBack = value; }
@@ -64,10 +67,11 @@ namespace LoveAlgo.UI
             _charSub = EventBus.Subscribe<ShowCharacterCommand>(OnShowCharacter);
             _finishSub = EventBus.Subscribe<NarrativeFinishedEvent>(_ => ClearAll());
 
-            // 초기 상태: front 보임(빈 스프라이트)·back 숨김.
+            // 초기 상태: front 보임(빈 스프라이트)·back 숨김·backdrop 꺼짐(BG 없을 땐 시뮬 화면이 까매지지 않게).
             SetAlpha(bgFrontGroup, 1f);
             SetAlpha(bgBackGroup, 0f);
             if (bgBack != null) bgBack.enabled = false;
+            if (backdrop != null) backdrop.enabled = false;
         }
 
         void OnDisable()
@@ -105,12 +109,12 @@ namespace LoveAlgo.UI
                 yield break;
             }
 
-            bool animated = e.Transition != BgTransition.Cut && e.Duration > 0f
-                            && bgBack != null && bgBackGroup != null && bgFrontGroup != null;
+            // BG가 보이는 동안에만 검은 backdrop 노출(Fade 검정 경유용). 시뮬 복귀 시 ClearAll이 끈다.
+            if (backdrop != null) backdrop.enabled = true;
 
-            if (!animated)
+            // 즉시 교체: Cut · 시간 0 · 페이드용 CanvasGroup 미바인딩.
+            if (e.Transition == BgTransition.Cut || e.Duration <= 0f || bgFrontGroup == null)
             {
-                // Cut(또는 페이드 자원 미바인딩) — 즉시 교체.
                 bgFront.sprite = sprite;
                 bgFront.enabled = true;
                 SetAlpha(bgFrontGroup, 1f);
@@ -118,27 +122,29 @@ namespace LoveAlgo.UI
                 yield break;
             }
 
-            switch (e.Transition)
+            if (e.Transition == BgTransition.Cross && bgBack != null && bgBackGroup != null)
             {
-                case BgTransition.Cross:
-                    // back에 새 BG → 동시에 back 페이드인 / front 페이드아웃 → 스왑.
-                    bgBack.sprite = sprite;
-                    bgBack.enabled = true;
-                    SetAlpha(bgBackGroup, 0f);
-                    yield return Fade2(bgBackGroup, 0f, 1f, bgFrontGroup, 1f, 0f, e.Duration);
-                    bgFront.sprite = sprite;
-                    SetAlpha(bgFrontGroup, 1f);
-                    SetAlpha(bgBackGroup, 0f);
-                    bgBack.enabled = false;
-                    break;
-
-                case BgTransition.Fade:
-                    // front 페이드아웃(검정 경유) → 교체 → 페이드인.
-                    float half = e.Duration * 0.5f;
+                // 크로스페이드: back에 새 BG → back 페이드인 + front 페이드아웃 → 스왑.
+                bgBack.sprite = sprite;
+                bgBack.enabled = true;
+                SetAlpha(bgBackGroup, 0f);
+                yield return Fade2(bgBackGroup, 0f, 1f, bgFrontGroup, 1f, 0f, e.Duration);
+                bgFront.sprite = sprite;
+                bgFront.enabled = true;
+                SetAlpha(bgFrontGroup, 1f);
+                SetAlpha(bgBackGroup, 0f);
+                bgBack.enabled = false;
+            }
+            else
+            {
+                // Fade(검정 경유): _Stage 맨 뒤의 검은 backdrop이 상시 깔려 있어, front를 0으로 내리면
+                // 검정이 드러난다 → 교체 → 페이드인. 구의 전역 ScreenFX 의존을 스테이지 자체 backdrop으로 대체.
+                float half = e.Duration * 0.5f;
+                if (bgFront.enabled)
                     yield return FadeGroup(bgFrontGroup, bgFrontGroup.alpha, 0f, half);
-                    bgFront.sprite = sprite;
-                    yield return FadeGroup(bgFrontGroup, 0f, 1f, half);
-                    break;
+                bgFront.sprite = sprite;
+                bgFront.enabled = true;
+                yield return FadeGroup(bgFrontGroup, 0f, 1f, half);
             }
 
             FinishBg();
@@ -246,6 +252,7 @@ namespace LoveAlgo.UI
             if (_bgRoutine != null) { StopCoroutine(_bgRoutine); _bgPending?.Complete(); _bgPending = null; _bgRoutine = null; }
             if (bgFront != null) { bgFront.sprite = null; bgFront.enabled = false; }
             if (bgBack != null) { bgBack.sprite = null; bgBack.enabled = false; }
+            if (backdrop != null) backdrop.enabled = false;
             SetAlpha(bgBackGroup, 0f);
 
             for (int i = 0; i < _slotRoutines.Length; i++)
