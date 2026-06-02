@@ -21,9 +21,9 @@
 
 | 파일명 | 역할 | 현재 버전 | 마지막 갱신 |
 |---|---|---|---|
-| [dev_guide.md](file:///c:/Users/chris/GitHub/LoveAlgorithm/unity_project/docs/dev_guide.md) | 개발 룰북, UI 네이밍, 하이어라키 및 C# 아키텍처 가이드 | v1.1 | 2026-05-31 |
-| [decisions.md](file:///c:/Users/chris/GitHub/LoveAlgorithm/unity_project/docs/decisions.md) | 결정 이력 (누적 ADR) | v1 | 2026-05-31 |
-| [WORK_PLAN.md](file:///c:/Users/chris/GitHub/LoveAlgorithm/unity_project/docs/WORK_PLAN.md) | 동적 작업 백로그 및 우선순위 리스트 | v1 | 2026-05-31 |
+| [dev_guide.md](file:///c:/Users/chris/GitHub/LoveAlgorithm/unity_project/docs/dev_guide.md) | 개발 룰북, UI 네이밍, 하이어라키 및 C# 아키텍처 가이드 | v1.2 | 2026-06-02 |
+| [decisions.md](file:///c:/Users/chris/GitHub/LoveAlgorithm/unity_project/docs/decisions.md) | 결정 이력 (누적 ADR) | v1 | 2026-06-02 |
+| [WORK_PLAN.md](file:///c:/Users/chris/GitHub/LoveAlgorithm/unity_project/docs/WORK_PLAN.md) | 동적 작업 백로그 및 우선순위 리스트 (⚠️구 아키텍처 기준 stale) | v1 | 2026-06-02 |
 | [STORY_CSV_GUIDE.md](file:///c:/Users/chris/GitHub/LoveAlgorithm/unity_project/docs/STORY_CSV_GUIDE.md) | 기획자용 스토리 CSV 연출 및 대사 엔진 구문 가이드 | v1 | 2026-05-31 |
 | [STORY_COMMANDS.md](file:///c:/Users/chris/GitHub/LoveAlgorithm/unity_project/docs/STORY_COMMANDS.md) | 대사 엔진 내 사용 가능한 커맨드 목록 | v1 | 2026-05-31 |
 | [ASSET_NAMING.md](file:///c:/Users/chris/GitHub/LoveAlgorithm/unity_project/docs/ASSET_NAMING.md) | 아트 및 오디오 에셋 네이밍 룰북 | v1 | 2026-05-31 |

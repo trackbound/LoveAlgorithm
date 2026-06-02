@@ -50,6 +50,7 @@
 - **supersede**: ADR-002(Service Locator+EventBus 조합), ADR-006(Services 일원화). ADR-003(매니저 4개)은 유지하되 "Module을 Services에 등록" 항목만 무효.
 
 ## ADR-006: UI 직접 접근 래퍼의 Deprecate 및 Service Locator 사용 일원화 (2026-05-31)
+> ⚠️ **ADR-007로 폐기**: `Services` 일원화 자체가 폐기됨. UI는 State SO 직접 읽기 + EventBus 명령 발행으로 접근.
 - **맥락**: `UIManager.Instance.DialogueUI`와 같은 방식은 UIManager 클래스가 프로젝트의 거의 모든 모듈 인터페이스를 참조 및 보관하게 하여 강한 결합을 발생시키고 모듈 분리를 방해함.
 - **결정**: 
   - `UIManager` 내부의 직접적인 UI 래퍼 프로퍼티 접근을 소프트 Deprecate 처리.
@@ -66,6 +67,7 @@
 - **이유**: 빌드 성능을 최적화하고 릴리즈 시 불필요한 로그 노이즈를 완전 차단하기 위함.
 
 ## ADR-004: UI 분류 매트릭스 및 씬 하이어라키 표준화 (2026-05-31)
+> ⚠️ **ADR-007/011로 부분 갱신**: 씬 `_Modules` 노드(글로벌 IService 등록 오브젝트)·구 모듈 폴더 구조는 폐기. UI 명명 매트릭스(`*Popup`/`*UI`/`*Panel`…)와 `_UI`/`_Popup` Canvas 분리 정책은 유효. 최신 하이어라키 = dev_guide §3-5.
 - **맥락**: UI가 많아지고 복잡해짐에 따라 각각의 컴포넌트의 라이프사이클(모달 차단 여부, 자동 소멸 여부 등)을 혼동하여 오작동이나 씬 내에서의 중복 렌더링 오버헤드가 발생함.
 - **결정**: 
   - UI 컴포넌트명을 용도에 맞춰 `*Popup`(모달 다이얼로그, `PopupBase` 상속 필수), `*Panel`(진입/게이트 화면), `*Notification`(자동소멸 알림), `*UI`(인게임 모드 컨테이너), `*Widget`(UI 하위 구성요소) 등으로 네이밍 접미사 표준화.
@@ -74,6 +76,7 @@
 - **이유**: 네이밍 규칙만으로 UI의 성격을 보장하고 Unity의 Canvas Rebuild 성능 저하를 방지하기 위함.
 
 ## ADR-003: 매니저 싱글톤 최소화 및 4대 매니저 제한 (2026-05-31)
+> ⚠️ **ADR-007로 부분 무효**: 매니저 4개 제한은 유지. 단 "`{Feature}Module`을 `Services`에 등록" 항목은 폐기(Service Locator 제거) — 도메인 로직은 순수 static + 얇은 어댑터로.
 - **맥락**: 모듈별로 `{Feature}Manager`를 우후죽순 신설하여 싱글톤으로 띄울 경우, 싱글톤 간 복잡한 상호 참조가 꼬여 씬 로드/언로드 시 크래시나 라이프사이클 엉킴 현상이 빈번히 발생함.
 - **결정**: 
   - 프로젝트 내 허용되는 글로벌 싱글톤 매니저는 오직 `GameManager`(씬 전환, 전역상태), `AudioManager`(사운드), `SaveManager`(세이브), `UIManager`(UI 인프라) 4개만 허용.
@@ -81,6 +84,7 @@
 - **이유**: God Object 패턴의 증식을 차단하여 시스템의 결합도를 낮추고 안정적인 라이프사이클을 보장하기 위함.
 
 ## ADR-002: 모듈 간 통신 아키텍처 (Service Locator + EventBus 조합) (2026-05-31)
+> ⚠️ **ADR-007로 폐기**: Service Locator(`Services`)+EventBus 조합 → EventBus + State SO 단일로 전환. 동기 결과는 완료-이벤트로.
 - **맥락**: 여러 모듈(Stats, Affinity, Narrative, Save 등)이 서로의 클래스를 직접 참조하거나 인스펙터 상에서 씬 결합을 할 경우, 기능 수정 시 파급 효과가 너무 크고 이관 작업이 극도로 복잡해짐.
 - **결정**: 
   - 모든 모듈의 결합은 직접 호출을 절대 금지하고 `Service Locator` 인터페이스 조회 또는 `EventBus` 발행-구독 패턴으로만 구현.

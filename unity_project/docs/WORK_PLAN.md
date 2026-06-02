@@ -1,5 +1,6 @@
 # WORK_PLAN.md
 
+> ⚠️ **이 백로그는 재작성(rewrite/eventbus-so) 이전 구 아키텍처(Service Locator + `_Project/Modules`) 기준이라 stale**. "완료"의 `Modules/*`·`I*` 인터페이스 항목은 구 코드 이력일 뿐 — 재작성에선 EventBus + State SO 단일(ADR-007)·피처별 asmdef(ADR-011)로 다시 작성됨. **현재 작업 흐름·다음 액션은 [HANDOFF.md](file:///c:/Users/chris/GitHub/LoveAlgorithm/unity_project/HANDOFF.md)를 보라.**
 > 동적 작업 리스트. 작업 추가/완료 시 갱신.
 > 기획서: `게임 복합시스템 / 내부 콘텐츠 / PC잠금 연출` 기반.
 

@@ -29,10 +29,10 @@ Claude는 코드를 제안하거나 구현할 때 **작업 위험도 등급**을
 
 ## 🎯 게임 정체성 & 아키텍처 규칙
 
-### 1. 모듈 독립성 (한 기능 = 한 폴더)
-- 모듈 폴더 구조: `Assets/_Project/Modules/{ModuleName}/` 하위 `Code/`, `Data/`, `UI/`, `Prefabs/`.
-- **모듈 간 직접 참조 절대 금지**: `using LoveAlgo.Modules.A`가 B 모듈에 있으면 안 됨.
-- **동기 요청-응답**: `Services.Get<IStage>().ShowCharacter(...)`로 서비스 인터페이스 질의.
+### 1. 피처 독립성 (피처별 asmdef)
+- 코드 = `Assets/_Project/Scripts/{Feature}/` 피처별 군집 + asmdef. 아트/프리팹/SO는 코드 트리 밖 타입별 중앙화(`_Project/Prefabs`, `Art`, `Resources/Data`). 구 `_Project/Modules/{ModuleName}/{Code,Data,UI,Prefabs}` 자급자족 구조는 폐기 (ADR-011).
+- **피처 간 직접 참조 절대 금지**: 피처별 asmdef가 컴파일 단에서 차단. 교차통신은 Core의 EventBus + State SO만 경유 (ADR-007).
+- **동기 상태 조회**: State SO 직접 읽기(`gameState.Day` 등). `Services`(Service Locator)·인터페이스 계약(`I*`)은 폐기 — 부활 금지. 동기 결과가 꼭 필요한 소수만 완료-이벤트(완료 핸들 실은 이벤트).
 - **비동기 상태 전파**: C# 구조체 이벤트를 정의해 `EventBus.Publish(new StructEvent())`로 느슨한 연동.
 
 ### 2. Obsolete API 금지
@@ -44,7 +44,7 @@ Claude는 코드를 제안하거나 구현할 때 **작업 위험도 등급**을
 
 ### 4. UI 접근 규칙
 - `UIManager.Instance.DialogueUI` 등 직접 참조 wrapper 프로퍼티 사용 금지.
-- 무조건 `Services.TryGet<INarrative>()?.DialogueUI`와 같이 도메인 인터페이스를 통해 접근.
+- UI는 도메인 상태를 State SO에서 읽고, 동작은 EventBus 명령으로 발행한다. `Services.TryGet<I*>()` 등 서비스 조회도 폐기(ADR-007) — 쓰지 않음.
 
 ---
 

@@ -17,7 +17,7 @@
 | 기능 화면 | LockScreen, MiniGame, Phone, Title, Tutorial, Settings, Audio | 개별 기능 화면/시스템 |
 | UI 프레임워크 | UI (Popup/Notification/Components) | 팝업·토스트·공용 컴포넌트 |
 
-통신 패턴: **Services.Get\<IFoo\>()** (동기 요청) + **EventBus.Publish/Subscribe** (비동기 통지).
+통신 패턴(구 코드 분석): **Services.Get\<IFoo\>()** (동기 요청) + **EventBus.Publish/Subscribe** (비동기 통지). → 재작성은 ADR-007로 **EventBus + State SO 단일**로 전환(Service Locator 폐기). 이 인벤토리는 "재현할 기능"의 참조이지 구 통신 패턴을 베끼라는 뜻이 아님.
 
 ---
 
