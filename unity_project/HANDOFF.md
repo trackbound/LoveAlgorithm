@@ -38,7 +38,7 @@
 - 운영: 위험도 게이트 + 마일스톤 + 형태문서 금지 + 커밋 "왜". (ADR-010)
 - 구조: 코드 `_Project/Scripts/`(피처별 asmdef) + 아트/프리팹 타입별 중앙화. (ADR-011)
 - 재설계(전사 금지) + 세션 연속성 규율 + 연출 수치 SO화. (ADR-012)
-- asmdef 도입 진행: 현재 `LoveAlgo.Core`·`LoveAlgo.Data`·`LoveAlgo.Affinity`·`LoveAlgo.Schedule`·`LoveAlgo.Game`·`LoveAlgo.Narrative`·`LoveAlgo.Save` 7개 + 옛 Assembly-CSharp 공존. 체인: `Core ← Data ← {Affinity, Schedule, Game}`, `Core ← Save`. `Narrative`=refs `{Core, Affinity}`(파서/모델/검증기 순수층 + Flow 인터프리터+라우터). `Audio`=refs `{Core}`. `UI`=refs `{Core, Unity.TextMeshPro}`. **`Save`·`UI`는 autoReferenced=false**(각각 구 `LoveAlgo.Save`·`LoveAlgo.UI` 네임스페이스가 모놀리식에 이미 존재 → 누출/충돌 회피, 폐기 시 복귀 가능), 나머지는 autoReferenced=true. 매니저 **3/4 완성**(GameManager·SaveManager·AudioManager; UIManager는 미착수—HUD 뷰만 시작). 테스트 어셈블리: `LoveAlgo.Tests.EditMode`·`LoveAlgo.Tests.PlayMode`(autoRef=false).
+- asmdef 도입 진행: 현재 `LoveAlgo.Core`·`LoveAlgo.Data`·`LoveAlgo.Affinity`·`LoveAlgo.Schedule`·`LoveAlgo.Game`·`LoveAlgo.Narrative`·`LoveAlgo.Save` 7개 + 옛 Assembly-CSharp 공존. 체인: `Core ← Data ← {Affinity, Schedule, Game}`, `Core ← Save`. `Narrative`=refs `{Core, Affinity}`(파서/모델/검증기 순수층 + Flow 인터프리터+라우터). `Audio`=refs `{Core}`. `UI`=refs `{Core, Unity.TextMeshPro}`. **`Save`·`UI`는 autoReferenced=false**(각각 구 `LoveAlgo.Save`·`LoveAlgo.UI` 네임스페이스가 모놀리식에 이미 존재 → 누출/충돌 회피, 폐기 시 복귀 가능; 신규 `LoveAlgo.UI.UIManager`는 구 동명 타입과 같은 ns지만 autoRef=false라 동시 가시 컴파일 단위 없음=무충돌), 나머지는 autoReferenced=true. 매니저 **4/4 골격 완성**(GameManager·SaveManager·AudioManager·UIManager — 각 슬라이스1 수준). 테스트 어셈블리: `LoveAlgo.Tests.EditMode`·`LoveAlgo.Tests.PlayMode`(autoRef=false).
 
 ---
 
@@ -153,6 +153,11 @@
   - **작동 증거**: 컴파일 0에러 + EditMode **123/123**(121+2: Money 포맷·ScheduleController MoneyChanged 발행) + PlayMode **7/7**(회귀 없음).
 - ✅ **서드파티 cruft 정리 커밋됨**: `_ThirdParty/DOTween/DOTweenPro Examples/`(벤더 데모 씬 3 + lighting + 로고, 빌드 미포함) 삭제(16파일). DOTween 코어·`TextMeshPro/` 필수 에셋은 보존. 컴파일 0에러, 빌드 씬(Main.unity) 무변경.
   - **참고**: 이건 빌드/임포트 경량화·씬목록 정리지 `execute_code` 한계(원인 B) 해결책 아님(그건 어셈블리/DLL 수 문제). execute_code 검증은 계속 PlayMode 테스트로 대체.
+- ✅ **UIManager 슬라이스1 커밋됨 (그룹 루트 + 그룹 show/hide)**: 🟠 4번째 매니저 골격. 구 UIManager의 Service Locator·서브UI 결합 제거, 그룹 단위만.
+  - **신규 Core(`UiEvents.cs`)**: `enum UIGroup{Narrative,Simulation,Title}`(ns `LoveAlgo.Events`, 구 `LoveAlgo.UI.UIGroup` 의미 이식) + `ShowUiGroupCommand(group)`.
+  - **`UIManager : MonoBehaviour`(LoveAlgo.UI)**: 그룹 루트 3개(미바인딩 시 자동 생성, `GetGroupRoot`) + `ShowGroup(target)`(대상 활성/나머지 비활성) + `ShowUiGroupCommand` 구독. 구 동명 타입과 ns 동일하나 autoRef=false라 무충돌.
+  - **범위 밖**: MainUIType→특정 UI 매핑·HideAll 서브UI 정리·시뮬 컨텍스트 진입·wrapper(모듈/Services 의존=후속). publisher(페이즈 흐름)도 후속.
+  - **작동 증거**: 컴파일 0에러(구 UIManager 무충돌 확인) + EditMode **125/125**(123+2: 그룹루트 생성/캐시·ShowGroup 토글) + PlayMode **8/8**(7 + OnEnable 구독→그룹 토글 1).
 - ▶️ **다음 착수(다음 세션)**: 감독이 다음 마일스톤 선택. 남은 연결고리:
   - **`DayChangedEvent`/`EnteredEndingEvent` 구독자**: HUD·페이즈 UI(M5 UI), 엔딩 화면(M5).
   - **GameManager 잔여 seam 채우기**: 저녁이벤트(M3 내러티브 이식 후)·페이드(M5 UI)·페이즈전환(GamePhase). ~~오토세이브~~=Save 슬라이스에서 완료. 부팅 와이어링(GameStateSO를 ScheduleController/SaveManager.State 등에 주입)도 GameManager 소관(후속).
