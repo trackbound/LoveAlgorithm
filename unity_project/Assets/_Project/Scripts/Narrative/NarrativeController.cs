@@ -44,12 +44,16 @@ namespace LoveAlgo.Story.StoryEngine
         [Tooltip("색 틴트 FX 프리셋 색·기본 알파/지속 동결 SO(ADR-012). 미바인딩 시 폴백 상수 사용.")]
         [SerializeField] ColorTintTuningSO colorTintTuning;
 
+        [Tooltip("아이마스크 FX(눈감기/뜨기/깜빡) 기본 지속 동결 SO(ADR-012). 미바인딩 시 폴백 상수 사용.")]
+        [SerializeField] EyeMaskTuningSO eyeMaskTuning;
+
         public GameStateSO State { get => state; set => state = value; }
         public StageTuningSO StageTuning { get => stageTuning; set => stageTuning = value; }
         public ScreenFxTuningSO FxTuning { get => fxTuning; set => fxTuning = value; }
         public ShakeTuningSO ShakeTuning { get => shakeTuning; set => shakeTuning = value; }
         public CameraFxTuningSO CameraTuning { get => cameraTuning; set => cameraTuning = value; }
         public ColorTintTuningSO ColorTintTuning { get => colorTintTuning; set => colorTintTuning = value; }
+        public EyeMaskTuningSO EyeMaskTuning { get => eyeMaskTuning; set => eyeMaskTuning = value; }
 
         /// <summary>현재 스크립트가 재생 중인가(재진입 가드).</summary>
         public bool IsRunning { get; private set; }
@@ -401,7 +405,15 @@ namespace LoveAlgo.Story.StoryEngine
                 yield break;
             }
 
-            // Eye/캐릭터(Jump/Dim/Glitch)/매크로 등 — 이번 슬라이스 미지원.
+            // 아이마스크(EyeClose/EyeOpen/EyeCloseImmediate/EyeBlink) 시도.
+            var eye = EyeMaskParser.Parse(line.Value);
+            if (eye.IsValid)
+            {
+                yield return PlayEyeMask(line, eye);
+                yield break;
+            }
+
+            // 캐릭터(Jump/Dim/Glitch)/매크로 등 — 이번 슬라이스 미지원.
             Log.Info($"[NarrativeController] 슬라이스 범위 밖 FX 스킵: \"{line.Value}\"");
         }
 
@@ -505,6 +517,33 @@ namespace LoveAlgo.Story.StoryEngine
                 Color c = colorTintTuning != null ? colorTintTuning.ColorFor(intent.Preset) : Color.gray;
                 EventBus.Publish(new ColorTintCommand(c.r, c.g, c.b, alpha, dur, false, req));
             }
+            yield return WaitNext(line, () => req.IsComplete);
+        }
+
+        // ── 아이마스크 FX(M3 슬라이스2: 눈감기/뜨기/깜빡) ──
+        // 순수 EyeMaskParser로 동작/지속 분해 → 동결 수치(EyeMaskTuningSO)로 지속 해석 → EyeMaskCommand 발행 →
+        // Next 대기(WaitNext). EyeMaskView가 상/하 검은 바를 눈꺼풀처럼 보간.
+
+        IEnumerator PlayEyeMask(ScriptLine line, EyeMaskIntent intent)
+        {
+            float closeDur = intent.CloseDuration >= 0f
+                ? intent.CloseDuration
+                : (intent.Action == EyeMaskAction.Blink
+                    ? (eyeMaskTuning != null ? eyeMaskTuning.BlinkCloseDefault : 0.1f)
+                    : (eyeMaskTuning != null ? eyeMaskTuning.CloseDefault : 0.8f));
+
+            float openDur = intent.OpenDuration >= 0f
+                ? intent.OpenDuration
+                : (intent.Action == EyeMaskAction.Blink
+                    ? (eyeMaskTuning != null ? eyeMaskTuning.BlinkOpenDefault : 0.15f)
+                    : (eyeMaskTuning != null ? eyeMaskTuning.OpenDefault : 0.8f));
+
+            float holdDur = intent.HoldDuration >= 0f
+                ? intent.HoldDuration
+                : (eyeMaskTuning != null ? eyeMaskTuning.BlinkHoldDefault : 0.05f);
+
+            var req = new CompletionHandle();
+            EventBus.Publish(new EyeMaskCommand(intent.Action, closeDur, openDur, holdDur, req));
             yield return WaitNext(line, () => req.IsComplete);
         }
     }
