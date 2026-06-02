@@ -223,6 +223,30 @@ namespace LoveAlgo.Tests.Editor
         }
 
         [Test]
+        public void Controller_Publishes_MoneyChanged_When_Money_Changes()
+        {
+            var so = MakeState();
+            GameObject go = null;
+            bool moneyFired = false;
+            long newMoney = -1;
+            var t1 = EventBus.Subscribe<MoneyChangedEvent>(e => { moneyFired = true; newMoney = e.NewMoney; });
+            try
+            {
+                var c = MakeController(so, out go);
+                c.HandleSelection(new ScheduleSelectedCommand(ScheduleType.PartTime_Store)); // moneyChange 보유
+
+                Assert.IsTrue(moneyFired, "소지금 변경 시 MoneyChangedEvent 발행");
+                Assert.AreEqual(so.Money, newMoney, "통지 값 = 변경 후 소지금");
+            }
+            finally
+            {
+                t1.Dispose();
+                if (go != null) UnityEngine.Object.DestroyImmediate(go);
+                UnityEngine.Object.DestroyImmediate(so);
+            }
+        }
+
+        [Test]
         public void Controller_Publishes_Rejected_And_No_Applied_When_Invest_Without_Funds()
         {
             var so = MakeState();

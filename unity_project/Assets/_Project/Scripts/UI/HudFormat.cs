@@ -7,6 +7,13 @@ namespace LoveAlgo.UI
     public static class HudFormat
     {
         public static string Day(int day) => $"Day {day}";
+
+        /// <summary>소지금(long) 포맷: "₩1,234" / 음수 "-₩1,234". (MoneyFormat은 int 전용 레거시라 long 직접 포맷)</summary>
+        public static string Money(long money)
+        {
+            long abs = money < 0 ? -money : money;
+            return (money < 0 ? "-₩" : "₩") + abs.ToString("#,##0");
+        }
         public static string Affinity(string heroineId, int score) => $"{heroineId} ♥ {score}";
         public static string Stat(string statId, int value) => $"{statId} {value}";
         public static string SaveStatus(bool success) => success ? "저장됨" : "저장 실패";

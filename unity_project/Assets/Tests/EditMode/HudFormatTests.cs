@@ -9,6 +9,15 @@ namespace LoveAlgo.Tests.Editor
     {
         [Test] public void Day_Formats() => Assert.AreEqual("Day 5", HudFormat.Day(5));
 
+        [Test]
+        public void Money_Formats()
+        {
+            Assert.AreEqual("₩1,234", HudFormat.Money(1234));
+            Assert.AreEqual("₩0", HudFormat.Money(0));
+            Assert.AreEqual("-₩500", HudFormat.Money(-500));
+            Assert.AreEqual("₩1,000,000", HudFormat.Money(1_000_000));
+        }
+
         [Test] public void Affinity_Formats() => Assert.AreEqual("HaYeEun ♥ 12", HudFormat.Affinity("HaYeEun", 12));
 
         [Test] public void Stat_Formats() => Assert.AreEqual("Str 7", HudFormat.Stat("Str", 7));

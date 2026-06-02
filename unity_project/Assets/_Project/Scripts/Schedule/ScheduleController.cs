@@ -70,6 +70,9 @@ namespace LoveAlgo.Schedule
 
             EventBus.Publish(new ScheduleAppliedEvent(result.Type, result.Effect, result.MoneyDelta));
 
+            if (result.MoneyDelta != 0)
+                EventBus.Publish(new MoneyChangedEvent(state.Money));
+
             if (result.DayEnded)
                 EventBus.Publish(new DayEndRequestedEvent(state.Day));
         }

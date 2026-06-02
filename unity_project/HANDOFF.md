@@ -146,6 +146,11 @@
   - **dangling 해소**: 위 5개 통지가 이제 소비처를 가짐.
   - **범위 밖**: UIManager(패널 루트/show-hide), 프리팹 신규 제작, 소지금 표시(MoneyChangedEvent 부재), 토스트/애니메이션.
   - **작동 증거**: 컴파일 0에러 + EditMode **121/121**(116+5) + PlayMode **7/7**(6 + HudView가 통지로 TMP 갱신 1).
+- ✅ **HUD 슬라이스2 커밋됨 (소지금 표시 + MoneyChangedEvent)**: 🟠 떠 있던 소지금 변경에 통지 신설 + HUD 연결.
+  - **신규 Core 이벤트 `MoneyChangedEvent(newMoney)`**(`LoveAlgo.Events`). GameStateSO.Money 세터는 미발행(StatChanged 원칙), 통합층이 변경 후 발행.
+  - **ScheduleController**: Execute 후 `result.MoneyDelta != 0`이면 `MoneyChangedEvent(state.Money)` 발행(커밋된 어댑터에 1줄 추가, 기존 이벤트셋 영향 없음).
+  - **HudFormat.Money(long)**: "₩1,234"/"-₩500"(MoneyFormat은 int 전용이라 long 직접 포맷). **HudView**에 `moneyText` 필드 + MoneyChangedEvent 구독 추가.
+  - **작동 증거**: 컴파일 0에러 + EditMode **123/123**(121+2: Money 포맷·ScheduleController MoneyChanged 발행) + PlayMode **7/7**(회귀 없음).
 - ▶️ **다음 착수(다음 세션)**: 감독이 다음 마일스톤 선택. 남은 연결고리:
   - **`DayChangedEvent`/`EnteredEndingEvent` 구독자**: HUD·페이즈 UI(M5 UI), 엔딩 화면(M5).
   - **GameManager 잔여 seam 채우기**: 저녁이벤트(M3 내러티브 이식 후)·페이드(M5 UI)·페이즈전환(GamePhase). ~~오토세이브~~=Save 슬라이스에서 완료. 부팅 와이어링(GameStateSO를 ScheduleController/SaveManager.State 등에 주입)도 GameManager 소관(후속).

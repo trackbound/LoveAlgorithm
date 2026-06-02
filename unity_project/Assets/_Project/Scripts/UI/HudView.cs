@@ -18,11 +18,13 @@ namespace LoveAlgo.UI
     public class HudView : MonoBehaviour
     {
         [SerializeField] TMP_Text dayText;
+        [SerializeField] TMP_Text moneyText;
         [SerializeField] TMP_Text affinityText;
         [SerializeField] TMP_Text statText;
         [SerializeField] TMP_Text statusText; // 저장/BGM 등 일시 상태 라인
 
         public TMP_Text DayText { get => dayText; set => dayText = value; }
+        public TMP_Text MoneyText { get => moneyText; set => moneyText = value; }
         public TMP_Text AffinityText { get => affinityText; set => affinityText = value; }
         public TMP_Text StatText { get => statText; set => statText = value; }
         public TMP_Text StatusText { get => statusText; set => statusText = value; }
@@ -32,6 +34,7 @@ namespace LoveAlgo.UI
         void OnEnable()
         {
             _subs.Add(EventBus.Subscribe<DayChangedEvent>(e => Set(dayText, HudFormat.Day(e.NewDay))));
+            _subs.Add(EventBus.Subscribe<MoneyChangedEvent>(e => Set(moneyText, HudFormat.Money(e.NewMoney))));
             _subs.Add(EventBus.Subscribe<AffinityChangedEvent>(e => Set(affinityText, HudFormat.Affinity(e.HeroineId, e.NewScore))));
             _subs.Add(EventBus.Subscribe<StatChangedEvent>(e => Set(statText, HudFormat.Stat(e.StatId, e.NewValue))));
             _subs.Add(EventBus.Subscribe<SaveCompletedEvent>(e => Set(statusText, HudFormat.SaveStatus(e.Success))));
