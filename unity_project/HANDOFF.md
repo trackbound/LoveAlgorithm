@@ -38,7 +38,7 @@
 - 운영: 위험도 게이트 + 마일스톤 + 형태문서 금지 + 커밋 "왜". (ADR-010)
 - 구조: 코드 `_Project/Scripts/`(피처별 asmdef) + 아트/프리팹 타입별 중앙화. (ADR-011)
 - 재설계(전사 금지) + 세션 연속성 규율 + 연출 수치 SO화. (ADR-012)
-- asmdef 도입 진행: 현재 `LoveAlgo.Core`·`LoveAlgo.Data`·`LoveAlgo.Affinity`·`LoveAlgo.Schedule`·`LoveAlgo.Game`·`LoveAlgo.Narrative`·`LoveAlgo.Save` 7개 + 옛 Assembly-CSharp 공존. 체인: `Core ← Data ← {Affinity, Schedule, Game}`, `Core ← Save`. `Narrative`=refs `{Core, Affinity}`(파서/모델/검증기 순수층 + Flow 인터프리터+라우터). `Audio`=refs `{Core}`. **`Save`만 autoReferenced=false**(구 `LoveAlgo.Save`(SaveModule)·`LoveAlgo.Story.SaveManager`와 단순명 충돌 회피 — 구 Save 폐기 시 true 복귀), 나머지는 autoReferenced=true(`LoveAlgo.Audio`는 신규 ns라 구 `LoveAlgo.Modules.Audio`와 무충돌). 매니저 **3/4 완성**(GameManager·SaveManager·AudioManager). 테스트 어셈블리: `LoveAlgo.Tests.EditMode`·`LoveAlgo.Tests.PlayMode`(autoRef=false).
+- asmdef 도입 진행: 현재 `LoveAlgo.Core`·`LoveAlgo.Data`·`LoveAlgo.Affinity`·`LoveAlgo.Schedule`·`LoveAlgo.Game`·`LoveAlgo.Narrative`·`LoveAlgo.Save` 7개 + 옛 Assembly-CSharp 공존. 체인: `Core ← Data ← {Affinity, Schedule, Game}`, `Core ← Save`. `Narrative`=refs `{Core, Affinity}`(파서/모델/검증기 순수층 + Flow 인터프리터+라우터). `Audio`=refs `{Core}`. `UI`=refs `{Core, Unity.TextMeshPro}`. **`Save`·`UI`는 autoReferenced=false**(각각 구 `LoveAlgo.Save`·`LoveAlgo.UI` 네임스페이스가 모놀리식에 이미 존재 → 누출/충돌 회피, 폐기 시 복귀 가능), 나머지는 autoReferenced=true. 매니저 **3/4 완성**(GameManager·SaveManager·AudioManager; UIManager는 미착수—HUD 뷰만 시작). 테스트 어셈블리: `LoveAlgo.Tests.EditMode`·`LoveAlgo.Tests.PlayMode`(autoRef=false).
 
 ---
 
@@ -139,6 +139,13 @@
   - **`AudioManager : MonoBehaviour`**: 5명령 구독 → AudioSource 재생. AudioSource 미바인딩 시 자동생성(`EnsureSources`), clip 해석은 주입형 `ClipLoader`(기본 `Resources.Load<AudioClip>("Audio/{cat}/{name}")`, 카탈로그/테스트 대체 가능). 페이드=자체 코루틴(DOTween 결합 제거). `CurrentBgm` 노출.
   - **범위 밖(후속)**: AudioMixer 볼륨(Settings)·UI사운드/버튼자동바인딩/타이핑(M5)·캐릭터 BGM 자동전환(Stage)·캐릭터 entry SFX·StoryMappings BGM alias·앱 포커스 pause.
   - **작동 증거**: 컴파일 0에러 + EditMode **116/116**(111+5: BGM설정/중복무시/정지/클립없음/SFX·Voice 로더호출) + PlayMode **6/6**(5 + AudioManager OnEnable 구독 1).
+- ✅ **HUD 슬라이스1 커밋됨 (떠 있던 통지 소비)**: 🟠/🟢 설계 승인(HUD 뷰만 — UIManager 패널루트는 연기). 그간 구독자 없던 통지들을 처음으로 소비.
+  - **신규 `LoveAlgo.UI` asmdef(refs Core+Unity.TextMeshPro, autoRef=false)** at `Scripts/UI/`.
+  - **순수 `HudFormat`(static)**: 이벤트 데이터→표시 문자열(Day/Affinity/Stat/SaveStatus/Bgm). EditMode 테스트.
+  - **`HudView : MonoBehaviour`**: `DayChangedEvent`·`AffinityChangedEvent`·`StatChangedEvent`·`SaveCompletedEvent`·`BgmChangedEvent` 구독 → 바인딩된 `TMP_Text` 갱신(표시만, 상태 변경 없음). TMP 필드 public 프로퍼티로 와이어링/테스트.
+  - **dangling 해소**: 위 5개 통지가 이제 소비처를 가짐.
+  - **범위 밖**: UIManager(패널 루트/show-hide), 프리팹 신규 제작, 소지금 표시(MoneyChangedEvent 부재), 토스트/애니메이션.
+  - **작동 증거**: 컴파일 0에러 + EditMode **121/121**(116+5) + PlayMode **7/7**(6 + HudView가 통지로 TMP 갱신 1).
 - ▶️ **다음 착수(다음 세션)**: 감독이 다음 마일스톤 선택. 남은 연결고리:
   - **`DayChangedEvent`/`EnteredEndingEvent` 구독자**: HUD·페이즈 UI(M5 UI), 엔딩 화면(M5).
   - **GameManager 잔여 seam 채우기**: 저녁이벤트(M3 내러티브 이식 후)·페이드(M5 UI)·페이즈전환(GamePhase). ~~오토세이브~~=Save 슬라이스에서 완료. 부팅 와이어링(GameStateSO를 ScheduleController/SaveManager.State 등에 주입)도 GameManager 소관(후속).

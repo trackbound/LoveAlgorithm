@@ -10,6 +10,8 @@
         "LoveAlgo.Affinity",
         "LoveAlgo.Narrative",
         "LoveAlgo.Audio",
+        "LoveAlgo.UI",
+        "Unity.TextMeshPro",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"
     ],
