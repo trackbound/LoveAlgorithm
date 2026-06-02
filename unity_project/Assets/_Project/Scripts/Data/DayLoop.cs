@@ -30,6 +30,7 @@ namespace LoveAlgo.Core
             if (gs == null) return;
             gs.Day = 1;
             gs.RemainingActions = GameConstants.ActionsPerDay;
+            gs.ClearDailyLimits();
         }
 
         /// <summary>자유행동 1회 소모. 남은 행동이 0 이하가 되면(=하루 종료 조건) true.</summary>
@@ -49,6 +50,7 @@ namespace LoveAlgo.Core
             if (gs == null) return new DayAdvanceResult(0, false);
             gs.Day++;
             gs.RemainingActions = GameConstants.ActionsPerDay;
+            gs.ClearDailyLimits();
             return new DayAdvanceResult(gs.Day, gs.Day > GameConstants.MaxDay);
         }
 

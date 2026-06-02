@@ -2,7 +2,8 @@
     "name": "LoveAlgo.Schedule",
     "rootNamespace": "",
     "references": [
-        "LoveAlgo.Core"
+        "LoveAlgo.Core",
+        "LoveAlgo.Data"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

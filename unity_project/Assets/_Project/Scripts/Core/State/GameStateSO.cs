@@ -54,6 +54,9 @@ namespace LoveAlgo.Core
         public const int MinStat = 0;
         public const int MaxStat = 100;
 
+        /// <summary>플레이어 스탯 id 정본 집합. 스냅샷/순회(통합층의 StatChangedEvent 산출 등)의 단일 진실 소스.</summary>
+        public static readonly string[] StatIds = { "Str", "Int", "Soc", "Per", "Fatigue" };
+
         public int GetStat(string statId)
         {
             switch (statId)
@@ -90,6 +93,18 @@ namespace LoveAlgo.Core
         // 소지금은 0 미만이 될 수 없다(구 GameState.AddMoney = Mathf.Max(0, …) 재현). 세터에서 바닥 클램프.
         public long Money { get => _runtime.money; set => _runtime.money = value < 0 ? 0 : value; }
         public void AddMoney(long delta) => Money = _runtime.money + delta;
+
+        // ── 1일 1회 제한 스케줄 추적 (도메인 규칙, 하루 전환 시 ClearDailyLimits로 리셋) ──
+        public bool HasUsedLimited(string scheduleId) => _runtime.usedLimitedToday.Contains(scheduleId);
+
+        public void MarkLimitedUsed(string scheduleId)
+        {
+            if (!_runtime.usedLimitedToday.Contains(scheduleId))
+                _runtime.usedLimitedToday.Add(scheduleId);
+        }
+
+        /// <summary>하루 전환 시 호출 — 오늘 사용한 제한 스케줄 기록을 비운다(DayLoop.BeginRun/AdvanceDay).</summary>
+        public void ClearDailyLimits() => _runtime.usedLimitedToday.Clear();
 
         // ── 플래그 동기 접근 ──
         public bool GetFlag(string name)

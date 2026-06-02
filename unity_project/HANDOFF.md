@@ -38,7 +38,7 @@
 - 운영: 위험도 게이트 + 마일스톤 + 형태문서 금지 + 커밋 "왜". (ADR-010)
 - 구조: 코드 `_Project/Scripts/`(피처별 asmdef) + 아트/프리팹 타입별 중앙화. (ADR-011)
 - 재설계(전사 금지) + 세션 연속성 규율 + 연출 수치 SO화. (ADR-012)
-- asmdef 도입 진행: 현재 `LoveAlgo.Core`·`LoveAlgo.Data`·`LoveAlgo.Affinity`·`LoveAlgo.Schedule` 4개(전부 autoReferenced; Data·Affinity·Schedule 모두 Core 의존, Affinity는 Data도 의존) + 옛 Assembly-CSharp 공존.
+- asmdef 도입 진행: 현재 `LoveAlgo.Core`·`LoveAlgo.Data`·`LoveAlgo.Affinity`·`LoveAlgo.Schedule` 4개(전부 autoReferenced; Data·Affinity·Schedule 모두 Core 의존, Affinity·Schedule은 Data도 의존) + 옛 Assembly-CSharp 공존. 체인: `Core ← Data ← {Affinity, Schedule}`.
 
 ---
 
@@ -85,14 +85,18 @@
   - **신규 asmdef `LoveAlgo.Schedule`(refs Core)** at `Scripts/Schedule/`. `ScheduleType.cs`(ScheduleType/Category/Effect + ScheduleTable)·`ScheduleDataSO.cs`를 `git mv`로 이식 — 네임스페이스 `LoveAlgo.Schedule`·GUID 보존(R100), `MoneyFormat`(Core)만 의존이라 깨짐 없음. 구 UI(`ScheduleUI`/`ScheduleSlot`/`ScheduleModule` 등, namespace 동일·Assembly-CSharp 잔류)는 auto-ref로 무변경 컴파일.
   - **신규 순수 적용기 `ScheduleEffects.cs`**: `Apply(gs, effect)`(스탯/소지금 변화, 클램프)·`ApplyInvest(gs, multiplier)`(±50~100%, 배수=호출자 주입으로 RNG 분리, 0 바닥, 실반영액 반환). 구 `DayLoopController.OnScheduleSelected`의 순수 부분만 재현 — 토스트/세션버프/RNG/투자 게이트는 통합층(slice2)·Shop(별도) 소관.
   - **작동 증거**: 헤드리스 배치(6000.4.3f1) 컴파일 0에러 + **EditMode 81/81 통과**(71 + slice1 10: 적용/클램프/투자 바닥/카테고리·9종·Loading제한).
-- ▶️ **다음 착수(다음 세션)**: M4 slice2 — 🔴 Schedule **통합층 재작성**. **설계안부터 감독 검토 후 구현** (위험도 게이트 Critical).
-  - **대상**: 구 `Assets/_Project/Modules/Schedule/Code/ScheduleModule.cs` — `ISchedule`/`ISimulationSubMode` 구현 + `Services.Register<ISchedule>` (Service Locator = 금지선4 제거 대상).
-  - **풀어야 할 설계 결정**:
-    1. **스탯변경 통지 이벤트 구조체** 정의(구 `LoveAlgo.Contracts.StatChangedEvent` 대체). `Scripts/Core` 또는 신규 이벤트 모듈에 `readonly struct`로? `ScheduleEffects.Apply`는 순수 유지하고 **호출자(통합층)가 Apply 직후 `EventBus.Publish`** 하는 경계가 맞는지 확정.
-    2. 스케줄 선택→적용 진입점을 어디가 소유하나(매니저 4개 중? GameManager 데이루프 측?). 구 `DayLoopController.OnScheduleSelected` 책임의 새 거처.
-    3. 투자 게이트(소지금 ≥ `GameConstants.MinInvestMoney`)·1일1회 제한(`isLimited`)·세션버프(Shop, 별도)·토스트(UI, M5) 경계 분리.
-  - **참고 구현물**: 순수층은 이미 있음 — `ScheduleEffects.Apply/ApplyInvest`(LoveAlgo.Schedule), `DayLoop.ConsumeAction/AdvanceDay`(LoveAlgo.Core). 통합층은 이 둘을 호출+이벤트 발행만.
-  - **구 코드 현황**: `ScheduleModule`/`ScheduleUI`/`DayLoopController` 등 옛 모듈은 무변경 공존 중(매니페스트 상태 미변경). slice2에서 통합층 이식 시 구 `ScheduleModule` 처리.
+- ✅ **M4 slice2 커밋됨 (Schedule 통합층 재작성)**: 🔴 구 `ScheduleModule`+`DayLoopController.OnScheduleSelected`의 Service Locator 경로를 EventBus+순수층으로 대체. 설계안 감독 승인 후 구현(일일제한=상태직렬화, 하루종료=통지까지).
+  - **순수 코어 `Scripts/Schedule/ScheduleService.cs`**: `Execute(gs, type, investMultiplier)` → 게이트(투자 자금<`MinInvestMoney`/`isLimited` 1일1회) 검사 → `ScheduleEffects.Apply`/`ApplyInvest` + `DayLoop.ConsumeAction` 호출 → 변경 전/후 스냅샷으로 `StatChangedEvent[]` 산출 → `ScheduleResult`(거부사유·스탯변화·소지금델타·dayEnded) 반환. RNG/EventBus 모름 = 결정적.
+  - **얇은 어댑터 `ScheduleController.cs`**(MonoBehaviour): `ScheduleSelectedCommand` 구독 → 투자면 RNG 배수 주입 → `Execute` → 결과를 EventBus 통지(`StatChangedEvent`×변경분 / `ScheduleAppliedEvent` / 거부 시 `ScheduleRejectedEvent` / 소진 시 `DayEndRequestedEvent`). `State` 프로퍼티로 부팅 와이어링. **Service Locator 제거(금지선4)**.
+  - **이벤트 구조체**: Core(`Scripts/Core/Events/`)에 범용 `StatChangedEvent`(구 Contracts 1:1, ns→`LoveAlgo.Events`)·`DayEndRequestedEvent`. Schedule asmdef에 도메인 `ScheduleSelectedCommand`/`ScheduleAppliedEvent`/`ScheduleRejectedEvent`+`ScheduleRejection`.
+  - **🔴 스키마(추가-온리)**: `GameStateData.usedLimitedToday`(List<string>) + `GameStateSO.HasUsedLimited/MarkLimitedUsed/ClearDailyLimits`·`StatIds` SSOT. `DayLoop.BeginRun/AdvanceDay`가 하루 전환 시 `ClearDailyLimits`. JsonUtility 호환=기존 세이브 무영향.
+  - **asmdef**: `LoveAlgo.Schedule`에 `LoveAlgo.Data` 참조 추가(DayLoop·MinInvestMoney 소속). 순환 없음.
+  - **범위 밖(구 코드 무변경 공존)**: 세션버프(Shop), 토스트/피드백문자열·UI 스폰·`ISimulationSubMode`(M5), 하루전환 오케스트레이션(저녁이벤트·페이드·오토세이브·`AdvanceDay` 실행=GameManager 구독자). 구 `ScheduleModule`/`ScheduleUI`/`DayLoopController` 그대로, 매니페스트 미변경.
+  - **작동 증거**: MCP force recompile **0에러/0경고** + EditMode **92/92 통과**(81 + slice2 11: 효과적용·StatChange 변경분만·투자게이트 3종·1일1회·AdvanceDay리셋·하루종료신호·null·컨트롤러 발행경로 3종).
+- ▶️ **다음 착수(다음 세션)**: 감독이 다음 마일스톤 선택. Schedule 잔여 연결고리(다른 슬라이스/모듈에서 소비):
+  - **`DayEndRequestedEvent` 구독자** = 하루전환 오케스트레이션 거처(GameManager 재구축, M5). 구 `DayLoopController.EndDayAsync`(저녁이벤트→페이드→일차+1=`DayLoop.AdvanceDay`→오토세이브→페이즈전환)의 새 집.
+  - **세션버프**: Shop 슬라이스에서 `ScheduleAppliedEvent` 구독으로 적용(적용 순서=구 코드 base효과 직후 → 경계 확정 필요).
+  - **UI**: M5에서 ScheduleUI가 `ScheduleSelectedCommand` 발행 + `ScheduleApplied/Rejected/StatChanged` 구독(토스트·HUD). `ScheduleTable` 정적 질의 직접 사용(ISchedule 불필요).
 
 ### 워크플로우 규율 (directive)
 - 무언가 만들 때마다 **전용 테스트 씬 + 플레이모드로 작동 증거**(dev_guide 증거우선).
