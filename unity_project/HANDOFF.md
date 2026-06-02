@@ -38,7 +38,7 @@
 - 운영: 위험도 게이트 + 마일스톤 + 형태문서 금지 + 커밋 "왜". (ADR-010)
 - 구조: 코드 `_Project/Scripts/`(피처별 asmdef) + 아트/프리팹 타입별 중앙화. (ADR-011)
 - 재설계(전사 금지) + 세션 연속성 규율 + 연출 수치 SO화. (ADR-012)
-- asmdef 도입 진행: 현재 `LoveAlgo.Core`·`LoveAlgo.Data`·`LoveAlgo.Affinity`·`LoveAlgo.Schedule`·`LoveAlgo.Game` 5개(전부 autoReferenced; Data·Affinity·Schedule·Game 모두 Core 의존, Affinity·Schedule·Game은 Data도 의존) + 옛 Assembly-CSharp 공존. 체인: `Core ← Data ← {Affinity, Schedule, Game}`.
+- asmdef 도입 진행: 현재 `LoveAlgo.Core`·`LoveAlgo.Data`·`LoveAlgo.Affinity`·`LoveAlgo.Schedule`·`LoveAlgo.Game`·`LoveAlgo.Narrative` 6개(전부 autoReferenced) + 옛 Assembly-CSharp 공존. 체인: `Core ← Data ← {Affinity, Schedule, Game}`. `Narrative`는 의존 없는 자기완결 리프(System+UnityEngine만 — 파서/모델/검증기 순수층). 테스트 어셈블리: `LoveAlgo.Tests.EditMode`·`LoveAlgo.Tests.PlayMode`(autoRef=false).
 
 ---
 
@@ -107,6 +107,13 @@
   - **구 코드 테스트 3개 잔류**(`Assets/Tests/Editor/`, Assembly-CSharp-Editor): ScriptParser·ScriptValidator(`LoveAlgo.Story`)·SaveLoadRoundTrip(`LoveAlgo.Story.SaveSystem`). 해당 구 코드 이식 시 함께 정리.
   - **작동 증거**: EditMode **95/95**(이동 후 총합 불변=손실 없음) + PlayMode **3/3**, 컴파일 0에러.
   - **참고(execute_code 막힘)**: MCP `execute_code`는 Roslyn 미설치→CodeDom 폴백 + 전체 어셈블리 `/r:` 커맨드라인 한계로 이 프로젝트에선 사용 불가. 런타임 검증은 PlayMode 테스트 어셈블리로 한다(서드파티 cruft 정리는 별도 백로그).
+- ✅ **M3 slice1 커밋됨 (내러티브 파서/모델/검증기 순수층 이식)**: 🟡 감독이 추천순 1위로 M3 선택. Schedule slice1과 동일 패턴(네임스페이스·GUID 보존 + autoref로 구 소비처 무변경).
+  - **신규 asmdef `LoveAlgo.Narrative`(refs 없음=자기완결 리프)** at `Scripts/Narrative/`. 순수 6파일을 `git mv`로 이식 — `ScriptLine`(model: ScriptLine/LineType/NextType, ns `LoveAlgo.Story`)·`CsvUtility`·`ScriptParser`(ns `LoveAlgo.Story`)·`CommandAliases`·`FXCommandSignatures`·`ScriptValidator`(ns `LoveAlgo.Story.StoryEngine`). 의존 폐포가 System+UnityEngine뿐이라 깨짐 없음(UnityEngine.Debug/TextAsset/RuntimeInitializeOnLoadMethod는 asmdef 정상).
+  - **범위 밖(구 Assembly-CSharp 잔류)**: runtime/오케스트레이션 = `ScriptRunner`·`ScriptEngine`·`Engine/Handlers/*`·`Engine/Flow/*`·`Engine/Macros/*`·UI(`DialogueUI`/`ChoicePopup` 등)·Editor 도구·`ScriptCsvSerializer`/`StoryMappings` 등. 구 소비처 14곳은 ns 보존+autoref로 무변경 컴파일.
+  - **🟠 전환기 가교(IVT)**: `ScriptLine` 속성이 `internal set`이라, 모놀리식에 함께 있던 `DevTools/ScenarioEditor/ScenarioEditorIMGUI`(유일한 writer)가 asmdef 분리 후 막힘(CS0200) → `Scripts/Narrative/AssemblyInfo.cs`에 `[assembly:InternalsVisibleTo("Assembly-CSharp"/"Assembly-CSharp-Editor")]` 추가. 해당 소비처 이식/삭제 시 제거.
+  - **테스트 이식**: 기존 `ScriptParserTests`(6)·`ScriptValidatorTests`(9)를 `Assets/Tests/EditMode/`(asmdef)로 `git mv`, EditMode asmdef에 `LoveAlgo.Narrative` 참조 추가. 구 `SaveLoadRoundTripTests`만 `Assets/Tests/Editor/`(Assembly-CSharp-Editor) 잔류(구 SaveSystem 의존).
+  - **작동 증거**: MCP force recompile 0에러 + EditMode **95/95**(이동 후 총합 불변).
+  - **다음 narrative 슬라이스 후보**: ① 명령 파이프(ILineExecutor/handlers)와 Flow 커맨드(`Affinity:`/`Schedule:`/`Day:` 등)를 EventBus+State로 재작성 → AffinityFormula·ScheduleService·GameManager 연결. ② ScriptRunner→내러티브 진행을 GameManager seam(저녁이벤트)과 연결. UI(DialogueUI)는 M5.
 - ▶️ **다음 착수(다음 세션)**: 감독이 다음 마일스톤 선택. 남은 연결고리:
   - **`DayChangedEvent`/`EnteredEndingEvent` 구독자**: HUD·페이즈 UI(M5 UI), 엔딩 화면(M5).
   - **GameManager 잔여 seam 채우기**: 저녁이벤트(M3 내러티브 이식 후)·페이드(M5 UI)·오토세이브(Save 슬라이스)·페이즈전환(GamePhase). 부팅 와이어링(GameStateSO를 ScheduleController.State 등에 주입)도 GameManager 소관(후속).
