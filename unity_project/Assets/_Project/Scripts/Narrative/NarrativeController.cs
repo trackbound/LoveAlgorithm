@@ -109,8 +109,14 @@ namespace LoveAlgo.Story.StoryEngine
                         cursor.MoveNext();
                         break;
 
+                    case LineType.Sound:
+                        PlaySound(line);
+                        yield return WaitSound(line);
+                        cursor.MoveNext();
+                        break;
+
                     default:
-                        // CG/SD/Overlay/Sound/FX/Place/Option(미아) — 이번 슬라이스 미지원, 건너뜀.
+                        // CG/SD/Overlay/FX/Place/Option(미아) — 이번 슬라이스 미지원, 건너뜀.
                         Log.Info($"[NarrativeController] 슬라이스 범위 밖 라인 스킵: {line}");
                         cursor.MoveNext();
                         break;
@@ -295,6 +301,41 @@ namespace LoveAlgo.Story.StoryEngine
                     break;
                 // Immediate: 대기하지 않음.
             }
+        }
+
+        // ── 사운드(M3 슬라이스2: BGM/SFX/Voice) ──
+        // 순수 SoundInterpreter로 Value를 인텐트로 분해 → 카테고리별 기존 오디오 명령을 발행(AudioManager가 구독·재생).
+        // 완료 핸들이 없으므로(오디오는 fire-and-forget) Next는 Delay만 대기 — await/click이어도 블록하지 않는다.
+
+        void PlaySound(ScriptLine line)
+        {
+            var intent = SoundInterpreter.Parse(line.Value);
+            if (!intent.IsValid)
+            {
+                Log.Warn($"[NarrativeController] 잘못된 Sound 라인 — 건너뜀: \"{line.Value}\"");
+                return;
+            }
+
+            switch (intent.Category)
+            {
+                case SoundCategory.Bgm:
+                    if (intent.IsStop) EventBus.Publish(new StopBgmCommand(intent.Fade));
+                    else EventBus.Publish(new PlayBgmCommand(intent.Name, intent.Fade));
+                    break;
+                case SoundCategory.Sfx:
+                    EventBus.Publish(new PlaySfxCommand(intent.Name));
+                    break;
+                case SoundCategory.Voice:
+                    if (intent.IsStop) EventBus.Publish(new StopVoiceCommand());
+                    else EventBus.Publish(new PlayVoiceCommand(intent.Name));
+                    break;
+            }
+        }
+
+        IEnumerator WaitSound(ScriptLine line)
+        {
+            if (line.NextType == NextType.Delay && line.DelaySeconds > 0f)
+                yield return new WaitForSeconds(Mathf.Min(line.DelaySeconds, maxDelaySeconds));
         }
     }
 }
