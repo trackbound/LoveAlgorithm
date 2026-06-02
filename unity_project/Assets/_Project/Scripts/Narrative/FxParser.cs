@@ -47,7 +47,7 @@ namespace LoveAlgo.Story
                 case "fadeout": kind = ScreenFxKind.FadeOut; break;
                 case "fadein": kind = ScreenFxKind.FadeIn; break;
                 case "flash": kind = ScreenFxKind.Flash; break;
-                default: return ScreenFxIntent.Invalid; // 카메라/Eye/Tint/흔들기/캐릭터/매크로 = 슬라이스 밖
+                default: return ScreenFxIntent.Invalid; // 흔들기=ShakeParser가 처리. 카메라/Eye/Tint/캐릭터/매크로 = 슬라이스 밖
             }
 
             float duration = -1f;

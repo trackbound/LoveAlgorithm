@@ -35,9 +35,13 @@ namespace LoveAlgo.Story.StoryEngine
         [Tooltip("스크린 FX(페이드/플래시) 기본 시간 동결 SO(ADR-012). 미바인딩 시 폴백 상수 사용.")]
         [SerializeField] ScreenFxTuningSO fxTuning;
 
+        [Tooltip("흔들기 FX(Stage/Dialogue/Char) 강도·지속·진동 프로파일 동결 SO(ADR-012). 미바인딩 시 폴백 상수 사용.")]
+        [SerializeField] ShakeTuningSO shakeTuning;
+
         public GameStateSO State { get => state; set => state = value; }
         public StageTuningSO StageTuning { get => stageTuning; set => stageTuning = value; }
         public ScreenFxTuningSO FxTuning { get => fxTuning; set => fxTuning = value; }
+        public ShakeTuningSO ShakeTuning { get => shakeTuning; set => shakeTuning = value; }
 
         /// <summary>현재 스크립트가 재생 중인가(재진입 가드).</summary>
         public bool IsRunning { get; private set; }
@@ -354,18 +358,27 @@ namespace LoveAlgo.Story.StoryEngine
 
         IEnumerator PlayFx(ScriptLine line)
         {
-            var intent = FxParser.ParseScreen(line.Value);
-            if (!intent.IsValid)
+            // 스크린 오버레이(FadeOut/FadeIn/Flash) 먼저 시도.
+            var screen = FxParser.ParseScreen(line.Value);
+            if (screen.IsValid)
             {
-                // 카메라/Eye/Tint/흔들기/캐릭터/매크로 등 — 이번 슬라이스 미지원.
-                Log.Info($"[NarrativeController] 슬라이스 범위 밖 FX 스킵: \"{line.Value}\"");
+                float dur = screen.Duration >= 0f ? screen.Duration : ResolveFxDuration(screen.Kind);
+                var req = new CompletionHandle();
+                EventBus.Publish(new ShowScreenFxCommand(screen.Kind, dur, req));
+                yield return WaitNext(line, () => req.IsComplete);
                 yield break;
             }
 
-            float dur = intent.Duration >= 0f ? intent.Duration : ResolveFxDuration(intent.Kind);
-            var req = new CompletionHandle();
-            EventBus.Publish(new ShowScreenFxCommand(intent.Kind, dur, req));
-            yield return WaitNext(line, () => req.IsComplete);
+            // 흔들기(StageShake/DialogueShake/CharShake) 시도.
+            var shake = ShakeParser.Parse(line.Value);
+            if (shake.IsValid)
+            {
+                yield return PlayShake(line, shake);
+                yield break;
+            }
+
+            // 카메라/Eye/Tint/캐릭터(Jump/Dim/Glitch)/매크로 등 — 이번 슬라이스 미지원.
+            Log.Info($"[NarrativeController] 슬라이스 범위 밖 FX 스킵: \"{line.Value}\"");
         }
 
         float ResolveFxDuration(ScreenFxKind kind)
@@ -373,6 +386,54 @@ namespace LoveAlgo.Story.StoryEngine
             if (kind == ScreenFxKind.Flash)
                 return fxTuning != null ? fxTuning.FlashDefault : 0.14f;
             return fxTuning != null ? fxTuning.FadeDefault : 0.9f;
+        }
+
+        // ── 흔들기 FX(M3 슬라이스2: StageShake/DialogueShake/CharShake) ──
+        // 순수 ShakeParser로 대상/강도/지속 분해 → 동결 수치(ShakeTuningSO)로 px·지속·진동 프로파일 해석 →
+        // ShakeCommand 발행 → Next 대기(WaitNext). ShakeView(대상별)가 자기 RectTransform을 감쇠 진동시킨다.
+
+        IEnumerator PlayShake(ScriptLine line, ShakeIntent intent)
+        {
+            float strength = intent.StrengthPx >= 0f
+                ? intent.StrengthPx
+                : (intent.Target == ShakeTarget.Char
+                    ? (shakeTuning != null ? shakeTuning.CharStrength : 18f)
+                    : (shakeTuning != null ? shakeTuning.PresetPx(intent.Preset) : DefaultPresetPx(intent.Preset)));
+
+            float dur = intent.Duration >= 0f
+                ? intent.Duration
+                : (shakeTuning != null ? shakeTuning.ShakeDuration : 0.3f);
+
+            var profile = ResolveShakeProfile(intent.Target);
+            var req = new CompletionHandle();
+            EventBus.Publish(new ShakeCommand(intent.Target, intent.Slot, strength, dur, profile, req));
+            yield return WaitNext(line, () => req.IsComplete);
+        }
+
+        ShakeProfile ResolveShakeProfile(ShakeTarget target)
+        {
+            if (shakeTuning != null)
+            {
+                var p = shakeTuning.ProfileFor(target);
+                return new ShakeProfile(p.xMultiplier, p.yMultiplier, p.rotationMultiplier, p.frequencyHz, p.damping, shakeTuning.HitlagSeconds);
+            }
+            // 폴백(동결 상수) — SO 미바인딩 시. 값 = ShakeTuningSO 기본값과 동일.
+            switch (target)
+            {
+                case ShakeTarget.Dialogue: return new ShakeProfile(1.0f, 0.12f, 0.02f, 6.0f, 6.5f, 0.025f);
+                case ShakeTarget.Char:     return new ShakeProfile(1.0f, 1.0f, 0.0f, 12.0f, 6.5f, 0.025f);
+                default:                   return new ShakeProfile(1.0f, 0.35f, 0.06f, 5.0f, 5.2f, 0.025f);
+            }
+        }
+
+        static float DefaultPresetPx(ShakeStrength preset)
+        {
+            switch (preset)
+            {
+                case ShakeStrength.Weak:   return 10f;
+                case ShakeStrength.Strong: return 50f;
+                default:                   return 25f;
+            }
         }
     }
 }
