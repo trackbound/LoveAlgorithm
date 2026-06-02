@@ -39,6 +39,8 @@ namespace LoveAlgo.UI
         [SerializeField] SlotBinding slotL = new();
         [SerializeField] SlotBinding slotC = new();
         [SerializeField] SlotBinding slotR = new();
+        [Tooltip("캐릭터 슬롯 컨테이너(선택). CG 컷신 진입 시 일괄 숨기고 종료 시 복원 — 슬롯별 알파는 보존.")]
+        [SerializeField] GameObject charContainer;
 
         [Tooltip("스테이지 리소스 루트(Resources 하위). BG는 {bgRoot}/{name}, 캐릭터는 {charRoot}/{char}_{emote}로 로드.")]
         [SerializeField] string bgRoot = "BG";
@@ -52,8 +54,10 @@ namespace LoveAlgo.UI
         public SlotBinding SlotL { get => slotL; set => slotL = value; }
         public SlotBinding SlotC { get => slotC; set => slotC = value; }
         public SlotBinding SlotR { get => slotR; set => slotR = value; }
+        public GameObject CharContainer { get => charContainer; set => charContainer = value; }
 
-        IDisposable _bgSub, _charSub, _finishSub;
+        IDisposable _bgSub, _charSub, _finishSub, _cgSub;
+        bool _cgHidden;
 
         Coroutine _bgRoutine;
         CompletionHandle _bgPending;
@@ -66,6 +70,7 @@ namespace LoveAlgo.UI
             _bgSub = EventBus.Subscribe<ShowBackgroundCommand>(OnShowBackground);
             _charSub = EventBus.Subscribe<ShowCharacterCommand>(OnShowCharacter);
             _finishSub = EventBus.Subscribe<NarrativeFinishedEvent>(_ => ClearAll());
+            _cgSub = EventBus.Subscribe<SetCgModeCommand>(OnCgMode);
 
             // 초기 상태: front 보임(빈 스프라이트)·back 숨김·backdrop 꺼짐(BG 없을 땐 시뮬 화면이 까매지지 않게).
             SetAlpha(bgFrontGroup, 1f);
@@ -76,8 +81,23 @@ namespace LoveAlgo.UI
 
         void OnDisable()
         {
-            _bgSub?.Dispose(); _charSub?.Dispose(); _finishSub?.Dispose();
-            _bgSub = _charSub = _finishSub = null;
+            _bgSub?.Dispose(); _charSub?.Dispose(); _finishSub?.Dispose(); _cgSub?.Dispose();
+            _bgSub = _charSub = _finishSub = _cgSub = null;
+        }
+
+        // CG 컷신 진입 시 캐릭터를 일괄 숨기고 종료 시 복원(슬롯별 알파 보존 위해 컨테이너 토글). 대칭.
+        void OnCgMode(SetCgModeCommand e)
+        {
+            if (charContainer == null) return;
+            if (e.Active)
+            {
+                if (charContainer.activeSelf) { charContainer.SetActive(false); _cgHidden = true; }
+            }
+            else if (_cgHidden)
+            {
+                charContainer.SetActive(true);
+                _cgHidden = false;
+            }
         }
 
         // ── 배경 ──

@@ -47,6 +47,9 @@ namespace LoveAlgo.Story.StoryEngine
         [Tooltip("아이마스크 FX(눈감기/뜨기/깜빡) 기본 지속 동결 SO(ADR-012). 미바인딩 시 폴백 상수 사용.")]
         [SerializeField] EyeMaskTuningSO eyeMaskTuning;
 
+        [Tooltip("스테이지 레이어(CG/SD/Overlay) 페이드 기본 시간 동결 SO(ADR-012). 미바인딩 시 폴백 상수 사용.")]
+        [SerializeField] StageLayerTuningSO stageLayerTuning;
+
         public GameStateSO State { get => state; set => state = value; }
         public StageTuningSO StageTuning { get => stageTuning; set => stageTuning = value; }
         public ScreenFxTuningSO FxTuning { get => fxTuning; set => fxTuning = value; }
@@ -54,6 +57,7 @@ namespace LoveAlgo.Story.StoryEngine
         public CameraFxTuningSO CameraTuning { get => cameraTuning; set => cameraTuning = value; }
         public ColorTintTuningSO ColorTintTuning { get => colorTintTuning; set => colorTintTuning = value; }
         public EyeMaskTuningSO EyeMaskTuning { get => eyeMaskTuning; set => eyeMaskTuning = value; }
+        public StageLayerTuningSO StageLayerTuning { get => stageLayerTuning; set => stageLayerTuning = value; }
 
         /// <summary>현재 스크립트가 재생 중인가(재진입 가드).</summary>
         public bool IsRunning { get; private set; }
@@ -140,8 +144,23 @@ namespace LoveAlgo.Story.StoryEngine
                         cursor.MoveNext();
                         break;
 
+                    case LineType.CG:
+                        yield return PlayStageLayer(line, StageLayerKind.CG);
+                        cursor.MoveNext();
+                        break;
+
+                    case LineType.SD:
+                        yield return PlayStageLayer(line, StageLayerKind.SD);
+                        cursor.MoveNext();
+                        break;
+
+                    case LineType.Overlay:
+                        yield return PlayStageLayer(line, StageLayerKind.Overlay);
+                        cursor.MoveNext();
+                        break;
+
                     default:
-                        // CG/SD/Overlay/Place/Option(미아) — 이번 슬라이스 미지원, 건너뜀.
+                        // Place/Option(미아) — 이번 슬라이스 미지원, 건너뜀.
                         Log.Info($"[NarrativeController] 슬라이스 범위 밖 라인 스킵: {line}");
                         cursor.MoveNext();
                         break;
@@ -545,6 +564,37 @@ namespace LoveAlgo.Story.StoryEngine
             var req = new CompletionHandle();
             EventBus.Publish(new EyeMaskCommand(intent.Action, closeDur, openDur, holdDur, req));
             yield return WaitNext(line, () => req.IsComplete);
+        }
+
+        // ── 스테이지 레이어(M3 슬라이스2: CG/SD/Overlay) ──
+        // 순수 StageLayerParser로 표시/종료·이름·전환·지속 분해 → 동결 수치(StageLayerTuningSO)로 fade 해석 →
+        // ShowStageLayerCommand 발행 → Next 대기(WaitNext). StageLayerView가 컨벤션 로딩해 알파 lerp.
+        // CG 진입/종료 시 뷰가 SetCgModeCommand를 발행해 대사창·캐릭터를 토글(엔진은 관여 안 함).
+
+        IEnumerator PlayStageLayer(ScriptLine line, StageLayerKind kind)
+        {
+            var intent = StageLayerParser.Parse(line.Value);
+            if (!intent.IsValid)
+            {
+                Log.Warn($"[NarrativeController] 잘못된 {kind} 라인 — 건너뜀: \"{line.Value}\"");
+                yield break;
+            }
+
+            float dur = intent.Duration >= 0f ? intent.Duration : ResolveLayerFade(kind);
+            var req = new CompletionHandle();
+            EventBus.Publish(new ShowStageLayerCommand(kind, intent.IsClose, intent.Name, intent.Transition, dur, req));
+            yield return WaitNext(line, () => req.IsComplete);
+        }
+
+        float ResolveLayerFade(StageLayerKind kind)
+        {
+            if (stageLayerTuning == null) return 0.5f;
+            switch (kind)
+            {
+                case StageLayerKind.SD:      return stageLayerTuning.SdFadeDefault;
+                case StageLayerKind.Overlay: return stageLayerTuning.OverlayFadeDefault;
+                default:                     return stageLayerTuning.CgFadeDefault;
+            }
         }
     }
 }

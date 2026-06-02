@@ -36,26 +36,44 @@ namespace LoveAlgo.UI
         public float AutoAdvanceDelay { get => autoAdvanceDelay; set => autoAdvanceDelay = value; }
         public bool AutoMode { get => _auto; set => _auto = value; }
 
-        IDisposable _sub, _autoSub;
+        IDisposable _sub, _autoSub, _cgSub;
         Coroutine _typeRoutine;
         CompletionHandle _active;
         bool _typing;
         bool _skipTyping;
         bool _awaitingClick;
         bool _auto;
+        bool _cgHidden;
         IReadOnlyList<InlinePause> _pauses;
 
         void OnEnable()
         {
             _sub = EventBus.Subscribe<ShowDialogueCommand>(OnShow);
             _autoSub = EventBus.Subscribe<SetAutoModeCommand>(e => _auto = e.On);
+            _cgSub = EventBus.Subscribe<SetCgModeCommand>(OnCgMode);
         }
 
         void OnDisable()
         {
             _sub?.Dispose();
             _autoSub?.Dispose();
-            _sub = _autoSub = null;
+            _cgSub?.Dispose();
+            _sub = _autoSub = _cgSub = null;
+        }
+
+        // CG 컷신 진입 시 대사창을 숨기고 종료 시 복원(ADR-007: CG 뷰가 직접 참조하지 않고 명령으로). 대칭 토글.
+        void OnCgMode(SetCgModeCommand e)
+        {
+            if (root == null) return;
+            if (e.Active)
+            {
+                if (root.activeSelf) { root.SetActive(false); _cgHidden = true; }
+            }
+            else if (_cgHidden)
+            {
+                root.SetActive(true);
+                _cgHidden = false;
+            }
         }
 
         void OnShow(ShowDialogueCommand e)
