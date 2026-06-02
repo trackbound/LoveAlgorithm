@@ -3,7 +3,9 @@
     "rootNamespace": "",
     "references": [
         "LoveAlgo.Core",
-        "LoveAlgo.Data"
+        "LoveAlgo.Data",
+        "Unity.TextMeshPro",
+        "UnityEngine.UI"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

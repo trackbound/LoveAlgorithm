@@ -171,7 +171,7 @@ Main/
 
 ### 3-6. 코드/자산 폴더 구조 (ADR-011)
 코드(휘발)와 자산(보존)을 분리합니다. 구 `Modules/{Module}/{Code,Data,UI,Prefabs}` 자급자족 구조는 폐기되며, 소비처 이식이 끝나는 대로 `_Project/Modules`를 통째 삭제합니다.
-- **코드** = `Assets/_Project/Scripts/{Feature}/` (피처별 asmdef). UI 코드도 `Scripts/UI/`. 이벤트 struct는 `Scripts/Core/Events/`.
+- **코드** = `Assets/_Project/Scripts/{Feature}/` (피처별 asmdef). 범용·크로스도메인 UI(HUD·Popup 인프라)는 `Scripts/UI/`에, 특정 피처 전용 인게임 UI(`ScheduleUI` 등 `*UI`)는 그 피처 asmdef에 둔다 — 도메인+뷰 응집, UI asmdef가 모든 도메인을 참조하는 God화 방지. 이벤트 struct는 `Scripts/Core/Events/`.
 - **프리팹** = `Assets/_Project/Prefabs/{Feature}/` (GUID 보존 이동).
 - **SO `.asset` 인스턴스** = `Assets/Resources/Data/` (Resources.Load 경로 보존).
 - **아트/오디오** = `Assets/_Project/Art`, `Audio` (타입별 중앙화, GUID는 폴더 무관이라 안전).
