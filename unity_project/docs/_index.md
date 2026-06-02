@@ -28,7 +28,7 @@
 | [STORY_COMMANDS.md](file:///c:/Users/chris/GitHub/LoveAlgorithm/unity_project/docs/STORY_COMMANDS.md) | 대사 엔진 내 사용 가능한 커맨드 목록 | v1 | 2026-05-31 |
 | [ASSET_NAMING.md](file:///c:/Users/chris/GitHub/LoveAlgorithm/unity_project/docs/ASSET_NAMING.md) | 아트 및 오디오 에셋 네이밍 룰북 | v1 | 2026-05-31 |
 | [ASSET_REQUESTS.md](file:///c:/Users/chris/GitHub/LoveAlgorithm/unity_project/docs/ASSET_REQUESTS.md) | 리소스 요청 리스트 (아트/사운드) | v1 | 2026-05-31 |
-| [HANDOFF_NOTES.md](file:///c:/Users/chris/GitHub/LoveAlgorithm/unity_project/docs/HANDOFF_NOTES.md) | 씬 바인딩 및 인스펙터 세팅 가이드 (임시 유지) | v1 | 2026-05-31 |
+| [HANDOFF_NOTES.md](file:///c:/Users/chris/GitHub/LoveAlgorithm/unity_project/docs/HANDOFF_NOTES.md) | 씬 바인딩 및 인스펙터 세팅 가이드 (임시 유지) | v1 | 2026-06-02 |
 
 ---
 
