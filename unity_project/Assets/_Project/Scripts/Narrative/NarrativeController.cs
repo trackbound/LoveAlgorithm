@@ -38,10 +38,14 @@ namespace LoveAlgo.Story.StoryEngine
         [Tooltip("흔들기 FX(Stage/Dialogue/Char) 강도·지속·진동 프로파일 동결 SO(ADR-012). 미바인딩 시 폴백 상수 사용.")]
         [SerializeField] ShakeTuningSO shakeTuning;
 
+        [Tooltip("카메라 FX(Zoom/Pan/Reset) 기본 시간 동결 SO(ADR-012). 미바인딩 시 폴백 상수 사용.")]
+        [SerializeField] CameraFxTuningSO cameraTuning;
+
         public GameStateSO State { get => state; set => state = value; }
         public StageTuningSO StageTuning { get => stageTuning; set => stageTuning = value; }
         public ScreenFxTuningSO FxTuning { get => fxTuning; set => fxTuning = value; }
         public ShakeTuningSO ShakeTuning { get => shakeTuning; set => shakeTuning = value; }
+        public CameraFxTuningSO CameraTuning { get => cameraTuning; set => cameraTuning = value; }
 
         /// <summary>현재 스크립트가 재생 중인가(재진입 가드).</summary>
         public bool IsRunning { get; private set; }
@@ -369,7 +373,7 @@ namespace LoveAlgo.Story.StoryEngine
                 yield break;
             }
 
-            // 흔들기(StageShake/DialogueShake/CharShake) 시도.
+            // 흔들기(StageShake/DialogueShake/CharShake/CamShake) 시도.
             var shake = ShakeParser.Parse(line.Value);
             if (shake.IsValid)
             {
@@ -377,7 +381,15 @@ namespace LoveAlgo.Story.StoryEngine
                 yield break;
             }
 
-            // 카메라/Eye/Tint/캐릭터(Jump/Dim/Glitch)/매크로 등 — 이번 슬라이스 미지원.
+            // 카메라(CamZoom/CamPan/CamReset) 시도.
+            var cam = CameraFxParser.Parse(line.Value);
+            if (cam.IsValid)
+            {
+                yield return PlayCamera(line, cam);
+                yield break;
+            }
+
+            // Eye/Tint/캐릭터(Jump/Dim/Glitch)/매크로 등 — 이번 슬라이스 미지원.
             Log.Info($"[NarrativeController] 슬라이스 범위 밖 FX 스킵: \"{line.Value}\"");
         }
 
@@ -433,6 +445,28 @@ namespace LoveAlgo.Story.StoryEngine
                 case ShakeStrength.Weak:   return 10f;
                 case ShakeStrength.Strong: return 50f;
                 default:                   return 25f;
+            }
+        }
+
+        // ── 카메라 FX(M3 슬라이스2: CamZoom/CamPan/CamReset) ──
+        // 순수 CameraFxParser로 종류/배율/오프셋 분해 → 동결 수치(CameraFxTuningSO)로 duration 해석 →
+        // CameraFxCommand 발행 → Next 대기(WaitNext). CameraFxView가 _Stage 콘텐츠 래퍼의 scale/pos를 lerp.
+
+        IEnumerator PlayCamera(ScriptLine line, CameraFxIntent intent)
+        {
+            float dur = intent.Duration >= 0f ? intent.Duration : ResolveCameraDuration(intent.Kind);
+            var req = new CompletionHandle();
+            EventBus.Publish(new CameraFxCommand(intent.Kind, intent.ZoomScale, intent.PanX, intent.PanY, dur, req));
+            yield return WaitNext(line, () => req.IsComplete);
+        }
+
+        float ResolveCameraDuration(CameraFxKind kind)
+        {
+            switch (kind)
+            {
+                case CameraFxKind.Zoom:  return cameraTuning != null ? cameraTuning.ZoomDefault : 0.5f;
+                case CameraFxKind.Pan:   return cameraTuning != null ? cameraTuning.PanDefault : 0.5f;
+                default:                 return cameraTuning != null ? cameraTuning.ResetDefault : 0.4f; // Reset
             }
         }
     }

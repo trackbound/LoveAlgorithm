@@ -1,0 +1,17 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fac341a50fe10f749b0f6e99b2481c85, type: 3}
+  m_Name: CameraFxTuning
+  m_EditorClassIdentifier: LoveAlgo.Narrative::LoveAlgo.Story.CameraFxTuningSO
+  zoomDefault: 0.5
+  panDefault: 0.5
+  resetDefault: 0.4

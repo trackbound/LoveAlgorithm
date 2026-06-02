@@ -44,7 +44,8 @@ namespace LoveAlgo.Story
     ///                   → pos1은 프리셋이면 강도, 숫자면 지속. pos2가 강도(프리셋/숫자).
     ///   Char: <c>CharShake</c> · <c>CharShake:L</c>(슬롯) · <c>CharShake:L:30</c>(슬롯+강도) ·
     ///         <c>CharShake:L:30:0.4</c>(슬롯+강도+지속). 강도는 숫자만(프리셋 없음). 슬롯 생략 시 C.
-    /// 그 외(스크린/카메라/Eye/Tint/매크로) = <see cref="ShakeIntent.Invalid"/>.
+    ///   CamShake: UI 무대엔 월드 카메라가 없으므로 StageShake(콘텐츠 래퍼)와 동일 처리.
+    /// 그 외(스크린/Eye/Tint/매크로) = <see cref="ShakeIntent.Invalid"/>.
     /// </summary>
     public static class ShakeParser
     {
@@ -58,6 +59,7 @@ namespace LoveAlgo.Story
             switch (head)
             {
                 case "stageshake":    return ParseScreenShake(ShakeTarget.Stage, parts);
+                case "camshake":      return ParseScreenShake(ShakeTarget.Stage, parts); // UI 무대엔 카메라 없음 → 스테이지 흔들기
                 case "dialogueshake": return ParseScreenShake(ShakeTarget.Dialogue, parts);
                 case "charshake":     return ParseCharShake(parts);
                 default:              return ShakeIntent.Invalid; // 흔들기 외 FX = 슬라이스 밖

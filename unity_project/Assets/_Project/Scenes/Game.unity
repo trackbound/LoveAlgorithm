@@ -422,8 +422,8 @@ MonoBehaviour:
   demoScript: {fileID: 0}
   inlineDemoCsv: "LineID,Type,Speaker,Value,Next\n,BG,,bg_10_01:Cut,await\n,Char,,Enter:c01:00,await\n,Sound,,SFX:014_Entrance,>\n,Text,,\uB370\uBAA8
     \uB0B4\uB7EC\uD2F0\uBE0C \uC2DC\uC791.,click\n,Text,\uB85C\uC544,\uC548\uB155!
-    \uC798 \uC9C0\uB0C8\uC5B4?,click\n,Char,,Emote:11,>\n,FX,,Flash,>\n,FX,,DialogueShake:Strong,>\n,Sound,,SFX:015_Ding,>\n,Text,\uB85C\uC544,\uC624\uB298
-    \uAE30\uBD84 \uC5B4\uB54C?,click\n,FX,,CharShake:C:25:0.3,await\n,FX,,StageShake:Strong,await\n,Choice,,,>\n,Option,,\uBC18\uAC11\uAC8C
+    \uC798 \uC9C0\uB0C8\uC5B4?,click\n,Char,,Emote:11,>\n,FX,,Flash,>\n,FX,,DialogueShake:Strong,>\n,FX,,CamZoom:1.3:0.4,await\n,Sound,,SFX:015_Ding,>\n,Text,\uB85C\uC544,\uC624\uB298
+    \uAE30\uBD84 \uC5B4\uB54C?,click\n,FX,,CharShake:C:25:0.3,await\n,FX,,StageShake:Strong,await\n,FX,,CamReset,await\n,Choice,,,>\n,Option,,\uBC18\uAC11\uAC8C
     \uC778\uC0AC\uD55C\uB2E4|opt_a|Stat:Soc:2,>\n,Option,,\uADF8\uB0E5 \uC9C0\uB098\uCE5C\uB2E4|opt_b|Money:100,>\nopt_a,Text,\uB85C\uC544,\uC5ED\uC2DC
     \uB108\uBC16\uC5D0 \uC5C6\uC5B4!,click\n,FX,,FadeOut,await\n,Char,,Clear,>\n,Flow,,End,>\nopt_b,Text,,\uC5B4\uC0C9\uD558\uAC8C
     \uC9C0\uB098\uCCE4\uB2E4.,click\n,FX,,FadeOut,await\n,Char,,Clear,>\n"
@@ -869,6 +869,7 @@ MonoBehaviour:
   stageTuning: {fileID: 11400000, guid: 29c91222fa18502448a69a840ec23dd9, type: 2}
   fxTuning: {fileID: 11400000, guid: bb4f9e4a110a1c54591e35a5be7d1d0d, type: 2}
   shakeTuning: {fileID: 11400000, guid: cf28fef389ed02542bd0ef948f1c055c, type: 2}
+  cameraTuning: {fileID: 11400000, guid: e6e7687ffda7f1d4693fb39c126a50e9, type: 2}
 --- !u!1 &144959709
 GameObject:
   m_ObjectHideFlags: 0
@@ -6451,6 +6452,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2012340436}
   - component: {fileID: 2012340437}
+  - component: {fileID: 2012340438}
   m_Layer: 0
   m_Name: Content
   m_TagString: Untagged
@@ -6496,6 +6498,19 @@ MonoBehaviour:
   slotL: {fileID: 0}
   slotC: {fileID: 0}
   slotR: {fileID: 0}
+--- !u!114 &2012340438
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2012340435}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0afe09cf92cbcc047b20f912f124c881, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: LoveAlgo.UI::LoveAlgo.UI.CameraFxView
+  body: {fileID: 2012340436}
 --- !u!1 &2024018630
 GameObject:
   m_ObjectHideFlags: 0

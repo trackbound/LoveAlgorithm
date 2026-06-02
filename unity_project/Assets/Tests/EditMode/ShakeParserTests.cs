@@ -97,10 +97,20 @@ namespace LoveAlgo.Tests.Editor
         }
 
         [Test]
+        public void CamShake_Maps_To_Stage()
+        {
+            // UI 무대엔 월드 카메라가 없으므로 CamShake = StageShake(콘텐츠 래퍼).
+            var s = ShakeParser.Parse("CamShake:Strong");
+            Assert.IsTrue(s.IsValid);
+            Assert.AreEqual(ShakeTarget.Stage, s.Target);
+            Assert.AreEqual(ShakeStrength.Strong, s.Preset);
+        }
+
+        [Test]
         public void NonShake_Fx_Is_Invalid()
         {
             Assert.IsFalse(ShakeParser.Parse("FadeOut").IsValid);
-            Assert.IsFalse(ShakeParser.Parse("CamShake:0.3").IsValid); // 카메라는 흔들기 외(다음 슬라이스)
+            Assert.IsFalse(ShakeParser.Parse("CamZoom:1.5").IsValid); // 카메라 줌/팬은 CameraFxParser 소관
             Assert.IsFalse(ShakeParser.Parse("ColorTint:red").IsValid);
             Assert.IsFalse(ShakeParser.Parse("").IsValid);
             Assert.IsFalse(ShakeParser.Parse(null).IsValid);
