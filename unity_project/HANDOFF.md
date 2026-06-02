@@ -151,6 +151,8 @@
   - **ScheduleController**: Execute 후 `result.MoneyDelta != 0`이면 `MoneyChangedEvent(state.Money)` 발행(커밋된 어댑터에 1줄 추가, 기존 이벤트셋 영향 없음).
   - **HudFormat.Money(long)**: "₩1,234"/"-₩500"(MoneyFormat은 int 전용이라 long 직접 포맷). **HudView**에 `moneyText` 필드 + MoneyChangedEvent 구독 추가.
   - **작동 증거**: 컴파일 0에러 + EditMode **123/123**(121+2: Money 포맷·ScheduleController MoneyChanged 발행) + PlayMode **7/7**(회귀 없음).
+- ✅ **서드파티 cruft 정리 커밋됨**: `_ThirdParty/DOTween/DOTweenPro Examples/`(벤더 데모 씬 3 + lighting + 로고, 빌드 미포함) 삭제(16파일). DOTween 코어·`TextMeshPro/` 필수 에셋은 보존. 컴파일 0에러, 빌드 씬(Main.unity) 무변경.
+  - **참고**: 이건 빌드/임포트 경량화·씬목록 정리지 `execute_code` 한계(원인 B) 해결책 아님(그건 어셈블리/DLL 수 문제). execute_code 검증은 계속 PlayMode 테스트로 대체.
 - ▶️ **다음 착수(다음 세션)**: 감독이 다음 마일스톤 선택. 남은 연결고리:
   - **`DayChangedEvent`/`EnteredEndingEvent` 구독자**: HUD·페이즈 UI(M5 UI), 엔딩 화면(M5).
   - **GameManager 잔여 seam 채우기**: 저녁이벤트(M3 내러티브 이식 후)·페이드(M5 UI)·페이즈전환(GamePhase). ~~오토세이브~~=Save 슬라이스에서 완료. 부팅 와이어링(GameStateSO를 ScheduleController/SaveManager.State 등에 주입)도 GameManager 소관(후속).
