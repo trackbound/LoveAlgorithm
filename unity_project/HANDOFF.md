@@ -52,8 +52,9 @@
 
 ## 📍 현재 상태 (한눈에)
 
-**엔드투엔드 시뮬레이션 루프가 섰다** — 골격(4매니저+순수/공식층+슬라이스1) 위에 실 게임 씬 `Assets/_Project/Scenes/Game.unity`가 신 매니저들로 돈다: 부팅→스케줄 선택(실 UI)→행동 소진→하루 전환→오토세이브→반복→30일 엔딩. 각 슬라이스 EventBus+SO 패턴, 항상 컴파일, EditMode+PlayMode 테스트 통과. **현재 EditMode 150 / PlayMode 16 그린, 컴파일 0에러.** (슬라이스별 상세 = git log.)
+**엔드투엔드 시뮬레이션 루프가 섰다** — 골격(4매니저+순수/공식층+슬라이스1) 위에 실 게임 씬 `Assets/_Project/Scenes/Game.unity`가 신 매니저들로 돈다: 부팅→스케줄 선택(실 UI)→행동 소진→하루 전환→오토세이브→반복→30일 엔딩. 각 슬라이스 EventBus+SO 패턴, 항상 컴파일, EditMode+PlayMode 테스트 통과. **현재 EditMode 166 / PlayMode 21 그린, 컴파일 0에러.** (슬라이스별 상세 = git log.)
 **+ M3 내러티브 런타임 슬라이스1(대사+선택지) 코드+씬 배선 완성** — CSV를 받아 대사 표시→선택지→효과→점프→종료까지 코루틴으로 구동(아래 표). `Game.unity`에 실제 배치됨(아래 ⚠️ 씬 구조).
+**+ M3 슬라이스2 스테이지 BG+Char 런타임 — 코드+테스트 완성(커밋 b967218), 씬 배선 미완.** 순수 StageInterpreter(BG/Char Value→인텐트) + StageEvents(enum/intent/StageRequest 완료핸들/Show*Command, Core) + StageTuningSO(동결 수치 Definition, `Resources/Data/StageTuning.asset`) + StageView(UI, 코루틴 lerp BG 크로스페이드/Cut/Fade·Char 슬롯 L/C/R 페이드, 컨벤션 로딩 `BG/{name}`·`Characters/{id}_{emote}`, NarrativeFinished→ClearAll) + NarrativeController BG/Char 케이스(파싱→duration해석→발행→Next대기). EditMode+5·PlayMode+5 그린. **남은 것**(다음 별 커밋): `Game.unity`에 `_Stage` 캔버스(별도 Screen Space, `_UI`보다 낮은 sortingOrder) 배선 — BG front/back Image+CanvasGroup·슬롯3 Image+CanvasGroup·StageView 부착+바인딩, NarrativeController.stageTuning=StageTuning.asset 연결, NarrativeDevTrigger 데모 CSV에 BG/Char 라인 추가. ⚠️ StageView의 중첩 SlotBinding(image+group) 참조는 인스펙터 드래그가 편함(MCP set_property로 중첩 ref 취약). 슬롯 위치/크기 레이아웃은 감독 Play 튜닝.
 
 | 영역 | 상태 | asmdef |
 |---|---|---|
@@ -98,9 +99,9 @@
 
 ## ▶️ 다음 액션
 
-이번 세션 **시뮬레이션 루프 엔드투엔드 완성**(구 #2 "부팅 씬 조립" 달성) + **아키텍처 문서 동기화**(ADR-007/011: dev_guide·CLAUDE.md의 Service Locator/Modules 잔재 제거). 감독이 다음 방향 택1:
+이번 세션 **M3 슬라이스2 스테이지 BG+Char 첫 서브슬라이스 — 코드+테스트 완성**(커밋 b967218, EditMode 166/PlayMode 21 그린). 렌더링 구조 결정: **별도 `_Stage` 캔버스(UI Image, `_UI`보다 낮은 sortingOrder)** — 구 UI-Image 동작·동결 px 수치 재사용 + 캔버스 rebuild 격리(ADR-004), SpriteRenderer 카메라/정렬레이어 신설 회피(감독 결정). 감독이 다음 방향 택1:
 
-1. **M3 슬라이스2** — 스테이지(Char/BG/CG/SD/Overlay)·FX·사운드·오토모드·인라인태그(`<emote>`/`<wait>`)·점프페이드/스테이지합성/로그복원·선택지 조건·이력·LockScreen 계열 Flow. 스테이지는 World Space 캔버스 또는 SpriteRenderer(sorting layer)로 대사 UI 뒤에(슬라이스1에서 캔버스 1개만 둔 이유). **실 트리거**: dev 버튼(NarrativeDevTrigger)을 이벤트→스크립트 매핑으로 대체 — 스토리 데이터(엔진 포맷 CSV) 필요(현재 기획 CSV만).
+1. **M3 슬라이스2 — 스테이지 씬 배선(즉시 후속)**: `Game.unity`에 `_Stage` 캔버스 + StageView 배선 + 데모 CSV BG/Char(HANDOFF 현재상태 末 참조, 🔴 씬 흐름). **그 다음 서브슬라이스**: FX(카메라/스크린)·Sound(BGM/SFX)·오토모드·인라인태그(`<emote>`/`<wait>`)·CG/SD/Overlay(로아 모드)·점프페이드·선택지 조건/이력·LockScreen 계열 Flow. **실 트리거**: dev 버튼(NarrativeDevTrigger)을 이벤트→스크립트 매핑으로 대체 — 스토리 데이터(엔진 포맷 CSV) 필요(현재 기획 CSV만). 별칭/카탈로그(한글명→ID, Default→코드)는 컨벤션 로딩에서 승격 필요.
 2. **화면 페이즈 상태머신**(🔴, 스펙=ADR-013) — Title↔Story↔Schedule↔Ending 전환을 단일 `PhaseController`로 일원화(현재 NarrativeController가 ShowUiGroupCommand 직접 토글). GamePhase enum(State SO) + 순수 PhaseService(FSM) + 의도 발행(RequestPhaseCommand). LockScreen은 Phase 아닌 Overlay(완료-핸들 복귀). 슬라이스2의 LockScreen/페이즈전환이 이 결정에 의존하므로 그 전에 구현 권장. 구현 시 확정: UIGroup↔GamePhase 매핑·씬 경계·Overlay 목록(ADR-013 末).
 3. **시뮬레이션 루프 심화** — 카테고리 탭 UI 배선(현재 슬롯 동적생성만, 탭 버튼 미연결) / HUD·슬롯 시각 레이아웃 / 엔딩 결과 디테일(최고 호감도 등) / **Shop SessionBuff 복합효과 SO 데이터 보강**(코드 완성, ItemCatalog.asset에 SubEffect 부재 = 🟢 데이터). *(페이즈전환은 #2로 분리.)*
 4. **Shop Gift 인벤토리(🔴 세이브 스키마)** — 선물 보관/소비. 단 소비처=내러티브 Event2/3라 M3 이후가 자연스럽다(지금은 죽은 코드).
