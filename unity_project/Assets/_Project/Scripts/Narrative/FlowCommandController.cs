@@ -13,9 +13,9 @@ namespace LoveAlgo.Story.StoryEngine.Flow
     ///
     /// slice2에서 "발행 연기"했던 부분의 런타임 호출자 — 이후 ScriptEngine 이식 시 엔진이 Flow 라인을
     /// <see cref="FlowCommandRequestedEvent"/>로 흘려보내면 그대로 동작한다. 제어흐름 Flow(Jump/If 등)는 범위 밖.
-    /// 씬 하이어라키: _Managers/FlowCommandRouter, 인스펙터에서 <see cref="state"/> 바인딩.
+    /// 씬 하이어라키: _Managers/FlowCommandController, 인스펙터에서 <see cref="state"/> 바인딩.
     /// </summary>
-    public class FlowCommandRouter : MonoBehaviour
+    public class FlowCommandController : MonoBehaviour
     {
         [Tooltip("단일 런타임 상태 SO. Flow 명령 적용 대상.")]
         [SerializeField] GameStateSO state;
@@ -41,7 +41,7 @@ namespace LoveAlgo.Story.StoryEngine.Flow
         {
             if (state == null)
             {
-                Debug.LogError("[FlowCommandRouter] state(GameStateSO) 미바인딩 — Flow 명령 처리 불가.");
+                Debug.LogError("[FlowCommandController] state(GameStateSO) 미바인딩 — Flow 명령 처리 불가.");
                 return;
             }
 
@@ -50,7 +50,7 @@ namespace LoveAlgo.Story.StoryEngine.Flow
 
             if (!r.Ok)
             {
-                Debug.LogWarning($"[FlowCommandRouter] Flow 실패: \"{e.Command}\" — {r.Error}");
+                Debug.LogWarning($"[FlowCommandController] Flow 실패: \"{e.Command}\" — {r.Error}");
                 return;
             }
 

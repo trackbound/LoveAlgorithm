@@ -8,7 +8,7 @@ namespace LoveAlgo.Events
     public enum UIGroup
     {
         Narrative,    // DialogueUI, ChoicePopup 등
-        Simulation,   // ScheduleUI, ShopUI, QuickMenu 등
+        Simulation,   // ScheduleView, ShopUI, QuickMenu 등
         Title         // TitlePanel, UsernameUI 등 진입 화면
     }
 

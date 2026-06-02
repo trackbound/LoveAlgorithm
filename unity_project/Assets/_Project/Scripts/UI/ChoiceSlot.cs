@@ -9,7 +9,7 @@ namespace LoveAlgo.UI
     /// 선택지 1개 버튼(리스트 항목). 라벨을 표시하고, 클릭 시 바인딩된 인덱스를 콜백으로 통지한다
     /// (상태 변경 없음 — ADR-007). 구조는 Schedule의 ScheduleSlot 미러. <see cref="ChoiceView"/>가 동적 생성.
     /// </summary>
-    public class ChoiceOptionSlot : MonoBehaviour
+    public class ChoiceSlot : MonoBehaviour
     {
         [SerializeField] Button button;
         [SerializeField] TMP_Text labelText;

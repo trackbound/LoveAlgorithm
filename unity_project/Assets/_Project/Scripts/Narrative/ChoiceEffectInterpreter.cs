@@ -5,13 +5,13 @@ namespace LoveAlgo.Story
 {
     /// <summary>
     /// 선택지 효과 문자열을 해석해 <see cref="GameStateSO"/>에 적용하는 순수 함수(EventBus 무관, EditMode 테스트).
-    /// 구 <c>ChoicePopup.ApplyEffect</c>의 결정 로직을 1:1 이식하되, 통지/명령 발행은 어댑터(NarrativePlayer) 몫이라
+    /// 구 <c>ChoicePopup.ApplyEffect</c>의 결정 로직을 1:1 이식하되, 통지/명령 발행은 어댑터(NarrativeController) 몫이라
     /// <see cref="ChoiceEffectResult"/>로 "무엇을 발행해야 하는지"를 돌려준다(FlowCommandInterpreter와 동일한 패턴).
     ///
     /// 적용 경계:
     /// - <c>Stat</c>/<c>Flag</c>/<c>Money</c>: 여기서 즉시 gs에 적용(결정적 상태 변경) + 통지용 변경내역 수집.
     /// - <c>Love</c>: gs에 직접 쓰지 않고 <c>Affinity:Point:Id:Dialogue:N</c> Flow 명령으로 위임한다.
-    ///   호감도 정본은 AffinityFormula(heroinePoints) 한 곳뿐이며, FlowCommandRouter가 적용+SyncToGameState+통지를
+    ///   호감도 정본은 AffinityFormula(heroinePoints) 한 곳뿐이며, FlowCommandController가 적용+SyncToGameState+통지를
     ///   책임지기 때문(감독 결정: 신 카테고리 시스템 단일화). 구처럼 lovePoints에 직접 가산하지 않는다.
     /// - <c>SFX</c>: 재생 명령 이름만 수집(어댑터가 PlaySfxCommand 발행).
     /// </summary>

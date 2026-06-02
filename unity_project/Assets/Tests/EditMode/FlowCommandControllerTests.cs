@@ -6,16 +6,16 @@ using LoveAlgo.Core;     // GameStateSO
 using LoveAlgo.Common;   // EventBus
 using LoveAlgo.Events;   // FlowCommandRequestedEvent, AffinityChangedEvent, DayChangedEvent
 using LoveAlgo.Affinity; // AffinityFormula
-using LoveAlgo.Story.StoryEngine.Flow; // FlowCommandRouter
+using LoveAlgo.Story.StoryEngine.Flow; // FlowCommandController
 
 namespace LoveAlgo.Tests.Editor
 {
     /// <summary>
-    /// M3 slice3 검증: <see cref="FlowCommandRouter"/>(순수 인터프리터의 EventBus 어댑터)가 명령 종류에 따라
+    /// M3 slice3 검증: <see cref="FlowCommandController"/>(순수 인터프리터의 EventBus 어댑터)가 명령 종류에 따라
     /// AffinityChangedEvent / DayChangedEvent를 정확히 발행하는지, 실패/미바인딩 가드를 확인한다.
     /// </summary>
     [TestFixture]
-    public class FlowCommandRouterTests
+    public class FlowCommandControllerTests
     {
         [SetUp]
         public void Reset() => AffinityFormula.ResetToFallback();
@@ -27,10 +27,10 @@ namespace LoveAlgo.Tests.Editor
             return so;
         }
 
-        static FlowCommandRouter MakeRouter(GameStateSO state, out GameObject go)
+        static FlowCommandController MakeRouter(GameStateSO state, out GameObject go)
         {
-            go = new GameObject("FlowCommandRouter_Test");
-            var r = go.AddComponent<FlowCommandRouter>();
+            go = new GameObject("FlowCommandController_Test");
+            var r = go.AddComponent<FlowCommandController>();
             r.State = state;
             return r;
         }
@@ -117,9 +117,9 @@ namespace LoveAlgo.Tests.Editor
             var sub = EventBus.Subscribe<AffinityChangedEvent>(e => any = true);
             try
             {
-                go = new GameObject("FlowCommandRouter_NullState");
-                var r = go.AddComponent<FlowCommandRouter>();
-                LogAssert.Expect(LogType.Error, new Regex("FlowCommandRouter.*미바인딩"));
+                go = new GameObject("FlowCommandController_NullState");
+                var r = go.AddComponent<FlowCommandController>();
+                LogAssert.Expect(LogType.Error, new Regex("FlowCommandController.*미바인딩"));
 
                 r.OnFlowRequested(new FlowCommandRequestedEvent("Affinity:Point:HaYeEun:Gift:1"));
 

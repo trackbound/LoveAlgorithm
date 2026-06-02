@@ -11,7 +11,7 @@ namespace LoveAlgo.Story.StoryEngine
     /// <summary>
     /// 내러티브 런타임 엔진의 EventBus 어댑터(M3 슬라이스1: 대사+선택지). 구 ScriptRunner/ScriptEngine의
     /// 거대한 디스패치를 결정 로직(순수 ScriptCursor/ChoiceParser/ChoiceEffectInterpreter)과 분리하고,
-    /// 여기선 코루틴 진행 + UI 명령 발행 + 완료 핸들 대기만 한다(ADR-007, FlowCommandRouter 패턴 미러).
+    /// 여기선 코루틴 진행 + UI 명령 발행 + 완료 핸들 대기만 한다(ADR-007, FlowCommandController 패턴 미러).
     ///
     /// 흐름: <see cref="PlayScriptCommand"/> 구독 → 파싱 → <c>ShowUiGroupCommand(Narrative)</c> → 라인 루프
     /// (Text=대사 명령+핸들 대기, Choice=선택지 명령+효과/점프, Flow=Jump/End 직접·Affinity/Day는 Router로 위임)
@@ -19,9 +19,9 @@ namespace LoveAlgo.Story.StoryEngine
     ///
     /// 슬라이스 범위 밖(스킵+로그): Char/BG/CG/SD/Overlay/Sound/FX/Place, 인라인 태그, 오토모드,
     /// 점프 페이드/스테이지 합성/로그 복원, 선택지 조건 필터링, Flow의 Save/Schedule/Username/LockScreen 등.
-    /// 씬 하이어라키: _Managers/NarrativePlayer, 인스펙터에서 <see cref="state"/> 바인딩(선택지 효과 적용 대상).
+    /// 씬 하이어라키: _Managers/NarrativeController, 인스펙터에서 <see cref="state"/> 바인딩(선택지 효과 적용 대상).
     /// </summary>
-    public class NarrativePlayer : MonoBehaviour
+    public class NarrativeController : MonoBehaviour
     {
         [Tooltip("선택지 효과(Stat/Money) 적용 대상 런타임 상태. 인스펙터/부팅 주입.")]
         [SerializeField] GameStateSO state;
@@ -48,7 +48,7 @@ namespace LoveAlgo.Story.StoryEngine
         {
             if (IsRunning)
             {
-                Log.Warn("[NarrativePlayer] 이미 스크립트 재생 중 — 새 PlayScriptCommand 무시.");
+                Log.Warn("[NarrativeController] 이미 스크립트 재생 중 — 새 PlayScriptCommand 무시.");
                 return;
             }
 
@@ -58,7 +58,7 @@ namespace LoveAlgo.Story.StoryEngine
 
             if (lines == null || lines.Count == 0)
             {
-                Log.Warn($"[NarrativePlayer] 빈 스크립트 — 재생 생략 (name='{cmd.Name}').");
+                Log.Warn($"[NarrativeController] 빈 스크립트 — 재생 생략 (name='{cmd.Name}').");
                 return;
             }
 
@@ -97,7 +97,7 @@ namespace LoveAlgo.Story.StoryEngine
 
                     default:
                         // Char/BG/CG/SD/Overlay/Sound/FX/Place/Option(미아) — 이번 슬라이스 미지원, 건너뜀.
-                        Log.Info($"[NarrativePlayer] 슬라이스 범위 밖 라인 스킵: {line}");
+                        Log.Info($"[NarrativeController] 슬라이스 범위 밖 라인 스킵: {line}");
                         cursor.MoveNext();
                         break;
                 }
@@ -133,7 +133,7 @@ namespace LoveAlgo.Story.StoryEngine
             var optionValues = cursor.PeekOptionValues();
             if (optionValues.Count == 0)
             {
-                Log.Warn("[NarrativePlayer] Choice 라인에 Option이 없습니다 — 건너뜀.");
+                Log.Warn("[NarrativeController] Choice 라인에 Option이 없습니다 — 건너뜀.");
                 yield break;
             }
 
@@ -155,7 +155,7 @@ namespace LoveAlgo.Story.StoryEngine
                 if (cursor.TryJump(chosen.JumpTarget))
                     _lastChoiceJumped = true;
                 else
-                    Debug.LogError($"[NarrativePlayer] 점프 대상 '{chosen.JumpTarget}'을 찾을 수 없습니다.");
+                    Debug.LogError($"[NarrativeController] 점프 대상 '{chosen.JumpTarget}'을 찾을 수 없습니다.");
             }
         }
 
@@ -164,7 +164,7 @@ namespace LoveAlgo.Story.StoryEngine
             if (state == null)
             {
                 if (effects != null && effects.Count > 0)
-                    Debug.LogError("[NarrativePlayer] state(GameStateSO) 미바인딩 — 선택지 효과 적용 불가.");
+                    Debug.LogError("[NarrativeController] state(GameStateSO) 미바인딩 — 선택지 효과 적용 불가.");
                 return;
             }
 
@@ -176,7 +176,7 @@ namespace LoveAlgo.Story.StoryEngine
             if (r.MoneyChanged)
                 EventBus.Publish(new MoneyChangedEvent(r.NewMoney));
 
-            // 호감도는 Flow 명령으로 위임 — FlowCommandRouter가 적용 + AffinityChangedEvent 발행.
+            // 호감도는 Flow 명령으로 위임 — FlowCommandController가 적용 + AffinityChangedEvent 발행.
             foreach (var cmd in r.FlowCommands)
                 EventBus.Publish(new FlowCommandRequestedEvent(cmd));
 
@@ -195,7 +195,7 @@ namespace LoveAlgo.Story.StoryEngine
             {
                 string target = ci >= 0 ? value.Substring(ci + 1).Trim() : "";
                 if (cursor.TryJump(target)) return true;
-                Debug.LogError($"[NarrativePlayer] Flow Jump 대상 '{target}'을 찾을 수 없습니다.");
+                Debug.LogError($"[NarrativeController] Flow Jump 대상 '{target}'을 찾을 수 없습니다.");
                 return false;
             }
 
@@ -208,13 +208,13 @@ namespace LoveAlgo.Story.StoryEngine
             if (string.Equals(head, "Affinity", StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(head, "Day", StringComparison.OrdinalIgnoreCase))
             {
-                // 순수 FlowCommandInterpreter의 어댑터(FlowCommandRouter)가 적용 + 통지.
+                // 순수 FlowCommandInterpreter의 어댑터(FlowCommandController)가 적용 + 통지.
                 EventBus.Publish(new FlowCommandRequestedEvent(value));
                 return false;
             }
 
             // Save/Schedule/Username/LockScreen/Message/MiniGame/LoadingScene/If/Mark 등 — 이번 슬라이스 미지원.
-            Log.Info($"[NarrativePlayer] 슬라이스 범위 밖 Flow 스킵: \"{value}\"");
+            Log.Info($"[NarrativeController] 슬라이스 범위 밖 Flow 스킵: \"{value}\"");
             return false;
         }
     }

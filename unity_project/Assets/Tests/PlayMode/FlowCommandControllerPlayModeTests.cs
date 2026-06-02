@@ -6,15 +6,15 @@ using LoveAlgo.Core;     // GameStateSO
 using LoveAlgo.Common;   // EventBus
 using LoveAlgo.Events;   // FlowCommandRequestedEvent, AffinityChangedEvent
 using LoveAlgo.Affinity; // AffinityFormula
-using LoveAlgo.Story.StoryEngine.Flow; // FlowCommandRouter
+using LoveAlgo.Story.StoryEngine.Flow; // FlowCommandController
 
 namespace LoveAlgo.Tests.PlayMode
 {
     /// <summary>
-    /// M3 slice3 PlayMode 검증: FlowCommandRouter의 OnEnable 구독 경로 — 실제 런타임에서
+    /// M3 slice3 PlayMode 검증: FlowCommandController의 OnEnable 구독 경로 — 실제 런타임에서
     /// FlowCommandRequestedEvent 발행 → 순수 인터프리터 적용 → AffinityChangedEvent 통지.
     /// </summary>
-    public class FlowCommandRouterPlayModeTests
+    public class FlowCommandControllerPlayModeTests
     {
         [UnityTest]
         public IEnumerator OnEnable_Subscribes_So_FlowRequested_Publishes_AffinityChanged()
@@ -25,7 +25,7 @@ namespace LoveAlgo.Tests.PlayMode
             so.ResetRuntime();
 
             var go = new GameObject("FlowRouter_PlayTest");
-            var router = go.AddComponent<FlowCommandRouter>(); // OnEnable → 구독
+            var router = go.AddComponent<FlowCommandController>(); // OnEnable → 구독
             router.State = so;
 
             bool fired = false;

@@ -9,20 +9,20 @@ namespace LoveAlgo.UI
     /// <summary>
     /// 선택지 표시 뷰(*View). <see cref="ShowChoiceCommand"/>를 구독해 옵션 라벨마다 버튼을 동적 생성하고,
     /// 클릭 시 완료 핸들(<see cref="ChoiceRequest"/>)에 선택 인덱스를 채운다(ADR-007: 표시만, 해석은 엔진).
-    /// 구조는 Schedule의 ScheduleUI 미러 — 슬롯 prefab 동적 생성. 효과/점프는 NarrativePlayer가 처리한다.
+    /// 구조는 Schedule의 ScheduleView 미러 — 슬롯 prefab 동적 생성. 효과/점프는 NarrativeController가 처리한다.
     /// </summary>
     public class ChoiceView : MonoBehaviour
     {
         [Tooltip("선택지 비주얼 루트(선택). 표시 중에만 활성, 선택 후 숨김.")]
         [SerializeField] GameObject root;
         [SerializeField] Transform slotContainer;
-        [SerializeField] ChoiceOptionSlot slotPrefab;
+        [SerializeField] ChoiceSlot slotPrefab;
 
         public GameObject Root { get => root; set => root = value; }
         public Transform SlotContainer { get => slotContainer; set => slotContainer = value; }
-        public ChoiceOptionSlot SlotPrefab { get => slotPrefab; set => slotPrefab = value; }
+        public ChoiceSlot SlotPrefab { get => slotPrefab; set => slotPrefab = value; }
 
-        readonly List<ChoiceOptionSlot> _spawned = new();
+        readonly List<ChoiceSlot> _spawned = new();
         IDisposable _sub;
         ChoiceRequest _active;
 

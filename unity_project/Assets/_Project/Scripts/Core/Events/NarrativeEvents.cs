@@ -4,7 +4,7 @@ using UnityEngine; // TextAsset
 namespace LoveAlgo.Events
 {
     // ── 내러티브 런타임 명령/통지 이벤트(M3 슬라이스1: 대사+선택지) ──
-    // 엔진(NarrativePlayer)이 UI에 "무엇을 보여라"만 명령하고, 구체 UI(DialogueView/ChoiceView)가 구독해
+    // 엔진(NarrativeController)이 UI에 "무엇을 보여라"만 명령하고, 구체 UI(DialogueView/ChoiceView)가 구독해
     // 표시한다(ADR-007: Service Locator·UI 직접참조 없음). 클릭/선택 결과는 완료 핸들(아래 *Request)에
     // 실어 되돌린다 — HANDOFF의 "완료-이벤트(완료 핸들 실은 이벤트)" 패턴. 핸들은 참조형 클래스라
     // readonly struct 이벤트에 안전하게 실린다. Core asmdef에 두는 이유: 발행자(Narrative)와 구독자(UI)가
@@ -33,7 +33,7 @@ namespace LoveAlgo.Events
 
     /// <summary>
     /// 스토리 스크립트 재생 시작 명령. <see cref="InlineCsv"/>가 있으면 그것을, 없으면 <see cref="Script"/>를
-    /// 파싱해 재생한다(테스트는 InlineCsv로 주입). <c>NarrativePlayer</c>가 구독.
+    /// 파싱해 재생한다(테스트는 InlineCsv로 주입). <c>NarrativeController</c>가 구독.
     /// </summary>
     public readonly struct PlayScriptCommand
     {
@@ -78,7 +78,7 @@ namespace LoveAlgo.Events
 
     /// <summary>
     /// 선택지 표시 명령. <see cref="OptionTexts"/> 순서대로 버튼을 만들고, 클릭 시 핸들에 인덱스를 채운다.
-    /// 효과/점프 해석은 엔진(NarrativePlayer) 몫 — 뷰는 라벨 표시와 선택 인덱스 회수만 한다.
+    /// 효과/점프 해석은 엔진(NarrativeController) 몫 — 뷰는 라벨 표시와 선택 인덱스 회수만 한다.
     /// </summary>
     public readonly struct ShowChoiceCommand
     {

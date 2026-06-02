@@ -9,7 +9,7 @@ namespace LoveAlgo.Schedule
     /// 슬롯 클릭을 받아 ScheduleSelectedCommand를 발행한다(얇은 뷰 — 로직은 ScheduleController/Service).
     /// 표시 메타데이터는 ScheduleTable, 슬롯 인스턴스는 slotPrefab으로 동적 생성.
     /// </summary>
-    public class ScheduleUI : MonoBehaviour
+    public class ScheduleView : MonoBehaviour
     {
         [SerializeField] Transform slotContainer;
         [SerializeField] ScheduleSlot slotPrefab;

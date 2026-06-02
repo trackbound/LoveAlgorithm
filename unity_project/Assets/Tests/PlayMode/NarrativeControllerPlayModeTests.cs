@@ -8,17 +8,17 @@ using LoveAlgo.Common;                 // EventBus
 using LoveAlgo.Core;                   // GameStateSO
 using LoveAlgo.Events;                 // 내러티브/UI/Affinity 이벤트
 using LoveAlgo.Affinity;               // AffinityFormula (결정적 폴백)
-using LoveAlgo.Story.StoryEngine;      // NarrativePlayer
-using LoveAlgo.Story.StoryEngine.Flow; // FlowCommandRouter
+using LoveAlgo.Story.StoryEngine;      // NarrativeController
+using LoveAlgo.Story.StoryEngine.Flow; // FlowCommandController
 
 namespace LoveAlgo.Tests.PlayMode
 {
     /// <summary>
-    /// M3 slice1 엔드투엔드: <see cref="NarrativePlayer"/>가 CSV를 받아 대사→선택지→효과→점프→종료까지
+    /// M3 slice1 엔드투엔드: <see cref="NarrativeController"/>가 CSV를 받아 대사→선택지→효과→점프→종료까지
     /// 코루틴으로 구동하는지. 뷰 없이 명령 이벤트를 구독해 완료 핸들을 즉시 채우는 방식으로 결정적으로 검증한다
-    /// (대사=Complete, 선택지=Select). 호감도는 같은 state에 붙인 FlowCommandRouter가 실제 적용한다.
+    /// (대사=Complete, 선택지=Select). 호감도는 같은 state에 붙인 FlowCommandController가 실제 적용한다.
     /// </summary>
-    public class NarrativePlayerPlayModeTests
+    public class NarrativeControllerPlayModeTests
     {
         const string Csv =
             "LineID,Type,Speaker,Value,Next\n" +
@@ -44,8 +44,16 @@ namespace LoveAlgo.Tests.PlayMode
         bool _finished;
         string _finishedName;
 
-        NarrativePlayer SetUp(int selectIndex)
+        NarrativeController SetUp(int selectIndex)
         {
+            // 격리: GameScene 테스트가 Game.unity를 Single 로드한 채 언로드하지 않아, 그 씬의
+            // NarrativeController/FlowCommandController가 남아 있을 수 있다. 남으면 PlayScriptCommand/
+            // FlowCommandRequestedEvent를 중복 처리(대사 2배·호감도 2배)하므로 먼저 제거한다.
+            foreach (var p in UnityEngine.Object.FindObjectsByType<NarrativeController>(FindObjectsSortMode.None))
+                UnityEngine.Object.DestroyImmediate(p.gameObject);
+            foreach (var r in UnityEngine.Object.FindObjectsByType<FlowCommandController>(FindObjectsSortMode.None))
+                UnityEngine.Object.DestroyImmediate(r.gameObject);
+
             // NUnit은 픽스처 인스턴스를 테스트 간 공유한다 — 캡처 상태를 매 테스트 초기화(누수 방지).
             _dialogues.Clear();
             _groups.Clear();
@@ -68,10 +76,10 @@ namespace LoveAlgo.Tests.PlayMode
             _subs.Add(EventBus.Subscribe<NarrativeFinishedEvent>(e => { _finished = true; _finishedName = e.ScriptName; }));
 
             _routerGo = new GameObject("Router");
-            _routerGo.AddComponent<FlowCommandRouter>().State = _gs;
+            _routerGo.AddComponent<FlowCommandController>().State = _gs;
 
             _playerGo = new GameObject("Player");
-            var player = _playerGo.AddComponent<NarrativePlayer>();
+            var player = _playerGo.AddComponent<NarrativeController>();
             player.State = _gs;
             return player;
         }
@@ -86,7 +94,7 @@ namespace LoveAlgo.Tests.PlayMode
             if (_gs != null) UnityEngine.Object.DestroyImmediate(_gs);
         }
 
-        static IEnumerator WaitUntilDone(NarrativePlayer player)
+        static IEnumerator WaitUntilDone(NarrativeController player)
         {
             int guard = 0;
             while (player.IsRunning && guard++ < 600) yield return null;

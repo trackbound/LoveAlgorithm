@@ -5,7 +5,7 @@ namespace LoveAlgo.Story
     /// <summary>
     /// 스크립트 라인 진행 커서(순수, EventBus·UnityEngine 비의존 — EditMode 테스트). 현재 인덱스 보유 +
     /// LineID 점프 + Choice 블록(뒤따르는 Option 라인) 조회/건너뛰기를 캡슐화한다. 구 ScriptRunner의
-    /// currentIndex/lineIndex/collectOptions 책임을 결정 로직만 추려낸 것 — 비동기/연출은 어댑터(NarrativePlayer) 몫.
+    /// currentIndex/lineIndex/collectOptions 책임을 결정 로직만 추려낸 것 — 비동기/연출은 어댑터(NarrativeController) 몫.
     /// </summary>
     public sealed class ScriptCursor
     {

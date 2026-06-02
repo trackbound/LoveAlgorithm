@@ -10,7 +10,7 @@ namespace LoveAlgo.UI
     /// 엔딩 화면(*Panel). EnteredEndingEvent를 구독해 엔딩 루트를 켜고 결과를 표시한다(ADR-007: 표시만).
     /// 30일 루프의 종료점 — 화려한 연출·엔딩 분기는 범위 밖(내러티브/M5 후속).
     /// </summary>
-    public class EndingPanel : MonoBehaviour
+    public class EndingView : MonoBehaviour
     {
         [Tooltip("엔딩 비주얼 루트. 평소 비활성, 엔딩 진입 시 활성화.")]
         [SerializeField] GameObject root;

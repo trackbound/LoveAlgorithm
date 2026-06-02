@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.TestTools;
 using UnityEngine.UI;
 using LoveAlgo.Common;   // EventBus
-using LoveAlgo.Schedule; // ScheduleUI, ScheduleSlot, ScheduleType, ScheduleCategory, ScheduleSelectedCommand
+using LoveAlgo.Schedule; // ScheduleView, ScheduleSlot, ScheduleType, ScheduleCategory, ScheduleSelectedCommand
 
 namespace LoveAlgo.Tests.PlayMode
 {
@@ -13,7 +13,7 @@ namespace LoveAlgo.Tests.PlayMode
     /// 슬라이스 B: 스케줄 선택 UI 검증. 얇은 뷰가 ScheduleTable로 슬롯을 구성하고
     /// 슬롯 클릭 시 올바른 ScheduleSelectedCommand를 발행하는지(상태 변경 없음).
     /// </summary>
-    public class ScheduleUIPlayModeTests
+    public class ScheduleViewPlayModeTests
     {
         static ScheduleSlot MakeSlotPrefab()
         {
@@ -37,8 +37,8 @@ namespace LoveAlgo.Tests.PlayMode
             var container = new GameObject("Container", typeof(RectTransform)).transform;
             var prefab = MakeSlotPrefab();
 
-            var uiGo = new GameObject("ScheduleUI");
-            var ui = uiGo.AddComponent<ScheduleUI>();
+            var uiGo = new GameObject("ScheduleView");
+            var ui = uiGo.AddComponent<ScheduleView>();
             ui.SlotContainer = container;
             ui.SlotPrefab = prefab;
             ui.StartCategory = ScheduleCategory.Exercise;

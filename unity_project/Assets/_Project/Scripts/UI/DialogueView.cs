@@ -11,7 +11,7 @@ namespace LoveAlgo.UI
     /// <summary>
     /// 대사 표시 뷰(*View). <see cref="ShowDialogueCommand"/>를 구독해 화자/본문을 타이핑하고, 클릭 진행을
     /// 받아 완료 핸들(<see cref="DialogueRequest"/>)을 완료한다(ADR-007: UI는 표시만, 상태 변경 없음).
-    /// 엔진(NarrativePlayer)은 이 뷰를 직접 알지 못한다 — 명령 이벤트 + 완료 핸들로만 연결.
+    /// 엔진(NarrativeController)은 이 뷰를 직접 알지 못한다 — 명령 이벤트 + 완료 핸들로만 연결.
     ///
     /// 슬라이스1 범위: 화자+본문 타이핑 + 클릭(스킵/진행). 인라인 태그(&lt;emote&gt;/&lt;wait&gt;)·오토모드·
     /// 로그·페이드는 범위 밖(후속). 클릭 입력은 <see cref="IPointerClickHandler"/>(전체화면 Graphic raycast
