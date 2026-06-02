@@ -13,6 +13,8 @@
 - **브랜치**: `rewrite/eventbus-so`(작업) / `wip/pre-rewrite-snapshot` @ 9ac3c9e(재작성 전 미커밋 WIP 406파일 보존) / `main` b40964b.
 - **기준 문서(3종 시트 + ADR)**: `docs/REWRITE_FEATURE_INVENTORY.md`(기능·공식·수치) · `REWRITE_CLASS_MANIFEST.csv`(전 클래스 처리/상태 체크리스트) · `REWRITE_TUNING_VALUES.csv`(연출 수치 동결). 결정 이유 = `docs/decisions.md` ADR-007~012.
 - **환경**: Unity 에디터 + MCP(`mcp__mcp-unity__*`)가 **main 작업트리 = 현재 rewrite 브랜치**를 본다. 컴파일/콘솔 검증 가능.
+  - ⚠️ **MCP 연결 주의(이번 세션 경험)**: `.mcp.json`의 `mcp-unity`는 stdio node 명령이라 **세션 시작 시 에디터가 떠 있어야** 도구가 붙는다. 에디터 닫힌 채 시작했으면 세션 중 `/mcp` 재연결 필요. 안 붙으면 **헤드리스 배치로 검증 대체** 가능(아래 레시피, 에디터 닫힌 상태에서만 — Library 잠금 회피).
+  - **헤드리스 EditMode 검증 레시피**: `& "C:/Program Files/Unity/Hub/Editor/6000.4.3f1/Editor/Unity.exe" -batchmode -projectPath <proj> -runTests -testPlatform EditMode -testResults <xml> -logFile <log> -accept-apiupdate` → exit 0 + `<test-run … result="Passed">`. 임시 산출물(log/xml)은 커밋 전 삭제.
 
 ---
 
@@ -83,7 +85,14 @@
   - **신규 asmdef `LoveAlgo.Schedule`(refs Core)** at `Scripts/Schedule/`. `ScheduleType.cs`(ScheduleType/Category/Effect + ScheduleTable)·`ScheduleDataSO.cs`를 `git mv`로 이식 — 네임스페이스 `LoveAlgo.Schedule`·GUID 보존(R100), `MoneyFormat`(Core)만 의존이라 깨짐 없음. 구 UI(`ScheduleUI`/`ScheduleSlot`/`ScheduleModule` 등, namespace 동일·Assembly-CSharp 잔류)는 auto-ref로 무변경 컴파일.
   - **신규 순수 적용기 `ScheduleEffects.cs`**: `Apply(gs, effect)`(스탯/소지금 변화, 클램프)·`ApplyInvest(gs, multiplier)`(±50~100%, 배수=호출자 주입으로 RNG 분리, 0 바닥, 실반영액 반환). 구 `DayLoopController.OnScheduleSelected`의 순수 부분만 재현 — 토스트/세션버프/RNG/투자 게이트는 통합층(slice2)·Shop(별도) 소관.
   - **작동 증거**: 헤드리스 배치(6000.4.3f1) 컴파일 0에러 + **EditMode 81/81 통과**(71 + slice1 10: 적용/클램프/투자 바닥/카테고리·9종·Loading제한).
-- ▶️ **다음 착수**: M4 slice2 — 🔴 Schedule **통합층 재작성**. 구 `ScheduleModule`(Service Locator `ISchedule`/`ISimulationSubMode`, Services.Register=금지선4)을 EventBus+State SO 패턴으로 교체. ScheduleEffects.Apply 직후 스탯변경 이벤트(EventBus) 발행 설계 포함. 이후 ScheduleUI(M5)·세션버프(Shop, M4) 연동. **설계부터 감독 검토 권장**.
+- ▶️ **다음 착수(다음 세션)**: M4 slice2 — 🔴 Schedule **통합층 재작성**. **설계안부터 감독 검토 후 구현** (위험도 게이트 Critical).
+  - **대상**: 구 `Assets/_Project/Modules/Schedule/Code/ScheduleModule.cs` — `ISchedule`/`ISimulationSubMode` 구현 + `Services.Register<ISchedule>` (Service Locator = 금지선4 제거 대상).
+  - **풀어야 할 설계 결정**:
+    1. **스탯변경 통지 이벤트 구조체** 정의(구 `LoveAlgo.Contracts.StatChangedEvent` 대체). `Scripts/Core` 또는 신규 이벤트 모듈에 `readonly struct`로? `ScheduleEffects.Apply`는 순수 유지하고 **호출자(통합층)가 Apply 직후 `EventBus.Publish`** 하는 경계가 맞는지 확정.
+    2. 스케줄 선택→적용 진입점을 어디가 소유하나(매니저 4개 중? GameManager 데이루프 측?). 구 `DayLoopController.OnScheduleSelected` 책임의 새 거처.
+    3. 투자 게이트(소지금 ≥ `GameConstants.MinInvestMoney`)·1일1회 제한(`isLimited`)·세션버프(Shop, 별도)·토스트(UI, M5) 경계 분리.
+  - **참고 구현물**: 순수층은 이미 있음 — `ScheduleEffects.Apply/ApplyInvest`(LoveAlgo.Schedule), `DayLoop.ConsumeAction/AdvanceDay`(LoveAlgo.Core). 통합층은 이 둘을 호출+이벤트 발행만.
+  - **구 코드 현황**: `ScheduleModule`/`ScheduleUI`/`DayLoopController` 등 옛 모듈은 무변경 공존 중(매니페스트 상태 미변경). slice2에서 통합층 이식 시 구 `ScheduleModule` 처리.
 
 ### 워크플로우 규율 (directive)
 - 무언가 만들 때마다 **전용 테스트 씬 + 플레이모드로 작동 증거**(dev_guide 증거우선).
