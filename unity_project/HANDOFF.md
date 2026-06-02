@@ -52,7 +52,7 @@
 
 ## 📍 현재 상태 (한눈에)
 
-**엔드투엔드 시뮬레이션 루프가 섰다** — 골격(4매니저+순수/공식층+슬라이스1) 위에 실 게임 씬 `Assets/_Project/Scenes/Game.unity`가 신 매니저들로 돈다: 부팅→스케줄 선택(실 UI)→행동 소진→하루 전환→오토세이브→반복→30일 엔딩. 각 슬라이스 EventBus+SO 패턴, 항상 컴파일, EditMode+PlayMode 테스트 통과. **현재 EditMode 133 / PlayMode 14 그린, 컴파일 0에러.** (슬라이스별 상세 = git log.)
+**엔드투엔드 시뮬레이션 루프가 섰다** — 골격(4매니저+순수/공식층+슬라이스1) 위에 실 게임 씬 `Assets/_Project/Scenes/Game.unity`가 신 매니저들로 돈다: 부팅→스케줄 선택(실 UI)→행동 소진→하루 전환→오토세이브→반복→30일 엔딩. 각 슬라이스 EventBus+SO 패턴, 항상 컴파일, EditMode+PlayMode 테스트 통과. **현재 EditMode 137 / PlayMode 14 그린, 컴파일 0에러.** (슬라이스별 상세 = git log.)
 
 | 영역 | 상태 | asmdef |
 |---|---|---|
@@ -64,7 +64,7 @@
 | Narrative 파서/검증/Flow (Parser·Validator·FlowCommandInterpreter·Router) | ✅ 순수+라우터 | Narrative |
 | 매니저 GameManager(하루전환)·SaveManager(오토세이브)·AudioManager(재생)·UIManager(그룹) | ✅ 슬라이스1 | Game/Save/Audio/UI |
 | HUD (Day/Money/Affinity/Stat/Status) | ✅ 슬라이스1·2 | UI |
-| Shop (구매 트랜잭션+Consumable 즉시효과) | ✅ 슬라이스1 | Shop |
+| Shop (구매+Consumable+SessionBuff 즉시가산+중복50%페널티) | ✅ 슬라이스2 | Shop |
 | 부팅 (GameBoot·GameBootstrap 컴포지션 루트) | ✅ 완성 | Game |
 | **실 게임 씬 시뮬레이션 루프** (부팅+4매니저+ScheduleController+HUD+ScheduleUI+EndingPanel) | ✅ **엔드투엔드** | `Assets/_Project/Scenes/Game.unity` |
 | 스케줄 선택 UI (ScheduleUI·ScheduleSlot, 슬롯 클릭→명령) | ✅ | Schedule(피처 응집) |
@@ -98,8 +98,8 @@
 이번 세션 **시뮬레이션 루프 엔드투엔드 완성**(구 #2 "부팅 씬 조립" 달성) + **아키텍처 문서 동기화**(ADR-007/011: dev_guide·CLAUDE.md의 Service Locator/Modules 잔재 제거). 감독이 다음 방향 택1:
 
 1. **M3 내러티브 런타임** — ScriptEngine/executor → 대사·선택지 + DialogueUI/ChoicePopup. 최대 덩어리, UI 결합 설계 선행. 시뮬↔내러티브 페이즈 전환(UIManager 그룹 `ShowUiGroupCommand`)도 여기서.
-2. **Shop 슬라이스2** — SessionBuff / Gift 인벤토리(🔴 스키마) / 중복페널티 중 택1 + 설계 결정. (지난 세션 멈췄던 갈래.)
-3. **시뮬레이션 루프 심화** — 카테고리 탭 UI 배선(현재 슬롯 동적생성만, 탭 버튼 미연결) / HUD·슬롯 시각 레이아웃 / 엔딩 결과 디테일(최고 호감도 등) / GameManager seam(페이즈전환=GamePhase).
+2. **시뮬레이션 루프 심화** — 카테고리 탭 UI 배선(현재 슬롯 동적생성만, 탭 버튼 미연결) / HUD·슬롯 시각 레이아웃 / 엔딩 결과 디테일(최고 호감도 등) / GameManager seam(페이즈전환=GamePhase) / **Shop SessionBuff 복합효과 SO 데이터 보강**(코드 완성, ItemCatalog.asset에 SubEffect 부재 = 🟢 데이터).
+3. **Shop Gift 인벤토리(🔴 세이브 스키마)** — 선물 보관/소비. 단 소비처=내러티브 Event2/3라 M3 이후가 자연스럽다(지금은 죽은 코드).
 4. **구 아키텍처 폐기 착수** — 소비처 이식 끝난 구 모듈·Service Locator 제거, `Main.unity` 신 씬으로 교체 검토.
 
 ### 워크플로우 규율 (directive)
