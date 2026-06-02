@@ -128,5 +128,43 @@ namespace LoveAlgo.Core
             }
             list.Add(new GameStateData.BoolEntry { key = name, value = value });
         }
+
+        // ── 중복 구매 페널티 추적 (Shop §5: 같은 날 같은 DuplicateTag 2회차부터 효과 절반) ──
+        // 날짜가 바뀌면 카운트를 비우고(하루 단위 추적), 호출마다 해당 태그 사용 횟수를 1 증가시킨 뒤
+        // "이번이 2회차 이상인가"(= 페널티 대상)를 반환한다. 실제 절반 계산은 소비처(ShopService.Penalized).
+        // dailyDuplicateUsage/lastDuplicateDay는 세이브 직렬화 — 하루 중 재로드 시에도 페널티가 정확히 유지된다.
+        public bool RegisterDuplicateUse(string tag, int currentDay)
+        {
+            if (currentDay != _runtime.lastDuplicateDay)
+            {
+                _runtime.dailyDuplicateUsage.Clear();
+                _runtime.lastDuplicateDay = currentDay;
+            }
+            int usage = GetDuplicateUsage(tag);
+            SetDuplicateUsage(tag, usage + 1);
+            return usage > 0; // 2회차 이상이면 페널티 대상(같은 날 같은 태그)
+        }
+
+        int GetDuplicateUsage(string tag)
+        {
+            var list = _runtime.dailyDuplicateUsage;
+            for (int i = 0; i < list.Count; i++)
+                if (list[i].key == tag) return list[i].value;
+            return 0;
+        }
+
+        void SetDuplicateUsage(string tag, int value)
+        {
+            var list = _runtime.dailyDuplicateUsage;
+            for (int i = 0; i < list.Count; i++)
+            {
+                if (list[i].key == tag)
+                {
+                    list[i] = new GameStateData.IntEntry { key = tag, value = value };
+                    return;
+                }
+            }
+            list.Add(new GameStateData.IntEntry { key = tag, value = value });
+        }
     }
 }

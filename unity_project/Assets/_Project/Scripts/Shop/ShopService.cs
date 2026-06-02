@@ -59,23 +59,70 @@ namespace LoveAlgo.Shop
             // 3. 소지금 차감
             gs.AddMoney(-total);
 
-            // 4. 즉시 효과(Consumable = 피로 회복). 합산 적용 후 한 번의 StatChange 산출.
-            int fatigueBefore = gs.GetStat(GameStateSO.StatIds[4]); // "Fatigue"
+            // 4. 즉시 효과. 전 스탯 스냅샷 → 적용 → 변경분만 StatChangedEvent.
+            //    SessionBuff도 즉시 가산(인벤토리/지연 없음): 자유행동 1턴이 상점→스케줄 한 사이클이라
+            //    이번 행동에만 반영되고 사라지는 동작이 즉시가산으로 자연 성립한다.
+            //    중복 50% 페널티: 같은 날 같은 태그 2회차부터. 한 아이템 구매당 1회 등록(주효과·부효과는 같은 배수).
+            var before = SnapshotStats(gs);
             foreach (var kv in cart)
             {
                 if (kv.Value <= 0) continue;
                 var item = ItemDatabase.Get(kv.Key);
-                if (item.Category == ItemCategory.Consumable && item.EffectValue != 0)
-                    gs.AddStat("Fatigue", -item.EffectValue * kv.Value); // 회복 = 피로 감소
-                // Gift / SessionBuff: 슬라이스1 범위 밖(인벤토리/지연 적용 = 후속).
+                string tag = item.GetDuplicateTag();
+                for (int i = 0; i < kv.Value; i++)
+                {
+                    bool dup = gs.RegisterDuplicateUse(tag, gs.Day);
+                    switch (item.Category)
+                    {
+                        case ItemCategory.Consumable:
+                            if (item.EffectValue != 0)
+                                gs.AddStat("Fatigue", -Penalized(item.EffectValue, dup)); // 회복 = 피로 감소
+                            break;
+                        case ItemCategory.SessionBuff:
+                            if (!string.IsNullOrEmpty(item.EffectStat) && item.EffectValue != 0)
+                                gs.AddStat(item.EffectStat, Penalized(item.EffectValue, dup));
+                            if (!string.IsNullOrEmpty(item.SubEffectStat) && item.SubEffectValue != 0)
+                                gs.AddStat(item.SubEffectStat, Penalized(item.SubEffectValue, dup)); // 복합효과(부효과)
+                            break;
+                        // Gift: 인벤토리(소비처 = 내러티브 Event2/3) 미구현 — 범위 밖.
+                    }
+                }
             }
-            int fatigueAfter = gs.GetStat("Fatigue");
-
-            var changes = fatigueAfter != fatigueBefore
-                ? new[] { new StatChangedEvent("Fatigue", fatigueBefore, fatigueAfter) }
-                : System.Array.Empty<StatChangedEvent>();
+            var changes = DiffStats(before, gs);
 
             return PurchaseResult.Success(total, changes);
+        }
+
+        // 전 플레이어 스탯(StatIds) 스냅샷 — 구매 효과 적용 후 변경분만 통지하기 위함.
+        static int[] SnapshotStats(GameStateSO gs)
+        {
+            var ids = GameStateSO.StatIds;
+            var snap = new int[ids.Length];
+            for (int i = 0; i < ids.Length; i++) snap[i] = gs.GetStat(ids[i]);
+            return snap;
+        }
+
+        // 중복 페널티 적용값. duplicate면 절반(부호 유지, 0 소멸 방지로 최소 크기 1).
+        // ※ 구 ItemEffectSystem은 Mathf.Max(1, base/2)라 음수 부효과(무릎담요 Fatigue -2)에서 부호가
+        //   뒤집혔다 — 여기선 부호를 유지해 효과 절반의 의도를 보존한다.
+        static int Penalized(int baseEffect, bool duplicate)
+        {
+            if (!duplicate) return baseEffect;
+            int halved = baseEffect / 2;
+            if (halved == 0) halved = baseEffect > 0 ? 1 : baseEffect < 0 ? -1 : 0;
+            return halved;
+        }
+
+        static StatChangedEvent[] DiffStats(int[] before, GameStateSO gs)
+        {
+            var ids = GameStateSO.StatIds;
+            var list = new List<StatChangedEvent>();
+            for (int i = 0; i < ids.Length; i++)
+            {
+                int after = gs.GetStat(ids[i]);
+                if (after != before[i]) list.Add(new StatChangedEvent(ids[i], before[i], after));
+            }
+            return list.ToArray();
         }
     }
 }

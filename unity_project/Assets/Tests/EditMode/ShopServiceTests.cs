@@ -168,5 +168,97 @@ namespace LoveAlgo.Tests.Editor
                 Object.DestroyImmediate(gs);
             }
         }
+
+        // ── 슬라이스2: SessionBuff 즉시가산 + 중복 50% 페널티 ──
+
+        static ItemData FirstSessionBuff()
+            => ItemDatabase.GetByCategory(ItemCategory.SessionBuff)
+                .FirstOrDefault(i => !string.IsNullOrEmpty(i.EffectStat) && i.EffectValue != 0);
+
+        static ItemData CompositeSessionBuff()
+            => ItemDatabase.GetByCategory(ItemCategory.SessionBuff)
+                .FirstOrDefault(i => !string.IsNullOrEmpty(i.SubEffectStat) && i.SubEffectValue != 0
+                                  && !string.IsNullOrEmpty(i.EffectStat) && i.EffectStat != i.SubEffectStat);
+
+        // dup 2회차 기대값(부호 유지 절반, 0 소멸 방지) — Penalized와 동일 규칙.
+        static int ExpectPenalized(int baseEffect)
+        {
+            int h = baseEffect / 2;
+            if (h == 0) h = baseEffect > 0 ? 1 : baseEffect < 0 ? -1 : 0;
+            return h;
+        }
+
+        [Test]
+        public void Purchase_SessionBuff_Immediately_AddsMainStat()
+        {
+            var item = FirstSessionBuff();
+            Assert.IsNotNull(item, "SessionBuff 아이템이 카탈로그/폴백에 존재해야 함");
+            var gs = MakeState();
+            try
+            {
+                gs.Money = item.Price;
+                int before = gs.GetStat(item.EffectStat);
+                var r = ShopService.Purchase(gs, Cart(item.Id, 1));
+                Assert.IsTrue(r.Ok);
+                Assert.AreEqual(before + item.EffectValue, gs.GetStat(item.EffectStat), "주효과 즉시 가산(1개는 페널티 없음)");
+            }
+            finally { Object.DestroyImmediate(gs); }
+        }
+
+        public void Purchase_CompositeSessionBuff_Applies_Main_And_Sub()
+        {
+            var item = CompositeSessionBuff();
+            if (item == null)
+                Assert.Ignore("현 카탈로그(ItemCatalog.asset)에 복합효과 SessionBuff 없음 — SO 데이터 보강 시 자동 활성. 복합효과(주+부) 처리 코드는 ShopService.Purchase에 존재.");
+
+            var gs = MakeState();
+            try
+            {
+                gs.SetStat("Fatigue", 50); // 부효과(피로 감소) 여유
+                gs.Money = item.Price;
+                int mainBefore = gs.GetStat(item.EffectStat);
+                int subBefore = gs.GetStat(item.SubEffectStat);
+                var r = ShopService.Purchase(gs, Cart(item.Id, 1));
+                Assert.IsTrue(r.Ok);
+                Assert.AreEqual(mainBefore + item.EffectValue, gs.GetStat(item.EffectStat), "주효과");
+                Assert.AreEqual(subBefore + item.SubEffectValue, gs.GetStat(item.SubEffectStat), "부효과(부호 그대로)");
+            }
+            finally { Object.DestroyImmediate(gs); }
+        }
+
+        [Test]
+        public void Purchase_SameTag_SecondTime_SameDay_Halved()
+        {
+            var item = FirstSessionBuff();
+            var gs = MakeState();
+            try
+            {
+                gs.Money = item.Price * 2;
+                int before = gs.GetStat(item.EffectStat);
+                ShopService.Purchase(gs, Cart(item.Id, 2)); // 1번째 base, 2번째 절반
+                int expected = before + item.EffectValue + ExpectPenalized(item.EffectValue);
+                Assert.AreEqual(expected, gs.GetStat(item.EffectStat), "같은 날 2회차부터 중복 50% 페널티");
+            }
+            finally { Object.DestroyImmediate(gs); }
+        }
+
+        [Test]
+        public void Purchase_NewDay_Resets_DuplicatePenalty()
+        {
+            var item = FirstSessionBuff();
+            var gs = MakeState();
+            try
+            {
+                gs.Money = item.Price * 2;
+                gs.Day = 1;
+                ShopService.Purchase(gs, Cart(item.Id, 1));
+                int afterDay1 = gs.GetStat(item.EffectStat);
+
+                gs.Day = 2; // 날짜 변경 → 카운트 리셋
+                ShopService.Purchase(gs, Cart(item.Id, 1));
+                Assert.AreEqual(afterDay1 + item.EffectValue, gs.GetStat(item.EffectStat), "날짜 바뀌면 다시 base(페널티 리셋)");
+            }
+            finally { Object.DestroyImmediate(gs); }
+        }
     }
 }

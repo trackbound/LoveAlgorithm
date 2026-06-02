@@ -42,6 +42,11 @@ namespace LoveAlgo.Core
         // 이벤트별 선택 히로인(eventTag→heroineId). Event3 재선택 +2 보정 판정용.
         public List<StringEntry> eventChoices = new();
 
+        // 같은 날 중복 구매 페널티 추적(아이템 DuplicateTag→그날 사용 횟수). 2회차부터 효과 반감(Shop §5).
+        // 런타임 상태이므로 세이브 직렬화 — 하루 중 세이브/재로드 시에도 페널티가 정확히 유지된다. 날짜 바뀌면 비워진다.
+        public List<IntEntry> dailyDuplicateUsage = new();
+        public int lastDuplicateDay;
+
         [Serializable] public struct IntEntry { public string key; public int value; }
         [Serializable] public struct BoolEntry { public string key; public bool value; }
         [Serializable] public struct StringEntry { public string key; public string value; }

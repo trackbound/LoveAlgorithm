@@ -196,5 +196,39 @@ namespace LoveAlgo.Tests.Editor
             JsonSaveStore.Delete(TestSlot1);
             Assert.IsFalse(JsonSaveStore.Exists(TestSlot1), "Delete 후 슬롯 파일 제거");
         }
+
+        // ── 4. Shop 슬라이스2: 중복 페널티 추적 상태 직렬화 + 리셋 ──────────────
+        [Test]
+        public void DuplicateUsage_Serializes_And_Resets()
+        {
+            var so = MakeState();
+            try
+            {
+                so.Day = 5;
+                so.RegisterDuplicateUse("buff_per", 5); // 1회차(false)
+                so.RegisterDuplicateUse("buff_per", 5); // 2회차(true) → 카운트 2
+                so.RegisterDuplicateUse("buff_str", 5); // 카운트 1
+
+                var save = new SaveData { state = so.Data };
+                Assert.IsTrue(JsonSaveStore.Save(TestSlot1, save), "Save 성공");
+
+                var loaded = JsonSaveStore.Load(TestSlot1);
+                Assert.IsNotNull(loaded);
+                var restored = MakeState();
+                try
+                {
+                    restored.Load(loaded.state);
+                    Assert.AreEqual(5, restored.Data.lastDuplicateDay, "lastDuplicateDay 복원");
+                    Assert.AreEqual(2, restored.Data.dailyDuplicateUsage.Find(e => e.key == "buff_per").value, "buff_per 카운트 복원");
+                    Assert.AreEqual(1, restored.Data.dailyDuplicateUsage.Find(e => e.key == "buff_str").value, "buff_str 카운트 복원");
+
+                    restored.ResetRuntime();
+                    Assert.AreEqual(0, restored.Data.dailyDuplicateUsage.Count, "ResetRuntime이 중복 카운트 비움");
+                    Assert.AreEqual(0, restored.Data.lastDuplicateDay, "ResetRuntime이 lastDuplicateDay 0");
+                }
+                finally { Object.DestroyImmediate(restored); }
+            }
+            finally { Object.DestroyImmediate(so); }
+        }
     }
 }
