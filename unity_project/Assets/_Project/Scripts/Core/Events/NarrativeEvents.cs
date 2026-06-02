@@ -47,8 +47,21 @@ namespace LoveAlgo.Events
     }
 
     /// <summary>
+    /// 인라인 일시정지 지점. <see cref="CharIndex"/>번째 글자가 표시된 직후 <see cref="Seconds"/>초 멈춘다
+    /// (대사 본문의 <c>&lt;wait:sec&gt;</c> 태그 위치). 표시 텍스트는 태그가 제거된 상태.
+    /// </summary>
+    public readonly struct InlinePause
+    {
+        public readonly int CharIndex;
+        public readonly float Seconds;
+        public InlinePause(int charIndex, float seconds) { CharIndex = charIndex; Seconds = seconds; }
+    }
+
+    /// <summary>
     /// 대사 1줄 표시 명령. <see cref="RequireClick"/>=true(Next=click)면 뷰는 타이핑 후 클릭 입력까지
     /// 기다린 뒤 핸들을 완료한다. false면 타이핑이 끝나는 즉시 완료(딜레이/즉시 진행은 엔진이 처리).
+    /// <see cref="Text"/>는 인라인 태그가 제거된 표시용 텍스트이며, <see cref="Pauses"/>가 타이핑 중 멈춤 지점을 준다
+    /// (엔진이 파싱해 채움 — 뷰는 표시만). 인라인 태그가 없으면 Pauses=null.
     /// </summary>
     public readonly struct ShowDialogueCommand
     {
@@ -56,13 +69,16 @@ namespace LoveAlgo.Events
         public readonly string Text;
         public readonly bool RequireClick;
         public readonly CompletionHandle Handle;
+        public readonly IReadOnlyList<InlinePause> Pauses;
 
-        public ShowDialogueCommand(string speaker, string text, bool requireClick, CompletionHandle handle)
+        public ShowDialogueCommand(string speaker, string text, bool requireClick, CompletionHandle handle,
+            IReadOnlyList<InlinePause> pauses = null)
         {
             Speaker = speaker;
             Text = text;
             RequireClick = requireClick;
             Handle = handle;
+            Pauses = pauses;
         }
     }
 

@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic; // IReadOnlyList<InlinePause>
 using LoveAlgo.Common; // EventBus
 using LoveAlgo.Events; // ShowDialogueCommand, CompletionHandle
 using TMPro;
@@ -42,6 +43,7 @@ namespace LoveAlgo.UI
         bool _skipTyping;
         bool _awaitingClick;
         bool _auto;
+        IReadOnlyList<InlinePause> _pauses;
 
         void OnEnable()
         {
@@ -62,6 +64,7 @@ namespace LoveAlgo.UI
             _active = e.Handle;
             if (root != null) root.SetActive(true);
             if (speakerText != null) speakerText.text = e.Speaker ?? "";
+            _pauses = e.Pauses; // 인라인 <wait> 멈춤 지점(없으면 null).
             _typeRoutine = StartCoroutine(TypeRoutine(e.Text ?? "", e.RequireClick));
         }
 
@@ -71,12 +74,11 @@ namespace LoveAlgo.UI
             _skipTyping = false;
             _awaitingClick = false;
 
-            int total = 0;
+            // 타이핑/멈춤 인덱스는 문자열 길이 기준 — 파서(InlineTagParser)의 CharIndex와 정합하고 TMP 메시 의존 제거.
+            int total = text.Length;
             if (bodyText != null)
             {
                 bodyText.text = text;
-                bodyText.ForceMeshUpdate();
-                total = bodyText.textInfo.characterCount;
                 bodyText.maxVisibleCharacters = 0;
             }
 
@@ -86,6 +88,15 @@ namespace LoveAlgo.UI
                 {
                     if (_skipTyping) break;
                     if (bodyText != null) bodyText.maxVisibleCharacters = i;
+
+                    // 인라인 <wait>: i번째 글자 표시 직후 멈춤(스킵 중이면 무시).
+                    if (_pauses != null)
+                    {
+                        for (int p = 0; p < _pauses.Count && !_skipTyping; p++)
+                            if (_pauses[p].CharIndex == i)
+                                yield return new WaitForSeconds(_pauses[p].Seconds);
+                    }
+
                     yield return new WaitForSeconds(charInterval);
                 }
             }
