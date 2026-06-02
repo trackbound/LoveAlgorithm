@@ -32,8 +32,12 @@ namespace LoveAlgo.Story.StoryEngine
         [Tooltip("스테이지(BG/Char) 전환 기본 시간 동결 SO(ADR-012). 미바인딩 시 폴백 상수 사용.")]
         [SerializeField] StageTuningSO stageTuning;
 
+        [Tooltip("스크린 FX(페이드/플래시) 기본 시간 동결 SO(ADR-012). 미바인딩 시 폴백 상수 사용.")]
+        [SerializeField] ScreenFxTuningSO fxTuning;
+
         public GameStateSO State { get => state; set => state = value; }
         public StageTuningSO StageTuning { get => stageTuning; set => stageTuning = value; }
+        public ScreenFxTuningSO FxTuning { get => fxTuning; set => fxTuning = value; }
 
         /// <summary>현재 스크립트가 재생 중인가(재진입 가드).</summary>
         public bool IsRunning { get; private set; }
@@ -115,8 +119,13 @@ namespace LoveAlgo.Story.StoryEngine
                         cursor.MoveNext();
                         break;
 
+                    case LineType.FX:
+                        yield return PlayFx(line);
+                        cursor.MoveNext();
+                        break;
+
                     default:
-                        // CG/SD/Overlay/FX/Place/Option(미아) — 이번 슬라이스 미지원, 건너뜀.
+                        // CG/SD/Overlay/Place/Option(미아) — 이번 슬라이스 미지원, 건너뜀.
                         Log.Info($"[NarrativeController] 슬라이스 범위 밖 라인 스킵: {line}");
                         cursor.MoveNext();
                         break;
@@ -257,7 +266,7 @@ namespace LoveAlgo.Story.StoryEngine
 
             var req = new StageRequest();
             EventBus.Publish(new ShowBackgroundCommand(intent.Name, intent.Transition, dur, req));
-            yield return WaitStage(line, req);
+            yield return WaitNext(line, () => req.IsComplete);
         }
 
         IEnumerator PlayStageChar(ScriptLine line)
@@ -272,7 +281,7 @@ namespace LoveAlgo.Story.StoryEngine
             float dur = ResolveCharDuration(intent.Action);
             var req = new StageRequest();
             EventBus.Publish(new ShowCharacterCommand(intent.Slot, intent.Action, intent.Character, intent.Emote, dur, req));
-            yield return WaitStage(line, req);
+            yield return WaitNext(line, () => req.IsComplete);
         }
 
         float ResolveCharDuration(CharAction action)
@@ -286,14 +295,14 @@ namespace LoveAlgo.Story.StoryEngine
             }
         }
 
-        /// <summary>스테이지 라인 Next 진행: Await/Click=핸들 완료 대기, Delay=초 대기, Immediate=비대기(애니 병행).</summary>
-        IEnumerator WaitStage(ScriptLine line, StageRequest req)
+        /// <summary>연출 라인 Next 진행 공통: Await/Click=핸들 완료 대기, Delay=초 대기, Immediate=비대기(애니 병행).</summary>
+        IEnumerator WaitNext(ScriptLine line, Func<bool> isComplete)
         {
             switch (line.NextType)
             {
                 case NextType.Await:
                 case NextType.Click:
-                    yield return new WaitUntil(() => req.IsComplete);
+                    yield return new WaitUntil(isComplete);
                     break;
                 case NextType.Delay:
                     if (line.DelaySeconds > 0f)
@@ -336,6 +345,33 @@ namespace LoveAlgo.Story.StoryEngine
         {
             if (line.NextType == NextType.Delay && line.DelaySeconds > 0f)
                 yield return new WaitForSeconds(Mathf.Min(line.DelaySeconds, maxDelaySeconds));
+        }
+
+        // ── 스크린 FX(M3 슬라이스2: FadeOut/FadeIn/Flash) ──
+        // 순수 FxInterpreter로 스크린 FX만 인식(나머지 FX는 슬라이스 밖 스킵) → 동결 수치(ScreenFxTuningSO)로
+        // duration 해석 → ShowScreenFxCommand 발행 → Next 대기(WaitNext). ScreenFxView가 최상위 오버레이로 표시.
+
+        IEnumerator PlayFx(ScriptLine line)
+        {
+            var intent = FxInterpreter.ParseScreen(line.Value);
+            if (!intent.IsValid)
+            {
+                // 카메라/Eye/Tint/흔들기/캐릭터/매크로 등 — 이번 슬라이스 미지원.
+                Log.Info($"[NarrativeController] 슬라이스 범위 밖 FX 스킵: \"{line.Value}\"");
+                yield break;
+            }
+
+            float dur = intent.Duration >= 0f ? intent.Duration : ResolveFxDuration(intent.Kind);
+            var req = new FxRequest();
+            EventBus.Publish(new ShowScreenFxCommand(intent.Kind, dur, req));
+            yield return WaitNext(line, () => req.IsComplete);
+        }
+
+        float ResolveFxDuration(ScreenFxKind kind)
+        {
+            if (kind == ScreenFxKind.Flash)
+                return fxTuning != null ? fxTuning.FlashDefault : 0.14f;
+            return fxTuning != null ? fxTuning.FadeDefault : 0.9f;
         }
     }
 }
