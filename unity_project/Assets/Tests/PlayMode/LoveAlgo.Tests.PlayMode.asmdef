@@ -9,6 +9,7 @@
         "LoveAlgo.Save",
         "LoveAlgo.Affinity",
         "LoveAlgo.Narrative",
+        "LoveAlgo.Audio",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"
     ],

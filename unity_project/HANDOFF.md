@@ -38,7 +38,7 @@
 - 운영: 위험도 게이트 + 마일스톤 + 형태문서 금지 + 커밋 "왜". (ADR-010)
 - 구조: 코드 `_Project/Scripts/`(피처별 asmdef) + 아트/프리팹 타입별 중앙화. (ADR-011)
 - 재설계(전사 금지) + 세션 연속성 규율 + 연출 수치 SO화. (ADR-012)
-- asmdef 도입 진행: 현재 `LoveAlgo.Core`·`LoveAlgo.Data`·`LoveAlgo.Affinity`·`LoveAlgo.Schedule`·`LoveAlgo.Game`·`LoveAlgo.Narrative`·`LoveAlgo.Save` 7개 + 옛 Assembly-CSharp 공존. 체인: `Core ← Data ← {Affinity, Schedule, Game}`, `Core ← Save`. `Narrative`=refs `{Core, Affinity}`(파서/모델/검증기 순수층 + Flow 인터프리터). **`Save`만 autoReferenced=false**(구 `LoveAlgo.Save`(SaveModule)·`LoveAlgo.Story.SaveManager`와 단순명 충돌 회피 — 구 Save 폐기 시 true 복귀), 나머지는 autoReferenced=true. 테스트 어셈블리: `LoveAlgo.Tests.EditMode`·`LoveAlgo.Tests.PlayMode`(autoRef=false).
+- asmdef 도입 진행: 현재 `LoveAlgo.Core`·`LoveAlgo.Data`·`LoveAlgo.Affinity`·`LoveAlgo.Schedule`·`LoveAlgo.Game`·`LoveAlgo.Narrative`·`LoveAlgo.Save` 7개 + 옛 Assembly-CSharp 공존. 체인: `Core ← Data ← {Affinity, Schedule, Game}`, `Core ← Save`. `Narrative`=refs `{Core, Affinity}`(파서/모델/검증기 순수층 + Flow 인터프리터+라우터). `Audio`=refs `{Core}`. **`Save`만 autoReferenced=false**(구 `LoveAlgo.Save`(SaveModule)·`LoveAlgo.Story.SaveManager`와 단순명 충돌 회피 — 구 Save 폐기 시 true 복귀), 나머지는 autoReferenced=true(`LoveAlgo.Audio`는 신규 ns라 구 `LoveAlgo.Modules.Audio`와 무충돌). 매니저 **3/4 완성**(GameManager·SaveManager·AudioManager). 테스트 어셈블리: `LoveAlgo.Tests.EditMode`·`LoveAlgo.Tests.PlayMode`(autoRef=false).
 
 ---
 
@@ -133,6 +133,12 @@
   - **신규 Core 이벤트**: `FlowCommandRequestedEvent(command)`(명령) · `AffinityChangedEvent(heroineId, newScore)`(통지, HUD용).
   - **연결 완성**: 이제 누구든(엔진 이식 시 ScriptEngine, 현재는 테스트/디버그) `FlowCommandRequestedEvent` 발행으로 CSV Flow→호감도 경로가 런타임에 동작. 제어흐름 Flow·ScriptEngine·UI는 여전히 범위 밖.
   - **작동 증거**: 컴파일 0에러 + EditMode **111/111**(107+4) + PlayMode **5/5**(4 + 라우터 OnEnable 구독 1).
+- ✅ **AudioManager 슬라이스1 커밋됨 (핵심 재생 EventBus화)**: 🟠 설계 승인(BGM/SFX/Voice 재생만 + 코루틴 페이드, DOTween 제거). 구 970줄 AudioManager(Singleton+IAudio+DOTween+UI버튼바인딩+믹서)의 핵심 재생만 이식.
+  - **신규 `LoveAlgo.Audio` asmdef(refs Core, autoRef=true, ns `LoveAlgo.Audio`)**. Services/IAudio/Singleton 제거(3번째 매니저).
+  - **Core 명령 이벤트**(`Scripts/Core/Events/AudioEvents.cs`): `PlayBgmCommand(name,fade)`·`StopBgmCommand(fade)`·`PlaySfxCommand`·`PlayVoiceCommand`·`StopVoiceCommand` + `BgmChangedEvent`(구 BGMChangedEvent 이식).
+  - **`AudioManager : MonoBehaviour`**: 5명령 구독 → AudioSource 재생. AudioSource 미바인딩 시 자동생성(`EnsureSources`), clip 해석은 주입형 `ClipLoader`(기본 `Resources.Load<AudioClip>("Audio/{cat}/{name}")`, 카탈로그/테스트 대체 가능). 페이드=자체 코루틴(DOTween 결합 제거). `CurrentBgm` 노출.
+  - **범위 밖(후속)**: AudioMixer 볼륨(Settings)·UI사운드/버튼자동바인딩/타이핑(M5)·캐릭터 BGM 자동전환(Stage)·캐릭터 entry SFX·StoryMappings BGM alias·앱 포커스 pause.
+  - **작동 증거**: 컴파일 0에러 + EditMode **116/116**(111+5: BGM설정/중복무시/정지/클립없음/SFX·Voice 로더호출) + PlayMode **6/6**(5 + AudioManager OnEnable 구독 1).
 - ▶️ **다음 착수(다음 세션)**: 감독이 다음 마일스톤 선택. 남은 연결고리:
   - **`DayChangedEvent`/`EnteredEndingEvent` 구독자**: HUD·페이즈 UI(M5 UI), 엔딩 화면(M5).
   - **GameManager 잔여 seam 채우기**: 저녁이벤트(M3 내러티브 이식 후)·페이드(M5 UI)·페이즈전환(GamePhase). ~~오토세이브~~=Save 슬라이스에서 완료. 부팅 와이어링(GameStateSO를 ScheduleController/SaveManager.State 등에 주입)도 GameManager 소관(후속).
