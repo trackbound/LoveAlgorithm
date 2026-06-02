@@ -52,7 +52,8 @@
 
 ## 📍 현재 상태 (한눈에)
 
-**엔드투엔드 시뮬레이션 루프가 섰다** — 골격(4매니저+순수/공식층+슬라이스1) 위에 실 게임 씬 `Assets/_Project/Scenes/Game.unity`가 신 매니저들로 돈다: 부팅→스케줄 선택(실 UI)→행동 소진→하루 전환→오토세이브→반복→30일 엔딩. 각 슬라이스 EventBus+SO 패턴, 항상 컴파일, EditMode+PlayMode 테스트 통과. **현재 EditMode 137 / PlayMode 14 그린, 컴파일 0에러.** (슬라이스별 상세 = git log.)
+**엔드투엔드 시뮬레이션 루프가 섰다** — 골격(4매니저+순수/공식층+슬라이스1) 위에 실 게임 씬 `Assets/_Project/Scenes/Game.unity`가 신 매니저들로 돈다: 부팅→스케줄 선택(실 UI)→행동 소진→하루 전환→오토세이브→반복→30일 엔딩. 각 슬라이스 EventBus+SO 패턴, 항상 컴파일, EditMode+PlayMode 테스트 통과. **현재 EditMode 150 / PlayMode 16 그린, 컴파일 0에러.** (슬라이스별 상세 = git log.)
+**+ M3 내러티브 런타임 슬라이스1(대사+선택지) 코드 완성** — CSV를 받아 대사 표시→선택지→효과→점프→종료까지 코루틴으로 구동(아래 표). 씬 실배선만 남음.
 
 | 영역 | 상태 | asmdef |
 |---|---|---|
@@ -62,6 +63,7 @@
 | 호감도 공식 (AffinityFormula §4 1:1) | ✅ 순수 | Affinity |
 | Schedule (Effects·Service·Controller) | ✅ 통합 | Schedule |
 | Narrative 파서/검증/Flow (Parser·Validator·FlowCommandInterpreter·Router) | ✅ 순수+라우터 | Narrative |
+| **Narrative 런타임 슬라이스1** (대사+선택지: ScriptCursor·ChoiceParser·ChoiceEffectInterpreter 순수 + NarrativePlayer 어댑터 + DialogueView·ChoiceView·ChoiceOptionSlot) | ✅ **코드+테스트** | Narrative/UI |
 | 매니저 GameManager(하루전환)·SaveManager(오토세이브)·AudioManager(재생)·UIManager(그룹) | ✅ 슬라이스1 | Game/Save/Audio/UI |
 | HUD (Day/Money/Affinity/Stat/Status) | ✅ 슬라이스1·2 | UI |
 | Shop (구매+Consumable+SessionBuff 즉시가산+중복50%페널티) | ✅ 슬라이스2 | Shop |
@@ -74,7 +76,7 @@
 **아직 안 된 것 / 다음 우선순위 후보**:
 - **✅ 엔드투엔드 시뮬레이션 루프 해소**(이번 세션): `Game.unity`가 신 매니저로 실제 플레이된다(부팅→스케줄선택→하루전환→오토세이브→30일 엔딩). 단 **내러티브(대사/선택지)는 제외** — 시뮬레이션 페이즈만. 구 `Main.unity`는 여전히 구 아키텍처로 공존(미폐기).
 - **🟢 HUD/슬롯 시각 레이아웃 미조정**: 기능 배선만 됨(위치/폰트/스타일은 감독이 Play로 다듬는 영역). 엔딩 결과 디테일(최고 호감도 등)도 최소.
-- **M3 내러티브 런타임 미이식**: `ScriptRunner`/`ScriptEngine`/`Engine/Handlers`(대사 표시·선택지)·UI(`DialogueUI`/`ChoicePopup`) — UI(M5) 결합이 커서 남은 최대 덩어리. 현재 파서/검증/FlowCommandRouter까지만.
+- **M3 내러티브 런타임 — 슬라이스1(대사+선택지) 완성**: 완료-핸들 커맨드 패턴으로 엔진↔UI 디커플(ADR-007). 순수 ScriptCursor/ChoiceParser/ChoiceEffectInterpreter(EditMode 18) + NarrativePlayer 코루틴 어댑터 + DialogueView/ChoiceView(PlayMode 2). 선택지 `Love:`는 Affinity 카테고리(`Affinity:Point:Id:Dialogue:N`)로 위임→정본 단일화(감독 결정). **남은 것**: ① 씬 실배선(Game.unity에 DialogueView/ChoiceView GO 배치·프리팹·State 주입·클릭입력·PlayScriptCommand 트리거), ② 슬라이스2(스테이지 Char/BG/CG/SD/Overlay·FX·Sound·오토모드·인라인태그·점프페이드/스테이지합성/로그복원·선택지 조건/이력·LockScreen 계열 Flow).
 - **Shop 슬라이스2(감독 결정 필요)**: SessionBuff 적용 경계(구 코드: 다음 스케줄 base효과 직후) / Gift 인벤토리(🔴 세이브 스키마) / 중복 50% 페널티(상태 위치).
 - **GameManager 잔여 seam**: 저녁이벤트(M3)·페이드(M5 UI)·페이즈전환(GamePhase 상태머신). (오토세이브 seam은 완료.)
 - **Settings**(볼륨↔AudioMixer = AudioManager 슬라이스2) / **구 모듈 폐기**(소비처 이식 완료 시 Service Locator·구 매니저 제거).
@@ -97,7 +99,7 @@
 
 이번 세션 **시뮬레이션 루프 엔드투엔드 완성**(구 #2 "부팅 씬 조립" 달성) + **아키텍처 문서 동기화**(ADR-007/011: dev_guide·CLAUDE.md의 Service Locator/Modules 잔재 제거). 감독이 다음 방향 택1:
 
-1. **M3 내러티브 런타임** — ScriptEngine/executor → 대사·선택지 + DialogueUI/ChoicePopup. 최대 덩어리, UI 결합 설계 선행. 시뮬↔내러티브 페이즈 전환(UIManager 그룹 `ShowUiGroupCommand`)도 여기서.
+1. **M3 슬라이스1 씬 실배선** — Game.unity에 NarrativePlayer(+State)·DialogueView·ChoiceView(+ChoiceOptionSlot 프리팹) 배치, 클릭입력(InputSystemUIInputModule), 시뮬↔내러티브 전환은 이미 `ShowUiGroupCommand`로 발행됨. 어디서 `PlayScriptCommand`를 트리거할지(스케줄 선택 후? 저녁 이벤트?) 결정 필요. **그 다음 M3 슬라이스2**: 스테이지/FX/사운드/오토모드/인라인태그/조건·이력/점프페이드.
 2. **시뮬레이션 루프 심화** — 카테고리 탭 UI 배선(현재 슬롯 동적생성만, 탭 버튼 미연결) / HUD·슬롯 시각 레이아웃 / 엔딩 결과 디테일(최고 호감도 등) / GameManager seam(페이즈전환=GamePhase) / **Shop SessionBuff 복합효과 SO 데이터 보강**(코드 완성, ItemCatalog.asset에 SubEffect 부재 = 🟢 데이터).
 3. **Shop Gift 인벤토리(🔴 세이브 스키마)** — 선물 보관/소비. 단 소비처=내러티브 Event2/3라 M3 이후가 자연스럽다(지금은 죽은 코드).
 4. **구 아키텍처 폐기 착수** — 소비처 이식 끝난 구 모듈·Service Locator 제거, `Main.unity` 신 씬으로 교체 검토.
