@@ -31,15 +31,15 @@ namespace LoveAlgo.Story
     }
 
     /// <summary>
-    /// Sound 명령 Value 순수 파서(M3 슬라이스2). EventBus·UnityEngine 비의존(EditMode 테스트). 구 AudioManager.
-    /// ExecuteAsync의 디스패치를 결정 로직만 추려 이식 — 실제 재생은 기존 오디오 명령(PlayBgm/StopBgm/PlaySfx/
+    /// Sound 명령 Value 순수 파서(M3 슬라이스2). EventBus·UnityEngine 비의존(EditMode 테스트). 고정 문법
+    /// (카테고리·Stop·Fade)을 결정으로 분해만 한다 — 실제 재생은 기존 오디오 명령(PlayBgm/StopBgm/PlaySfx/
     /// PlayVoice/StopVoice) 발행으로 AudioManager가 수행(ADR-007, 뷰/매니저 신설 없음).
     ///
     /// 문법: <c>BGM:{name}[:Fade:{d}]</c> · <c>BGM:Stop[:Fade:{d}]</c> · <c>SFX:{name}</c> ·
     ///       <c>Voice:{name}</c> · <c>Voice:Stop</c>. 카테고리/Stop/Fade 토큰은 케이스 무시.
     /// 별칭(한글 BGM명→파일)은 이번 슬라이스 밖 — 키 그대로 통과(데모 CSV는 실파일 키).
     /// </summary>
-    public static class SoundInterpreter
+    public static class SoundParser
     {
         public static SoundIntent Parse(string value)
         {

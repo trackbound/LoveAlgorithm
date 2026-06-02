@@ -1,7 +1,7 @@
 using System;
 using System.Collections;
 using LoveAlgo.Common; // EventBus, Log
-using LoveAlgo.Events; // ShowBackgroundCommand, ShowCharacterCommand, StageRequest, NarrativeFinishedEvent
+using LoveAlgo.Events; // ShowBackgroundCommand, ShowCharacterCommand, CompletionHandle, NarrativeFinishedEvent
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -10,7 +10,7 @@ namespace LoveAlgo.UI
     /// <summary>
     /// 스테이지 표시 뷰(*View, M3 슬라이스2: BG + Char). <see cref="ShowBackgroundCommand"/>·
     /// <see cref="ShowCharacterCommand"/>를 구독해 배경 전환과 캐릭터 슬롯(L/C/R) 페이드를 코루틴 lerp로 수행하고,
-    /// 완료 시 핸들(<see cref="StageRequest"/>)을 풀어준다(ADR-007: UI는 표시만, 상태 변경 없음). 엔진
+    /// 완료 시 핸들(<see cref="CompletionHandle"/>)을 풀어준다(ADR-007: UI는 표시만, 상태 변경 없음). 엔진
     /// (NarrativeController)은 이 뷰를 직접 알지 못한다 — 명령 이벤트 + 완료 핸들로만 연결(DialogueView와 동형).
     /// 슬라이스1처럼 DOTween/UniTask 미사용. 별도 _Stage 캔버스(대사 UI보다 낮은 sortingOrder)에 부착.
     ///
@@ -18,7 +18,7 @@ namespace LoveAlgo.UI
     /// Char→<c>Resources.Load("Characters/{char}_{emote}")</c>(표정 생략 시 <c>Characters/{char}</c>).
     /// 슬라이스 밖: Overlay/CG/SD/CharFX/슬라이드/등장SFX(스킵).
     /// </summary>
-    public class StageView : MonoBehaviour, ISerializationCallbackReceiver
+    public class StageView : MonoBehaviour
     {
         [Serializable]
         public class SlotBinding
@@ -56,10 +56,10 @@ namespace LoveAlgo.UI
         IDisposable _bgSub, _charSub, _finishSub;
 
         Coroutine _bgRoutine;
-        StageRequest _bgPending;
+        CompletionHandle _bgPending;
 
         readonly Coroutine[] _slotRoutines = new Coroutine[3];
-        readonly StageRequest[] _slotPending = new StageRequest[3];
+        readonly CompletionHandle[] _slotPending = new CompletionHandle[3];
 
         void OnEnable()
         {
@@ -312,14 +312,5 @@ namespace LoveAlgo.UI
         }
 
         Sprite LoadSprite(string path) => Resources.Load<Sprite>(path);
-
-        // ISerializationCallbackReceiver: 인스펙터 미설정 시 null 슬롯 바인딩 NPE 방지(빈 객체 보장).
-        public void OnBeforeSerialize() { }
-        public void OnAfterDeserialize()
-        {
-            slotL ??= new SlotBinding();
-            slotC ??= new SlotBinding();
-            slotR ??= new SlotBinding();
-        }
     }
 }

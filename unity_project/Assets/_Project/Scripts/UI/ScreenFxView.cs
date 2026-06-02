@@ -1,7 +1,7 @@
 using System;
 using System.Collections;
 using LoveAlgo.Common; // EventBus, Log
-using LoveAlgo.Events; // ShowScreenFxCommand, ScreenFxKind, FxRequest, NarrativeFinishedEvent
+using LoveAlgo.Events; // ShowScreenFxCommand, ScreenFxKind, CompletionHandle, NarrativeFinishedEvent
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -9,7 +9,7 @@ namespace LoveAlgo.UI
 {
     /// <summary>
     /// 스크린 오버레이 FX 뷰(*View, M3 슬라이스2: FadeOut/FadeIn/Flash). <see cref="ShowScreenFxCommand"/>를
-    /// 구독해 전체화면 오버레이 Image의 알파를 코루틴 lerp하고, 완료 시 핸들(<see cref="FxRequest"/>)을 푼다
+    /// 구독해 전체화면 오버레이 Image의 알파를 코루틴 lerp하고, 완료 시 핸들(<see cref="CompletionHandle"/>)을 푼다
     /// (ADR-007: UI는 표시만). 엔진(NarrativeController)은 이 뷰를 직접 알지 못한다 — 명령 + 핸들로만 연결.
     /// 대사 UI까지 덮어야 하므로 최상위 캔버스(_ScreenFx, 높은 sortingOrder)에 부착. 슬라이스1처럼 DOTween 미사용.
     ///
@@ -26,7 +26,7 @@ namespace LoveAlgo.UI
 
         IDisposable _sub, _finishSub;
         Coroutine _routine;
-        FxRequest _pending;
+        CompletionHandle _pending;
 
         void OnEnable()
         {

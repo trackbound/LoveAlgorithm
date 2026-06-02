@@ -15,7 +15,7 @@ namespace LoveAlgo.Story
     ///          (slot 생략 시 C; Char은 duration을 싣지 않음 — 항상 기본값)
     /// 별칭/카탈로그(한글명→ID, Default→코드)는 이번 슬라이스 밖 — 키는 그대로 통과(데모 CSV는 실파일 키 사용).
     /// </summary>
-    public static class StageInterpreter
+    public static class StageParser
     {
         /// <summary>BG Value 파싱. 이름이 비면 <see cref="BgIntent.IsValid"/>=false.</summary>
         public static BgIntent ParseBackground(string value)

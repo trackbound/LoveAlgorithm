@@ -32,7 +32,7 @@ namespace LoveAlgo.Story
     /// 문법: <c>FadeOut[:dur]</c> · <c>FadeIn[:dur]</c> · <c>Flash[:dur]</c>(케이스 무시). dur 생략 시 -1(기본 위임).
     /// 그 외 FX 키워드는 <see cref="ScreenFxIntent.Invalid"/> 반환 — 엔진이 "슬라이스 밖" 스킵.
     /// </summary>
-    public static class FxInterpreter
+    public static class FxParser
     {
         public static ScreenFxIntent ParseScreen(string value)
         {

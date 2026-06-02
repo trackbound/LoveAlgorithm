@@ -11,16 +11,6 @@ namespace LoveAlgo.Events
     // 공통 참조할 수 있는 최하위 계층.
 
     /// <summary>
-    /// 대사 1줄 표시 완료 핸들. 뷰가 타이핑/클릭 진행을 마치면 <see cref="Complete"/>를 호출하고,
-    /// 엔진 코루틴은 <see cref="IsComplete"/>가 참이 될 때까지 대기한다.
-    /// </summary>
-    public sealed class DialogueRequest
-    {
-        public bool IsComplete { get; private set; }
-        public void Complete() => IsComplete = true;
-    }
-
-    /// <summary>
     /// 선택지 완료 핸들. 뷰가 사용자가 고른 옵션 인덱스를 <see cref="Select"/>로 채우면,
     /// 엔진 코루틴은 <see cref="IsComplete"/>가 참이 될 때까지 대기한다.
     /// </summary>
@@ -65,9 +55,9 @@ namespace LoveAlgo.Events
         public readonly string Speaker;
         public readonly string Text;
         public readonly bool RequireClick;
-        public readonly DialogueRequest Handle;
+        public readonly CompletionHandle Handle;
 
-        public ShowDialogueCommand(string speaker, string text, bool requireClick, DialogueRequest handle)
+        public ShowDialogueCommand(string speaker, string text, bool requireClick, CompletionHandle handle)
         {
             Speaker = speaker;
             Text = text;

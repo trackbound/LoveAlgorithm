@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.TestTools;
 using LoveAlgo.Common; // EventBus
-using LoveAlgo.Events; // ShowBackgroundCommand, ShowCharacterCommand, StageRequest, NarrativeFinishedEvent
+using LoveAlgo.Events; // ShowBackgroundCommand, ShowCharacterCommand, CompletionHandle, NarrativeFinishedEvent
 using LoveAlgo.UI;     // StageView
 
 namespace LoveAlgo.Tests.PlayMode
@@ -46,7 +46,7 @@ namespace LoveAlgo.Tests.PlayMode
             return view;
         }
 
-        static IEnumerator WaitDone(StageRequest req, float timeout = 2f)
+        static IEnumerator WaitDone(CompletionHandle req, float timeout = 2f)
         {
             float t = 0f;
             while (!req.IsComplete && t < timeout) { t += Time.deltaTime; yield return null; }
@@ -59,7 +59,7 @@ namespace LoveAlgo.Tests.PlayMode
             try
             {
                 yield return null;
-                var req = new StageRequest();
+                var req = new CompletionHandle();
                 EventBus.Publish(new ShowBackgroundCommand(BgKey, BgTransition.Cut, 0f, req));
                 yield return WaitDone(req);
 
@@ -77,7 +77,7 @@ namespace LoveAlgo.Tests.PlayMode
             try
             {
                 yield return null;
-                var req = new StageRequest();
+                var req = new CompletionHandle();
                 EventBus.Publish(new ShowBackgroundCommand(BgKey, BgTransition.Cross, 0.05f, req));
                 yield return WaitDone(req);
 
@@ -96,7 +96,7 @@ namespace LoveAlgo.Tests.PlayMode
             {
                 yield return null;
                 LogAssert.ignoreFailingMessages = true; // 경고 로그 허용
-                var req = new StageRequest();
+                var req = new CompletionHandle();
                 EventBus.Publish(new ShowBackgroundCommand("__nonexistent__", BgTransition.Cut, 0f, req));
                 yield return WaitDone(req);
 
@@ -113,7 +113,7 @@ namespace LoveAlgo.Tests.PlayMode
             {
                 yield return null;
 
-                var enterReq = new StageRequest();
+                var enterReq = new CompletionHandle();
                 EventBus.Publish(new ShowCharacterCommand(CharSlot.C, CharAction.Enter, CharId, Emote, 0.05f, enterReq));
                 yield return WaitDone(enterReq);
 
@@ -122,7 +122,7 @@ namespace LoveAlgo.Tests.PlayMode
                 Assert.IsTrue(view.SlotC.image.enabled);
                 Assert.AreEqual(1f, view.SlotC.group.alpha, 1e-3f);
 
-                var exitReq = new StageRequest();
+                var exitReq = new CompletionHandle();
                 EventBus.Publish(new ShowCharacterCommand(CharSlot.C, CharAction.Exit, null, "", 0.05f, exitReq));
                 yield return WaitDone(exitReq);
 
@@ -139,7 +139,7 @@ namespace LoveAlgo.Tests.PlayMode
             try
             {
                 yield return null;
-                var req = new StageRequest();
+                var req = new CompletionHandle();
                 EventBus.Publish(new ShowCharacterCommand(CharSlot.C, CharAction.Enter, CharId, Emote, 0f, req));
                 yield return WaitDone(req);
                 Assert.IsTrue(view.SlotC.image.enabled);

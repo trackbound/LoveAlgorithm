@@ -3,7 +3,7 @@ using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
 using LoveAlgo.Common; // EventBus
-using LoveAlgo.Events; // ShowDialogueCommand, DialogueRequest, SetAutoModeCommand
+using LoveAlgo.Events; // ShowDialogueCommand, CompletionHandle, SetAutoModeCommand
 using LoveAlgo.UI;     // DialogueView
 
 namespace LoveAlgo.Tests.PlayMode
@@ -32,7 +32,7 @@ namespace LoveAlgo.Tests.PlayMode
 
                 EventBus.Publish(new SetAutoModeCommand(true));
 
-                var req = new DialogueRequest();
+                var req = new CompletionHandle();
                 EventBus.Publish(new ShowDialogueCommand("로아", "안녕!", true, req));
 
                 // 클릭 없이도 지연 후 자동 완료되어야 한다.
@@ -55,7 +55,7 @@ namespace LoveAlgo.Tests.PlayMode
 
                 EventBus.Publish(new SetAutoModeCommand(false));
 
-                var req = new DialogueRequest();
+                var req = new CompletionHandle();
                 EventBus.Publish(new ShowDialogueCommand("로아", "안녕!", true, req));
 
                 // 클릭 전: 충분히 기다려도 완료되지 않아야(클릭 대기).

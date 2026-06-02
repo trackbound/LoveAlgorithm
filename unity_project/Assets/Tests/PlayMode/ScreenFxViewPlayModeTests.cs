@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.TestTools;
 using LoveAlgo.Common; // EventBus
-using LoveAlgo.Events; // ShowScreenFxCommand, ScreenFxKind, FxRequest, NarrativeFinishedEvent
+using LoveAlgo.Events; // ShowScreenFxCommand, ScreenFxKind, CompletionHandle, NarrativeFinishedEvent
 using LoveAlgo.UI;     // ScreenFxView
 
 namespace LoveAlgo.Tests.PlayMode
@@ -26,7 +26,7 @@ namespace LoveAlgo.Tests.PlayMode
             return view;
         }
 
-        static IEnumerator WaitDone(FxRequest req, float timeout = 2f)
+        static IEnumerator WaitDone(CompletionHandle req, float timeout = 2f)
         {
             float t = 0f;
             while (!req.IsComplete && t < timeout) { t += Time.deltaTime; yield return null; }
@@ -39,7 +39,7 @@ namespace LoveAlgo.Tests.PlayMode
             try
             {
                 yield return null;
-                var req = new FxRequest();
+                var req = new CompletionHandle();
                 EventBus.Publish(new ShowScreenFxCommand(ScreenFxKind.FadeOut, 0.05f, req));
                 yield return WaitDone(req);
 
@@ -57,12 +57,12 @@ namespace LoveAlgo.Tests.PlayMode
             {
                 yield return null;
                 // 먼저 FadeOut으로 암전.
-                var outReq = new FxRequest();
+                var outReq = new CompletionHandle();
                 EventBus.Publish(new ShowScreenFxCommand(ScreenFxKind.FadeOut, 0f, outReq));
                 yield return WaitDone(outReq);
                 Assert.AreEqual(1f, overlay.color.a, 1e-3f);
 
-                var inReq = new FxRequest();
+                var inReq = new CompletionHandle();
                 EventBus.Publish(new ShowScreenFxCommand(ScreenFxKind.FadeIn, 0.05f, inReq));
                 yield return WaitDone(inReq);
 
@@ -79,7 +79,7 @@ namespace LoveAlgo.Tests.PlayMode
             try
             {
                 yield return null;
-                var req = new FxRequest();
+                var req = new CompletionHandle();
                 EventBus.Publish(new ShowScreenFxCommand(ScreenFxKind.Flash, 0.06f, req));
                 yield return WaitDone(req);
 
@@ -96,7 +96,7 @@ namespace LoveAlgo.Tests.PlayMode
             try
             {
                 yield return null;
-                var req = new FxRequest();
+                var req = new CompletionHandle();
                 EventBus.Publish(new ShowScreenFxCommand(ScreenFxKind.FadeOut, 0f, req));
                 yield return WaitDone(req);
                 Assert.AreEqual(1f, overlay.color.a, 1e-3f);

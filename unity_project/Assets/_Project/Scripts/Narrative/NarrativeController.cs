@@ -140,7 +140,7 @@ namespace LoveAlgo.Story.StoryEngine
         IEnumerator PlayText(ScriptLine line)
         {
             bool requireClick = line.NextType == NextType.Click;
-            var req = new DialogueRequest();
+            var req = new CompletionHandle();
             EventBus.Publish(new ShowDialogueCommand(line.Speaker, line.Value, requireClick, req));
 
             // 뷰가 타이핑/클릭을 마칠 때까지 대기(구독자 없으면 즉시 완료되지 않으므로 가드).
@@ -248,12 +248,12 @@ namespace LoveAlgo.Story.StoryEngine
         }
 
         // ── 스테이지(M3 슬라이스2: BG + Char) ──
-        // 순수 StageInterpreter로 Value를 인텐트로 분해 → 동결 수치(StageTuningSO)로 duration 해석 →
+        // 순수 StageParser로 Value를 인텐트로 분해 → 동결 수치(StageTuningSO)로 duration 해석 →
         // ShowBackgroundCommand/ShowCharacterCommand 발행 → Next에 따라 대기(Await/Click=핸들, Delay=초, Immediate=비대기).
 
         IEnumerator PlayStageBg(ScriptLine line)
         {
-            var intent = StageInterpreter.ParseBackground(line.Value);
+            var intent = StageParser.ParseBackground(line.Value);
             if (!intent.IsValid)
             {
                 Log.Warn($"[NarrativeController] 잘못된 BG 라인 — 건너뜀: \"{line.Value}\"");
@@ -264,14 +264,14 @@ namespace LoveAlgo.Story.StoryEngine
                 ? intent.Duration
                 : (stageTuning != null ? stageTuning.BgTransitionDefault : 0.5f);
 
-            var req = new StageRequest();
+            var req = new CompletionHandle();
             EventBus.Publish(new ShowBackgroundCommand(intent.Name, intent.Transition, dur, req));
             yield return WaitNext(line, () => req.IsComplete);
         }
 
         IEnumerator PlayStageChar(ScriptLine line)
         {
-            var intent = StageInterpreter.ParseCharacter(line.Value);
+            var intent = StageParser.ParseCharacter(line.Value);
             if (!intent.IsValid)
             {
                 Log.Warn($"[NarrativeController] 잘못된 Char 라인 — 건너뜀: \"{line.Value}\"");
@@ -279,7 +279,7 @@ namespace LoveAlgo.Story.StoryEngine
             }
 
             float dur = ResolveCharDuration(intent.Action);
-            var req = new StageRequest();
+            var req = new CompletionHandle();
             EventBus.Publish(new ShowCharacterCommand(intent.Slot, intent.Action, intent.Character, intent.Emote, dur, req));
             yield return WaitNext(line, () => req.IsComplete);
         }
@@ -313,12 +313,12 @@ namespace LoveAlgo.Story.StoryEngine
         }
 
         // ── 사운드(M3 슬라이스2: BGM/SFX/Voice) ──
-        // 순수 SoundInterpreter로 Value를 인텐트로 분해 → 카테고리별 기존 오디오 명령을 발행(AudioManager가 구독·재생).
+        // 순수 SoundParser로 Value를 인텐트로 분해 → 카테고리별 기존 오디오 명령을 발행(AudioManager가 구독·재생).
         // 완료 핸들이 없으므로(오디오는 fire-and-forget) Next는 Delay만 대기 — await/click이어도 블록하지 않는다.
 
         void PlaySound(ScriptLine line)
         {
-            var intent = SoundInterpreter.Parse(line.Value);
+            var intent = SoundParser.Parse(line.Value);
             if (!intent.IsValid)
             {
                 Log.Warn($"[NarrativeController] 잘못된 Sound 라인 — 건너뜀: \"{line.Value}\"");
@@ -348,12 +348,12 @@ namespace LoveAlgo.Story.StoryEngine
         }
 
         // ── 스크린 FX(M3 슬라이스2: FadeOut/FadeIn/Flash) ──
-        // 순수 FxInterpreter로 스크린 FX만 인식(나머지 FX는 슬라이스 밖 스킵) → 동결 수치(ScreenFxTuningSO)로
+        // 순수 FxParser로 스크린 FX만 인식(나머지 FX는 슬라이스 밖 스킵) → 동결 수치(ScreenFxTuningSO)로
         // duration 해석 → ShowScreenFxCommand 발행 → Next 대기(WaitNext). ScreenFxView가 최상위 오버레이로 표시.
 
         IEnumerator PlayFx(ScriptLine line)
         {
-            var intent = FxInterpreter.ParseScreen(line.Value);
+            var intent = FxParser.ParseScreen(line.Value);
             if (!intent.IsValid)
             {
                 // 카메라/Eye/Tint/흔들기/캐릭터/매크로 등 — 이번 슬라이스 미지원.
@@ -362,7 +362,7 @@ namespace LoveAlgo.Story.StoryEngine
             }
 
             float dur = intent.Duration >= 0f ? intent.Duration : ResolveFxDuration(intent.Kind);
-            var req = new FxRequest();
+            var req = new CompletionHandle();
             EventBus.Publish(new ShowScreenFxCommand(intent.Kind, dur, req));
             yield return WaitNext(line, () => req.IsComplete);
         }
