@@ -29,7 +29,11 @@ namespace LoveAlgo.Story.StoryEngine
         [Tooltip("Delay 진행 시 최대 대기 상한(초) — 잘못된 CSV로 무한 대기 방지.")]
         [SerializeField] float maxDelaySeconds = 10f;
 
+        [Tooltip("스테이지(BG/Char) 전환 기본 시간 동결 SO(ADR-012). 미바인딩 시 폴백 상수 사용.")]
+        [SerializeField] StageTuningSO stageTuning;
+
         public GameStateSO State { get => state; set => state = value; }
+        public StageTuningSO StageTuning { get => stageTuning; set => stageTuning = value; }
 
         /// <summary>현재 스크립트가 재생 중인가(재진입 가드).</summary>
         public bool IsRunning { get; private set; }
@@ -95,8 +99,18 @@ namespace LoveAlgo.Story.StoryEngine
                         if (!flowJumped && !end) cursor.MoveNext();
                         break;
 
+                    case LineType.BG:
+                        yield return PlayStageBg(line);
+                        cursor.MoveNext();
+                        break;
+
+                    case LineType.Char:
+                        yield return PlayStageChar(line);
+                        cursor.MoveNext();
+                        break;
+
                     default:
-                        // Char/BG/CG/SD/Overlay/Sound/FX/Place/Option(미아) — 이번 슬라이스 미지원, 건너뜀.
+                        // CG/SD/Overlay/Sound/FX/Place/Option(미아) — 이번 슬라이스 미지원, 건너뜀.
                         Log.Info($"[NarrativeController] 슬라이스 범위 밖 라인 스킵: {line}");
                         cursor.MoveNext();
                         break;
@@ -216,6 +230,71 @@ namespace LoveAlgo.Story.StoryEngine
             // Save/Schedule/Username/LockScreen/Message/MiniGame/LoadingScene/If/Mark 등 — 이번 슬라이스 미지원.
             Log.Info($"[NarrativeController] 슬라이스 범위 밖 Flow 스킵: \"{value}\"");
             return false;
+        }
+
+        // ── 스테이지(M3 슬라이스2: BG + Char) ──
+        // 순수 StageInterpreter로 Value를 인텐트로 분해 → 동결 수치(StageTuningSO)로 duration 해석 →
+        // ShowBackgroundCommand/ShowCharacterCommand 발행 → Next에 따라 대기(Await/Click=핸들, Delay=초, Immediate=비대기).
+
+        IEnumerator PlayStageBg(ScriptLine line)
+        {
+            var intent = StageInterpreter.ParseBackground(line.Value);
+            if (!intent.IsValid)
+            {
+                Log.Warn($"[NarrativeController] 잘못된 BG 라인 — 건너뜀: \"{line.Value}\"");
+                yield break;
+            }
+
+            float dur = intent.Duration >= 0f
+                ? intent.Duration
+                : (stageTuning != null ? stageTuning.BgTransitionDefault : 0.5f);
+
+            var req = new StageRequest();
+            EventBus.Publish(new ShowBackgroundCommand(intent.Name, intent.Transition, dur, req));
+            yield return WaitStage(line, req);
+        }
+
+        IEnumerator PlayStageChar(ScriptLine line)
+        {
+            var intent = StageInterpreter.ParseCharacter(line.Value);
+            if (!intent.IsValid)
+            {
+                Log.Warn($"[NarrativeController] 잘못된 Char 라인 — 건너뜀: \"{line.Value}\"");
+                yield break;
+            }
+
+            float dur = ResolveCharDuration(intent.Action);
+            var req = new StageRequest();
+            EventBus.Publish(new ShowCharacterCommand(intent.Slot, intent.Action, intent.Character, intent.Emote, dur, req));
+            yield return WaitStage(line, req);
+        }
+
+        float ResolveCharDuration(CharAction action)
+        {
+            switch (action)
+            {
+                case CharAction.Enter: return stageTuning != null ? stageTuning.CharEnterDefault : 0.5f;
+                case CharAction.Exit:  return stageTuning != null ? stageTuning.CharExitDefault : 0.4f;
+                case CharAction.Emote: return stageTuning != null ? stageTuning.CharEmoteDefault : 0.25f;
+                default:               return 0f; // Clear = 즉시
+            }
+        }
+
+        /// <summary>스테이지 라인 Next 진행: Await/Click=핸들 완료 대기, Delay=초 대기, Immediate=비대기(애니 병행).</summary>
+        IEnumerator WaitStage(ScriptLine line, StageRequest req)
+        {
+            switch (line.NextType)
+            {
+                case NextType.Await:
+                case NextType.Click:
+                    yield return new WaitUntil(() => req.IsComplete);
+                    break;
+                case NextType.Delay:
+                    if (line.DelaySeconds > 0f)
+                        yield return new WaitForSeconds(Mathf.Min(line.DelaySeconds, maxDelaySeconds));
+                    break;
+                // Immediate: 대기하지 않음.
+            }
         }
     }
 }
