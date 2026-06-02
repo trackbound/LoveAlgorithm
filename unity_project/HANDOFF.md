@@ -38,7 +38,7 @@
 - 운영: 위험도 게이트 + 마일스톤 + 형태문서 금지 + 커밋 "왜". (ADR-010)
 - 구조: 코드 `_Project/Scripts/`(피처별 asmdef) + 아트/프리팹 타입별 중앙화. (ADR-011)
 - 재설계(전사 금지) + 세션 연속성 규율 + 연출 수치 SO화. (ADR-012)
-- asmdef 도입 진행: 현재 `LoveAlgo.Core`·`LoveAlgo.Data`·`LoveAlgo.Affinity`·`LoveAlgo.Schedule` 4개(전부 autoReferenced; Data·Affinity·Schedule 모두 Core 의존, Affinity·Schedule은 Data도 의존) + 옛 Assembly-CSharp 공존. 체인: `Core ← Data ← {Affinity, Schedule}`.
+- asmdef 도입 진행: 현재 `LoveAlgo.Core`·`LoveAlgo.Data`·`LoveAlgo.Affinity`·`LoveAlgo.Schedule`·`LoveAlgo.Game` 5개(전부 autoReferenced; Data·Affinity·Schedule·Game 모두 Core 의존, Affinity·Schedule·Game은 Data도 의존) + 옛 Assembly-CSharp 공존. 체인: `Core ← Data ← {Affinity, Schedule, Game}`.
 
 ---
 
@@ -93,8 +93,16 @@
   - **asmdef**: `LoveAlgo.Schedule`에 `LoveAlgo.Data` 참조 추가(DayLoop·MinInvestMoney 소속). 순환 없음.
   - **범위 밖(구 코드 무변경 공존)**: 세션버프(Shop), 토스트/피드백문자열·UI 스폰·`ISimulationSubMode`(M5), 하루전환 오케스트레이션(저녁이벤트·페이드·오토세이브·`AdvanceDay` 실행=GameManager 구독자). 구 `ScheduleModule`/`ScheduleUI`/`DayLoopController` 그대로, 매니페스트 미변경.
   - **작동 증거**: MCP force recompile **0에러/0경고** + EditMode **92/92 통과**(81 + slice2 11: 효과적용·StatChange 변경분만·투자게이트 3종·1일1회·AdvanceDay리셋·하루종료신호·null·컨트롤러 발행경로 3종).
-- ▶️ **다음 착수(다음 세션)**: 감독이 다음 마일스톤 선택. Schedule 잔여 연결고리(다른 슬라이스/모듈에서 소비):
-  - **`DayEndRequestedEvent` 구독자** = 하루전환 오케스트레이션 거처(GameManager 재구축, M5). 구 `DayLoopController.EndDayAsync`(저녁이벤트→페이드→일차+1=`DayLoop.AdvanceDay`→오토세이브→페이즈전환)의 새 집.
+- ✅ **M5 slice1 커밋됨 (GameManager 하루전환 코어)**: 🔴 감독이 다음 우선순위로 **M5 GameManager 거처** 선택, 설계안 승인 후 구현. dangling `DayEndRequestedEvent` 구독자 해소.
+  - **신규 asmdef `LoveAlgo.Game`(refs Core, Data)** at `Scripts/Game/`. Schedule는 참조 안 함(Schedule가 Core 이벤트만 발행 → 디커플). 체인: `Core ← Data ← Game`.
+  - **`GameManager : MonoBehaviour`**(승인된 4매니저 중 1번): `[SerializeField] GameStateSO state` + `State` 프로퍼티. `OnEnable`에서 `DayEndRequestedEvent` 구독 → `OnDayEndRequested`: `DayLoop.AdvanceDay` → 정상 진행이면 `DayChangedEvent(prev,new)` 발행 / `EnteredEnding`이면 `EnteredEndingEvent(day)` 발행 후 return(구 EndDayAsync도 엔딩 시 오토세이브 전 return). 직접 호출 가능(라이프사이클 비의존).
+  - **신규 Core 이벤트**(`Scripts/Core/Events/`, ns `LoveAlgo.Events`): `DayChangedEvent`(prev/new) · `EnteredEndingEvent`(day=MaxDay+1).
+  - **명시적 deferred seam(주석만, 빈 인프라 X)**: 저녁이벤트 인라인 실행(M3 내러티브)·페이드/로딩(M5 UI)·슬롯0 오토세이브(Save 슬라이스)·페이즈전환(GamePhase 상태머신). 무존재 시스템용 await 훅 인프라는 과설계 게이트로 미작성 — 구 EndDayAsync 13단계는 이들 의존이라 지금 전체 재현 불가.
+  - **전환기 공존**: 구 `LoveAlgo.Core.GameManager`(레거시, 페이즈/세이브/컨트롤러 허브)는 옛 씬이 사용 → 그대로 둠, 매니페스트 행 `대기` 유지(신규는 교체 아닌 책임 일부 신규 구현). 단순명 충돌은 테스트에서 `using GameManager = LoveAlgo.Game.GameManager;` 별칭으로 해소.
+  - **작동 증거**: MCP force recompile **0에러/0경고** + EditMode **95/95 통과**(92 + slice1 3: 정상 하루전환+DayChanged·엔딩경계 30→31 EnteredEnding+DayChanged 미발행·null state 가드).
+- ▶️ **다음 착수(다음 세션)**: 감독이 다음 마일스톤 선택. 남은 연결고리:
+  - **`DayChangedEvent`/`EnteredEndingEvent` 구독자**: HUD·페이즈 UI(M5 UI), 엔딩 화면(M5).
+  - **GameManager 잔여 seam 채우기**: 저녁이벤트(M3 내러티브 이식 후)·페이드(M5 UI)·오토세이브(Save 슬라이스)·페이즈전환(GamePhase). 부팅 와이어링(GameStateSO를 ScheduleController.State 등에 주입)도 GameManager 소관(후속).
   - **세션버프**: Shop 슬라이스에서 `ScheduleAppliedEvent` 구독으로 적용(적용 순서=구 코드 base효과 직후 → 경계 확정 필요).
   - **UI**: M5에서 ScheduleUI가 `ScheduleSelectedCommand` 발행 + `ScheduleApplied/Rejected/StatChanged` 구독(토스트·HUD). `ScheduleTable` 정적 질의 직접 사용(ISchedule 불필요).
 
