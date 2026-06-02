@@ -7,6 +7,8 @@
         "LoveAlgo.Schedule",
         "LoveAlgo.Game",
         "LoveAlgo.Save",
+        "LoveAlgo.Affinity",
+        "LoveAlgo.Narrative",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"
     ],

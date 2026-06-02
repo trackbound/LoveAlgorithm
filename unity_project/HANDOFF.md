@@ -128,6 +128,11 @@
   - **발행 연기**: 호출자(내러티브 엔진=미이식)가 `FlowCommandResult` 보고 통지 발행. 그래서 `AffinityChangedEvent`도 지금 미추가(dangling 회피). 구 Flow 커맨드는 공존(구 엔진 사용).
   - **범위 밖**: 제어흐름 Flow(Jump/If/LoadingScene/MiniGame/Message/LockScreen/Username)=엔진 내부, ScriptEngine 이식, UI.
   - **작동 증거**: 컴파일 0에러 + EditMode **107/107**(101 + slice2 6: EventChoice·Event3재선택+2·Point·Day·악성입력 거부·null).
+- ✅ **M3 slice3 커밋됨 (FlowCommandRouter — 인터프리터 EventBus 어댑터)**: 🟠 구 `ScriptEngine` 전체는 UI/async 결합으로 미이식, 대신 인터프리터의 **런타임 호출자**를 ScheduleController 패턴으로 구현(slice2의 "발행 연기" 충족).
+  - **`FlowCommandRouter : MonoBehaviour`**(LoveAlgo.Narrative, ns `LoveAlgo.Story.StoryEngine.Flow`): `FlowCommandRequestedEvent` 구독 → `FlowCommandInterpreter.Apply` → Affinity 계열이면 `AffinityChangedEvent`, Day면 `DayChangedEvent` 발행. `State` 부팅 와이어링.
+  - **신규 Core 이벤트**: `FlowCommandRequestedEvent(command)`(명령) · `AffinityChangedEvent(heroineId, newScore)`(통지, HUD용).
+  - **연결 완성**: 이제 누구든(엔진 이식 시 ScriptEngine, 현재는 테스트/디버그) `FlowCommandRequestedEvent` 발행으로 CSV Flow→호감도 경로가 런타임에 동작. 제어흐름 Flow·ScriptEngine·UI는 여전히 범위 밖.
+  - **작동 증거**: 컴파일 0에러 + EditMode **111/111**(107+4) + PlayMode **5/5**(4 + 라우터 OnEnable 구독 1).
 - ▶️ **다음 착수(다음 세션)**: 감독이 다음 마일스톤 선택. 남은 연결고리:
   - **`DayChangedEvent`/`EnteredEndingEvent` 구독자**: HUD·페이즈 UI(M5 UI), 엔딩 화면(M5).
   - **GameManager 잔여 seam 채우기**: 저녁이벤트(M3 내러티브 이식 후)·페이드(M5 UI)·페이즈전환(GamePhase). ~~오토세이브~~=Save 슬라이스에서 완료. 부팅 와이어링(GameStateSO를 ScheduleController/SaveManager.State 등에 주입)도 GameManager 소관(후속).
