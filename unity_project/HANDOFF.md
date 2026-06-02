@@ -158,6 +158,13 @@
   - **`UIManager : MonoBehaviour`(LoveAlgo.UI)**: 그룹 루트 3개(미바인딩 시 자동 생성, `GetGroupRoot`) + `ShowGroup(target)`(대상 활성/나머지 비활성) + `ShowUiGroupCommand` 구독. 구 동명 타입과 ns 동일하나 autoRef=false라 무충돌.
   - **범위 밖**: MainUIType→특정 UI 매핑·HideAll 서브UI 정리·시뮬 컨텍스트 진입·wrapper(모듈/Services 의존=후속). publisher(페이즈 흐름)도 후속.
   - **작동 증거**: 컴파일 0에러(구 UIManager 무충돌 확인) + EditMode **125/125**(123+2: 그룹루트 생성/캐시·ShowGroup 토글) + PlayMode **8/8**(7 + OnEnable 구독→그룹 토글 1).
+- ✅ **Shop 슬라이스1 커밋됨 (구매 트랜잭션 + 즉시효과)**: 🟠 설계 승인(트랜잭션+Consumable 즉시효과; Gift인벤토리·SessionBuff·중복페널티는 스키마/통합 필요라 후속).
+  - **신규 `LoveAlgo.Shop` asmdef(refs Core, autoRef=true)** at `Scripts/Shop/`. `ItemData`/`ItemCatalogSO`/`ItemDatabase` 3파일 `git mv`(ns `LoveAlgo.Shop`·GUID 보존 → ItemCatalog.asset 바인딩 유지). 구 Shop(ShopSystem/ShopUI/ItemEffectSystem, Assembly-CSharp 잔류)은 autoref로 무변경.
+  - **순수 `ShopService.Purchase(gs, cart)→PurchaseResult`**: 검증→자금 게이트→소지금 차감(`AddMoney`)→Consumable 즉시 피로 회복(StatChange 산출). EventBus/Services 모름.
+  - **어댑터 `ShopController`**(MonoBehaviour): `PurchaseRequestedCommand` 구독 → Purchase → `StatChangedEvent`×n + `MoneyChangedEvent` + `ShopPurchasedEvent`/`ShopRejectedEvent` 발행. **HUD가 MoneyChanged/StatChanged 이미 소비**.
+  - **Shop 이벤트**(`ShopEvents.cs`): PurchaseRequestedCommand·ShopRejection·ShopPurchasedEvent·ShopRejectedEvent.
+  - **범위 밖(후속, 스키마/통합)**: Gift 인벤토리(GameStateData 필드), SessionBuff 지연 적용(Schedule 통합), 중복 50% 페널티(일자 사용추적), 해금 게이트(StoryArc).
+  - **작동 증거**: 컴파일 0에러(구 Shop autoref 무변경) + EditMode **131/131**(125+6) + PlayMode **9/9**(8 + ShopController OnEnable 구독 1).
 - ▶️ **다음 착수(다음 세션)**: 감독이 다음 마일스톤 선택. 남은 연결고리:
   - **`DayChangedEvent`/`EnteredEndingEvent` 구독자**: HUD·페이즈 UI(M5 UI), 엔딩 화면(M5).
   - **GameManager 잔여 seam 채우기**: 저녁이벤트(M3 내러티브 이식 후)·페이드(M5 UI)·페이즈전환(GamePhase). ~~오토세이브~~=Save 슬라이스에서 완료. 부팅 와이어링(GameStateSO를 ScheduleController/SaveManager.State 등에 주입)도 GameManager 소관(후속).

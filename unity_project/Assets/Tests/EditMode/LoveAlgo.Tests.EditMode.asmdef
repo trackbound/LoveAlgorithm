@@ -11,6 +11,7 @@
         "LoveAlgo.Save",
         "LoveAlgo.Audio",
         "LoveAlgo.UI",
+        "LoveAlgo.Shop",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"
     ],
