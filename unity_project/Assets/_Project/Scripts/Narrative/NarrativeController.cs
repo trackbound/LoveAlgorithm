@@ -41,11 +41,15 @@ namespace LoveAlgo.Story.StoryEngine
         [Tooltip("카메라 FX(Zoom/Pan/Reset) 기본 시간 동결 SO(ADR-012). 미바인딩 시 폴백 상수 사용.")]
         [SerializeField] CameraFxTuningSO cameraTuning;
 
+        [Tooltip("색 틴트 FX 프리셋 색·기본 알파/지속 동결 SO(ADR-012). 미바인딩 시 폴백 상수 사용.")]
+        [SerializeField] ColorTintTuningSO colorTintTuning;
+
         public GameStateSO State { get => state; set => state = value; }
         public StageTuningSO StageTuning { get => stageTuning; set => stageTuning = value; }
         public ScreenFxTuningSO FxTuning { get => fxTuning; set => fxTuning = value; }
         public ShakeTuningSO ShakeTuning { get => shakeTuning; set => shakeTuning = value; }
         public CameraFxTuningSO CameraTuning { get => cameraTuning; set => cameraTuning = value; }
+        public ColorTintTuningSO ColorTintTuning { get => colorTintTuning; set => colorTintTuning = value; }
 
         /// <summary>현재 스크립트가 재생 중인가(재진입 가드).</summary>
         public bool IsRunning { get; private set; }
@@ -389,7 +393,15 @@ namespace LoveAlgo.Story.StoryEngine
                 yield break;
             }
 
-            // Eye/Tint/캐릭터(Jump/Dim/Glitch)/매크로 등 — 이번 슬라이스 미지원.
+            // 색 틴트(ColorTint) 시도.
+            var tint = ColorTintParser.Parse(line.Value);
+            if (tint.IsValid)
+            {
+                yield return PlayColorTint(line, tint);
+                yield break;
+            }
+
+            // Eye/캐릭터(Jump/Dim/Glitch)/매크로 등 — 이번 슬라이스 미지원.
             Log.Info($"[NarrativeController] 슬라이스 범위 밖 FX 스킵: \"{line.Value}\"");
         }
 
@@ -468,6 +480,32 @@ namespace LoveAlgo.Story.StoryEngine
                 case CameraFxKind.Pan:   return cameraTuning != null ? cameraTuning.PanDefault : 0.5f;
                 default:                 return cameraTuning != null ? cameraTuning.ResetDefault : 0.4f; // Reset
             }
+        }
+
+        // ── 색 틴트 FX(M3 슬라이스2: ColorTint) ──
+        // 순수 ColorTintParser로 프리셋/Clear/알파/지속 분해 → 동결 수치(ColorTintTuningSO)로 색·알파·지속 해석 →
+        // ColorTintCommand 발행(RGB 분리) → Next 대기(WaitNext). ColorTintView가 최상위 오버레이 색을 lerp.
+
+        IEnumerator PlayColorTint(ScriptLine line, ColorTintIntent intent)
+        {
+            float dur = intent.Duration >= 0f
+                ? intent.Duration
+                : (colorTintTuning != null ? colorTintTuning.DefaultDuration : 0.5f);
+
+            var req = new CompletionHandle();
+            if (intent.IsClear)
+            {
+                EventBus.Publish(new ColorTintCommand(0f, 0f, 0f, 0f, dur, true, req));
+            }
+            else
+            {
+                float alpha = intent.Alpha >= 0f
+                    ? intent.Alpha
+                    : (colorTintTuning != null ? colorTintTuning.DefaultAlpha : 0.25f);
+                Color c = colorTintTuning != null ? colorTintTuning.ColorFor(intent.Preset) : Color.gray;
+                EventBus.Publish(new ColorTintCommand(c.r, c.g, c.b, alpha, dur, false, req));
+            }
+            yield return WaitNext(line, () => req.IsComplete);
         }
     }
 }
