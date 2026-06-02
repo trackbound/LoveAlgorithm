@@ -100,6 +100,13 @@
   - **명시적 deferred seam(주석만, 빈 인프라 X)**: 저녁이벤트 인라인 실행(M3 내러티브)·페이드/로딩(M5 UI)·슬롯0 오토세이브(Save 슬라이스)·페이즈전환(GamePhase 상태머신). 무존재 시스템용 await 훅 인프라는 과설계 게이트로 미작성 — 구 EndDayAsync 13단계는 이들 의존이라 지금 전체 재현 불가.
   - **전환기 공존**: 구 `LoveAlgo.Core.GameManager`(레거시, 페이즈/세이브/컨트롤러 허브)는 옛 씬이 사용 → 그대로 둠, 매니페스트 행 `대기` 유지(신규는 교체 아닌 책임 일부 신규 구현). 단순명 충돌은 테스트에서 `using GameManager = LoveAlgo.Game.GameManager;` 별칭으로 해소.
   - **작동 증거**: MCP force recompile **0에러/0경고** + EditMode **95/95 통과**(92 + slice1 3: 정상 하루전환+DayChanged·엔딩경계 30→31 EnteredEnding+DayChanged 미발행·null state 가드).
+- ✅ **테스트 인프라 정립 커밋됨 (Tests asmdef + PlayMode)**: 🟡 프로덕션 코드 무변경. 그간 테스트가 asmdef 없이 암묵적 `Assembly-CSharp-Editor`에 얹혀 PlayMode 테스트를 못 돌리던 갭 해소.
+  - **제약(핵심)**: asmdef 테스트 어셈블리는 구 모놀리식 `Assembly-CSharp`를 참조 불가 → 구 코드 테스트는 asmdef로 못 옮김. 그래서 **신규(asmdef) 대상 / 구(모놀리식) 대상**으로 분리.
+  - **신규 `LoveAlgo.Tests.EditMode` asmdef**(`Assets/Tests/EditMode/`, refs Core·Data·Affinity·Schedule·Game + TestRunner, autoRef=false): 신규 코드 테스트 6개를 `git mv`로 이동(메타 GUID·이력 보존) — Affinity/DayLoop/ScheduleEffects/ScheduleService/GameStateSave/GameManager. 부수효과로 **신규 테스트가 구 모놀리식에서 격리**(아키텍처 이득).
+  - **신규 `LoveAlgo.Tests.PlayMode` asmdef**(`Assets/Tests/PlayMode/`): `GameManagerPlayModeTests` 3종([UnityTest]) — EditMode가 못 덮던 `OnEnable` 구독 경로를 실제 런타임에서 검증(구독→DayEndRequested→DayChanged / 풀체인 ScheduleSelect→하루전환 / 엔딩경계). dev 하니스 우회를 Test Runner 정식 테스트로 승격.
+  - **구 코드 테스트 3개 잔류**(`Assets/Tests/Editor/`, Assembly-CSharp-Editor): ScriptParser·ScriptValidator(`LoveAlgo.Story`)·SaveLoadRoundTrip(`LoveAlgo.Story.SaveSystem`). 해당 구 코드 이식 시 함께 정리.
+  - **작동 증거**: EditMode **95/95**(이동 후 총합 불변=손실 없음) + PlayMode **3/3**, 컴파일 0에러.
+  - **참고(execute_code 막힘)**: MCP `execute_code`는 Roslyn 미설치→CodeDom 폴백 + 전체 어셈블리 `/r:` 커맨드라인 한계로 이 프로젝트에선 사용 불가. 런타임 검증은 PlayMode 테스트 어셈블리로 한다(서드파티 cruft 정리는 별도 백로그).
 - ▶️ **다음 착수(다음 세션)**: 감독이 다음 마일스톤 선택. 남은 연결고리:
   - **`DayChangedEvent`/`EnteredEndingEvent` 구독자**: HUD·페이즈 UI(M5 UI), 엔딩 화면(M5).
   - **GameManager 잔여 seam 채우기**: 저녁이벤트(M3 내러티브 이식 후)·페이드(M5 UI)·오토세이브(Save 슬라이스)·페이즈전환(GamePhase). 부팅 와이어링(GameStateSO를 ScheduleController.State 등에 주입)도 GameManager 소관(후속).
@@ -107,7 +114,7 @@
   - **UI**: M5에서 ScheduleUI가 `ScheduleSelectedCommand` 발행 + `ScheduleApplied/Rejected/StatChanged` 구독(토스트·HUD). `ScheduleTable` 정적 질의 직접 사용(ISchedule 불필요).
 
 ### 워크플로우 규율 (directive)
-- 무언가 만들 때마다 **전용 테스트 씬 + 플레이모드로 작동 증거**(dev_guide 증거우선).
+- 무언가 만들 때마다 **작동 증거**(dev_guide 증거우선): 순수/공식층은 **EditMode 테스트**(`LoveAlgo.Tests.EditMode`), MonoBehaviour 라이프사이클·구독·씬 와이어링은 **PlayMode 테스트**(`LoveAlgo.Tests.PlayMode`). 임시 dev 하니스/씬 금지 — Test Runner 어셈블리로.
 - **썸네일은 레이어 배제 캡처**가 필수 요구사항(옛 개발 말썽: 안 잡혀야 할 UI 포함됨).
 
 ### 잔여 Common (소비처 이식 시점 처리로 확정 — 파킹)

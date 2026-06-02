@@ -1,0 +1,25 @@
+{
+    "name": "LoveAlgo.Tests.PlayMode",
+    "rootNamespace": "",
+    "references": [
+        "LoveAlgo.Core",
+        "LoveAlgo.Data",
+        "LoveAlgo.Schedule",
+        "LoveAlgo.Game",
+        "UnityEngine.TestRunner",
+        "UnityEditor.TestRunner"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
