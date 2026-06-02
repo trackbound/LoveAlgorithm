@@ -1,7 +1,10 @@
 {
     "name": "LoveAlgo.Narrative",
     "rootNamespace": "",
-    "references": [],
+    "references": [
+        "LoveAlgo.Core",
+        "LoveAlgo.Affinity"
+    ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
