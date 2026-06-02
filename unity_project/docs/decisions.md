@@ -5,6 +5,18 @@
 
 ---
 
+## ADR-013: 화면 페이즈 상태머신 — 전환 단일 권위자 (2026-06-02)
+- **맥락**: 화면 전환(Title↔Story↔Schedule↔Ending, LockScreen 인터스티셜)이 여러 곳에서 각자 발행돼 충돌·stale 위험. 현재 `NarrativeController`가 `ShowUiGroupCommand(Narrative/Simulation)`를 *직접* 토글한다. 화면 상태를 잡는 단일 enum이 없어 "두 화면 동시 활성"이 가능 — 실제로 슬라이스1 씬 배선 중 `EndingRoot`+`Narrative`가 동시 active로 새는 버그 발생. `GameManager`에도 미구현 "GamePhase 상태머신" seam이 주석으로 존재. **(스펙만 — 구현은 M3 슬라이스2 LockScreen/페이즈전환과 함께.)**
+- **결정**:
+  - **단일 진실원**: `GamePhase` enum을 **State SO**에 둠(현재 활성 화면). UI/피처는 동기 읽기. 값 하나라 "두 화면 동시 활성"이 구조적으로 불가.
+  - **Phase vs Overlay 구분(핵심)**: **Phase**(상호배타 *목적지* — `Title`/`Story`/`Schedule`/`Ending`)는 화면을 교체. **Overlay**(인터스티셜 — `LockScreen`/`Username`/`Confirm`)는 현 화면 *위에* 잠깐 떴다 복귀하며 **GamePhase를 바꾸지 않는다**. Overlay는 ADR-007의 완료-핸들(await) 패턴 그대로 — 현 phase 유지한 채 뜨고 핸들 완료 시 사라짐(복귀 스택 불요).
+  - **순수 + 단일 어댑터**: 순수 `PhaseService`(FSM, 유효 전환표, EditMode 테스트) + **유일 권위자 `PhaseController`**(이것만 phase를 바꾸고 `ShowUiGroupCommand`/패널 활성을 발행). 피처는 `RequestPhaseCommand(GamePhase)` *의도*만 발행 — **직접 `ShowUiGroupCommand` 발행 금지**. UIManager는 기계적 그룹 토글 유지.
+  - **축 분리(ADR-003 충돌 회피)**: `PhaseController`=화면 페이즈(어느 화면), `GameManager`=데이루프/세이브 + Unity 씬 로드(ADR-003 "씬 전환"). GameManager는 30일 종료 시 직접 엔딩을 켜지 않고 `RequestPhaseCommand(Ending)` 발행.
+  - **phase↔UI 매핑은 PhaseController 단독 소관**: 그룹형(Story/Schedule/Title)은 `ShowUiGroupCommand`, 엔딩은 패널 활성. (UIGroup 이름 정합 `Narrative↔Story`·`Simulation↔Schedule`은 구현 시 정리.)
+- **전환표(초안, 구현 시 확정)**: `Title→{Story,Schedule}` · `Story→{Schedule,Ending}` · `Schedule→{Story,Ending}` · `*→Ending` · `Ending→Title`. Overlay(LockScreen 등)는 push/pop이라 phase 무변. 무효 전환은 PhaseService가 거부+경고.
+- **이유**: 단일 상태 + 단일 권위자로 stale·충돌을 구조적으로 차단(방금 버그가 근거). 전환 규칙이 한 곳(PhaseService)에 모여 검증·테스트 가능. Phase/Overlay 분리로 LockScreen 복귀를 스택 없이 처리(과설계 회피).
+- **구현 시 확정 필요**: ①UIGroup↔GamePhase 이름/매핑 일원화 ②PhaseController 씬 경계(부팅 persistent vs 씬별 재수립, 구 EntryRouter 부팅 라우팅 흡수 범위) ③Overlay 목록 동결.
+
 ## ADR-012: 재설계 원칙(전사 금지) + 세션 연속성 규율 (2026-06-01)
 - **맥락**: 재작성은 기존 클래스를 그대로 베끼면 같은 문제가 재발. 또 다세션에 걸쳐 진행되므로 컨텍스트가 끊겨도 일관돼야 함.
 - **결정**:
