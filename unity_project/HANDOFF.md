@@ -165,6 +165,11 @@
   - **Shop 이벤트**(`ShopEvents.cs`): PurchaseRequestedCommand·ShopRejection·ShopPurchasedEvent·ShopRejectedEvent.
   - **범위 밖(후속, 스키마/통합)**: Gift 인벤토리(GameStateData 필드), SessionBuff 지연 적용(Schedule 통합), 중복 50% 페널티(일자 사용추적), 해금 게이트(StoryArc).
   - **작동 증거**: 컴파일 0에러(구 Shop autoref 무변경) + EditMode **131/131**(125+6) + PlayMode **9/9**(8 + ShopController OnEnable 구독 1).
+- ✅ **부팅 와이어링 커밋됨 (GameBoot + GameBootstrap)**: 🟠 컴포지션 루트 시작(동결값·스키마 무관).
+  - **순수 `GameBoot.NewGame(gs, balance)`**(LoveAlgo.Game, +Affinity 참조): `ResetRuntime` + `AffinityFormula.Configure(balance)`(null→폴백) + `DayLoop.BeginRun`(1일차·행동 풀충전). EditMode 테스트.
+  - **`GameBootstrap : MonoBehaviour`**: Start에서 `GameBoot.NewGame` 호출(직접 `Boot()`도 가능). 인스펙터 `state`/`balance`/`newGameOnStart`.
+  - **설계 결정**: 매니저/컨트롤러의 `State` 바인딩은 **씬 인스펙터** 몫(통합 씬이 이미 그렇게 함)으로 두고, 부트스트랩은 인스펙터로 못 하는 런타임 단계(Configure+BeginRun)만 담당 → Game이 전 모듈을 참조하는 무거운 결합 회피.
+  - **작동 증거**: 컴파일 0에러 + EditMode **133/133**(131+2) + PlayMode **10/10**(9 + GameBootstrap Start 부팅 1).
 - ▶️ **다음 착수(다음 세션)**: 감독이 다음 마일스톤 선택. 남은 연결고리:
   - **`DayChangedEvent`/`EnteredEndingEvent` 구독자**: HUD·페이즈 UI(M5 UI), 엔딩 화면(M5).
   - **GameManager 잔여 seam 채우기**: 저녁이벤트(M3 내러티브 이식 후)·페이드(M5 UI)·페이즈전환(GamePhase). ~~오토세이브~~=Save 슬라이스에서 완료. 부팅 와이어링(GameStateSO를 ScheduleController/SaveManager.State 등에 주입)도 GameManager 소관(후속).

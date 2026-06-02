@@ -3,7 +3,8 @@
     "rootNamespace": "",
     "references": [
         "LoveAlgo.Core",
-        "LoveAlgo.Data"
+        "LoveAlgo.Data",
+        "LoveAlgo.Affinity"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
