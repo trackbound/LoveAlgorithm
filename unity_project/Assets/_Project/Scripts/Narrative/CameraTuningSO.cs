@@ -7,8 +7,8 @@ namespace LoveAlgo.Story
     /// 엔진(NarrativeController)이 참조해 CSV가 duration을 생략한 경우(인텐트 Duration&lt;0) 이 값으로 해석한다.
     /// 값 출처 = docs/REWRITE_TUNING_VALUES.csv(줌 0.5s, 팬 0.5s, 리셋 0.4s). 런타임 읽기 전용.
     /// </summary>
-    [CreateAssetMenu(fileName = "CameraFxTuning", menuName = "LoveAlgo/Camera FX Tuning")]
-    public class CameraFxTuningSO : ScriptableObject
+    [CreateAssetMenu(fileName = "CameraTuning", menuName = "LoveAlgo/Camera Tuning")]
+    public class CameraTuningSO : ScriptableObject
     {
         [Tooltip("CamZoom 기본 시간. 동결값 0.5s.")]
         [SerializeField] float zoomDefault = 0.5f;

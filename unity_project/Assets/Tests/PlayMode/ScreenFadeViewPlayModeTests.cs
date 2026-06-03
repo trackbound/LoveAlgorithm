@@ -4,21 +4,21 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.TestTools;
 using LoveAlgo.Common; // EventBus
-using LoveAlgo.Events; // ShowScreenFxCommand, ScreenFxKind, CompletionHandle, NarrativeFinishedEvent
-using LoveAlgo.UI;     // ScreenFxView
+using LoveAlgo.Events; // ShowScreenFadeCommand, ScreenFadeKind, CompletionHandle, NarrativeFinishedEvent
+using LoveAlgo.UI;     // ScreenFadeView
 
 namespace LoveAlgo.Tests.PlayMode
 {
     /// <summary>
-    /// 스크린 FX 슬라이스2 PlayMode 검증: ScreenFxView가 OnEnable에서 ShowScreenFxCommand를 구독해 오버레이
+    /// 스크린 페이드 슬라이스2 PlayMode 검증: ScreenFadeView가 OnEnable에서 ShowScreenFadeCommand를 구독해 오버레이
     /// 알파를 코루틴 lerp하고 완료 핸들을 푸는지(FadeOut→1, FadeIn→0, Flash→0). 명령+핸들로만 검증.
     /// </summary>
-    public class ScreenFxViewPlayModeTests
+    public class ScreenFadeViewPlayModeTests
     {
-        static ScreenFxView MakeView(out GameObject root, out Image overlay)
+        static ScreenFadeView MakeView(out GameObject root, out Image overlay)
         {
-            root = new GameObject("ScreenFxView_PlayTest");
-            var view = root.AddComponent<ScreenFxView>(); // OnEnable → 구독
+            root = new GameObject("ScreenFadeView_PlayTest");
+            var view = root.AddComponent<ScreenFadeView>(); // OnEnable → 구독
             var imgGo = new GameObject("overlay");
             imgGo.transform.SetParent(root.transform);
             overlay = imgGo.AddComponent<Image>();
@@ -40,7 +40,7 @@ namespace LoveAlgo.Tests.PlayMode
             {
                 yield return null;
                 var req = new CompletionHandle();
-                EventBus.Publish(new ShowScreenFxCommand(ScreenFxKind.FadeOut, 0.05f, req));
+                EventBus.Publish(new ShowScreenFadeCommand(ScreenFadeKind.FadeOut, 0.05f, req));
                 yield return WaitDone(req);
 
                 Assert.IsTrue(req.IsComplete);
@@ -58,12 +58,12 @@ namespace LoveAlgo.Tests.PlayMode
                 yield return null;
                 // 먼저 FadeOut으로 암전.
                 var outReq = new CompletionHandle();
-                EventBus.Publish(new ShowScreenFxCommand(ScreenFxKind.FadeOut, 0f, outReq));
+                EventBus.Publish(new ShowScreenFadeCommand(ScreenFadeKind.FadeOut, 0f, outReq));
                 yield return WaitDone(outReq);
                 Assert.AreEqual(1f, overlay.color.a, 1e-3f);
 
                 var inReq = new CompletionHandle();
-                EventBus.Publish(new ShowScreenFxCommand(ScreenFxKind.FadeIn, 0.05f, inReq));
+                EventBus.Publish(new ShowScreenFadeCommand(ScreenFadeKind.FadeIn, 0.05f, inReq));
                 yield return WaitDone(inReq);
 
                 Assert.IsTrue(inReq.IsComplete);
@@ -80,7 +80,7 @@ namespace LoveAlgo.Tests.PlayMode
             {
                 yield return null;
                 var req = new CompletionHandle();
-                EventBus.Publish(new ShowScreenFxCommand(ScreenFxKind.Flash, 0.06f, req));
+                EventBus.Publish(new ShowScreenFadeCommand(ScreenFadeKind.Flash, 0.06f, req));
                 yield return WaitDone(req);
 
                 Assert.IsTrue(req.IsComplete);
@@ -97,7 +97,7 @@ namespace LoveAlgo.Tests.PlayMode
             {
                 yield return null;
                 var req = new CompletionHandle();
-                EventBus.Publish(new ShowScreenFxCommand(ScreenFxKind.FadeOut, 0f, req));
+                EventBus.Publish(new ShowScreenFadeCommand(ScreenFadeKind.FadeOut, 0f, req));
                 yield return WaitDone(req);
                 Assert.AreEqual(1f, overlay.color.a, 1e-3f);
 

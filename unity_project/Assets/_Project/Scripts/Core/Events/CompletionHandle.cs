@@ -1,7 +1,7 @@
 namespace LoveAlgo.Events
 {
     /// <summary>
-    /// 연출 명령 1건의 완료 신호(공용). 명령에 참조형으로 실려, 뷰(DialogueView/StageView/ScreenFxView)가 표시/
+    /// 연출 명령 1건의 완료 신호(공용). 명령에 참조형으로 실려, 뷰(DialogueView/StageView/ScreenFadeView)가 표시/
     /// 전환을 마치면 <see cref="Complete"/>를 호출하고, 엔진(NarrativeController) 코루틴은 Next=await/click일 때
     /// <see cref="IsComplete"/>가 참이 될 때까지 대기한다(ADR-007의 "완료-핸들 실은 이벤트").
     ///

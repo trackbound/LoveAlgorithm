@@ -5,6 +5,7 @@ using LoveAlgo.Common; // EventBus, Log
 using LoveAlgo.Core;   // GameStateSO
 using LoveAlgo.Events; // 내러티브/UI/Flow/오디오 이벤트
 using UnityEngine;
+using UnityEngine.Serialization; // FormerlySerializedAs (fxTuning → screenFadeTuning 바인딩 보존)
 
 namespace LoveAlgo.Story.StoryEngine
 {
@@ -32,14 +33,15 @@ namespace LoveAlgo.Story.StoryEngine
         [Tooltip("스테이지(BG/Char) 전환 기본 시간 동결 SO(ADR-012). 미바인딩 시 폴백 상수 사용.")]
         [SerializeField] StageTuningSO stageTuning;
 
-        [Tooltip("스크린 FX(페이드/플래시) 기본 시간 동결 SO(ADR-012). 미바인딩 시 폴백 상수 사용.")]
-        [SerializeField] ScreenFxTuningSO fxTuning;
+        [Tooltip("스크린 페이드(페이드/플래시) 기본 시간 동결 SO(ADR-012). 미바인딩 시 폴백 상수 사용.")]
+        [FormerlySerializedAs("fxTuning")]
+        [SerializeField] ScreenFadeTuningSO screenFadeTuning;
 
         [Tooltip("흔들기 FX(Stage/Dialogue/Char) 강도·지속·진동 프로파일 동결 SO(ADR-012). 미바인딩 시 폴백 상수 사용.")]
         [SerializeField] ShakeTuningSO shakeTuning;
 
         [Tooltip("카메라 FX(Zoom/Pan/Reset) 기본 시간 동결 SO(ADR-012). 미바인딩 시 폴백 상수 사용.")]
-        [SerializeField] CameraFxTuningSO cameraTuning;
+        [SerializeField] CameraTuningSO cameraTuning;
 
         [Tooltip("색 틴트 FX 프리셋 색·기본 알파/지속 동결 SO(ADR-012). 미바인딩 시 폴백 상수 사용.")]
         [SerializeField] ColorTintTuningSO colorTintTuning;
@@ -52,9 +54,9 @@ namespace LoveAlgo.Story.StoryEngine
 
         public GameStateSO State { get => state; set => state = value; }
         public StageTuningSO StageTuning { get => stageTuning; set => stageTuning = value; }
-        public ScreenFxTuningSO FxTuning { get => fxTuning; set => fxTuning = value; }
+        public ScreenFadeTuningSO ScreenFadeTuning { get => screenFadeTuning; set => screenFadeTuning = value; }
         public ShakeTuningSO ShakeTuning { get => shakeTuning; set => shakeTuning = value; }
-        public CameraFxTuningSO CameraTuning { get => cameraTuning; set => cameraTuning = value; }
+        public CameraTuningSO CameraTuning { get => cameraTuning; set => cameraTuning = value; }
         public ColorTintTuningSO ColorTintTuning { get => colorTintTuning; set => colorTintTuning = value; }
         public EyeMaskTuningSO EyeMaskTuning { get => eyeMaskTuning; set => eyeMaskTuning = value; }
         public StageLayerTuningSO StageLayerTuning { get => stageLayerTuning; set => stageLayerTuning = value; }
@@ -383,19 +385,19 @@ namespace LoveAlgo.Story.StoryEngine
                 yield return new WaitForSeconds(Mathf.Min(line.DelaySeconds, maxDelaySeconds));
         }
 
-        // ── 스크린 FX(M3 슬라이스2: FadeOut/FadeIn/Flash) ──
-        // 순수 FxParser로 스크린 FX만 인식(나머지 FX는 슬라이스 밖 스킵) → 동결 수치(ScreenFxTuningSO)로
-        // duration 해석 → ShowScreenFxCommand 발행 → Next 대기(WaitNext). ScreenFxView가 최상위 오버레이로 표시.
+        // ── 스크린 페이드(M3 슬라이스2: FadeOut/FadeIn/Flash) ──
+        // 순수 ScreenFadeParser로 화면 페이드만 인식(나머지 FX는 형제 파서로 위임) → 동결 수치(ScreenFadeTuningSO)로
+        // duration 해석 → ShowScreenFadeCommand 발행 → Next 대기(WaitNext). ScreenFadeView가 최상위 오버레이로 표시.
 
         IEnumerator PlayFx(ScriptLine line)
         {
-            // 스크린 오버레이(FadeOut/FadeIn/Flash) 먼저 시도.
-            var screen = FxParser.ParseScreen(line.Value);
+            // 스크린 페이드(FadeOut/FadeIn/Flash) 먼저 시도.
+            var screen = ScreenFadeParser.Parse(line.Value);
             if (screen.IsValid)
             {
-                float dur = screen.Duration >= 0f ? screen.Duration : ResolveFxDuration(screen.Kind);
+                float dur = screen.Duration >= 0f ? screen.Duration : ResolveFadeDuration(screen.Kind);
                 var req = new CompletionHandle();
-                EventBus.Publish(new ShowScreenFxCommand(screen.Kind, dur, req));
+                EventBus.Publish(new ShowScreenFadeCommand(screen.Kind, dur, req));
                 yield return WaitNext(line, () => req.IsComplete);
                 yield break;
             }
@@ -409,7 +411,7 @@ namespace LoveAlgo.Story.StoryEngine
             }
 
             // 카메라(CamZoom/CamPan/CamReset) 시도.
-            var cam = CameraFxParser.Parse(line.Value);
+            var cam = CameraParser.Parse(line.Value);
             if (cam.IsValid)
             {
                 yield return PlayCamera(line, cam);
@@ -436,11 +438,11 @@ namespace LoveAlgo.Story.StoryEngine
             Log.Info($"[NarrativeController] 슬라이스 범위 밖 FX 스킵: \"{line.Value}\"");
         }
 
-        float ResolveFxDuration(ScreenFxKind kind)
+        float ResolveFadeDuration(ScreenFadeKind kind)
         {
-            if (kind == ScreenFxKind.Flash)
-                return fxTuning != null ? fxTuning.FlashDefault : 0.14f;
-            return fxTuning != null ? fxTuning.FadeDefault : 0.9f;
+            if (kind == ScreenFadeKind.Flash)
+                return screenFadeTuning != null ? screenFadeTuning.FlashDefault : 0.14f;
+            return screenFadeTuning != null ? screenFadeTuning.FadeDefault : 0.9f;
         }
 
         // ── 흔들기 FX(M3 슬라이스2: StageShake/DialogueShake/CharShake) ──
@@ -492,23 +494,23 @@ namespace LoveAlgo.Story.StoryEngine
         }
 
         // ── 카메라 FX(M3 슬라이스2: CamZoom/CamPan/CamReset) ──
-        // 순수 CameraFxParser로 종류/배율/오프셋 분해 → 동결 수치(CameraFxTuningSO)로 duration 해석 →
-        // CameraFxCommand 발행 → Next 대기(WaitNext). CameraFxView가 _Stage 콘텐츠 래퍼의 scale/pos를 lerp.
+        // 순수 CameraParser로 종류/배율/오프셋 분해 → 동결 수치(CameraTuningSO)로 duration 해석 →
+        // CameraCommand 발행 → Next 대기(WaitNext). CameraView가 _Stage 콘텐츠 래퍼의 scale/pos를 lerp.
 
-        IEnumerator PlayCamera(ScriptLine line, CameraFxIntent intent)
+        IEnumerator PlayCamera(ScriptLine line, CameraIntent intent)
         {
             float dur = intent.Duration >= 0f ? intent.Duration : ResolveCameraDuration(intent.Kind);
             var req = new CompletionHandle();
-            EventBus.Publish(new CameraFxCommand(intent.Kind, intent.ZoomScale, intent.PanX, intent.PanY, dur, req));
+            EventBus.Publish(new CameraCommand(intent.Kind, intent.ZoomScale, intent.PanX, intent.PanY, dur, req));
             yield return WaitNext(line, () => req.IsComplete);
         }
 
-        float ResolveCameraDuration(CameraFxKind kind)
+        float ResolveCameraDuration(CameraKind kind)
         {
             switch (kind)
             {
-                case CameraFxKind.Zoom:  return cameraTuning != null ? cameraTuning.ZoomDefault : 0.5f;
-                case CameraFxKind.Pan:   return cameraTuning != null ? cameraTuning.PanDefault : 0.5f;
+                case CameraKind.Zoom:  return cameraTuning != null ? cameraTuning.ZoomDefault : 0.5f;
+                case CameraKind.Pan:   return cameraTuning != null ? cameraTuning.PanDefault : 0.5f;
                 default:                 return cameraTuning != null ? cameraTuning.ResetDefault : 0.4f; // Reset
             }
         }

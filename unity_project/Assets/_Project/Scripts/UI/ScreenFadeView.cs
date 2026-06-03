@@ -1,21 +1,21 @@
 using System;
 using System.Collections;
 using LoveAlgo.Common; // EventBus, Log
-using LoveAlgo.Events; // ShowScreenFxCommand, ScreenFxKind, CompletionHandle, NarrativeFinishedEvent
+using LoveAlgo.Events; // ShowScreenFadeCommand, ScreenFadeKind, CompletionHandle, NarrativeFinishedEvent
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace LoveAlgo.UI
 {
     /// <summary>
-    /// 스크린 오버레이 FX 뷰(*View, M3 슬라이스2: FadeOut/FadeIn/Flash). <see cref="ShowScreenFxCommand"/>를
+    /// 스크린 페이드 뷰(*View, M3 슬라이스2: FadeOut/FadeIn/Flash). <see cref="ShowScreenFadeCommand"/>를
     /// 구독해 전체화면 오버레이 Image의 알파를 코루틴 lerp하고, 완료 시 핸들(<see cref="CompletionHandle"/>)을 푼다
     /// (ADR-007: UI는 표시만). 엔진(NarrativeController)은 이 뷰를 직접 알지 못한다 — 명령 + 핸들로만 연결.
-    /// 대사 UI까지 덮어야 하므로 최상위 캔버스(_ScreenFx, 높은 sortingOrder)에 부착. 슬라이스1처럼 DOTween 미사용.
+    /// 대사 UI까지 덮어야 하므로 최상위 캔버스(_ScreenOverlay, 높은 sortingOrder)에 부착. 슬라이스1처럼 DOTween 미사용.
     ///
     /// FadeOut=검정 0→1(유지), FadeIn=검정 1→0(해제), Flash=흰색 0→1→0. 내러티브 종료 시 잔여 암전 리셋.
     /// </summary>
-    public class ScreenFxView : MonoBehaviour
+    public class ScreenFadeView : MonoBehaviour
     {
         [Tooltip("전체화면 오버레이 Image(검정/흰색을 알파로 연출). 미바인딩 시 효과 생략·핸들만 완료.")]
         [SerializeField] Image overlay;
@@ -30,7 +30,7 @@ namespace LoveAlgo.UI
 
         void OnEnable()
         {
-            _sub = EventBus.Subscribe<ShowScreenFxCommand>(OnShow);
+            _sub = EventBus.Subscribe<ShowScreenFadeCommand>(OnShow);
             _finishSub = EventBus.Subscribe<NarrativeFinishedEvent>(_ => ResetOverlay());
             if (overlay != null)
             {
@@ -46,7 +46,7 @@ namespace LoveAlgo.UI
             _sub = _finishSub = null;
         }
 
-        void OnShow(ShowScreenFxCommand e)
+        void OnShow(ShowScreenFadeCommand e)
         {
             if (_routine != null)
             {
@@ -57,7 +57,7 @@ namespace LoveAlgo.UI
             _routine = StartCoroutine(Run(e));
         }
 
-        IEnumerator Run(ShowScreenFxCommand e)
+        IEnumerator Run(ShowScreenFadeCommand e)
         {
             if (overlay == null)
             {
@@ -67,20 +67,20 @@ namespace LoveAlgo.UI
 
             switch (e.Kind)
             {
-                case ScreenFxKind.FadeOut:
+                case ScreenFadeKind.FadeOut:
                     SetOverlay(fadeColor, overlay.color.a);
                     overlay.enabled = true;
                     yield return FadeAlpha(overlay.color.a, 1f, e.Duration);
                     break;
 
-                case ScreenFxKind.FadeIn:
+                case ScreenFadeKind.FadeIn:
                     SetOverlay(fadeColor, overlay.color.a);
                     overlay.enabled = true;
                     yield return FadeAlpha(overlay.color.a, 0f, e.Duration);
                     overlay.enabled = false;
                     break;
 
-                case ScreenFxKind.Flash:
+                case ScreenFadeKind.Flash:
                     SetOverlay(flashColor, 0f);
                     overlay.enabled = true;
                     float half = e.Duration * 0.5f;

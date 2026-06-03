@@ -3,22 +3,22 @@ using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
 using LoveAlgo.Common; // EventBus
-using LoveAlgo.Events; // CameraFxCommand, CameraFxKind, CompletionHandle, NarrativeFinishedEvent
-using LoveAlgo.UI;     // CameraFxView
+using LoveAlgo.Events; // CameraCommand, CameraKind, CompletionHandle, NarrativeFinishedEvent
+using LoveAlgo.UI;     // CameraView
 
 namespace LoveAlgo.Tests.PlayMode
 {
     /// <summary>
-    /// 카메라 FX 슬라이스2 PlayMode 검증: CameraFxView가 OnEnable에서 CameraFxCommand를 구독해 콘텐츠 래퍼의
+    /// 카메라 FX 슬라이스2 PlayMode 검증: CameraView가 OnEnable에서 CameraCommand를 구독해 콘텐츠 래퍼의
     /// localScale(줌)·anchoredPosition(팬)을 lerp하고, 끝나면 목표값에 안착 + 완료 핸들을 푸는지. 명령+핸들로만 검증.
     /// </summary>
-    public class CameraFxViewPlayModeTests
+    public class CameraViewPlayModeTests
     {
-        static CameraFxView MakeView(out GameObject root, out RectTransform body)
+        static CameraView MakeView(out GameObject root, out RectTransform body)
         {
-            root = new GameObject("CameraFxView_PlayTest", typeof(RectTransform));
+            root = new GameObject("CameraView_PlayTest", typeof(RectTransform));
             body = root.GetComponent<RectTransform>();
-            var view = root.AddComponent<CameraFxView>(); // OnEnable → 구독
+            var view = root.AddComponent<CameraView>(); // OnEnable → 구독
             view.Body = body;
             return view;
         }
@@ -37,7 +37,7 @@ namespace LoveAlgo.Tests.PlayMode
             {
                 yield return null;
                 var req = new CompletionHandle();
-                EventBus.Publish(new CameraFxCommand(CameraFxKind.Zoom, 1.5f, 0f, 0f, 0.1f, req));
+                EventBus.Publish(new CameraCommand(CameraKind.Zoom, 1.5f, 0f, 0f, 0.1f, req));
                 yield return WaitDone(req);
 
                 Assert.IsTrue(req.IsComplete);
@@ -56,7 +56,7 @@ namespace LoveAlgo.Tests.PlayMode
             {
                 yield return null;
                 var req = new CompletionHandle();
-                EventBus.Publish(new CameraFxCommand(CameraFxKind.Pan, 1f, 120f, -40f, 0.1f, req));
+                EventBus.Publish(new CameraCommand(CameraKind.Pan, 1f, 120f, -40f, 0.1f, req));
                 yield return WaitDone(req);
 
                 Assert.IsTrue(req.IsComplete);
@@ -79,7 +79,7 @@ namespace LoveAlgo.Tests.PlayMode
                 yield return null;
 
                 var req = new CompletionHandle();
-                EventBus.Publish(new CameraFxCommand(CameraFxKind.Reset, 1f, 0f, 0f, 0.1f, req));
+                EventBus.Publish(new CameraCommand(CameraKind.Reset, 1f, 0f, 0f, 0.1f, req));
                 yield return WaitDone(req);
 
                 Assert.IsTrue(req.IsComplete);
@@ -97,7 +97,7 @@ namespace LoveAlgo.Tests.PlayMode
             {
                 yield return null;
                 var req = new CompletionHandle();
-                EventBus.Publish(new CameraFxCommand(CameraFxKind.Zoom, 2f, 0f, 0f, 0f, req));
+                EventBus.Publish(new CameraCommand(CameraKind.Zoom, 2f, 0f, 0f, 0f, req));
                 yield return null;
 
                 Assert.IsTrue(req.IsComplete);

@@ -868,7 +868,7 @@ MonoBehaviour:
   state: {fileID: 11400000, guid: 305637b563feb1c4e877cc99c3421f0d, type: 2}
   maxDelaySeconds: 10
   stageTuning: {fileID: 11400000, guid: 29c91222fa18502448a69a840ec23dd9, type: 2}
-  fxTuning: {fileID: 11400000, guid: bb4f9e4a110a1c54591e35a5be7d1d0d, type: 2}
+  screenFadeTuning: {fileID: 11400000, guid: bb4f9e4a110a1c54591e35a5be7d1d0d, type: 2}
   shakeTuning: {fileID: 11400000, guid: cf28fef389ed02542bd0ef948f1c055c, type: 2}
   cameraTuning: {fileID: 11400000, guid: e6e7687ffda7f1d4693fb39c126a50e9, type: 2}
   colorTintTuning: {fileID: 11400000, guid: 04facbab9eebe7e4688b394d59f27c24, type: 2}
@@ -5901,7 +5901,7 @@ GameObject:
   - component: {fileID: 1600874795}
   - component: {fileID: 1600874799}
   m_Layer: 0
-  m_Name: _ScreenFx
+  m_Name: _ScreenOverlay
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

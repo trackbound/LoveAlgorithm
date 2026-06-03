@@ -10,8 +10,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fac341a50fe10f749b0f6e99b2481c85, type: 3}
-  m_Name: CameraFxTuning
-  m_EditorClassIdentifier: LoveAlgo.Narrative::LoveAlgo.Story.CameraFxTuningSO
+  m_Name: CameraTuning
+  m_EditorClassIdentifier: LoveAlgo.Narrative::LoveAlgo.Story.CameraTuningSO
   zoomDefault: 0.5
   panDefault: 0.5
   resetDefault: 0.4

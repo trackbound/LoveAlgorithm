@@ -110,7 +110,7 @@ namespace LoveAlgo.Tests.Editor
         public void NonShake_Fx_Is_Invalid()
         {
             Assert.IsFalse(ShakeParser.Parse("FadeOut").IsValid);
-            Assert.IsFalse(ShakeParser.Parse("CamZoom:1.5").IsValid); // 카메라 줌/팬은 CameraFxParser 소관
+            Assert.IsFalse(ShakeParser.Parse("CamZoom:1.5").IsValid); // 카메라 줌/팬은 CameraParser 소관
             Assert.IsFalse(ShakeParser.Parse("ColorTint:red").IsValid);
             Assert.IsFalse(ShakeParser.Parse("").IsValid);
             Assert.IsFalse(ShakeParser.Parse(null).IsValid);
