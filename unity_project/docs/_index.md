@@ -21,7 +21,8 @@
 
 | 파일명 | 역할 | 현재 버전 | 마지막 갱신 |
 |---|---|---|---|
-| [dev_guide.md](file:///c:/Users/chris/GitHub/LoveAlgorithm/unity_project/docs/dev_guide.md) | 개발 룰북, UI 네이밍, 하이어라키 및 C# 아키텍처 가이드 | v1.2 | 2026-06-02 |
+| [dev_guide.md](file:///c:/Users/chris/GitHub/LoveAlgorithm/unity_project/docs/dev_guide.md) | 개발 룰북, UI 네이밍, 하이어라키 및 C# 아키텍처 가이드 | v1.2 | 2026-06-03 |
+| [vn_conventions.md](file:///c:/Users/chris/GitHub/LoveAlgorithm/unity_project/docs/vn_conventions.md) | VN 표준 정본 레퍼런스 — 재작성 시 베낄 대상(렌더타깃 분류축·네이밍·CSV vs C# 경계·안티패턴·모범 예시) | v1 | 2026-06-03 |
 | [decisions.md](file:///c:/Users/chris/GitHub/LoveAlgorithm/unity_project/docs/decisions.md) | 결정 이력 (누적 ADR) | v1 | 2026-06-02 |
 | [WORK_PLAN.md](file:///c:/Users/chris/GitHub/LoveAlgorithm/unity_project/docs/WORK_PLAN.md) | 동적 작업 백로그 및 우선순위 리스트 (⚠️구 아키텍처 기준 stale) | v1 | 2026-06-02 |
 | [STORY_CSV_GUIDE.md](file:///c:/Users/chris/GitHub/LoveAlgorithm/unity_project/docs/STORY_CSV_GUIDE.md) | 기획자용 스토리 CSV 연출 및 대사 엔진 구문 가이드 | v1 | 2026-05-31 |
@@ -79,7 +80,8 @@
 
 | 작업 영역 | 1차 참조 문서 | 2차 참조 문서 |
 |---|---|---|
-| **C# 코딩 / 리팩토링** | [dev_guide.md](file:///c:/Users/chris/GitHub/LoveAlgorithm/unity_project/docs/dev_guide.md) | [decisions.md](file:///c:/Users/chris/GitHub/LoveAlgorithm/unity_project/docs/decisions.md) |
+| **재작성 슬라이스 착수 (신규 코드)** | [vn_conventions.md](file:///c:/Users/chris/GitHub/LoveAlgorithm/unity_project/docs/vn_conventions.md) | [STORY_COMMANDS.md](file:///c:/Users/chris/GitHub/LoveAlgorithm/unity_project/docs/STORY_COMMANDS.md) |
+| **C# 코딩 / 리팩토링** | [dev_guide.md](file:///c:/Users/chris/GitHub/LoveAlgorithm/unity_project/docs/dev_guide.md) | [vn_conventions.md](file:///c:/Users/chris/GitHub/LoveAlgorithm/unity_project/docs/vn_conventions.md) · [decisions.md](file:///c:/Users/chris/GitHub/LoveAlgorithm/unity_project/docs/decisions.md) |
 | **새로운 기능 추가 / 백로그 확인** | [WORK_PLAN.md](file:///c:/Users/chris/GitHub/LoveAlgorithm/unity_project/docs/WORK_PLAN.md) | [decisions.md](file:///c:/Users/chris/GitHub/LoveAlgorithm/unity_project/docs/decisions.md) |
 | **UI 명명 및 계층 설계** | [dev_guide.md §3-4/3-5](file:///c:/Users/chris/GitHub/LoveAlgorithm/unity_project/docs/dev_guide.md#L148) | [HANDOFF_NOTES.md](file:///c:/Users/chris/GitHub/LoveAlgorithm/unity_project/docs/HANDOFF_NOTES.md) |
 | **스토리 작성 및 연출 스크립팅** | [STORY_CSV_GUIDE.md](file:///c:/Users/chris/GitHub/LoveAlgorithm/unity_project/docs/STORY_CSV_GUIDE.md) | [STORY_COMMANDS.md](file:///c:/Users/chris/GitHub/LoveAlgorithm/unity_project/docs/STORY_COMMANDS.md) |

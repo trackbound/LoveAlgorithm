@@ -41,7 +41,7 @@
 
 ### 1-3. 코드 컨벤션
 - 표준 C# / Unity 6 스타일을 따릅니다 (PascalCase 타입/메서드, camelCase 필드).
-- 네임스페이스: `LoveAlgo.{모듈명}` 필수 (예: `LoveAlgo.Modules.Stats`).
+- 네임스페이스: asmdef명과 정합하는 `LoveAlgo.{피처}` (예: `LoveAlgo.Affinity`, `LoveAlgo.Narrative`). 구 `LoveAlgo.Modules.*`·`StoryEngine` 금지.
 - XML 주석은 public API/인터페이스에만, 인라인 주석은 코드가 아닌 "왜 이렇게 짰는지"만 기술합니다.
 
 ### 1-4. 과설계 게이트 (Self-Audit)
@@ -163,7 +163,8 @@ Main/
   Main Camera
   EventSystem
   _Bootstrap/         진입점 그룹 — GameBootstrap(컴포지션 루트) + 4매니저 + 피처 컨트롤러(EventBus 구독). State SO 인스펙터 주입.
-  _Stage/             Canvas (Camera mode) — ScreenFX, StageRig (인게임 연출)
+  _Stage/             Canvas — 인게임 무대(BG/Char/CG/SD/Overlay 레이어). 하위 Content 래퍼를 무대 변형(Camera/StageShake)이 조작.
+  _ScreenOverlay/     Canvas (최상위) — 화면 오버레이 연출(ScreenFade/ColorTint/EyeMask). 렌더타깃 분류 = vn_conventions.md §3.
   _Popup/             Canvas (Overlay mode) — Dimmer, Modal, Notification (팝업 인프라)
   _UI/                Canvas (Overlay mode) — 인게임 메인 UI 그룹 (DialogueView, ScheduleView 등)
 ```
