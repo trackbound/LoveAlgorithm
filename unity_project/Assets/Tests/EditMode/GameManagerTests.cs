@@ -5,7 +5,7 @@ using UnityEngine.TestTools;
 using LoveAlgo;        // GameConstants
 using LoveAlgo.Core;   // GameStateSO, DayLoop
 using LoveAlgo.Common; // EventBus
-using LoveAlgo.Events; // DayEndRequestedEvent, DayChangedEvent, EnteredEndingEvent
+using LoveAlgo.Events; // DayEndRequestedEvent, DayChangedEvent, RequestPhaseCommand
 // 구 LoveAlgo.Core.GameManager(레거시, 소비처 이식 시 삭제 예정)와 단순명 충돌 → 별칭으로 신규 타입 고정.
 using GameManager = LoveAlgo.Game.GameManager;
 
@@ -13,7 +13,7 @@ namespace LoveAlgo.Tests.Editor
 {
     /// <summary>
     /// M5 slice1 검증: 하루전환 오케스트레이션(GameManager). DayEndRequestedEvent 구독 →
-    /// DayLoop.AdvanceDay(일차+1·행동 풀충전·제한 리셋) → DayChangedEvent/EnteredEndingEvent 발행.
+    /// DayLoop.AdvanceDay(일차+1·행동 풀충전·제한 리셋) → DayChangedEvent 발행 / 엔딩 시 RequestPhaseCommand(Ending).
     /// 정상 진행·엔딩 경계·EventBus 구독 경로·null 가드를 결정적으로 확인한다.
     /// 수치는 GameConstants에서 읽어 에셋/폴백 어느 쪽이든 무관하게 통과하도록 한다.
     /// </summary>
@@ -45,7 +45,7 @@ namespace LoveAlgo.Tests.Editor
             DayChangedEvent changed = default;
 
             var t1 = EventBus.Subscribe<DayChangedEvent>(e => { dayChangedFired = true; changed = e; });
-            var t2 = EventBus.Subscribe<EnteredEndingEvent>(e => endingFired = true);
+            var t2 = EventBus.Subscribe<RequestPhaseCommand>(e => endingFired = true);
             try
             {
                 var gm = MakeManager(so, out go);
@@ -75,10 +75,10 @@ namespace LoveAlgo.Tests.Editor
             var so = MakeState();
             GameObject go = null;
             bool dayChangedFired = false, endingFired = false;
-            EnteredEndingEvent ending = default;
+            RequestPhaseCommand ending = default;
 
             var t1 = EventBus.Subscribe<DayChangedEvent>(e => dayChangedFired = true);
-            var t2 = EventBus.Subscribe<EnteredEndingEvent>(e => { endingFired = true; ending = e; });
+            var t2 = EventBus.Subscribe<RequestPhaseCommand>(e => { endingFired = true; ending = e; });
             try
             {
                 var gm = MakeManager(so, out go);
@@ -86,8 +86,8 @@ namespace LoveAlgo.Tests.Editor
 
                 gm.OnDayEndRequested(new DayEndRequestedEvent(so.Day));
 
-                Assert.IsTrue(endingFired, "MaxDay 초과 진입 시 EnteredEndingEvent 발행");
-                Assert.AreEqual(GameConstants.MaxDay + 1, ending.Day);
+                Assert.IsTrue(endingFired, "MaxDay 초과 진입 시 RequestPhaseCommand 발행");
+                Assert.AreEqual(ScreenPhase.Ending, ending.Target, "엔딩 페이즈 요청");
                 Assert.AreEqual(GameConstants.MaxDay + 1, so.Day, "AdvanceDay는 일차를 올림(엔딩 경계)");
                 Assert.IsFalse(dayChangedFired, "엔딩 진입 시 DayChangedEvent 미발행");
             }
@@ -109,7 +109,7 @@ namespace LoveAlgo.Tests.Editor
             var gm = go.AddComponent<GameManager>(); // state 미바인딩
             bool any = false;
             var t1 = EventBus.Subscribe<DayChangedEvent>(e => any = true);
-            var t2 = EventBus.Subscribe<EnteredEndingEvent>(e => any = true);
+            var t2 = EventBus.Subscribe<RequestPhaseCommand>(e => any = true);
             try
             {
                 LogAssert.Expect(LogType.Error, new Regex("GameManager.*미바인딩"));

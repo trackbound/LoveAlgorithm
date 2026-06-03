@@ -10,6 +10,7 @@ using LoveAlgo.Events;                 // 내러티브/UI/Affinity 이벤트
 using LoveAlgo.Affinity;               // AffinityFormula (결정적 폴백)
 using LoveAlgo.Story.StoryEngine;      // NarrativeController
 using LoveAlgo.Story.StoryEngine.Flow; // FlowCommandController
+using LoveAlgo.Game;                   // PhaseController (격리 청소용)
 
 namespace LoveAlgo.Tests.PlayMode
 {
@@ -37,7 +38,7 @@ namespace LoveAlgo.Tests.PlayMode
 
         // 캡처
         readonly List<string> _dialogues = new();
-        readonly List<UIGroup> _groups = new();
+        readonly List<ScreenPhase> _phases = new();
         int _choiceCount;
         string _affHero;
         int _affScore = int.MinValue;
@@ -53,10 +54,12 @@ namespace LoveAlgo.Tests.PlayMode
                 UnityEngine.Object.DestroyImmediate(p.gameObject);
             foreach (var r in UnityEngine.Object.FindObjectsByType<FlowCommandController>(FindObjectsSortMode.None))
                 UnityEngine.Object.DestroyImmediate(r.gameObject);
+            foreach (var pc in UnityEngine.Object.FindObjectsByType<PhaseController>(FindObjectsSortMode.None))
+                UnityEngine.Object.DestroyImmediate(pc.gameObject);
 
             // NUnit은 픽스처 인스턴스를 테스트 간 공유한다 — 캡처 상태를 매 테스트 초기화(누수 방지).
             _dialogues.Clear();
-            _groups.Clear();
+            _phases.Clear();
             _choiceCount = 0;
             _affHero = null;
             _affScore = int.MinValue;
@@ -68,8 +71,8 @@ namespace LoveAlgo.Tests.PlayMode
             _gs = ScriptableObject.CreateInstance<GameStateSO>();
             _gs.ResetRuntime();
 
-            // 구독은 PlayScriptCommand 발행 전에 — 첫 ShowUiGroupCommand(Narrative)까지 캡처.
-            _subs.Add(EventBus.Subscribe<ShowUiGroupCommand>(e => _groups.Add(e.Group)));
+            // 구독은 PlayScriptCommand 발행 전에 — 첫 RequestPhaseCommand(Story)까지 캡처.
+            _subs.Add(EventBus.Subscribe<RequestPhaseCommand>(e => _phases.Add(e.Target)));
             _subs.Add(EventBus.Subscribe<ShowDialogueCommand>(e => { _dialogues.Add(e.Text); e.Handle.Complete(); }));
             _subs.Add(EventBus.Subscribe<ShowChoiceCommand>(e => { _choiceCount++; e.Handle.Select(selectIndex); }));
             _subs.Add(EventBus.Subscribe<AffinityChangedEvent>(e => { _affHero = e.HeroineId; _affScore = e.NewScore; }));
@@ -120,8 +123,8 @@ namespace LoveAlgo.Tests.PlayMode
             Assert.IsTrue(_finished, "NarrativeFinishedEvent 발행");
             Assert.AreEqual("slice1", _finishedName);
 
-            Assert.AreEqual(UIGroup.Narrative, _groups[0], "시작 시 Narrative 그룹");
-            Assert.AreEqual(UIGroup.Simulation, _groups[_groups.Count - 1], "종료 시 Simulation 복귀");
+            Assert.AreEqual(ScreenPhase.Story, _phases[0], "시작 시 Story 페이즈 요청");
+            Assert.AreEqual(ScreenPhase.Schedule, _phases[_phases.Count - 1], "종료 시 Schedule 복귀 요청");
         }
 
         [UnityTest]

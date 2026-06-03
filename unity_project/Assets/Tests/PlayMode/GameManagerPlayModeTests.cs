@@ -5,7 +5,7 @@ using UnityEngine.TestTools;
 using LoveAlgo;          // GameConstants
 using LoveAlgo.Core;     // GameStateSO, DayLoop
 using LoveAlgo.Common;   // EventBus
-using LoveAlgo.Events;   // DayEndRequested/DayChanged/EnteredEnding
+using LoveAlgo.Events;   // DayEndRequested/DayChanged/RequestPhase
 using LoveAlgo.Schedule; // ScheduleController, ScheduleSelectedCommand, ScheduleType
 using GameManager = LoveAlgo.Game.GameManager;
 
@@ -102,8 +102,8 @@ namespace LoveAlgo.Tests.PlayMode
             gm.State = so;
 
             bool ending = false, changed = false;
-            int endingDay = 0;
-            var s1 = EventBus.Subscribe<EnteredEndingEvent>(e => { ending = true; endingDay = e.Day; });
+            ScreenPhase endingTarget = default;
+            var s1 = EventBus.Subscribe<RequestPhaseCommand>(e => { ending = true; endingTarget = e.Target; });
             var s2 = EventBus.Subscribe<DayChangedEvent>(e => changed = true);
             try
             {
@@ -111,8 +111,8 @@ namespace LoveAlgo.Tests.PlayMode
 
                 EventBus.Publish(new DayEndRequestedEvent(so.Day));
 
-                Assert.IsTrue(ending, "MaxDay 초과 진입 시 EnteredEndingEvent 발행");
-                Assert.AreEqual(GameConstants.MaxDay + 1, endingDay);
+                Assert.IsTrue(ending, "MaxDay 초과 진입 시 RequestPhaseCommand 발행");
+                Assert.AreEqual(ScreenPhase.Ending, endingTarget, "엔딩 페이즈 요청");
                 Assert.IsFalse(changed, "엔딩 진입 시 DayChangedEvent 미발행");
             }
             finally

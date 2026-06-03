@@ -88,6 +88,9 @@ namespace LoveAlgo.Core
         // ── 데이루프 카운터 / 소지금 동기 접근 ──
         // 진행 로직(공식)은 Data 레이어 DayLoop가 담당하고, 여기선 상태 read/write만 노출한다.
         public int Day { get => _runtime.day; set => _runtime.day = value; }
+
+        // 현재 화면 페이즈(ADR-013). PhaseController만 set한다(유일 권위자). 런타임 전용(부팅 리셋).
+        public ScreenPhase Phase { get => _runtime.phase; set => _runtime.phase = value; }
         public int RemainingActions { get => _runtime.remainingActions; set => _runtime.remainingActions = value; }
 
         // 소지금은 0 미만이 될 수 없다(구 GameState.AddMoney = Mathf.Max(0, …) 재현). 세터에서 바닥 클램프.

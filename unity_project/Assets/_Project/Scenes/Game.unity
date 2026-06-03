@@ -927,7 +927,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &163969063
 RectTransform:
   m_ObjectHideFlags: 0
@@ -959,8 +959,8 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 367e29b50e8af364c9f25c0e4295c525, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: LoveAlgo.UI::LoveAlgo.UI.EndingPanel
-  root: {fileID: 1632040265}
+  m_EditorClassIdentifier: LoveAlgo.UI::LoveAlgo.UI.EndingView
+  state: {fileID: 11400000, guid: 305637b563feb1c4e877cc99c3421f0d, type: 2}
   resultText: {fileID: 1112589860}
 --- !u!1 &167105608
 GameObject:
@@ -3022,6 +3022,51 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 713622784}
   m_CullTransparentMesh: 1
+--- !u!1 &716083497
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 716083498}
+  - component: {fileID: 716083499}
+  m_Layer: 0
+  m_Name: PhaseController
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &716083498
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 716083497}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1237975564}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &716083499
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 716083497}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fcce287189cae6f49af942c6dd1a2575, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: LoveAlgo.Game::LoveAlgo.Game.PhaseController
+  state: {fileID: 11400000, guid: 305637b563feb1c4e877cc99c3421f0d, type: 2}
 --- !u!1 &718894839
 GameObject:
   m_ObjectHideFlags: 0
@@ -4658,6 +4703,7 @@ Transform:
   - {fileID: 108069083}
   - {fileID: 111016150}
   - {fileID: 1014702966}
+  - {fileID: 716083498}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1306857207
@@ -6037,9 +6083,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 21e213c01f0923a4b85fd379b1479b84, type: 3}
   m_Name: 
   m_EditorClassIdentifier: LoveAlgo.UI::LoveAlgo.UI.UIManager
-  narrativeRoot: {fileID: 1404978815}
-  simulationRoot: {fileID: 424740319}
-  titleRoot: {fileID: 0}
+  storyRoot: {fileID: 1404978815}
+  scheduleRoot: {fileID: 424740319}
+  endingRoot: {fileID: 163969063}
 --- !u!114 &1617231321
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6142,7 +6188,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1632040266
 RectTransform:
   m_ObjectHideFlags: 0

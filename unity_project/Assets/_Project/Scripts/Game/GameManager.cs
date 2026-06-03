@@ -1,7 +1,7 @@
 using System;
 using LoveAlgo.Common; // EventBus
 using LoveAlgo.Core;   // GameStateSO, DayLoop, DayAdvanceResult
-using LoveAlgo.Events; // DayEndRequestedEvent, DayChangedEvent, EnteredEndingEvent
+using LoveAlgo.Events; // DayEndRequestedEvent, DayChangedEvent, RequestPhaseCommand
 using UnityEngine;
 
 namespace LoveAlgo.Game
@@ -11,11 +11,11 @@ namespace LoveAlgo.Game
     /// Service Locator/인터페이스 없이 통지 이벤트를 구독해 하루 전환을 진행한다(금지선4).
     ///
     /// <para>slice1 책임 = 하루전환 코어뿐 — <see cref="DayEndRequestedEvent"/> 구독 → <see cref="DayLoop.AdvanceDay"/>
-    /// → 결과를 <see cref="DayChangedEvent"/> 또는 <see cref="EnteredEndingEvent"/>로 통지.</para>
+    /// → 결과를 <see cref="DayChangedEvent"/> 통지, 엔딩 진입은 <c>RequestPhaseCommand(Ending)</c> 발행.</para>
     ///
     /// <para>구 <c>DayLoopController.EndDayAsync</c>의 나머지 단계는 아직 재작성되지 않은 시스템에 의존하므로
     /// 아래 OnDayEndRequested 내부에 명시적 seam(주석)으로 남긴다 — 저녁 이벤트 인라인 실행(M3 내러티브),
-    /// 페이드/로딩 연출(M5 UI), 슬롯0 오토세이브(Save 슬라이스), 페이즈 전환(GamePhase 상태머신).
+    /// 페이드/로딩 연출(M5 UI), 슬롯0 오토세이브(Save 슬라이스), 페이즈 전환(ScreenPhase 상태머신).
     /// 무존재 시스템용 await 훅 인프라는 지금 만들지 않는다(과설계 게이트).</para>
     ///
     /// 씬 하이어라키: _Managers/GameManager, 인스펙터에서 <see cref="state"/> 바인딩(부팅 와이어링은 후속 슬라이스).
@@ -59,7 +59,7 @@ namespace LoveAlgo.Game
             if (r.EnteredEnding)
             {
                 // 구 EndDayAsync도 엔딩 진입 시 오토세이브/페이드 전에 return — 정상 하루 진행·세이브 없음.
-                EventBus.Publish(new EnteredEndingEvent(r.Day));
+                EventBus.Publish(new RequestPhaseCommand(ScreenPhase.Ending));
                 return;
             }
 

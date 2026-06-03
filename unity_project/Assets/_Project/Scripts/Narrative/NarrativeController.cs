@@ -14,9 +14,9 @@ namespace LoveAlgo.Story.StoryEngine
     /// 거대한 디스패치를 결정 로직(순수 ScriptCursor/ChoiceParser/ChoiceEffectInterpreter)과 분리하고,
     /// 여기선 코루틴 진행 + UI 명령 발행 + 완료 핸들 대기만 한다(ADR-007, FlowCommandController 패턴 미러).
     ///
-    /// 흐름: <see cref="PlayScriptCommand"/> 구독 → 파싱 → <c>ShowUiGroupCommand(Narrative)</c> → 라인 루프
+    /// 흐름: <see cref="PlayScriptCommand"/> 구독 → 파싱 → <c>RequestPhaseCommand(Story)</c> → 라인 루프
     /// (Text=대사 명령+핸들 대기, Choice=선택지 명령+효과/점프, Flow=Jump/End 직접·Affinity/Day는 Router로 위임)
-    /// → 종료 시 <c>ShowUiGroupCommand(Simulation)</c> + <see cref="NarrativeFinishedEvent"/>.
+    /// → 종료 시 <c>RequestPhaseCommand(Schedule)</c> + <see cref="NarrativeFinishedEvent"/>.
     ///
     /// 슬라이스 범위 밖(스킵+로그): Char/BG/CG/SD/Overlay/Sound/FX/Place, 인라인 태그, 오토모드,
     /// 점프 페이드/스테이지 합성/로그 복원, 선택지 조건 필터링, Flow의 Save/Schedule/Username/LockScreen 등.
@@ -98,7 +98,7 @@ namespace LoveAlgo.Story.StoryEngine
         IEnumerator Run(List<ScriptLine> lines, string scriptName)
         {
             IsRunning = true;
-            EventBus.Publish(new ShowUiGroupCommand(UIGroup.Narrative));
+            EventBus.Publish(new RequestPhaseCommand(ScreenPhase.Story));
 
             var cursor = new ScriptCursor(lines);
             bool end = false;
@@ -169,7 +169,7 @@ namespace LoveAlgo.Story.StoryEngine
                 }
             }
 
-            EventBus.Publish(new ShowUiGroupCommand(UIGroup.Simulation));
+            EventBus.Publish(new RequestPhaseCommand(ScreenPhase.Schedule));
             EventBus.Publish(new NarrativeFinishedEvent(scriptName));
             IsRunning = false;
         }

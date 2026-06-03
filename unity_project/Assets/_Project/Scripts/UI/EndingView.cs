@@ -1,40 +1,32 @@
-using System;
-using LoveAlgo.Common; // EventBus
-using LoveAlgo.Events;  // EnteredEndingEvent
+using LoveAlgo.Core; // GameStateSO
 using TMPro;
 using UnityEngine;
 
 namespace LoveAlgo.UI
 {
     /// <summary>
-    /// 엔딩 화면(*Panel). EnteredEndingEvent를 구독해 엔딩 루트를 켜고 결과를 표시한다(ADR-007: 표시만).
-    /// 30일 루프의 종료점 — 화려한 연출·엔딩 분기는 범위 밖(내러티브/M5 후속).
+    /// 엔딩 화면 뷰(Ending 그룹). 화면 전환은 PhaseController→UIManager가 그룹 토글로 처리하므로(ADR-013) 이 뷰는
+    /// 표시만 — Ending 그룹이 활성화되며 <see cref="OnEnable"/>이 불리면 현재 일차로 결과 텍스트를 구성한다
+    /// (state 동기 읽기, ADR-007). 구 EnteredEndingEvent 구독·자체 루트 토글은 제거(그룹 시스템 일원화로 "두 화면
+    /// 동시 active" 버그 해소). 30일 루프 종료점 — 엔딩 분기·화려한 연출은 범위 밖.
     /// </summary>
     public class EndingView : MonoBehaviour
     {
-        [Tooltip("엔딩 비주얼 루트. 평소 비활성, 엔딩 진입 시 활성화.")]
-        [SerializeField] GameObject root;
+        [Tooltip("도달 일차 표시용 상태 SO. 인스펙터/부팅 주입.")]
+        [SerializeField] GameStateSO state;
         [SerializeField] TMP_Text resultText;
 
-        IDisposable _sub;
-
-        public GameObject Root { get => root; set => root = value; }
+        public GameStateSO State { get => state; set => state = value; }
         public TMP_Text ResultText { get => resultText; set => resultText = value; }
-        public bool IsShown => root != null && root.activeSelf;
 
-        void OnEnable() => _sub = EventBus.Subscribe<EnteredEndingEvent>(OnEnteredEnding);
+        /// <summary>엔딩 화면이 현재 표시 중인가(Ending 그룹 활성 = 이 뷰 활성).</summary>
+        public bool IsShown => isActiveAndEnabled;
 
-        void OnDisable()
+        void OnEnable()
         {
-            _sub?.Dispose();
-            _sub = null;
-        }
-
-        void OnEnteredEnding(EnteredEndingEvent e)
-        {
-            if (root != null) root.SetActive(true);
-            // e.Day = MaxDay + 1 → 도달 일차는 그 직전.
-            if (resultText != null) resultText.text = $"{e.Day - 1}일의 여정이 끝났습니다.";
+            // 엔딩 진입 시 state.Day = MaxDay+1(DayLoop.AdvanceDay가 경계에서도 day++) → 도달 일차는 그 직전.
+            if (resultText != null && state != null)
+                resultText.text = $"{state.Day - 1}일의 여정이 끝났습니다.";
         }
     }
 }

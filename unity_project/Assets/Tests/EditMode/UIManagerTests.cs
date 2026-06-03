@@ -1,12 +1,12 @@
 using NUnit.Framework;
 using UnityEngine;
-using LoveAlgo.Events; // UIGroup
-using LoveAlgo.UI;     // UIManager
+using LoveAlgo.Core; // ScreenPhase
+using LoveAlgo.UI;   // UIManager
 
 namespace LoveAlgo.Tests.Editor
 {
     /// <summary>
-    /// UIManager 슬라이스1 검증: 그룹 루트 제공(자동 생성·중복 방지) + ShowGroup(대상 활성/나머지 비활성).
+    /// UIManager 검증: 화면 그룹 루트 제공(자동 생성·중복 방지) + ShowGroup(대상 활성/나머지 비활성). 그룹 = ScreenPhase.
     /// </summary>
     [TestFixture]
     public class UIManagerTests
@@ -18,15 +18,15 @@ namespace LoveAlgo.Tests.Editor
             var ui = go.AddComponent<UIManager>();
             try
             {
-                var n = ui.GetGroupRoot(UIGroup.Narrative);
-                var s = ui.GetGroupRoot(UIGroup.Simulation);
-                var t = ui.GetGroupRoot(UIGroup.Title);
+                var story = ui.GetGroupRoot(ScreenPhase.Story);
+                var sched = ui.GetGroupRoot(ScreenPhase.Schedule);
+                var end   = ui.GetGroupRoot(ScreenPhase.Ending);
 
-                Assert.IsNotNull(n); Assert.IsNotNull(s); Assert.IsNotNull(t);
-                Assert.AreNotSame(n, s);
-                Assert.AreNotSame(s, t);
-                Assert.AreSame(go.transform, n.parent, "그룹 루트는 매니저의 자식");
-                Assert.AreSame(n, ui.GetGroupRoot(UIGroup.Narrative), "재호출 시 동일 루트(중복 생성 안 함)");
+                Assert.IsNotNull(story); Assert.IsNotNull(sched); Assert.IsNotNull(end);
+                Assert.AreNotSame(story, sched);
+                Assert.AreNotSame(sched, end);
+                Assert.AreSame(go.transform, story.parent, "그룹 루트는 매니저의 자식");
+                Assert.AreSame(story, ui.GetGroupRoot(ScreenPhase.Story), "재호출 시 동일 루트(중복 생성 안 함)");
             }
             finally { Object.DestroyImmediate(go); }
         }
@@ -38,14 +38,14 @@ namespace LoveAlgo.Tests.Editor
             var ui = go.AddComponent<UIManager>();
             try
             {
-                ui.ShowGroup(UIGroup.Simulation);
-                Assert.IsFalse(ui.GetGroupRoot(UIGroup.Narrative).gameObject.activeSelf);
-                Assert.IsTrue(ui.GetGroupRoot(UIGroup.Simulation).gameObject.activeSelf);
-                Assert.IsFalse(ui.GetGroupRoot(UIGroup.Title).gameObject.activeSelf);
+                ui.ShowGroup(ScreenPhase.Schedule);
+                Assert.IsFalse(ui.GetGroupRoot(ScreenPhase.Story).gameObject.activeSelf);
+                Assert.IsTrue(ui.GetGroupRoot(ScreenPhase.Schedule).gameObject.activeSelf);
+                Assert.IsFalse(ui.GetGroupRoot(ScreenPhase.Ending).gameObject.activeSelf);
 
-                ui.ShowGroup(UIGroup.Title);
-                Assert.IsFalse(ui.GetGroupRoot(UIGroup.Simulation).gameObject.activeSelf);
-                Assert.IsTrue(ui.GetGroupRoot(UIGroup.Title).gameObject.activeSelf);
+                ui.ShowGroup(ScreenPhase.Ending);
+                Assert.IsFalse(ui.GetGroupRoot(ScreenPhase.Schedule).gameObject.activeSelf);
+                Assert.IsTrue(ui.GetGroupRoot(ScreenPhase.Ending).gameObject.activeSelf);
             }
             finally { Object.DestroyImmediate(go); }
         }

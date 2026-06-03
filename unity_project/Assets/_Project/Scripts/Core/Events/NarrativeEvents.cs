@@ -100,7 +100,7 @@ namespace LoveAlgo.Events
 
     /// <summary>
     /// 스크립트 재생이 끝났음을 알리는 통지(EventBus). 페이즈 오케스트레이션/시뮬 복귀가 구독.
-    /// (엔진은 종료 직전 <c>ShowUiGroupCommand(Simulation)</c>도 함께 발행한다.)
+    /// (엔진은 종료 직전 <c>RequestPhaseCommand(Schedule)</c>도 함께 발행한다.)
     /// </summary>
     public readonly struct NarrativeFinishedEvent
     {

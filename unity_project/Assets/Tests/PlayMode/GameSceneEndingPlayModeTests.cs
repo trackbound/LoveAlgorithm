@@ -13,7 +13,7 @@ namespace LoveAlgo.Tests.PlayMode
 {
     /// <summary>
     /// 슬라이스 C: 30일 루프의 종료점. 마지막 날 행동을 소진해 엔딩에 진입하면
-    /// EndingView이 EnteredEndingEvent를 받아 엔딩 루트를 표시하는지 실 씬에서 검증.
+    /// 엔딩 진입 시 PhaseController→그룹 토글로 EndingView(Ending 그룹)이 표시되는지 실 씬에서 검증.
     /// </summary>
     public class GameSceneEndingPlayModeTests
     {
@@ -36,7 +36,7 @@ namespace LoveAlgo.Tests.PlayMode
             JsonSaveStore.Delete(JsonSaveStore.AutoSaveSlot);
             try
             {
-                // 마지막 날 행동 소진 → DayEndRequested → AdvanceDay(Day>MaxDay) → EnteredEndingEvent
+                // 마지막 날 행동 소진 → DayEndRequested → AdvanceDay(Day>MaxDay) → RequestPhaseCommand(Ending) → 그룹 토글
                 int apd = GameConstants.ActionsPerDay;
                 for (int i = 0; i < apd; i++)
                     ui.Slots[0].Button.onClick.Invoke();
