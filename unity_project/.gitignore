@@ -73,3 +73,11 @@ crashlytics-build.properties
 # Temporary auto-generated Android Assets
 /[Aa]ssets/[Ss]treamingAssets/aa.meta
 /[Aa]ssets/[Ss]treamingAssets/aa/*
+
+# IDE / 에디터 (로컬)
+.idea/
+.vscode/
+*.slnx
+
+# Claude Code 로컬 설정/플랜 (공유 설정을 버전관리하려면 !.claude/settings.json 추가)
+.claude/
