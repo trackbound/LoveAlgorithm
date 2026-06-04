@@ -3449,6 +3449,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: LoveAlgo.Game::LoveAlgo.Game.GameManager
   state: {fileID: 11400000, guid: 305637b563feb1c4e877cc99c3421f0d, type: 2}
+  eventScripts: {fileID: 11400000, guid: e2c4b6fa8a4acf849b06a8f3fc6e4d0d, type: 2}
 --- !u!1 &1014702965
 GameObject:
   m_ObjectHideFlags: 0
