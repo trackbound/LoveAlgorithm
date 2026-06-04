@@ -99,6 +99,13 @@
 
 ## ✅ 이번 세션 검증·커밋 완료
 
+- **타이틀 흐름 — 2026-06-05 세션 4커밋(EditMode 240→243·PlayMode 55→59 그린, 컴파일 0)**:
+  - `a6a181e` **슬라이스1**: 이전 세션이 커밋 전 종료해 떠 있던 타이틀 흐름 검증·커밋. `StartNewGameCommand`(Core 의도) + `TitleView`(New Game→발행, ADR-007) + `SceneFlowController`(구독→`SceneManager.LoadScene("Game")`, 씬 자족·persistent 매니저 없음, ADR-013 씬축) + `Title.unity`(빌드 **index 0**, `_UI`=TitleView+버튼3 바인딩·`_Boot`=SceneFlowController·EventSystem=InputSystemUIInputModule) + PlayMode테스트. **Continue/Settings는 배치·바인딩만(리스너 미연결).**
+  - `151940a` **BGM 에셋**: 데모 오디오 **10개**를 `Resources/Audio/BGM/`로 정식화(`title`+히로인별 roa/yeeun/daeun/heewon/bom+`daily1/2`·`night`·`whitenoise`). 원본 GUID가 BGM으로 승계·Demo는 새 GUID 재발급. 경로 로딩(`Resources.Load`)이라 **코드 무해**.
+  - `ebca568` **타이틀 BGM**: `TitleView.Start`→`PlayBgmCommand("title")` 발행(titleBgm 인스펙터, 비우면 skip), Title 씬 `_Managers/AudioManager` 추가(구독·재생, AudioSource 자동생성·State 무관). 실제 음원 재생=감독 Play 확인 영역.
+  - `66f0db0` **이어하기(Continue) 🔴**: `ContinueGameCommand`(Core) + `GameEntry`(BootMode{NewGame,Continue} **static 홀더** — 씬 로드는 인자 불가라 씬전환 1회성 의도를 static으로 전달, GameBootstrap이 `Consume`으로 읽고 NewGame 리셋. 감독 결정) + `SceneFlowController` 구독(모드 설정+씬로드) + `GameBoot.ContinueGame`(오토세이브 로드+공식 주입, **ResetRuntime/BeginRun 우회**, 실패 시 false→NewGame 폴백, `JsonSaveStore`+`gs.Load` 직접이라 asmdef 무변경) + `TitleView.continueButton`(오토세이브 없으면 `interactable=false`). 역직렬화는 기존 `GameStateSO.Load`/`SaveService.Load` 재사용이라 작업은 분기 배선뿐. EditMode +3·PlayMode +2.
+  - **타이틀 흐름 일단락**(New Game·Continue·BGM 동작, 씬 진입점=Title.unity index0). 남은 버튼 **Settings는 별도 마일스톤**(View·볼륨·AudioMixer 완전 미구현). **다음 후보**: 실 트리거(이벤트→스크립트 매핑, dev 버튼 대체)·엔진 포맷 스토리 CSV·시뮬레이션 루프 심화·M3 내러티브 후속.
+
 - **PhaseController(ADR-013, `c7d2b7f`) 검증 완료** — EditMode·PlayMode 그린. 단 PlayMode `GameSceneEnding`/`GameSceneSimulation`이 한때 "ScheduleView null"로 실패 → 원인은 **디스크 `Game.unity`의 `ScheduleUI`가 직전 PlayMode로 `m_IsActive:0` 오염 저장**(코드 무관). `git restore`+씬 재로드로 정본 복원 후 51/51 회복. 폰트 SDF `.asset` 3건도 동일 부류라 복원. **교훈 재확인: PlayMode 후 `Game.unity` 저장 금지**(부팅 active 오염) — 씬은 커밋 정본이 정확.
 
 - **분기 읽기/쓰기 3슬라이스 A·B·C 커밋 완료(EditMode 245 · PlayMode 51 그린)** — 순수 `ConditionEvaluator`(구 EvaluateCondition 1:1, AND>OR 우선) 공유: (A) Flow `If:조건:점프대상`(참=점프/거짓=통과) + `NarrativeController.HandleFlow` If 분기 + `ConditionEvaluatorTests` 9. (B) 선택지 `if:조건` 필터 `ChoiceParser.VisibleOptions`(0개면 건너뜀) + `ChoiceParserTests` +2. (C) Flow `Flag:이름[:true|false]`·`Set` 별칭(gs.SetFlag, 무통지) + `FlowCommandInterpreterTests` +1. **런타임(점프/숨김/플래그)은 데모 CSV 미반영** — 다음 PlayMode/플레이 확인 시 `Flow,,If:...`·`Option ...|if:Flag:x`·`Flow,,Flag:x` 추가.
