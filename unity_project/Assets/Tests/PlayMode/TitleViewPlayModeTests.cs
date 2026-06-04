@@ -41,5 +41,28 @@ namespace LoveAlgo.Tests.PlayMode
                 Object.DestroyImmediate(btnGo);
             }
         }
+
+        [UnityTest]
+        public IEnumerator Start_Publishes_PlayBgmCommand_With_TitleBgm()
+        {
+            // titleBgm 기본값("title")이 Start에서 PlayBgmCommand로 발행되는지 (AudioManager 구독 전제).
+            var go = new GameObject("TitleView");
+            go.SetActive(false);
+            go.AddComponent<TitleView>();
+
+            string received = null;
+            var sub = EventBus.Subscribe<PlayBgmCommand>(e => received = e.Name);
+            try
+            {
+                go.SetActive(true); // Awake → (yield 후) Start → PlayBgmCommand 발행
+                yield return null;
+                Assert.AreEqual("title", received, "Start 시 타이틀 BGM 재생 명령(PlayBgmCommand) 발행");
+            }
+            finally
+            {
+                sub.Dispose();
+                Object.DestroyImmediate(go);
+            }
+        }
     }
 }
