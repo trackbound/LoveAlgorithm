@@ -18,4 +18,13 @@ namespace LoveAlgo.Events
     public readonly struct ContinueGameCommand
     {
     }
+
+    /// <summary>
+    /// 게임 종료 *의도*(EventBus). 타이틀의 <c>TitleView</c> Exit 버튼이 발행 → <c>SceneFlowController</c>가
+    /// 구독해 애플리케이션을 종료한다(에디터에선 PlayMode 정지). 종료도 "표시는 뷰, 동작은 구독자" 분리를
+    /// 따른다(ADR-007) — 새 게임/이어하기와 같은 타이틀 메뉴 의도 축. 파라미터 없음.
+    /// </summary>
+    public readonly struct QuitGameCommand
+    {
+    }
 }

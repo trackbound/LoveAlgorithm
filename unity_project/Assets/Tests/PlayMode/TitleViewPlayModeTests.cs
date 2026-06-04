@@ -93,6 +93,32 @@ namespace LoveAlgo.Tests.PlayMode
         }
 
         [UnityTest]
+        public IEnumerator ExitButton_Click_Publishes_QuitGameCommand()
+        {
+            var btnGo = new GameObject("ExitButton", typeof(RectTransform), typeof(Button));
+            var go = new GameObject("TitleView");
+            go.SetActive(false);
+            var view = go.AddComponent<TitleView>();
+            view.ExitButton = btnGo.GetComponent<Button>();
+            go.SetActive(true); // Awake → onClick.AddListener(OnExit)
+            yield return null;
+
+            bool published = false;
+            var sub = EventBus.Subscribe<QuitGameCommand>(_ => published = true);
+            try
+            {
+                view.ExitButton.onClick.Invoke();
+                Assert.IsTrue(published, "Exit 버튼 클릭 → QuitGameCommand 발행");
+            }
+            finally
+            {
+                sub.Dispose();
+                Object.DestroyImmediate(go);
+                Object.DestroyImmediate(btnGo);
+            }
+        }
+
+        [UnityTest]
         public IEnumerator ContinueButton_Interactable_Matches_SaveExistence()
         {
             // Continue는 오토세이브가 있을 때만 활성(세이브 유무와 무관하게 일치 검증).
