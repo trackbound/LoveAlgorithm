@@ -40,6 +40,7 @@ namespace LoveAlgo.Tests.PlayMode
         readonly List<string> _dialogues = new();
         readonly List<ScreenPhase> _phases = new();
         int _choiceCount;
+        List<string> _lastChoiceTexts;
         string _affHero;
         int _affScore = int.MinValue;
         bool _finished;
@@ -61,6 +62,7 @@ namespace LoveAlgo.Tests.PlayMode
             _dialogues.Clear();
             _phases.Clear();
             _choiceCount = 0;
+            _lastChoiceTexts = null;
             _affHero = null;
             _affScore = int.MinValue;
             _finished = false;
@@ -74,7 +76,7 @@ namespace LoveAlgo.Tests.PlayMode
             // 구독은 PlayScriptCommand 발행 전에 — 첫 RequestPhaseCommand(Story)까지 캡처.
             _subs.Add(EventBus.Subscribe<RequestPhaseCommand>(e => _phases.Add(e.Target)));
             _subs.Add(EventBus.Subscribe<ShowDialogueCommand>(e => { _dialogues.Add(e.Text); e.Handle.Complete(); }));
-            _subs.Add(EventBus.Subscribe<ShowChoiceCommand>(e => { _choiceCount++; e.Handle.Select(selectIndex); }));
+            _subs.Add(EventBus.Subscribe<ShowChoiceCommand>(e => { _choiceCount++; _lastChoiceTexts = new List<string>(e.OptionTexts); e.Handle.Select(selectIndex); }));
             _subs.Add(EventBus.Subscribe<AffinityChangedEvent>(e => { _affHero = e.HeroineId; _affScore = e.NewScore; }));
             _subs.Add(EventBus.Subscribe<NarrativeFinishedEvent>(e => { _finished = true; _finishedName = e.ScriptName; }));
 
@@ -139,6 +141,80 @@ namespace LoveAlgo.Tests.PlayMode
             CollectionAssert.AreEqual(new[] { "안녕", "다른길" }, _dialogues, "안녕 → 선택B(other 점프) → 다른길");
             Assert.AreEqual(5, _gs.GetStat("Int"), "Stat:Int:5 즉시 적용");
             Assert.AreEqual(int.MinValue, _affScore, "Path B는 호감도 변경 없음");
+            Assert.IsTrue(_finished);
+        }
+
+        // ── A·B·C 슬라이스: 조건 분기 런타임(If 점프 / 선택지 필터 / Flag 쓰기) ──
+
+        [UnityTest]
+        public IEnumerator Flag_Write_Then_If_True_Jumps()
+        {
+            const string csv =
+                "LineID,Type,Speaker,Value,Next\n" +
+                ",Flow,,Flag:met_roa,>\n" +           // C: 플래그 쓰기(무통지)
+                ",Text,,시작,click\n" +
+                ",Flow,,If:Flag:met_roa:after,>\n" +  // A: 참 → after 점프
+                ",Text,,건너뜀,click\n" +             // 점프로 스킵돼야 함
+                "after,Text,,도착,click\n" +
+                ",Flow,,End,>\n";
+
+            var player = SetUp(selectIndex: 0);
+            yield return null;
+
+            EventBus.Publish(new PlayScriptCommand(csv, "branch"));
+            yield return WaitUntilDone(player);
+
+            CollectionAssert.AreEqual(new[] { "시작", "도착" }, _dialogues, "Flag set → If 참 → after 점프('건너뜀' 스킵)");
+            Assert.IsTrue(_gs.GetFlag("met_roa"), "Flow Flag 라인이 플래그를 set");
+            Assert.IsTrue(_finished);
+        }
+
+        [UnityTest]
+        public IEnumerator If_False_Falls_Through_To_Next_Line()
+        {
+            const string csv =
+                "LineID,Type,Speaker,Value,Next\n" +
+                ",Text,,시작,click\n" +
+                ",Flow,,If:Flag:없는플래그:after,>\n" + // 거짓 → 통과(점프 안 함)
+                ",Text,,통과,click\n" +
+                "after,Text,,도착,click\n" +
+                ",Flow,,End,>\n";
+
+            var player = SetUp(selectIndex: 0);
+            yield return null;
+
+            EventBus.Publish(new PlayScriptCommand(csv, "branch"));
+            yield return WaitUntilDone(player);
+
+            CollectionAssert.AreEqual(new[] { "시작", "통과", "도착" }, _dialogues, "If 거짓 → 점프 안 함 → 다음 라인 진행");
+            Assert.IsTrue(_finished);
+        }
+
+        [UnityTest]
+        public IEnumerator Choice_Condition_Filters_Then_Selects_Visible()
+        {
+            const string csv =
+                "LineID,Type,Speaker,Value,Next\n" +
+                ",Flow,,Flag:vip,>\n" +                  // vip set
+                ",Choice,,,>\n" +
+                ",Option,,항상|a,>\n" +                  // 무조건 → 표시
+                ",Option,,VIP전용|b|if:Flag:vip,>\n" +   // vip=true → 표시
+                ",Option,,숨김|c|if:Flag:없음,>\n" +     // 미설정 → 숨김
+                "a,Text,,경로A,click\n" +
+                ",Flow,,End,>\n" +
+                "b,Text,,경로B,click\n" +
+                ",Flow,,End,>\n" +
+                "c,Text,,경로C,click\n" +
+                ",Flow,,End,>\n";
+
+            var player = SetUp(selectIndex: 1); // 표시된 것 중 2번째 = VIP전용
+            yield return null;
+
+            EventBus.Publish(new PlayScriptCommand(csv, "branch"));
+            yield return WaitUntilDone(player);
+
+            CollectionAssert.AreEqual(new[] { "항상", "VIP전용" }, _lastChoiceTexts, "if:조건 만족 선택지만 표시(숨김 제외)");
+            CollectionAssert.AreEqual(new[] { "경로B" }, _dialogues, "표시 목록 기준 index1 = VIP전용 → 경로B 점프");
             Assert.IsTrue(_finished);
         }
     }
