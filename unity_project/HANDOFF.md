@@ -99,6 +99,8 @@
 
 ## ✅ 이번 세션 검증·커밋 완료
 
+- **타이틀 6버튼 메뉴 배선 — 2026-06-05 세션 1커밋(`b7f90c5`, EditMode 243·PlayMode 59→60 그린, 컴파일 0)**: 감독이 에디터에서 타이틀을 **6버튼(Start/Continue/Config/Load/Extra/Exit)+장식(로고·배경·꽃잎FX)**으로 재디자인(미커밋 WIP)했으나 코드가 3버튼만 알아 4버튼이 죽어있던 것을 정합. **TitleView 3→6버튼**(loadButton/extraButton/exitButton 추가), **Exit→`QuitGameCommand`(Core)→SceneFlowController 종료**(빌드 `Application.Quit`/에디터 PlayMode 정지, ADR-007 표시만·동작은 구독자), **Config/Load/Extra는 목적지 화면 미존재라 `Log.Info` 안내만**(과설계 게이트 #7 — 화면/커맨드 신설 없이 배선 구조만 준비). Title.unity 신규 3버튼 `_UI/TitleView` 바인딩(6개 GO 매핑 YAML 검증) + 폰트 2개 글리프 동적 베이킹(새 라벨/로고 수반, 순추가 +7/+33). PlayMode Exit→발행 테스트 +1. **남은 타이틀(각 별도 마일스톤, 현재 안내 로그로 작동)**: Config=설정(View·볼륨·AudioMixer)·Load=세이브 슬롯 화면·Extra=부가 콘텐츠.
+
 - **타이틀 흐름 — 2026-06-05 세션 4커밋(EditMode 240→243·PlayMode 55→59 그린, 컴파일 0)**:
   - `a6a181e` **슬라이스1**: 이전 세션이 커밋 전 종료해 떠 있던 타이틀 흐름 검증·커밋. `StartNewGameCommand`(Core 의도) + `TitleView`(New Game→발행, ADR-007) + `SceneFlowController`(구독→`SceneManager.LoadScene("Game")`, 씬 자족·persistent 매니저 없음, ADR-013 씬축) + `Title.unity`(빌드 **index 0**, `_UI`=TitleView+버튼3 바인딩·`_Boot`=SceneFlowController·EventSystem=InputSystemUIInputModule) + PlayMode테스트. **Continue/Settings는 배치·바인딩만(리스너 미연결).**
   - `151940a` **BGM 에셋**: 데모 오디오 **10개**를 `Resources/Audio/BGM/`로 정식화(`title`+히로인별 roa/yeeun/daeun/heewon/bom+`daily1/2`·`night`·`whitenoise`). 원본 GUID가 BGM으로 승계·Demo는 새 GUID 재발급. 경로 로딩(`Resources.Load`)이라 **코드 무해**.
