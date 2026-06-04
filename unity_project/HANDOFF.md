@@ -103,7 +103,9 @@
 
 - **분기 읽기/쓰기 3슬라이스 A·B·C 커밋 완료(EditMode 245 · PlayMode 51 그린)** — 순수 `ConditionEvaluator`(구 EvaluateCondition 1:1, AND>OR 우선) 공유: (A) Flow `If:조건:점프대상`(참=점프/거짓=통과) + `NarrativeController.HandleFlow` If 분기 + `ConditionEvaluatorTests` 9. (B) 선택지 `if:조건` 필터 `ChoiceParser.VisibleOptions`(0개면 건너뜀) + `ChoiceParserTests` +2. (C) Flow `Flag:이름[:true|false]`·`Set` 별칭(gs.SetFlag, 무통지) + `FlowCommandInterpreterTests` +1. **런타임(점프/숨김/플래그)은 데모 CSV 미반영** — 다음 PlayMode/플레이 확인 시 `Flow,,If:...`·`Option ...|if:Flag:x`·`Flow,,Flag:x` 추가.
 
-**이번 세션 완료(푸시됨)**: vn_conventions 정본화(`c9272b9`) · FX 네이밍 ScreenFx→ScreenFade·CameraFx→Camera·`_ScreenOverlay`(`96a211a`) · 화면 페이즈 일원화 `ScreenPhase`+PhaseController(`c7d2b7f`). **보류**: 구 `LoveAlgo.Core.GamePhase`+구 아키텍처 폐기(#5, ScreenPhase와 충돌하나 구 18소비처라 별도) · 씬 stale `m_EditorClassIdentifier` 2건(GUID 바인딩, 무해).
+- **구 아키텍처 폐기 페이즈1 완료(`477042a`·`784d2a4`, 푸시됨)** — 감독 지시로 구 Assembly-CSharp(Service Locator+구 매니저/모듈) 전면 폐기 착수. **조사 확정**: 신 코드(`Scripts/`+asmdef)는 구 코드(`Services`·구 매니저·`Modules`·`Contracts`)를 **0 참조**(의존 구→신 단방향 — 구를 통째 삭제해도 신·테스트 안 깨짐). **유일 블로커였던** Game.unity의 구 UI 위젯 의존(스케줄 카테고리 탭 `ButtonEX`×5·`TabGroup`)을 신 `CategoryTab`/`CategoryTabBar`(LoveAlgo.Schedule, ScheduleSlot 패턴 · MCP 배열참조 한계로 자식 CategoryTab **자동수집**)로 **컴포넌트 스왑**(스프라이트·색·레이아웃 보존) → Game.unity 구 위젯 GUID **0**. 신 코드 0구독으로 죽어있던 카테고리 탭이 실동작(탭→`ShowCategory`). EditMode 245·PlayMode 55 그린. **다음=페이즈2**(다음 액션 #5).
+
+**이번 세션 완료(푸시됨)**: vn_conventions 정본화(`c9272b9`) · FX 네이밍 ScreenFx→ScreenFade·CameraFx→Camera·`_ScreenOverlay`(`96a211a`) · 화면 페이즈 일원화 `ScreenPhase`+PhaseController(`c7d2b7f`) · 구 아키텍처 폐기 페이즈1(`477042a`·`784d2a4`). **보류**: 씬 stale `m_EditorClassIdentifier` 2건(GUID 바인딩, 무해). *(구 `GamePhase`·구 아키텍처는 #5 페이즈2에서 삭제 — 더는 보류 아님.)*
 
 ---
 
@@ -115,16 +117,15 @@
 2. ✅ **완료(`c7d2b7f`, enum=`ScreenPhase`)** — ~~화면 페이즈 상태머신~~(🔴, ADR-013) — Title↔Story↔Schedule↔Ending 전환을 단일 `PhaseController`로 일원화(현재 NarrativeController가 ShowUiGroupCommand 직접 토글). GamePhase enum(State SO) + 순수 PhaseService(FSM) + 의도 발행(RequestPhaseCommand). LockScreen은 Phase 아닌 Overlay(완료-핸들 복귀). 슬라이스2의 LockScreen/페이즈전환이 이 결정에 의존하므로 그 전에 구현 권장. 구현 시 확정: UIGroup↔GamePhase 매핑·씬 경계·Overlay 목록(ADR-013 末).
 3. **시뮬레이션 루프 심화** — 카테고리 탭 UI 배선(현재 슬롯 동적생성만, 탭 버튼 미연결) / HUD·슬롯 시각 레이아웃 / 엔딩 결과 디테일(최고 호감도 등) / **Shop SessionBuff 복합효과 SO 데이터 보강**(코드 완성, ItemCatalog.asset에 SubEffect 부재 = 🟢 데이터). *(페이즈전환은 #2로 분리.)*
 4. **Shop Gift 인벤토리(🔴 세이브 스키마)** — 선물 보관/소비. 단 소비처=내러티브 Event2/3라 M3 이후가 자연스럽다(지금은 죽은 코드).
-5. **구 아키텍처 폐기 착수** — 소비처 이식 끝난 구 모듈·Service Locator 제거, `Main.unity` 신 씬으로 교체 검토.
+5. **구 아키텍처 폐기 — 페이즈2(구 코드 일괄삭제, 🔴 비가역)** *(페이즈1 완료·푸시됨 `784d2a4`)*: 신 코드는 구 0참조 확정 → 구 Assembly-CSharp을 **한 커밋에 일괄삭제**(부분삭제 시 잔존 구 코드 컴파일 깨짐). 대상: `Assets/_Project/{Core,Common,Contracts,Modules,UI,DevTools}` + `Assets/Scenes/Main.unity` + `_Dev/Integration/`(구 `ButtonEX`/`TabGroup` 포함). 선행: 보존자산(Game.unity·신 `Prefabs`·신 `Data` SO)에 구 GUID 0 재확인(`_Project/{Data,Prefabs}` 신/구 혼재는 파일별 분류, 애매하면 보존). 빌드: `EditorBuildSettings` index0→`Game.unity`. 삭제 후 정리: IVT(`Scripts/Narrative/AssemblyInfo.cs`의 `InternalsVisibleTo`) 제거 · `LoveAlgo.UI`/`LoveAlgo.Save` asmdef `autoReferenced→true`(컴파일 확인, 문제 시 false 롤백) · 구 `GamePhase` 소멸 확인. 검증: 컴파일0·missing0·EditMode 245/PlayMode 55·asmdef없는 `.cs` 0.
 
 ### 워크플로우 규율 (directive)
 - **재설계 ≠ 전사(ADR-012 강화, 2026-06-02 감독 지적 · 2026-06-03 정본화)**: **정본 = `docs/vn_conventions.md` — 슬라이스 착수 시 구 코드 대신 이 문서를 본다**(렌더타깃 분류축·네이밍·CSV vs C# 경계·안티패턴·모범 예시). 요구사항(STORY_COMMANDS·REWRITE_FEATURE_INVENTORY §기능)에서 클래스 책임·데이터 흐름을 먼저 설계 — 구 코드 읽기 전에. 구 코드는 동작 의미·동결 수치·CSV 문법(ADR-009) 확인용으로만, 구조/네이밍/분해 답습 금지. 커밋 "이식(port)" 표현 금지. 레드플래그: "이 클래스/필드가 요구사항 때문인가, 구 코드가 있어서인가?"
 - 무언가 만들 때마다 **작동 증거**: 순수/공식층=EditMode 테스트, MonoBehaviour 라이프사이클·구독·씬 와이어링=PlayMode 테스트. 임시 dev 하니스 금지 — Test Runner 어셈블리로. 위험도 등급 선언 + 커밋 "왜".
 - **썸네일은 레이어 배제 캡처**가 필수 요구사항(옛 말썽: 안 잡혀야 할 UI 포함됨) — Save 썸네일 이식(M5) 시.
 
-### 잔여 Common (파킹 — 소비처 이식 시점 처리)
-미이식 구 Assembly-CSharp에서만 쓰임 → 지금 이동 불가. 소비처 피처 이식 때 함께 처리.
-- `ListenerBag.cs`(UI 전용)→ UI 피처 이식 시 `LoveAlgo.UI`로. `SingletonMonoBehaviour.cs`(DOTween 의존)→ 구 매니저 폐기 시. `Services.cs`(폐기, 소비처 37곳)→ 마지막 구 모듈 이식 시.
+### 잔여 Common (페이즈2에서 일괄 삭제)
+`ListenerBag.cs`·`SingletonMonoBehaviour.cs`·`Services.cs`는 **신 코드 0참조 확정**(구 Assembly-CSharp에서만 사용) → 구 아키텍처 폐기 페이즈2에서 구 코드와 함께 삭제(별도 이식 불필요).
 
 ### 마일스톤 (원안 — 실제론 감독이 슬라이스별 우선순위 지정)
 M1 Core ✅ → M2 Data/공식 ✅ → M3 내러티브/스테이지(파서까지) → M4 기능모듈(Schedule·Shop 진행) → M5 UI/Save(매니저·HUD 진행). *순서는 엄격히 안 지켜졌고(감독 선택), broad-first로 골격을 먼저 세웠다 — 다음은 depth(플레이 루프/내러티브 런타임)로 좁히는 게 자연스럽다.*
