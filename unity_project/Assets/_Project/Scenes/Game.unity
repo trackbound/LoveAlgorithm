@@ -1287,7 +1287,6 @@ GameObject:
   - component: {fileID: 327162852}
   - component: {fileID: 327162851}
   - component: {fileID: 327162850}
-  - component: {fileID: 327162849}
   m_Layer: 5
   m_Name: TabShop
   m_TagString: Untagged
@@ -1315,42 +1314,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 214, y: 51}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &327162849
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 327162847}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 56fc0838e76f26e499c3fb90f6590636, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.UI.ButtonEX
-  mode: 1
-  overrideTargetImage: {fileID: 0}
-  normalSprite: {fileID: 0}
-  hoverSprite: {fileID: 21300000, guid: 0fb662d543f76d84e83166b32e7c1de4, type: 3}
-  onSprite: {fileID: 0}
-  offSprite: {fileID: 0}
-  onHoverSprite: {fileID: 0}
-  offHoverSprite: {fileID: 0}
-  normalChild: {fileID: 0}
-  hoverChild: {fileID: 0}
-  pressedChild: {fileID: 0}
-  usePressedTint: 1
-  pressedTint: {r: 0.85, g: 0.85, b: 0.85, a: 1}
-  colorTargets:
-  - {fileID: 618264487}
-  normalColors:
-  - {r: 0.99607843, g: 0.45882353, b: 0.6392157, a: 1}
-  hoverColors:
-  - {r: 1, g: 1, b: 1, a: 1}
-  selectedColors: []
-  useScaleEffect: 0
-  hoverScale: 1.05
-  pressedScale: 0.95
-  scaleDuration: 0.1
 --- !u!114 &327162850
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2875,7 +2838,7 @@ GameObject:
   - component: {fileID: 713622789}
   - component: {fileID: 713622788}
   - component: {fileID: 713622787}
-  - component: {fileID: 713622786}
+  - component: {fileID: 713622790}
   m_Layer: 5
   m_Name: TabStudy
   m_TagString: Untagged
@@ -2903,43 +2866,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 215, y: 51}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &713622786
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 713622784}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 56fc0838e76f26e499c3fb90f6590636, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.UI.ButtonEX
-  mode: 2
-  overrideTargetImage: {fileID: 0}
-  normalSprite: {fileID: 0}
-  hoverSprite: {fileID: 0}
-  onSprite: {fileID: 21300000, guid: d7352cd207b6fe84782ab538d626ef03, type: 3}
-  offSprite: {fileID: 21300000, guid: 64fba87a662538a4183c4aa09071e3ed, type: 3}
-  onHoverSprite: {fileID: 21300000, guid: 2f4e47e4d37c6e943b18775890aa5a24, type: 3}
-  offHoverSprite: {fileID: 21300000, guid: 2f4e47e4d37c6e943b18775890aa5a24, type: 3}
-  normalChild: {fileID: 0}
-  hoverChild: {fileID: 0}
-  pressedChild: {fileID: 0}
-  usePressedTint: 1
-  pressedTint: {r: 0.85, g: 0.85, b: 0.85, a: 1}
-  colorTargets:
-  - {fileID: 545601871}
-  normalColors:
-  - {r: 0.99607843, g: 0.45882353, b: 0.6392157, a: 1}
-  hoverColors:
-  - {r: 1, g: 1, b: 1, a: 1}
-  selectedColors:
-  - {r: 1, g: 1, b: 1, a: 1}
-  useScaleEffect: 0
-  hoverScale: 1.05
-  pressedScale: 0.95
-  scaleDuration: 0.1
 --- !u!114 &713622787
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3022,6 +2948,24 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 713622784}
   m_CullTransparentMesh: 1
+--- !u!114 &713622790
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 713622784}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 007d103b5e060de4da52ec888923f433, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: LoveAlgo.Schedule::LoveAlgo.Schedule.CategoryTab
+  targetImage: {fileID: 713622788}
+  onSprite: {fileID: 21300000, guid: d7352cd207b6fe84782ab538d626ef03, type: 3}
+  offSprite: {fileID: 21300000, guid: 64fba87a662538a4183c4aa09071e3ed, type: 3}
+  label: {fileID: 545601871}
+  normalColor: {r: 0.9960784, g: 0.4588235, b: 0.6392157, a: 1}
+  selectedColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!1 &716083497
 GameObject:
   m_ObjectHideFlags: 0
@@ -3216,7 +3160,6 @@ GameObject:
   - component: {fileID: 810306662}
   - component: {fileID: 810306661}
   - component: {fileID: 810306660}
-  - component: {fileID: 810306659}
   m_Layer: 5
   m_Name: BtnHelp
   m_TagString: Untagged
@@ -3243,39 +3186,6 @@ RectTransform:
   m_AnchoredPosition: {x: -124.1, y: 71.3}
   m_SizeDelta: {x: 29, y: 29}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &810306659
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 810306657}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 56fc0838e76f26e499c3fb90f6590636, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.UI.ButtonEX
-  mode: 1
-  overrideTargetImage: {fileID: 0}
-  normalSprite: {fileID: 0}
-  hoverSprite: {fileID: 21300000, guid: fc2c9852072e5624e8810b791b609bd7, type: 3}
-  onSprite: {fileID: 0}
-  offSprite: {fileID: 0}
-  onHoverSprite: {fileID: 0}
-  offHoverSprite: {fileID: 0}
-  normalChild: {fileID: 0}
-  hoverChild: {fileID: 0}
-  pressedChild: {fileID: 0}
-  usePressedTint: 1
-  pressedTint: {r: 0.85, g: 0.85, b: 0.85, a: 1}
-  colorTargets: []
-  normalColors: []
-  hoverColors: []
-  selectedColors: []
-  useScaleEffect: 0
-  hoverScale: 1.05
-  pressedScale: 0.95
-  scaleDuration: 0.1
 --- !u!114 &810306660
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3543,7 +3453,7 @@ GameObject:
   - component: {fileID: 969843979}
   - component: {fileID: 969843978}
   - component: {fileID: 969843977}
-  - component: {fileID: 969843976}
+  - component: {fileID: 969843980}
   m_Layer: 5
   m_Name: TabPartTime
   m_TagString: Untagged
@@ -3571,43 +3481,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 214, y: 51}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &969843976
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 969843974}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 56fc0838e76f26e499c3fb90f6590636, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.UI.ButtonEX
-  mode: 2
-  overrideTargetImage: {fileID: 0}
-  normalSprite: {fileID: 0}
-  hoverSprite: {fileID: 0}
-  onSprite: {fileID: 21300000, guid: 25e6cf03d1150364789e65131563141b, type: 3}
-  offSprite: {fileID: 21300000, guid: 8ac5b906e34f7984a85d879f2bdf73b0, type: 3}
-  onHoverSprite: {fileID: 21300000, guid: 4f59683c7020b494caaca63ec94703af, type: 3}
-  offHoverSprite: {fileID: 21300000, guid: 4f59683c7020b494caaca63ec94703af, type: 3}
-  normalChild: {fileID: 0}
-  hoverChild: {fileID: 0}
-  pressedChild: {fileID: 0}
-  usePressedTint: 1
-  pressedTint: {r: 0.85, g: 0.85, b: 0.85, a: 1}
-  colorTargets:
-  - {fileID: 1527585380}
-  normalColors:
-  - {r: 0.99607843, g: 0.45882353, b: 0.6392157, a: 1}
-  hoverColors:
-  - {r: 1, g: 1, b: 1, a: 1}
-  selectedColors:
-  - {r: 1, g: 1, b: 1, a: 1}
-  useScaleEffect: 0
-  hoverScale: 1.05
-  pressedScale: 0.95
-  scaleDuration: 0.1
 --- !u!114 &969843977
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3690,6 +3563,24 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 969843974}
   m_CullTransparentMesh: 1
+--- !u!114 &969843980
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 969843974}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 007d103b5e060de4da52ec888923f433, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: LoveAlgo.Schedule::LoveAlgo.Schedule.CategoryTab
+  targetImage: {fileID: 969843978}
+  onSprite: {fileID: 21300000, guid: 25e6cf03d1150364789e65131563141b, type: 3}
+  offSprite: {fileID: 21300000, guid: 8ac5b906e34f7984a85d879f2bdf73b0, type: 3}
+  label: {fileID: 1527585380}
+  normalColor: {r: 0.9960784, g: 0.4588235, b: 0.6392157, a: 1}
+  selectedColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!1 &990073611
 GameObject:
   m_ObjectHideFlags: 0
@@ -4716,7 +4607,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1306857208}
   - component: {fileID: 1306857210}
-  - component: {fileID: 1306857209}
+  - component: {fileID: 1306857211}
   m_Layer: 5
   m_Name: Tabs
   m_TagString: Untagged
@@ -4747,23 +4638,6 @@ RectTransform:
   m_AnchoredPosition: {x: 61, y: -90}
   m_SizeDelta: {x: 0, y: 71.846}
   m_Pivot: {x: 0.5, y: 1}
---- !u!114 &1306857209
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1306857207}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8275afd3fcc77ea4ea90ef0b7e8a8b69, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.UI.TabGroup
-  tabs:
-  - {fileID: 969843976}
-  - {fileID: 1389039145}
-  - {fileID: 713622786}
-  defaultTab: 0
 --- !u!114 &1306857210
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4790,6 +4664,25 @@ MonoBehaviour:
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
   m_ReverseArrangement: 0
+--- !u!114 &1306857211
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1306857207}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3ae28bd99072e814b81caaa4878940c3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: LoveAlgo.Schedule::LoveAlgo.Schedule.CategoryTabBar
+  tabs:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  categories: 000000000100000002000000
+  scheduleView: {fileID: 829377666}
+  defaultIndex: 1
 --- !u!1 &1337950634
 GameObject:
   m_ObjectHideFlags: 0
@@ -5243,7 +5136,7 @@ GameObject:
   - component: {fileID: 1389039148}
   - component: {fileID: 1389039147}
   - component: {fileID: 1389039146}
-  - component: {fileID: 1389039145}
+  - component: {fileID: 1389039149}
   m_Layer: 5
   m_Name: TabExercise
   m_TagString: Untagged
@@ -5271,43 +5164,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 215, y: 51}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &1389039145
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1389039143}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 56fc0838e76f26e499c3fb90f6590636, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.UI.ButtonEX
-  mode: 2
-  overrideTargetImage: {fileID: 0}
-  normalSprite: {fileID: 0}
-  hoverSprite: {fileID: 0}
-  onSprite: {fileID: 21300000, guid: a5ecdbcd3ea9f9547a4c25cf4ecf1817, type: 3}
-  offSprite: {fileID: 21300000, guid: f568703c16263f14fa0a8beac685f6ab, type: 3}
-  onHoverSprite: {fileID: 21300000, guid: b416f24e842fb6a49a4fd86e099add63, type: 3}
-  offHoverSprite: {fileID: 21300000, guid: b416f24e842fb6a49a4fd86e099add63, type: 3}
-  normalChild: {fileID: 0}
-  hoverChild: {fileID: 0}
-  pressedChild: {fileID: 0}
-  usePressedTint: 1
-  pressedTint: {r: 0.85, g: 0.85, b: 0.85, a: 1}
-  colorTargets:
-  - {fileID: 1099348781}
-  normalColors:
-  - {r: 0.99607843, g: 0.45882353, b: 0.6392157, a: 1}
-  hoverColors:
-  - {r: 1, g: 1, b: 1, a: 1}
-  selectedColors:
-  - {r: 1, g: 1, b: 1, a: 1}
-  useScaleEffect: 0
-  hoverScale: 1.05
-  pressedScale: 0.95
-  scaleDuration: 0.1
 --- !u!114 &1389039146
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5390,6 +5246,24 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1389039143}
   m_CullTransparentMesh: 1
+--- !u!114 &1389039149
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1389039143}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 007d103b5e060de4da52ec888923f433, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: LoveAlgo.Schedule::LoveAlgo.Schedule.CategoryTab
+  targetImage: {fileID: 1389039147}
+  onSprite: {fileID: 21300000, guid: a5ecdbcd3ea9f9547a4c25cf4ecf1817, type: 3}
+  offSprite: {fileID: 21300000, guid: f568703c16263f14fa0a8beac685f6ab, type: 3}
+  label: {fileID: 1099348781}
+  normalColor: {r: 0.9960784, g: 0.4588235, b: 0.6392157, a: 1}
+  selectedColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!1001 &1389434764
 PrefabInstance:
   m_ObjectHideFlags: 0

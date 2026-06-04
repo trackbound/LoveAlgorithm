@@ -9,6 +9,7 @@ namespace LoveAlgo.Schedule
     /// </summary>
     public class CategoryTabBar : MonoBehaviour
     {
+        [Tooltip("비우면 Awake에서 자식 CategoryTab을 계층 순서로 자동 수집(categories와 정합).")]
         [SerializeField] CategoryTab[] tabs;
         [Tooltip("tabs[i]에 대응하는 카테고리(같은 길이·순서).")]
         [SerializeField] ScheduleCategory[] categories;
@@ -20,7 +21,11 @@ namespace LoveAlgo.Schedule
 
         void Awake()
         {
-            if (tabs == null) return;
+            // 인스펙터 미배선(또는 빈 슬롯)이면 자식에서 자동 수집 — 계층 순서가 categories와 정합.
+            // (씬 직렬화 참조 배열은 MCP로 못 채우므로, 자식 수집이 단일 진실원.)
+            if (tabs == null || tabs.Length == 0 || tabs[0] == null)
+                tabs = GetComponentsInChildren<CategoryTab>(true);
+
             for (int i = 0; i < tabs.Length; i++)
             {
                 if (tabs[i] == null) continue;
