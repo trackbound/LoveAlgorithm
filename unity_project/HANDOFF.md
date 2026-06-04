@@ -75,7 +75,7 @@
 | 통합 dev 씬 (전 매니저 EventBus 협업 + HUD 시각화) | ✅ | `Assets/_Dev/Integration/IntegrationTest.unity` |
 
 **아직 안 된 것 / 다음 우선순위 후보**:
-- **✅ 엔드투엔드 시뮬레이션 루프 해소**(이번 세션): `Game.unity`가 신 매니저로 실제 플레이된다(부팅→스케줄선택→하루전환→오토세이브→30일 엔딩). 단 **내러티브(대사/선택지)는 제외** — 시뮬레이션 페이즈만. 구 `Main.unity`는 여전히 구 아키텍처로 공존(미폐기).
+- **✅ 엔드투엔드 시뮬레이션 루프 해소**(이번 세션): `Game.unity`가 신 매니저로 실제 플레이된다(부팅→스케줄선택→하루전환→오토세이브→30일 엔딩). 단 **내러티브(대사/선택지)는 제외** — 시뮬레이션 페이즈만. 구 `Main.unity`는 페이즈2(`9152615`)에서 삭제됨.
 - **🟢 HUD/슬롯 시각 레이아웃 미조정**: 기능 배선만 됨(위치/폰트/스타일은 감독이 Play로 다듬는 영역). 엔딩 결과 디테일(최고 호감도 등)도 최소.
 - **M3 내러티브 런타임 — 슬라이스1(대사+선택지) 완성 + 씬 배선 완료**: 완료-핸들 커맨드 패턴으로 엔진↔UI 디커플(ADR-007). 순수 ScriptCursor/ChoiceParser/ChoiceEffectInterpreter(EditMode 18) + NarrativeController 코루틴 어댑터 + DialogueView/ChoiceView(PlayMode 2). 선택지 `Love:`는 Affinity 카테고리(`Affinity:Point:Id:Dialogue:N`)로 위임→정본 단일화(감독 결정). `Game.unity`에 실배치(매니저 2 + Narrative UI 그룹 + dev 트리거 버튼). **남은 것**: 슬라이스2(스테이지 Char/BG/CG/SD/Overlay·FX·Sound·오토모드·인라인태그·점프페이드/스테이지합성/로그복원·선택지 조건/이력·LockScreen 계열 Flow) + **실 트리거**(이벤트→스크립트 매핑, dev 버튼 대체) + **엔진 포맷 스토리 CSV**(현재 기획 CSV만 존재).
 - **Shop 슬라이스2(감독 결정 필요)**: SessionBuff 적용 경계(구 코드: 다음 스케줄 base효과 직후) / Gift 인벤토리(🔴 세이브 스키마) / 중복 50% 페널티(상태 위치).
@@ -86,12 +86,12 @@
 
 ## ⚠️ 새 세션이 반드시 알 것 (안 깨뜨리려면)
 
-- **전환기 공존**: 구 Assembly-CSharp 모듈 다수 잔존(ShopSystem/ShopUI·DialogueUI·ScriptRunner·구 GameManager/SaveManager/UIManager/AudioManager 등). 신규 asmdef는 `git mv`(ns/GUID 보존)+autoref로 공존. **항상 컴파일 가능** 유지가 절대 원칙 — 피처 하나 옮기고 옛 코드는 그때 삭제.
-- **autoRef=false 2개**(`LoveAlgo.Save`·`LoveAlgo.UI`): 구 동명 네임스페이스/타입 충돌 회피용. 신규 코드가 이들을 참조하려면 **명시적 asmdef 참조 추가**(테스트 asmdef엔 이미 추가됨). 구 모듈 폐기 시 true 복귀 검토.
+- **~~전환기 공존~~ → 구 코드 폐기 완료(`9152615`)**: 구 Assembly-CSharp(Service Locator·구 매니저·Modules·Contracts·구 UI)는 **전부 삭제됨**. 코드는 이제 `_Project/Scripts/` 피처 asmdef 12개 단일이고, Assembly-CSharp에는 서드파티(DOTween)·Unity생성(InputSystem_Actions)만 잔존(게임코드 아님).
+- **~~autoRef=false 2개~~ → true 복귀 완료(`9152615`)**: 구 동명 ns 충돌이 사라져 `LoveAlgo.Save`·`LoveAlgo.UI` 모두 `autoReferenced: true`(이제 asmdef 12개 전부 autoRef true). 컴파일·테스트 그린 확인.
 - **이름 충돌 패턴**: 신규 타입이 구 동명 타입과 겹치면 → 다른 ns(예: 구 Modules.Audio vs 신 LoveAlgo.Audio) 또는 asmdef 격리(autoRef=false, 예: UIManager). **MCP로 씬에 컴포넌트 부착 시 전체 타입명**(`LoveAlgo.Game.GameManager`)으로 모호성 주의.
 - **MCP 씬 작업 팁**(이번 세션 시행착오): 신 asmdef 타입을 MCP로 부착/배선 시 **assembly-qualified 이름** 필요 — `"LoveAlgo.UI.UIManager, LoveAlgo.UI"` 형식(단순명은 "not found"). 컴포넌트 ref 배선(`set_property`)은 **GO instanceID**를 주면 해당 GO에서 컴포넌트(TMP_Text·Button 등) 자동 추출. 프리팹화는 `manage_prefabs create_from_gameobject`(target=이름). **프로젝트는 Input System 패키지** — EventSystem엔 `InputSystemUIInputModule`(구 `StandaloneInputModule`은 런타임 `Input` 예외로 전 PlayMode 오염).
 - **내러티브 씬 구조(Game.unity)**: 캔버스 1개(`_UI`, Screen Space) 유지. `_UI/Narrative`=UIManager.narrativeRoot(부팅 시 **inactive** — 시뮬 클릭 차단 방지, ShowUiGroupCommand가 토글). 그 아래 `DialogueView`(전체화면 투명 Image=클릭캐처+화자/본문 TMP)·`ChoiceView`(Container=VerticalLayoutGroup, slotPrefab=`Prefabs/Narrative/ChoiceSlot.prefab`). 매니저 `_Bootstrap/NarrativeController`·`FlowCommandController`(State=GameState_Main). dev 진입 = `_UI/Simulation/DevNarrativeButton`(NarrativeDevTrigger, 인라인 데모 CSV). **PlayMode 테스트 격리 주의**: GameScene 테스트가 Game.unity를 Single 로드 후 언로드 안 해 잔존 — 신 매니저를 발행 이벤트로 검증하는 테스트는 잔존 인스턴스 제거 후 진행(NarrativeControllerPlayModeTests 참고). **⚠️ 씬 dirty 오염**: PlayMode 테스트가 `Game.unity`를 SceneManager 로드하면 씬 오브젝트 active를 실제로 토글한다(EndingRoot 켜짐·UIManager가 Narrative 켜짐). 그 상태로 dirty 저장되면 **부팅 UI 상태가 디스크에 오염**된다 — 테스트 후 `Game.unity`를 저장하기 전 **부팅 active 상태 확인 필수**(Narrative=inactive·EndingRoot=inactive·Simulation=active).
-- **IVT 가교**: `Scripts/Narrative/AssemblyInfo.cs`가 `Assembly-CSharp`에 internal 노출(구 ScenarioEditor가 ScriptLine setter 접근). 해당 소비처 이식/삭제 시 제거.
+- **~~IVT 가교~~ 제거 완료(`9152615`)**: 구 ScenarioEditor 삭제로 `Scripts/Narrative/AssemblyInfo.cs`(InternalsVisibleTo) 제거됨. 신 테스트는 Narrative internal 미사용(IVT 없이 EditMode 240 그린).
 - **테스트 = Test Runner 어셈블리만**(임시 dev 하니스/씬 금지): EditMode=순수/공식층, PlayMode=MonoBehaviour 라이프사이클·OnEnable 구독·씬 와이어링. 구 코드 테스트 3개(ScriptParser·ScriptValidator·SaveLoadRoundTrip)는 `Assets/Tests/Editor/`(Assembly-CSharp-Editor) 잔류.
 - **State SO 바인딩**: 매니저/컨트롤러는 `State` 프로퍼티(GameStateSO)를 인스펙터/부팅으로 주입받음. 통합 dev 씬이 그 배선 예시. 런타임 초기화(공식 Configure + DayLoop.BeginRun)는 `GameBoot.NewGame`/`GameBootstrap`.
 
@@ -105,7 +105,9 @@
 
 - **구 아키텍처 폐기 페이즈1 완료(`477042a`·`784d2a4`, 푸시됨)** — 감독 지시로 구 Assembly-CSharp(Service Locator+구 매니저/모듈) 전면 폐기 착수. **조사 확정**: 신 코드(`Scripts/`+asmdef)는 구 코드(`Services`·구 매니저·`Modules`·`Contracts`)를 **0 참조**(의존 구→신 단방향 — 구를 통째 삭제해도 신·테스트 안 깨짐). **유일 블로커였던** Game.unity의 구 UI 위젯 의존(스케줄 카테고리 탭 `ButtonEX`×5·`TabGroup`)을 신 `CategoryTab`/`CategoryTabBar`(LoveAlgo.Schedule, ScheduleSlot 패턴 · MCP 배열참조 한계로 자식 CategoryTab **자동수집**)로 **컴포넌트 스왑**(스프라이트·색·레이아웃 보존) → Game.unity 구 위젯 GUID **0**. 신 코드 0구독으로 죽어있던 카테고리 탭이 실동작(탭→`ShowCategory`). EditMode 245·PlayMode 55 그린. **다음=페이즈2**(다음 액션 #5).
 
-**이번 세션 완료(푸시됨)**: vn_conventions 정본화(`c9272b9`) · FX 네이밍 ScreenFx→ScreenFade·CameraFx→Camera·`_ScreenOverlay`(`96a211a`) · 화면 페이즈 일원화 `ScreenPhase`+PhaseController(`c7d2b7f`) · 구 아키텍처 폐기 페이즈1(`477042a`·`784d2a4`). **보류**: 씬 stale `m_EditorClassIdentifier` 2건(GUID 바인딩, 무해). *(구 `GamePhase`·구 아키텍처는 #5 페이즈2에서 삭제 — 더는 보류 아님.)*
+**직전 세션 완료(푸시됨)**: vn_conventions 정본화(`c9272b9`) · FX 네이밍 ScreenFx→ScreenFade·CameraFx→Camera·`_ScreenOverlay`(`96a211a`) · 화면 페이즈 일원화 `ScreenPhase`+PhaseController(`c7d2b7f`) · 구 아키텍처 폐기 페이즈1(`477042a`·`784d2a4`).
+
+**이번 세션 완료(2026-06-04)**: **구 아키텍처 폐기 페이즈2(`9152615`)** — 구 Assembly-CSharp 983파일/137,790줄 일괄삭제 + StatGauge 잔재 정리 + asmdef autoRef 복귀(상세=다음 액션 #5). 재작성이 신 아키텍처(EventBus+SO, asmdef 12개) **단일**로 수렴. **보류**: 씬 stale `m_EditorClassIdentifier` 2건(GUID 바인딩, 무해).
 
 ---
 
@@ -117,15 +119,15 @@
 2. ✅ **완료(`c7d2b7f`, enum=`ScreenPhase`)** — ~~화면 페이즈 상태머신~~(🔴, ADR-013) — Title↔Story↔Schedule↔Ending 전환을 단일 `PhaseController`로 일원화(현재 NarrativeController가 ShowUiGroupCommand 직접 토글). GamePhase enum(State SO) + 순수 PhaseService(FSM) + 의도 발행(RequestPhaseCommand). LockScreen은 Phase 아닌 Overlay(완료-핸들 복귀). 슬라이스2의 LockScreen/페이즈전환이 이 결정에 의존하므로 그 전에 구현 권장. 구현 시 확정: UIGroup↔GamePhase 매핑·씬 경계·Overlay 목록(ADR-013 末).
 3. **시뮬레이션 루프 심화** — 카테고리 탭 UI 배선(현재 슬롯 동적생성만, 탭 버튼 미연결) / HUD·슬롯 시각 레이아웃 / 엔딩 결과 디테일(최고 호감도 등) / **Shop SessionBuff 복합효과 SO 데이터 보강**(코드 완성, ItemCatalog.asset에 SubEffect 부재 = 🟢 데이터). *(페이즈전환은 #2로 분리.)*
 4. **Shop Gift 인벤토리(🔴 세이브 스키마)** — 선물 보관/소비. 단 소비처=내러티브 Event2/3라 M3 이후가 자연스럽다(지금은 죽은 코드).
-5. **구 아키텍처 폐기 — 페이즈2(구 코드 일괄삭제, 🔴 비가역)** *(페이즈1 완료·푸시됨 `784d2a4`)*: 신 코드는 구 0참조 확정 → 구 Assembly-CSharp을 **한 커밋에 일괄삭제**(부분삭제 시 잔존 구 코드 컴파일 깨짐). 대상: `Assets/_Project/{Core,Common,Contracts,Modules,UI,DevTools}` + `Assets/Scenes/Main.unity` + `_Dev/Integration/`(구 `ButtonEX`/`TabGroup` 포함). 선행: 보존자산(Game.unity·신 `Prefabs`·신 `Data` SO)에 구 GUID 0 재확인(`_Project/{Data,Prefabs}` 신/구 혼재는 파일별 분류, 애매하면 보존). 빌드: `EditorBuildSettings` index0→`Game.unity`. 삭제 후 정리: IVT(`Scripts/Narrative/AssemblyInfo.cs`의 `InternalsVisibleTo`) 제거 · `LoveAlgo.UI`/`LoveAlgo.Save` asmdef `autoReferenced→true`(컴파일 확인, 문제 시 false 롤백) · 구 `GamePhase` 소멸 확인. 검증: 컴파일0·missing0·EditMode 245/PlayMode 55·asmdef없는 `.cs` 0.
+5. ✅ **완료(`9152615`)** — ~~구 아키텍처 폐기 페이즈2(구 코드 일괄삭제)~~. 구 Assembly-CSharp **983파일/137,790줄 일괄삭제**(신 코드 0참조 asmdef 격리로 확정). 대상: `_Project/{Common,Contracts,Core,DevTools,Modules,UI}`·`Scenes/Main.unity`·`_Dev/Integration`·`Scripts/`(top, DebugPanel/DebugRemoteWindow/**WindowsBuildTool** 포함—감독 결정 삭제)·`Tests/Editor/SaveLoadRoundTrip`·Resources 구 SO 4종(AudioSettings·FXDefaultsConfig·LockScreen/·ResourceCatalog)·IVT. 사후: EditorBuildSettings Main제거(Game index0)·`LoveAlgo.UI`/`Save` asmdef autoRef→true·**구 StatGauge 게이지 5개 제거**(Game.unity HUD StatPanel 잔재, 페이즈1 누락 — 신 HudView 코드참조·갱신 0인 죽은 위젯, 스탯은 statText 텍스트 유지). 검증: 컴파일0·EditMode 240·PlayMode 55·missing0(`validate` clean)·구 `GamePhase` 소멸·asmdef없는 게임코드 0. **잔존(범위 밖)**: DOTween(서드파티)·InputSystem_Actions(Unity생성)는 asmdef 없으나 신 코드 미참조 추정 — 별도 정리 후보. StatGauge 게이지 시각이 필요하면 신 위젯으로 후속(🟢 HUD 레이아웃).
 
 ### 워크플로우 규율 (directive)
 - **재설계 ≠ 전사(ADR-012 강화, 2026-06-02 감독 지적 · 2026-06-03 정본화)**: **정본 = `docs/vn_conventions.md` — 슬라이스 착수 시 구 코드 대신 이 문서를 본다**(렌더타깃 분류축·네이밍·CSV vs C# 경계·안티패턴·모범 예시). 요구사항(STORY_COMMANDS·REWRITE_FEATURE_INVENTORY §기능)에서 클래스 책임·데이터 흐름을 먼저 설계 — 구 코드 읽기 전에. 구 코드는 동작 의미·동결 수치·CSV 문법(ADR-009) 확인용으로만, 구조/네이밍/분해 답습 금지. 커밋 "이식(port)" 표현 금지. 레드플래그: "이 클래스/필드가 요구사항 때문인가, 구 코드가 있어서인가?"
 - 무언가 만들 때마다 **작동 증거**: 순수/공식층=EditMode 테스트, MonoBehaviour 라이프사이클·구독·씬 와이어링=PlayMode 테스트. 임시 dev 하니스 금지 — Test Runner 어셈블리로. 위험도 등급 선언 + 커밋 "왜".
 - **썸네일은 레이어 배제 캡처**가 필수 요구사항(옛 말썽: 안 잡혀야 할 UI 포함됨) — Save 썸네일 이식(M5) 시.
 
-### 잔여 Common (페이즈2에서 일괄 삭제)
-`ListenerBag.cs`·`SingletonMonoBehaviour.cs`·`Services.cs`는 **신 코드 0참조 확정**(구 Assembly-CSharp에서만 사용) → 구 아키텍처 폐기 페이즈2에서 구 코드와 함께 삭제(별도 이식 불필요).
+### ~~잔여 Common~~ 삭제 완료(`9152615`)
+`ListenerBag.cs`·`SingletonMonoBehaviour.cs`·`Services.cs` 모두 페이즈2에서 구 코드와 함께 삭제됨.
 
 ### 마일스톤 (원안 — 실제론 감독이 슬라이스별 우선순위 지정)
 M1 Core ✅ → M2 Data/공식 ✅ → M3 내러티브/스테이지(파서까지) → M4 기능모듈(Schedule·Shop 진행) → M5 UI/Save(매니저·HUD 진행). *순서는 엄격히 안 지켜졌고(감독 선택), broad-first로 골격을 먼저 세웠다 — 다음은 depth(플레이 루프/내러티브 런타임)로 좁히는 게 자연스럽다.*
