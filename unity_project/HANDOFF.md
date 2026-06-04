@@ -97,12 +97,22 @@
 
 ---
 
+## ✅ 이번 세션 검증·커밋 완료
+
+- **PhaseController(ADR-013, `c7d2b7f`) 검증 완료** — EditMode·PlayMode 그린. 단 PlayMode `GameSceneEnding`/`GameSceneSimulation`이 한때 "ScheduleView null"로 실패 → 원인은 **디스크 `Game.unity`의 `ScheduleUI`가 직전 PlayMode로 `m_IsActive:0` 오염 저장**(코드 무관). `git restore`+씬 재로드로 정본 복원 후 51/51 회복. 폰트 SDF `.asset` 3건도 동일 부류라 복원. **교훈 재확인: PlayMode 후 `Game.unity` 저장 금지**(부팅 active 오염) — 씬은 커밋 정본이 정확.
+
+- **분기 읽기/쓰기 3슬라이스 A·B·C 커밋 완료(EditMode 245 · PlayMode 51 그린)** — 순수 `ConditionEvaluator`(구 EvaluateCondition 1:1, AND>OR 우선) 공유: (A) Flow `If:조건:점프대상`(참=점프/거짓=통과) + `NarrativeController.HandleFlow` If 분기 + `ConditionEvaluatorTests` 9. (B) 선택지 `if:조건` 필터 `ChoiceParser.VisibleOptions`(0개면 건너뜀) + `ChoiceParserTests` +2. (C) Flow `Flag:이름[:true|false]`·`Set` 별칭(gs.SetFlag, 무통지) + `FlowCommandInterpreterTests` +1. **런타임(점프/숨김/플래그)은 데모 CSV 미반영** — 다음 PlayMode/플레이 확인 시 `Flow,,If:...`·`Option ...|if:Flag:x`·`Flow,,Flag:x` 추가.
+
+**이번 세션 완료(푸시됨)**: vn_conventions 정본화(`c9272b9`) · FX 네이밍 ScreenFx→ScreenFade·CameraFx→Camera·`_ScreenOverlay`(`96a211a`) · 화면 페이즈 일원화 `ScreenPhase`+PhaseController(`c7d2b7f`). **보류**: 구 `LoveAlgo.Core.GamePhase`+구 아키텍처 폐기(#5, ScreenPhase와 충돌하나 구 18소비처라 별도) · 씬 stale `m_EditorClassIdentifier` 2건(GUID 바인딩, 무해).
+
+---
+
 ## ▶️ 다음 액션
 
 이번 세션 **M3 슬라이스2 스테이지 BG+Char 첫 서브슬라이스 — 코드+테스트 완성**(커밋 b967218, EditMode 166/PlayMode 21 그린). 렌더링 구조 결정: **별도 `_Stage` 캔버스(UI Image, `_UI`보다 낮은 sortingOrder)** — 구 UI-Image 동작·동결 px 수치 재사용 + 캔버스 rebuild 격리(ADR-004), SpriteRenderer 카메라/정렬레이어 신설 회피(감독 결정). 감독이 다음 방향 택1:
 
 1. **M3 슬라이스2 — 스테이지 씬 배선(즉시 후속)**: `Game.unity`에 `_Stage` 캔버스 + StageView 배선 + 데모 CSV BG/Char(HANDOFF 현재상태 末 참조, 🔴 씬 흐름). **그 다음 서브슬라이스**: FX(카메라/스크린)·Sound(BGM/SFX)·오토모드·인라인태그(`<emote>`/`<wait>`)·CG/SD/Overlay(로아 모드)·점프페이드·선택지 조건/이력·LockScreen 계열 Flow. **실 트리거**: dev 버튼(NarrativeDevTrigger)을 이벤트→스크립트 매핑으로 대체 — 스토리 데이터(엔진 포맷 CSV) 필요(현재 기획 CSV만). 별칭/카탈로그(한글명→ID, Default→코드)는 컨벤션 로딩에서 승격 필요.
-2. **화면 페이즈 상태머신**(🔴, 스펙=ADR-013) — Title↔Story↔Schedule↔Ending 전환을 단일 `PhaseController`로 일원화(현재 NarrativeController가 ShowUiGroupCommand 직접 토글). GamePhase enum(State SO) + 순수 PhaseService(FSM) + 의도 발행(RequestPhaseCommand). LockScreen은 Phase 아닌 Overlay(완료-핸들 복귀). 슬라이스2의 LockScreen/페이즈전환이 이 결정에 의존하므로 그 전에 구현 권장. 구현 시 확정: UIGroup↔GamePhase 매핑·씬 경계·Overlay 목록(ADR-013 末).
+2. ✅ **완료(`c7d2b7f`, enum=`ScreenPhase`)** — ~~화면 페이즈 상태머신~~(🔴, ADR-013) — Title↔Story↔Schedule↔Ending 전환을 단일 `PhaseController`로 일원화(현재 NarrativeController가 ShowUiGroupCommand 직접 토글). GamePhase enum(State SO) + 순수 PhaseService(FSM) + 의도 발행(RequestPhaseCommand). LockScreen은 Phase 아닌 Overlay(완료-핸들 복귀). 슬라이스2의 LockScreen/페이즈전환이 이 결정에 의존하므로 그 전에 구현 권장. 구현 시 확정: UIGroup↔GamePhase 매핑·씬 경계·Overlay 목록(ADR-013 末).
 3. **시뮬레이션 루프 심화** — 카테고리 탭 UI 배선(현재 슬롯 동적생성만, 탭 버튼 미연결) / HUD·슬롯 시각 레이아웃 / 엔딩 결과 디테일(최고 호감도 등) / **Shop SessionBuff 복합효과 SO 데이터 보강**(코드 완성, ItemCatalog.asset에 SubEffect 부재 = 🟢 데이터). *(페이즈전환은 #2로 분리.)*
 4. **Shop Gift 인벤토리(🔴 세이브 스키마)** — 선물 보관/소비. 단 소비처=내러티브 Event2/3라 M3 이후가 자연스럽다(지금은 죽은 코드).
 5. **구 아키텍처 폐기 착수** — 소비처 이식 끝난 구 모듈·Service Locator 제거, `Main.unity` 신 씬으로 교체 검토.

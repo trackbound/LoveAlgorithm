@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 using NUnit.Framework;
+using UnityEngine;    // ScriptableObject
+using LoveAlgo.Core;  // GameStateSO
 using LoveAlgo.Story; // ChoiceParser, ChoiceOption
 
 namespace LoveAlgo.Tests.Editor
@@ -58,6 +60,36 @@ namespace LoveAlgo.Tests.Editor
             Assert.AreEqual("A", list[0].ButtonText);
             Assert.AreEqual("b", list[1].JumpTarget);
             Assert.AreEqual("C", list[2].ButtonText);
+        }
+
+        [Test]
+        public void VisibleOptions_Filters_By_Condition()
+        {
+            var gs = ScriptableObject.CreateInstance<GameStateSO>();
+            gs.ResetRuntime();
+            gs.SetFlag("met", true);
+            gs.SetStat("Int", 10);
+            try
+            {
+                var opts = ChoiceParser.ParseOptions(new[]
+                {
+                    "무조건|a",                    // 조건 없음 → 표시
+                    "플래그있음|b|if:Flag:met",      // met=true → 표시
+                    "플래그없음|c|if:Flag:none",     // 미설정 → 숨김
+                    "스탯게이트|d|if:Stat:Int>=20",  // Int 10<20 → 숨김
+                });
+                var visible = ChoiceParser.VisibleOptions(opts, gs);
+                CollectionAssert.AreEqual(new[] { "무조건", "플래그있음" }, visible.ConvertAll(o => o.ButtonText));
+            }
+            finally { Object.DestroyImmediate(gs); }
+        }
+
+        [Test]
+        public void VisibleOptions_NullState_Keeps_Unconditioned_Only()
+        {
+            var opts = ChoiceParser.ParseOptions(new[] { "무조건|a", "조건부|b|if:Flag:x" });
+            var visible = ChoiceParser.VisibleOptions(opts, null);
+            CollectionAssert.AreEqual(new[] { "무조건" }, visible.ConvertAll(o => o.ButtonText));
         }
     }
 }

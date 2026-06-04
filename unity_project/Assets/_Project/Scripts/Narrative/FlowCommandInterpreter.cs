@@ -5,7 +5,7 @@ using LoveAlgo.Affinity; // AffinityFormula, PointCategory
 namespace LoveAlgo.Story.StoryEngine.Flow
 {
     /// <summary>처리된 Flow 명령 종류.</summary>
-    public enum FlowCommandKind { Unknown, AffinityEventChoice, AffinityPoint, Day }
+    public enum FlowCommandKind { Unknown, AffinityEventChoice, AffinityPoint, Day, Flag }
 
     /// <summary>
     /// <see cref="FlowCommandInterpreter.Apply"/> 결과. 무엇이 어떻게 바뀌었는지(또는 실패 사유)를 담아
@@ -31,6 +31,9 @@ namespace LoveAlgo.Story.StoryEngine.Flow
         public static FlowCommandResult DayResult(int day)
             => new(true, FlowCommandKind.Day, null, 0, day, null);
 
+        public static FlowCommandResult FlagResult()
+            => new(true, FlowCommandKind.Flag, null, 0, 0, null);
+
         public static FlowCommandResult Fail(FlowCommandKind kind, string error)
             => new(false, kind, null, 0, 0, error);
     }
@@ -48,6 +51,7 @@ namespace LoveAlgo.Story.StoryEngine.Flow
     ///   Affinity:EventChoice:{heroineId}:{eventTag}:{basePoints}  — 이벤트 선택 기록 + 포인트(+Event3 재선택 +2)
     ///   Affinity:Point:{heroineId}:{Event|Dialogue|Gift|MiniGame}:{amount}
     ///   Day:{N}  — 일차 표시용 강제 설정(실제 전환/오토세이브 아님; 그건 DayLoop/GameManager 경로)
+    ///   Flag:{name}[:true|false]  — 플래그 설정(값 생략 시 true; Set 별칭). 분기(If/선택지 조건)가 읽음. 통지 없음.
     /// </summary>
     public static class FlowCommandInterpreter
     {
@@ -62,6 +66,8 @@ namespace LoveAlgo.Story.StoryEngine.Flow
             {
                 case "Affinity": return ApplyAffinity(gs, parts);
                 case "Day":      return ApplyDay(gs, parts);
+                case "Flag":
+                case "Set":      return ApplyFlag(gs, parts);
                 default:         return FlowCommandResult.Fail(FlowCommandKind.Unknown, $"알 수 없는 Flow 명령: {parts[0]}");
             }
         }
@@ -119,6 +125,16 @@ namespace LoveAlgo.Story.StoryEngine.Flow
 
             gs.Day = day;
             return FlowCommandResult.DayResult(day);
+        }
+
+        static FlowCommandResult ApplyFlag(GameStateSO gs, string[] parts)
+        {
+            // Flag:이름[:true|false] (값 생략 시 true). 통지 없음 — 적용만(ChoiceEffectInterpreter Flag와 동일 문법).
+            if (parts.Length < 2 || string.IsNullOrWhiteSpace(parts[1]))
+                return FlowCommandResult.Fail(FlowCommandKind.Flag, "Flag 이름 없음 (Flag:이름[:true|false])");
+            bool value = parts.Length < 3 || string.Equals(parts[2], "true", StringComparison.OrdinalIgnoreCase);
+            gs.SetFlag(parts[1], value);
+            return FlowCommandResult.FlagResult();
         }
     }
 }

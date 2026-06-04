@@ -1,11 +1,12 @@
 using System;
 using System.Collections.Generic;
+using LoveAlgo.Core; // GameStateSO (조건 필터링)
 
 namespace LoveAlgo.Story
 {
     /// <summary>
     /// 선택지 1개(Option 라인)의 파싱 결과. 구 <c>OptionData</c> 1:1 이식 — 필드 동일, 파서만 순수 분리.
-    /// <see cref="Condition"/>은 이번 슬라이스에서 보관만(필터링 미적용 — HANDOFF 슬라이스 범위).
+    /// <see cref="Condition"/>은 <see cref="ChoiceParser.VisibleOptions"/>가 <c>ConditionEvaluator</c>로 평가해 표시 필터링(Flow If와 동일 문법).
     /// </summary>
     public sealed class ChoiceOption
     {
@@ -49,6 +50,20 @@ namespace LoveAlgo.Story
             if (values == null) return list;
             foreach (var v in values) list.Add(ParseOption(v));
             return list;
+        }
+
+        /// <summary>
+        /// 조건(<see cref="ChoiceOption.Condition"/>)을 <paramref name="gs"/>에 평가해 표시 가능한 선택지만 반환(순수).
+        /// 조건이 없으면 항상 표시. 분기 게이트는 <c>ConditionEvaluator</c> 공유(Flow If와 동일 문법) — EditMode 테스트.
+        /// </summary>
+        public static List<ChoiceOption> VisibleOptions(IReadOnlyList<ChoiceOption> options, GameStateSO gs)
+        {
+            var visible = new List<ChoiceOption>();
+            if (options == null) return visible;
+            for (int i = 0; i < options.Count; i++)
+                if (ConditionEvaluator.Evaluate(gs, options[i].Condition))
+                    visible.Add(options[i]);
+            return visible;
         }
     }
 }

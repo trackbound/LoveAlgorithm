@@ -41,7 +41,7 @@
 | **SD** | (공란) | `다은 첫만남` / `Close` | `await` | SD 일러스트. |
 | **Sound** | (공란) | `BGM:로아` / `SFX:123` / `BGM:Stop` | `>` | BGM/SFX. **`Fade:N` 같은 파라미터는 자동 제거된다** (페이드 연출이 필요하면 직접 FX로). |
 | **FX** | (공란) | `Wait:0.5` / `CamShake` / `SceneEnd` | `await` | 연출 효과. |
-| **Flow** | (공란) | `Jump:roa_intro` / `Save` / `End` / `Schedule` / `Day:1` / `Username` / `LockScreen:GameStart` / `Affinity:로아:+1` | `>` | 흐름 제어. |
+| **Flow** | (공란) | `Jump:roa_intro` / `Save` / `End` / `Schedule` / `Day:1` / `Username` / `LockScreen:GameStart` / `Affinity:로아:+1` / `If:조건:점프대상` / `Flag:이름` | `>` | 흐름 제어. |
 | **Choice / Option** | (공란) | 선택지 분기 | 별도 | 선택지(Choice)와 각 보기(Option). |
 
 **Next 값**:
@@ -82,6 +82,23 @@
 ,Flow,,LockScreen:Normal:Time=07:30,await          ← 다음날 아침 재로그인 연출
 ,Flow,,LockScreen:Auto:FadeOut:Time=23:58,await    ← 시간 명시 자동 분기
 ```
+
+---
+
+## Flow If — 조건 분기
+
+`Flow,,If:<조건>:<점프대상>,>` — 조건이 참이면 `<점프대상>`(LineID)으로 점프, 거짓이면 다음 라인으로 진행.
+
+조건 문법:
+- `Flag:이름` / `!Flag:이름` — 플래그 on/off (예: `Flag:met_roa`)
+- `Love:히로인<op>N` — 호감도 (예: `Love:로아>=46`)
+- `Stat:스탯<op>N` 또는 베어 `스탯<op>N` — 스탯 (예: `Stat:Int>=20` = `Int>=20`)
+- `<op>` = `>=` `<=` `==` `>` `<`. 빈 조건 = 항상 참.
+- 복합: `&`(AND)·`|`(OR), AND 우선. 예: `Flag:met&Int>=20`(둘 다), `Love:로아>=46|Flag:vip`(하나)
+
+예: `,Flow,,If:Love:로아>=46:roa_good_end,>` (로아 호감도 46↑이면 `roa_good_end`로 점프)
+
+**플래그 설정(쓰기)**: `,Flow,,Flag:이름[:true|false],>` — 값 생략 시 true(`Set:` 별칭 동일). 선택지 효과로도 `Flag:이름:true` 가능. 설정한 플래그를 위 `If:Flag:이름` / 선택지 `if:Flag:이름`이 읽어 분기.
 
 ---
 

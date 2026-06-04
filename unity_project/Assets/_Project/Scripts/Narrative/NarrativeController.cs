@@ -204,7 +204,13 @@ namespace LoveAlgo.Story.StoryEngine
                 yield break;
             }
 
-            var options = ChoiceParser.ParseOptions(optionValues);
+            var options = ChoiceParser.VisibleOptions(ChoiceParser.ParseOptions(optionValues), state); // if:조건 필터링
+            if (options.Count == 0)
+            {
+                Log.Warn("[NarrativeController] 조건을 만족하는 선택지가 없습니다 — 건너뜀.");
+                yield break;
+            }
+
             var labels = new List<string>(options.Count);
             foreach (var o in options) labels.Add(o.ButtonText);
 
@@ -273,14 +279,35 @@ namespace LoveAlgo.Story.StoryEngine
             }
 
             if (string.Equals(head, "Affinity", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(head, "Day", StringComparison.OrdinalIgnoreCase))
+                string.Equals(head, "Day", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(head, "Flag", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(head, "Set", StringComparison.OrdinalIgnoreCase))
             {
-                // 순수 FlowCommandInterpreter의 어댑터(FlowCommandController)가 적용 + 통지.
+                // 순수 FlowCommandInterpreter의 어댑터(FlowCommandController)가 적용 + (필요시) 통지. Flag는 적용만.
                 EventBus.Publish(new FlowCommandRequestedEvent(value));
                 return false;
             }
 
-            // Save/Schedule/Username/LockScreen/Message/MiniGame/LoadingScene/If/Mark 등 — 이번 슬라이스 미지원.
+            if (string.Equals(head, "If", StringComparison.OrdinalIgnoreCase))
+            {
+                // If:<조건>:<점프대상> — 조건 참이면 점프(true), 거짓이면 통과(false). 조건에 ':'가 있어(Stat:Int>=5)
+                // rest의 마지막 ':' 뒤=점프대상, 앞=조건으로 분리(구 IfFlowCommand 의미 1:1). 평가는 순수 ConditionEvaluator.
+                string rest = ci >= 0 ? value.Substring(ci + 1) : "";
+                int lastColon = rest.LastIndexOf(':');
+                if (lastColon <= 0)
+                {
+                    Log.Warn($"[NarrativeController] 잘못된 If 형식(If:조건:점프대상): \"{value}\"");
+                    return false;
+                }
+                string cond = rest.Substring(0, lastColon);
+                string target = rest.Substring(lastColon + 1).Trim();
+                if (!ConditionEvaluator.Evaluate(state, cond)) return false; // 조건 거짓 → 다음 라인
+                if (cursor.TryJump(target)) return true;
+                Debug.LogError($"[NarrativeController] If 점프 대상 '{target}'을 찾을 수 없습니다.");
+                return false;
+            }
+
+            // Save/Schedule/Username/LockScreen/Message/MiniGame/LoadingScene/Mark 등 — 이번 슬라이스 미지원.
             Log.Info($"[NarrativeController] 슬라이스 범위 밖 Flow 스킵: \"{value}\"");
             return false;
         }

@@ -122,5 +122,27 @@ namespace LoveAlgo.Tests.Editor
             }
             finally { Object.DestroyImmediate(gs); }
         }
+
+        [Test]
+        public void Flag_Sets_Clears_And_Alias()
+        {
+            var gs = MakeState();
+            try
+            {
+                var r = FlowCommandInterpreter.Apply(gs, "Flag:met_roa");
+                Assert.IsTrue(r.Ok);
+                Assert.AreEqual(FlowCommandKind.Flag, r.Kind);
+                Assert.IsTrue(gs.GetFlag("met_roa"), "값 생략 = true");
+
+                FlowCommandInterpreter.Apply(gs, "Flag:met_roa:false");
+                Assert.IsFalse(gs.GetFlag("met_roa"), "false로 해제");
+
+                Assert.IsTrue(FlowCommandInterpreter.Apply(gs, "Set:seen_intro").Ok, "Set 별칭");
+                Assert.IsTrue(gs.GetFlag("seen_intro"));
+
+                Assert.IsFalse(FlowCommandInterpreter.Apply(gs, "Flag:").Ok, "이름 없음 → 실패");
+            }
+            finally { Object.DestroyImmediate(gs); }
+        }
     }
 }
