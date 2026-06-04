@@ -42,5 +42,61 @@ namespace LoveAlgo.Tests.Editor
         {
             Assert.DoesNotThrow(() => GameBoot.NewGame(null, null));
         }
+
+        [Test]
+        public void GameEntry_Consume_Returns_Mode_Then_Resets_To_NewGame()
+        {
+            GameEntry.PendingMode = BootMode.Continue;
+            Assert.AreEqual(BootMode.Continue, GameEntry.Consume(), "설정한 모드 반환");
+            Assert.AreEqual(BootMode.NewGame, GameEntry.PendingMode, "소비 후 NewGame으로 리셋");
+            Assert.AreEqual(BootMode.NewGame, GameEntry.Consume(), "리셋 후 기본 NewGame");
+        }
+
+        [Test]
+        public void ContinueGame_Restores_Saved_State_Without_Reset()
+        {
+            var backup = JsonSaveStore.Load(JsonSaveStore.AutoSaveSlot); // 유저 슬롯0 보호
+            var gs = ScriptableObject.CreateInstance<GameStateSO>();
+            try
+            {
+                gs.ResetRuntime();
+                gs.Day = 5;
+                gs.Money = 1234;
+                JsonSaveStore.Save(JsonSaveStore.AutoSaveSlot, new SaveData { state = gs.Data });
+
+                gs.Day = 1; // 더럽힘 — ContinueGame이 리셋이 아니라 복원해야
+                gs.Money = 0;
+
+                bool ok = GameBoot.ContinueGame(gs, null);
+
+                Assert.IsTrue(ok, "세이브 로드 성공");
+                Assert.AreEqual(5, gs.Day, "저장된 일차 복원(ResetRuntime 안 함)");
+                Assert.AreEqual(1234, gs.Money, "저장된 소지금 복원");
+                Assert.Greater(AffinityFormula.Count, 0, "공식 정의표 주입됨(폴백)");
+            }
+            finally
+            {
+                if (backup != null) JsonSaveStore.Save(JsonSaveStore.AutoSaveSlot, backup);
+                else JsonSaveStore.Delete(JsonSaveStore.AutoSaveSlot);
+                Object.DestroyImmediate(gs);
+            }
+        }
+
+        [Test]
+        public void ContinueGame_No_Save_Returns_False()
+        {
+            var backup = JsonSaveStore.Load(JsonSaveStore.AutoSaveSlot); // 유저 슬롯0 보호
+            var gs = ScriptableObject.CreateInstance<GameStateSO>();
+            try
+            {
+                JsonSaveStore.Delete(JsonSaveStore.AutoSaveSlot); // 세이브 없음 보장
+                Assert.IsFalse(GameBoot.ContinueGame(gs, null), "세이브 없으면 false(호출부가 NewGame 폴백)");
+            }
+            finally
+            {
+                if (backup != null) JsonSaveStore.Save(JsonSaveStore.AutoSaveSlot, backup);
+                Object.DestroyImmediate(gs);
+            }
+        }
     }
 }

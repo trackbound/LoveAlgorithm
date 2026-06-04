@@ -9,4 +9,13 @@ namespace LoveAlgo.Events
     public readonly struct StartNewGameCommand
     {
     }
+
+    /// <summary>
+    /// 이어하기 *의도*(EventBus). 타이틀의 <c>TitleView</c> Continue 버튼이 발행 → <c>SceneFlowController</c>가
+    /// 구독해 부팅 모드를 Continue로 설정하고 게임 씬을 로드한다. 게임 씬의 <c>GameBootstrap</c>이 오토세이브를
+    /// 복원한다(<see cref="StartNewGameCommand"/> 새 게임 경로와 대칭). 파라미터 없음.
+    /// </summary>
+    public readonly struct ContinueGameCommand
+    {
+    }
 }

@@ -19,5 +19,20 @@ namespace LoveAlgo.Game
             AffinityFormula.Configure(balance);
             DayLoop.BeginRun(gs);
         }
+
+        /// <summary>
+        /// 이어하기. 오토세이브 슬롯을 GameStateSO에 복원하고 호감도 공식 정의표를 주입한다.
+        /// 새 게임과 달리 ResetRuntime/BeginRun을 하지 않는다(저장된 일차·행동·진행을 그대로 복원).
+        /// 파일 없음/손상이면 false — 호출부(GameBootstrap)가 새 게임으로 폴백한다.
+        /// </summary>
+        public static bool ContinueGame(GameStateSO gs, GameBalanceSO balance)
+        {
+            if (gs == null) return false;
+            var data = JsonSaveStore.Load(JsonSaveStore.AutoSaveSlot);
+            if (data == null) return false;
+            gs.Load(data.state);
+            AffinityFormula.Configure(balance);
+            return true;
+        }
     }
 }
