@@ -19,9 +19,33 @@ namespace LoveAlgo.Story
         /// <summary>흐름-critical 구간(데이루프 전환 등)이 아니면 적용 가능 — 그 구간엔 데드락 방지로 차단(NarrativeFlowGate).</summary>
         public bool CanApply => !NarrativeFlowGate.IsLocked;
 
+        string _baseline = "";
+
+        /// <summary>마지막으로 로드/저장한 CSV 상대경로(없으면 null).</summary>
+        public string CurrentPath { get; private set; }
+
         public List<string> ListStories() => StoryAssetLoader.List();
-        public string Load(string relPath) => StoryAssetLoader.Read(relPath) ?? "";
-        public bool Save(string relPath, string csv) => StoryAssetLoader.Write(relPath, csv);
+
+        /// <summary>CSV를 읽어 편집 기준선(dirty 비교 기준)으로 삼는다.</summary>
+        public string Load(string relPath)
+        {
+            var text = StoryAssetLoader.Read(relPath) ?? "";
+            _baseline = text;
+            CurrentPath = relPath;
+            return text;
+        }
+
+        /// <summary>저장 성공 시 기준선 갱신(실패면 false).</summary>
+        public bool Save(string relPath, string csv)
+        {
+            if (!StoryAssetLoader.Write(relPath, csv)) return false;
+            _baseline = csv;
+            CurrentPath = relPath;
+            return true;
+        }
+
+        /// <summary>편집 텍스트가 기준선과 다른가(미저장 여부).</summary>
+        public bool IsDirty(string current) => (current ?? "") != _baseline;
 
         /// <summary>파싱+검증. (위반 목록, 라인 수). Strict는 일시 적용 후 원복(러닝 게임 파싱에 영향 없게).</summary>
         public (List<ScriptValidator.Violation> violations, int lineCount) Validate(string csv, bool strict)
