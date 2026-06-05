@@ -38,10 +38,17 @@ namespace LoveAlgo.DevTools.Runtime
 
         void Awake()
         {
-            var panelSettings = ScriptableObject.CreateInstance<PanelSettings>();
-            var theme = Resources.Load<ThemeStyleSheet>("unity-default-runtime-theme"); // 빌트인 런타임 테마(없으면 폴백 필요)
-            if (theme != null) panelSettings.themeStyleSheet = theme;
-            panelSettings.sortingOrder = 1000; // 게임 위 오버레이.
+            // 테마가 박힌 PanelSettings 에셋을 우선 로드(런타임 UI Toolkit 렌더 필수 — 테마 없으면 "UI will not
+            // render properly"). 에셋=Resources/StoryEditorPanelSettings(메뉴 생성, 기본 런타임 테마+sortingOrder 1000).
+            // 에셋이 없을 때만 프로그래매틱 폴백(테마 미적용 가능 — 에셋 경로 권장).
+            var panelSettings = Resources.Load<PanelSettings>("StoryEditorPanelSettings");
+            if (panelSettings == null)
+            {
+                panelSettings = ScriptableObject.CreateInstance<PanelSettings>();
+                var theme = Resources.Load<ThemeStyleSheet>("unity-default-runtime-theme");
+                if (theme != null) panelSettings.themeStyleSheet = theme;
+                panelSettings.sortingOrder = 1000; // 게임 위 오버레이.
+            }
 
             var doc = gameObject.AddComponent<UIDocument>();
             doc.panelSettings = panelSettings;
