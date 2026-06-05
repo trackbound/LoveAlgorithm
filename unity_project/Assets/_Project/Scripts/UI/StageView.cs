@@ -57,7 +57,7 @@ namespace LoveAlgo.UI
         public SlotBinding SlotR { get => slotR; set => slotR = value; }
         public GameObject CharContainer { get => charContainer; set => charContainer = value; }
 
-        IDisposable _bgSub, _charSub, _finishSub, _cgSub, _emoteSub;
+        IDisposable _bgSub, _charSub, _finishSub, _cgSub, _emoteSub, _resetSub;
         bool _cgHidden;
 
         // 슬롯(L/C/R) 인덱스 → 현재 올라간 캐릭터 식별자(Char Enter 시 기록). 인라인 <emote> 화자→슬롯 해석에 사용.
@@ -74,6 +74,7 @@ namespace LoveAlgo.UI
             _bgSub = EventBus.Subscribe<ShowBackgroundCommand>(OnShowBackground);
             _charSub = EventBus.Subscribe<ShowCharacterCommand>(OnShowCharacter);
             _finishSub = EventBus.Subscribe<NarrativeFinishedEvent>(_ => ClearAll());
+            _resetSub = EventBus.Subscribe<ResetNarrativeViewsCommand>(_ => ClearAll()); // 도구 화면 정리
             _cgSub = EventBus.Subscribe<SetCgModeCommand>(OnCgMode);
             _emoteSub = EventBus.Subscribe<ShowSpeakerEmoteCommand>(OnSpeakerEmote);
 
@@ -86,8 +87,8 @@ namespace LoveAlgo.UI
 
         void OnDisable()
         {
-            _bgSub?.Dispose(); _charSub?.Dispose(); _finishSub?.Dispose(); _cgSub?.Dispose(); _emoteSub?.Dispose();
-            _bgSub = _charSub = _finishSub = _cgSub = _emoteSub = null;
+            _bgSub?.Dispose(); _charSub?.Dispose(); _finishSub?.Dispose(); _cgSub?.Dispose(); _emoteSub?.Dispose(); _resetSub?.Dispose();
+            _bgSub = _charSub = _finishSub = _cgSub = _emoteSub = _resetSub = null;
         }
 
         // CG 컷신 진입 시 캐릭터를 일괄 숨기고 종료 시 복원(슬롯별 알파 보존 위해 컨테이너 토글). 대칭.

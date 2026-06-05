@@ -20,7 +20,7 @@ namespace LoveAlgo.UI
 
         public Image Overlay { get => overlay; set => overlay = value; }
 
-        IDisposable _sub, _finishSub;
+        IDisposable _sub, _finishSub, _resetSub;
         Coroutine _routine;
         CompletionHandle _pending;
 
@@ -28,6 +28,7 @@ namespace LoveAlgo.UI
         {
             _sub = EventBus.Subscribe<ColorTintCommand>(OnTint);
             _finishSub = EventBus.Subscribe<NarrativeFinishedEvent>(_ => ResetTint());
+            _resetSub = EventBus.Subscribe<ResetNarrativeViewsCommand>(_ => ResetTint()); // 도구 화면 정리
             if (overlay != null)
             {
                 overlay.raycastTarget = false; // 틴트는 입력을 막지 않음.
@@ -38,8 +39,8 @@ namespace LoveAlgo.UI
 
         void OnDisable()
         {
-            _sub?.Dispose(); _finishSub?.Dispose();
-            _sub = _finishSub = null;
+            _sub?.Dispose(); _finishSub?.Dispose(); _resetSub?.Dispose();
+            _sub = _finishSub = _resetSub = null;
         }
 
         void OnTint(ColorTintCommand e)

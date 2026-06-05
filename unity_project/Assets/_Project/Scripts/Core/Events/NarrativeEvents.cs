@@ -135,6 +135,16 @@ namespace LoveAlgo.Events
     }
 
     /// <summary>
+    /// 연출 뷰(스테이지/배경/캐릭터·CG·SD·Overlay·페이드·틴트·아이마스크·카메라·흔들기)를 즉시 초기화하라는 명령.
+    /// 스토리 기획 도구가 새 스크립트를 Apply하기 직전에 발행해, 직전 재생을 abort로 끊었을 때 남는 잔여 연출
+    /// (틴트/검은 바/스테이지 등)을 청소한다 — abort는 <see cref="NarrativeFinishedEvent"/>를 쏘지 않으므로
+    /// (데이루프 보호). 연출 뷰만 구독하고 GameManager는 구독하지 않는다(하루가 넘어가지 않음). 파라미터 없음.
+    /// </summary>
+    public readonly struct ResetNarrativeViewsCommand
+    {
+    }
+
+    /// <summary>
     /// 오토(자동 진행) 모드 토글 명령(M3 슬라이스2). <see cref="On"/>=true면 대사 뷰가 클릭 없이 타이핑 완료 후
     /// 지연을 두고 자동 진행한다(클릭 시 즉시). DialogueView가 구독. 토글 UI/설정 영속화는 후속.
     /// </summary>

@@ -34,7 +34,7 @@ namespace LoveAlgo.UI
         public RectTransform SlotC { get => slotC; set => slotC = value; }
         public RectTransform SlotR { get => slotR; set => slotR = value; }
 
-        IDisposable _sub, _finishSub;
+        IDisposable _sub, _finishSub, _resetSub;
         Coroutine _routine;
         CompletionHandle _pending;
         RectTransform _shaking;        // 현재 흔드는 대상(리셋용)
@@ -50,12 +50,13 @@ namespace LoveAlgo.UI
         {
             _sub = EventBus.Subscribe<ShakeCommand>(OnShake);
             _finishSub = EventBus.Subscribe<NarrativeFinishedEvent>(_ => ResetShake());
+            _resetSub = EventBus.Subscribe<ResetNarrativeViewsCommand>(_ => ResetShake()); // 도구 화면 정리
         }
 
         void OnDisable()
         {
-            _sub?.Dispose(); _finishSub?.Dispose();
-            _sub = _finishSub = null;
+            _sub?.Dispose(); _finishSub?.Dispose(); _resetSub?.Dispose();
+            _sub = _finishSub = _resetSub = null;
             ResetShake();
         }
 

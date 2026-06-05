@@ -22,7 +22,7 @@ namespace LoveAlgo.UI
 
         public RectTransform Body { get => body; set => body = value; }
 
-        IDisposable _sub, _finishSub;
+        IDisposable _sub, _finishSub, _resetSub;
         Coroutine _routine;
         CompletionHandle _pending;
 
@@ -35,12 +35,13 @@ namespace LoveAlgo.UI
         {
             _sub = EventBus.Subscribe<CameraCommand>(OnCommand);
             _finishSub = EventBus.Subscribe<NarrativeFinishedEvent>(_ => ResetImmediate());
+            _resetSub = EventBus.Subscribe<ResetNarrativeViewsCommand>(_ => ResetImmediate()); // 도구 화면 정리
         }
 
         void OnDisable()
         {
-            _sub?.Dispose(); _finishSub?.Dispose();
-            _sub = _finishSub = null;
+            _sub?.Dispose(); _finishSub?.Dispose(); _resetSub?.Dispose();
+            _sub = _finishSub = _resetSub = null;
         }
 
         void OnCommand(CameraCommand e)

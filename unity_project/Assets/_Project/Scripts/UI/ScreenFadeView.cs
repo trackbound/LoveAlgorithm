@@ -24,7 +24,7 @@ namespace LoveAlgo.UI
 
         public Image Overlay { get => overlay; set => overlay = value; }
 
-        IDisposable _sub, _finishSub;
+        IDisposable _sub, _finishSub, _resetSub;
         Coroutine _routine;
         CompletionHandle _pending;
 
@@ -32,6 +32,7 @@ namespace LoveAlgo.UI
         {
             _sub = EventBus.Subscribe<ShowScreenFadeCommand>(OnShow);
             _finishSub = EventBus.Subscribe<NarrativeFinishedEvent>(_ => ResetOverlay());
+            _resetSub = EventBus.Subscribe<ResetNarrativeViewsCommand>(_ => ResetOverlay()); // 도구 화면 정리
             if (overlay != null)
             {
                 overlay.raycastTarget = false; // 투명 오버레이가 클릭을 먹지 않도록.
@@ -42,8 +43,8 @@ namespace LoveAlgo.UI
 
         void OnDisable()
         {
-            _sub?.Dispose(); _finishSub?.Dispose();
-            _sub = _finishSub = null;
+            _sub?.Dispose(); _finishSub?.Dispose(); _resetSub?.Dispose();
+            _sub = _finishSub = _resetSub = null;
         }
 
         void OnShow(ShowScreenFadeCommand e)

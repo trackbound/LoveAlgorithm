@@ -24,7 +24,7 @@ namespace LoveAlgo.UI
         public RectTransform TopBar { get => topBar; set => topBar = value; }
         public RectTransform BottomBar { get => bottomBar; set => bottomBar = value; }
 
-        IDisposable _sub, _finishSub;
+        IDisposable _sub, _finishSub, _resetSub;
         Coroutine _routine;
         CompletionHandle _pending;
         float _halfHeight;
@@ -34,6 +34,7 @@ namespace LoveAlgo.UI
         {
             _sub = EventBus.Subscribe<EyeMaskCommand>(OnCommand);
             _finishSub = EventBus.Subscribe<NarrativeFinishedEvent>(_ => OpenImmediate());
+            _resetSub = EventBus.Subscribe<ResetNarrativeViewsCommand>(_ => OpenImmediate()); // 도구 화면 정리
             EnsureGeometry();
             ApplyCloseAmount(0f); // 시작은 뜬 상태.
             SetBarsActive(false);
@@ -41,8 +42,8 @@ namespace LoveAlgo.UI
 
         void OnDisable()
         {
-            _sub?.Dispose(); _finishSub?.Dispose();
-            _sub = _finishSub = null;
+            _sub?.Dispose(); _finishSub?.Dispose(); _resetSub?.Dispose();
+            _sub = _finishSub = _resetSub = null;
         }
 
         void EnsureGeometry()

@@ -28,7 +28,7 @@ namespace LoveAlgo.UI
         public Image SdImage { get => sdImage; set => sdImage = value; }
         public Image OverlayImage { get => overlayImage; set => overlayImage = value; }
 
-        IDisposable _sub, _finishSub;
+        IDisposable _sub, _finishSub, _resetSub;
         readonly Coroutine[] _routines = new Coroutine[3];
         readonly CompletionHandle[] _pending = new CompletionHandle[3];
 
@@ -36,6 +36,7 @@ namespace LoveAlgo.UI
         {
             _sub = EventBus.Subscribe<ShowStageLayerCommand>(OnShow);
             _finishSub = EventBus.Subscribe<NarrativeFinishedEvent>(_ => ClearAll());
+            _resetSub = EventBus.Subscribe<ResetNarrativeViewsCommand>(_ => ClearAll()); // 도구 화면 정리
             InitImage(cgImage);
             InitImage(sdImage);
             InitImage(overlayImage);
@@ -43,8 +44,8 @@ namespace LoveAlgo.UI
 
         void OnDisable()
         {
-            _sub?.Dispose(); _finishSub?.Dispose();
-            _sub = _finishSub = null;
+            _sub?.Dispose(); _finishSub?.Dispose(); _resetSub?.Dispose();
+            _sub = _finishSub = _resetSub = null;
         }
 
         Image ImageFor(StageLayerKind kind)
