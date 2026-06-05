@@ -344,7 +344,14 @@ namespace LoveAlgo.Story.StoryEngine
                 return false;
             }
 
-            // Schedule/Username/LockScreen/Message/MiniGame/LoadingScene/Value 등 — 이번 슬라이스 미지원.
+            if (string.Equals(head, "Value", StringComparison.OrdinalIgnoreCase))
+            {
+                // 풀게임 "낮→스케줄→밤" 흐름의 스케줄 지점 마커(Value:Schedule). 프롤로그는 선형 튜토리얼이라
+                // 스케줄 UI 없이 직접 서술 → 의도적 no-op(감독 결정 2026-06-05). 미지원 아님이라 스킵 로그 안 냄.
+                return false;
+            }
+
+            // Username/LockScreen/Message/MiniGame 등 — 이번 슬라이스 미지원.
             Log.Info($"[NarrativeController] 슬라이스 범위 밖 Flow 스킵: \"{value}\"");
             return false;
         }

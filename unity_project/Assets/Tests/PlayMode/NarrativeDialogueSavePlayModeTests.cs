@@ -108,5 +108,27 @@ namespace LoveAlgo.Tests.PlayMode
             CollectionAssert.AreEqual(new[] { "체크포인트" }, _dialogues, "Save는 흐름을 끊지 않음");
             Assert.IsTrue(_finished);
         }
+
+        [UnityTest]
+        public IEnumerator Flow_Value_Schedule_Is_NoOp_And_Continues()
+        {
+            // Value:Schedule = 풀게임 스케줄 지점 마커. 프롤로그는 선형이라 의도적 no-op(감독 결정) — 흐름 무차단.
+            const string csv =
+                "LineID,Type,Speaker,Value,Next\n" +
+                ",Text,,낮끝,click\n" +
+                ",Flow,,Value:Schedule,>\n" +
+                ",Text,,밤,click\n" +
+                ",Flow,,End,>\n";
+
+            var player = SetUp();
+            yield return null;
+
+            EventBus.Publish(new PlayScriptCommand(csv, "value"));
+            yield return WaitUntilDone(player);
+
+            CollectionAssert.AreEqual(new[] { "낮끝", "밤" }, _dialogues, "Value:Schedule은 no-op — 앞/뒤 대사 그대로 진행");
+            Assert.IsFalse(_saveSeen, "Value는 세이브 등 부수효과 없음");
+            Assert.IsTrue(_finished);
+        }
     }
 }
