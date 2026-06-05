@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization; // float 파싱(InvariantCulture)
 using LoveAlgo.Common; // EventBus, Log
 using LoveAlgo.Core;   // GameStateSO
 using LoveAlgo.Events; // 내러티브/UI/Flow/오디오 이벤트
@@ -135,8 +136,17 @@ namespace LoveAlgo.Story.StoryEngine
                         break;
 
                     case LineType.Flow:
-                        bool flowJumped = HandleFlow(line, cursor, ref end);
-                        if (!flowJumped && !end) cursor.MoveNext();
+                        if (IsLoadingScene(line.Value))
+                        {
+                            // 대기형 Flow(로딩 화면) — HandleFlow(동기)로는 못 기다리므로 코루틴으로 처리.
+                            yield return PlayLoading(line);
+                            cursor.MoveNext();
+                        }
+                        else
+                        {
+                            bool flowJumped = HandleFlow(line, cursor, ref end);
+                            if (!flowJumped && !end) cursor.MoveNext();
+                        }
                         break;
 
                     case LineType.BG:
@@ -457,6 +467,31 @@ namespace LoveAlgo.Story.StoryEngine
 
             EventBus.Publish(new ShowPlaceCommand(intent.Title, intent.Place, enter, hold, exit, new CompletionHandle()));
             yield return WaitNext(line, () => true);
+        }
+
+        // ── 로딩 화면(LoadingScene/Loading) — 대기형 Flow ──
+        // displayTime(기본 2.0s) 동안 LoadingScreenView가 풀스크린 오버레이를 띄운다. Flow지만 대기가 필요해
+        // Run 루프가 코루틴으로 분기(HandleFlow는 동기). 씬 전환 사이 로딩 비트(구 LoadingScene 재작성).
+        const float LoadingDefaultSeconds = 2.0f;
+
+        static bool IsLoadingScene(string value)
+        {
+            string h = HeadOf(value);
+            return string.Equals(h, "LoadingScene", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(h, "Loading", StringComparison.OrdinalIgnoreCase);
+        }
+
+        IEnumerator PlayLoading(ScriptLine line)
+        {
+            float secs = LoadingDefaultSeconds;
+            int ci = (line.Value ?? "").IndexOf(':');
+            if (ci >= 0 &&
+                float.TryParse(line.Value.Substring(ci + 1).Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out float s) && s >= 0f)
+                secs = s;
+
+            var req = new CompletionHandle();
+            EventBus.Publish(new ShowLoadingCommand(secs, req));
+            yield return WaitNext(line, () => req.IsComplete);
         }
 
         // ── 스크린 페이드(M3 슬라이스2: FadeOut/FadeIn/Flash) ──
