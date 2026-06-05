@@ -65,6 +65,7 @@ namespace LoveAlgo.Story.StoryEngine
         public bool IsRunning { get; private set; }
 
         IDisposable _sub;
+        Coroutine _currentRun;
 
         void OnEnable() => _sub = EventBus.Subscribe<PlayScriptCommand>(OnPlayScript);
 
@@ -76,11 +77,20 @@ namespace LoveAlgo.Story.StoryEngine
 
         void OnPlayScript(PlayScriptCommand cmd)
         {
-            if (IsRunning)
+            // 진행 중이면 중단하고 새로 시작(기획 도구 재적용 지원). 중단 시 NarrativeFinishedEvent는 발행하지
+            // 않는다 — GameManager 저녁 이벤트 씨임의 WaitUntil이 하루를 앞당기지 않도록. 잔여 FX/UI는 새 스크립트
+            // 명령이 덮거나 정상 종료의 ClearAll이 정리(즉시 완전 리셋은 후속). 중단된 완료 핸들은 GC(콜백 없음).
+            if (_currentRun != null)
             {
-                Log.Warn("[NarrativeController] 이미 스크립트 재생 중 — 새 PlayScriptCommand 무시.");
-                return;
+                StopCoroutine(_currentRun);
+                _currentRun = null;
+                IsRunning = false;
             }
+
+            // 인라인·에셋 둘 다 없으면 순수 Stop 의도 — 위 중단만 하고 조용히 종료(파싱/경고 없음).
+            // 빈 InlineCsv는 TextAsset(null) 경로로 새지 않게 여기서 가른다(도구 Stop 버튼).
+            if (string.IsNullOrEmpty(cmd.InlineCsv) && cmd.Script == null)
+                return;
 
             List<ScriptLine> lines = !string.IsNullOrEmpty(cmd.InlineCsv)
                 ? ScriptParser.Parse(cmd.InlineCsv)
@@ -88,11 +98,12 @@ namespace LoveAlgo.Story.StoryEngine
 
             if (lines == null || lines.Count == 0)
             {
+                // 빈 스크립트 = 중단만(Stop 의도) — 위에서 진행분을 멈췄으니 새로 시작하지 않는다.
                 Log.Warn($"[NarrativeController] 빈 스크립트 — 재생 생략 (name='{cmd.Name}').");
                 return;
             }
 
-            StartCoroutine(Run(lines, cmd.Name));
+            _currentRun = StartCoroutine(Run(lines, cmd.Name));
         }
 
         IEnumerator Run(List<ScriptLine> lines, string scriptName)
@@ -172,6 +183,7 @@ namespace LoveAlgo.Story.StoryEngine
             EventBus.Publish(new RequestPhaseCommand(ScreenPhase.Schedule));
             EventBus.Publish(new NarrativeFinishedEvent(scriptName));
             IsRunning = false;
+            _currentRun = null;
         }
 
         IEnumerator PlayText(ScriptLine line)
