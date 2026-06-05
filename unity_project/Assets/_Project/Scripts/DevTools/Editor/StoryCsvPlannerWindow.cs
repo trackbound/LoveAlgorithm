@@ -76,14 +76,18 @@ namespace LoveAlgo.DevTools.Editor
             bar.Add(_strictToggle);
             root.Add(bar);
 
-            // ── 편집기 ──
+            // ── 편집기 (긴 CSV=세로 / 긴 줄=가로 스크롤; ScrollView로 보장) ──
             root.Add(Header("CSV"));
+            var editorScroll = new ScrollView(ScrollViewMode.VerticalAndHorizontal);
+            editorScroll.style.flexGrow = 1;
+            editorScroll.style.minHeight = 220;
+            Border(editorScroll);
             _editor = new TextField { multiline = true };
-            _editor.style.flexGrow = 1;
-            _editor.style.minHeight = 220;
-            _editor.style.whiteSpace = WhiteSpace.NoWrap; // 가로 스크롤(CSV 줄 보존)
-            _editor.RegisterValueChangedCallback(OnEditorChanged);
-            root.Add(_editor);
+            _editor.style.whiteSpace = WhiteSpace.NoWrap;          // 줄바꿈 안 함 → 긴 줄은 가로 스크롤
+            _editor.style.minWidth = Length.Percent(100);          // 짧은 내용도 폭 채움(길면 더 넓어짐)
+            _editor.RegisterValueChangedCallback(OnEditorChanged); // 내용 크기로 늘어 → 바깥 ScrollView가 스크롤
+            editorScroll.Add(_editor);
+            root.Add(editorScroll);
 
             // ── 검증 패널 ──
             root.Add(Header("Validation"));
