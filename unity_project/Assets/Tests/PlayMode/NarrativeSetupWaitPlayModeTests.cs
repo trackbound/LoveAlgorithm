@@ -13,10 +13,11 @@ using LoveAlgo.Game;             // PhaseController (격리 청소)
 namespace LoveAlgo.Tests.PlayMode
 {
     /// <summary>
-    /// FX 매크로 Setup/Wait 검증: <see cref="NarrativeController"/>가 <c>Setup</c> 라인을 받아 기존 명령
-    /// (ShowBackground/PlayBgm/ShowCharacter/ShowStageLayer/EyeMask)을 <b>즉시(Cut)</b>로 재발행하는지,
-    /// <c>Wait</c> 라인이 흐름을 끊지 않고 통과하는지(앞/뒤 대사 보존), await Next에서도 hang하지 않는지.
-    /// 뷰 없이 명령을 구독·캡처(핸들 즉시 완료)해 결정적으로 검증한다.
+    /// FX 매크로 Setup/Wait/Scene 검증: <see cref="NarrativeController"/>가 <c>Setup</c>을 기존 명령
+    /// (ShowBackground/PlayBgm/ShowCharacter/ShowStageLayer/EyeMask)으로 <b>즉시(Cut)</b> 재발행하는지,
+    /// <c>Wait</c>가 흐름을 끊지 않는지(앞/뒤 대사), await에서 hang 안 하는지, <c>SceneStart/SceneEnd</c>가
+    /// EyeMask(눈감기/뜨기)·BG를 재발행하는지(EyeClose=즉시 감고 유지, 평이=눈뜨기 리빌). 뷰 없이 명령을
+    /// 구독·캡처(핸들 즉시 완료)해 결정적으로 검증한다.
     /// </summary>
     public class NarrativeSetupWaitPlayModeTests
     {
@@ -144,6 +145,72 @@ namespace LoveAlgo.Tests.PlayMode
 
             Assert.AreEqual("bg1", _bgName);
             CollectionAssert.AreEqual(new[] { "통과" }, _dialogues, "await Setup이 hang하지 않고 다음 대사 진행");
+            Assert.IsTrue(_finished);
+        }
+
+        // ── SceneStart / SceneEnd (EyeMask 페어) ──
+
+        [UnityTest]
+        public IEnumerator SceneEnd_Closes_Eyes_Dialogue_Still_Shows()
+        {
+            const string csv =
+                "LineID,Type,Speaker,Value,Next\n" +
+                ",FX,,SceneEnd,await\n" +
+                ",Text,,퇴장후,click\n" +
+                ",Flow,,End,>\n";
+
+            var player = SetUp();
+            yield return null;
+
+            EventBus.Publish(new PlayScriptCommand(csv, "scene-end"));
+            yield return WaitUntilDone(player);
+
+            Assert.IsTrue(_eyeSeen, "SceneEnd → EyeMaskCommand");
+            Assert.AreEqual(EyeMaskAction.Close, _eyeAction, "SceneEnd는 눈감기(암전)");
+            CollectionAssert.AreEqual(new[] { "퇴장후" }, _dialogues, "EyeMask라 대사 진행(가리지 않음)");
+            Assert.IsTrue(_finished);
+        }
+
+        [UnityTest]
+        public IEnumerator SceneStart_EyeClose_Sets_Bg_And_Stays_Closed()
+        {
+            const string csv =
+                "LineID,Type,Speaker,Value,Next\n" +
+                ",FX,,SceneStart:bg9:EyeClose,await\n" +
+                ",Text,로아,(암전 모놀로그),click\n" +
+                ",Flow,,End,>\n";
+
+            var player = SetUp();
+            yield return null;
+
+            EventBus.Publish(new PlayScriptCommand(csv, "scene-start-close"));
+            yield return WaitUntilDone(player);
+
+            Assert.AreEqual("bg9", _bgName, "SceneStart bg를 Cut으로 설정");
+            Assert.AreEqual(BgTransition.Cut, _bgTrans);
+            Assert.AreEqual(EyeMaskAction.CloseImmediate, _eyeAction, "EyeClose 플래그 → 즉시 감고 유지");
+            CollectionAssert.AreEqual(new[] { "(암전 모놀로그)" }, _dialogues);
+            Assert.IsTrue(_finished);
+        }
+
+        [UnityTest]
+        public IEnumerator SceneStart_Plain_Opens_Eyes_To_Reveal()
+        {
+            const string csv =
+                "LineID,Type,Speaker,Value,Next\n" +
+                ",FX,,SceneStart:bg7,await\n" +
+                ",Text,,리빌후,click\n" +
+                ",Flow,,End,>\n";
+
+            var player = SetUp();
+            yield return null;
+
+            EventBus.Publish(new PlayScriptCommand(csv, "scene-start-open"));
+            yield return WaitUntilDone(player);
+
+            Assert.AreEqual("bg7", _bgName);
+            Assert.AreEqual(EyeMaskAction.Open, _eyeAction, "EyeClose 없으면 눈뜨기 리빌");
+            CollectionAssert.AreEqual(new[] { "리빌후" }, _dialogues);
             Assert.IsTrue(_finished);
         }
     }

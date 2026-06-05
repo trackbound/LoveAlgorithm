@@ -473,6 +473,14 @@ namespace LoveAlgo.Story.StoryEngine
                 yield break;
             }
 
+            // 씬 진입/퇴장(SceneStart/SceneEnd) — EyeMask·BG 재발행(대사 가리지 않는 Wake 스타일).
+            var scene = SceneFxParser.Parse(line.Value);
+            if (scene.IsValid)
+            {
+                yield return PlaySceneFx(line, scene);
+                yield break;
+            }
+
             // 일괄 셋업(Setup) — 즉시(Cut) BG/BGM/Char/Overlay/Eye를 기존 명령으로 재발행.
             var setup = SetupMacroParser.Parse(line.Value);
             if (setup.IsValid)
@@ -523,6 +531,44 @@ namespace LoveAlgo.Story.StoryEngine
                 case "r": case "right": return CharSlot.R;
                 default:                return CharSlot.C;
             }
+        }
+
+        // ── FX 매크로(SceneStart/SceneEnd): 씬 진입/퇴장(EyeMask·BG 재발행) ──
+        // SceneEnd=눈감기(암전, EyeMask라 대사/캐릭터 안 가림). SceneStart=BG 즉시(Cut) + (EyeClose면 즉시 감고 유지=
+        // 암전 모놀로그 / 아니면 눈뜨기 리빌 + pause). 수치는 매크로 family 상수(STORY_COMMANDS 정본 — 시각-튜닝 SO와
+        // 구분, Setup/Wait와 동일 규율). EyeMask 페어로 통일(SceneEnd→다음 씬 대사가 검은 화면 위로 진행하는 구 Wake 패턴 보존).
+        const float SceneEndCloseDefault = 0.5f; // SceneEnd 기본 눈감기
+        const float SceneStartOpenDur = 0.6f;    // SceneStart eyeOpen
+        const float SceneStartPauseAfter = 0.4f; // SceneStart pauseAfter
+
+        IEnumerator PlaySceneFx(ScriptLine line, SceneFxIntent s)
+        {
+            if (s.Kind == SceneFxKind.End)
+            {
+                float dur = s.Duration >= 0f ? s.Duration : SceneEndCloseDefault;
+                var req = new CompletionHandle();
+                EventBus.Publish(new EyeMaskCommand(EyeMaskAction.Close, dur, dur, 0f, req));
+                yield return WaitNext(line, () => req.IsComplete);
+                yield break;
+            }
+
+            // SceneStart: BG 즉시(Cut) → 눈 처리.
+            if (s.Bg != null)
+                EventBus.Publish(new ShowBackgroundCommand(s.Bg, BgTransition.Cut, 0f, new CompletionHandle()));
+
+            if (s.EyeClose)
+            {
+                // 눈 감고 유지(암전 모놀로그) — 즉시.
+                EventBus.Publish(new EyeMaskCommand(EyeMaskAction.CloseImmediate, 0f, 0f, 0f, new CompletionHandle()));
+                yield return WaitNext(line, () => true);
+                yield break;
+            }
+
+            // 눈 뜨며 리빌 + pause.
+            var open = new CompletionHandle();
+            EventBus.Publish(new EyeMaskCommand(EyeMaskAction.Open, SceneStartOpenDur, SceneStartOpenDur, 0f, open));
+            yield return new WaitUntil(() => open.IsComplete);
+            yield return new WaitForSeconds(SceneStartPauseAfter);
         }
 
         float ResolveFadeDuration(ScreenFadeKind kind)
