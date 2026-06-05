@@ -99,6 +99,15 @@
 
 ## ✅ 이번 세션 검증·커밋 완료
 
+- **Prologue 재생 가능화 ① Setup·Wait 매크로 — 2026-06-05 연속 세션(EditMode 262→272·PlayMode 67→70 그린, 컴파일 0, 🟡)**: 작가 도구가 편집하는 Prologue.csv가 미구현 FX 매크로에 막혀 미리보기 불완전 → 가장 큰 22행(Setup 16·Wait 6)부터 해소. **순수** `SetupMacroParser`(`BG=…\|BGM=…\|Char=…[:slot]\|Overlay=…\|Eye=Close/Open` 분해, 순서무관·케이스무시·빈값무시) + `WaitMacroParser`(기본 **1.0s**, STORY_COMMANDS 정본·음수 폴백) + `NarrativeController.PlayFx` 분기 `PlaySetup`(BG=Cut/BGM/Char=Enter/Overlay/Eye=CloseImmediate를 **즉시 dur0**로 기존 명령 재발행 — **신규 뷰/이벤트 0**, await도 `WaitNext(()=>true)`로 즉시 통과)·Wait(`WaitForSeconds`, maxDelaySeconds 캡). EditMode +10(파서)·PlayMode +3(발행 캡처·흐름연속·await 미-hang). **남은 Prologue 블로커**: Place(12, Type=위치 타이틀카드)·Scene*(10, FX=페이드+셋업)·Flow LoadingScene/Save/Value/LockScreen(8)·Video/DialogueShow(2).
+
+- **작가 도구 UX/인게임 창 + WriterDelivery 빌드 전달 + Burst 처리 — 2026-06-05 연속 세션 3커밋(푸시됨, 컴파일 0)**:
+  - `244b1cb` **에디터창 UX 1차**: dirty(●·title `*`)·미저장 폐기경고(DisplayDialog)·자동검증(디바운스)·위반 클릭→줄 이동(SelectRange)·헤더/상태색 폴리시.
+  - `570d396` **에디터창 편집기 양방향 스크롤**(ScrollView V+H, 긴 Prologue 71KB 안전).
+  - `3941d52` **작가 런타임 패널 → 인게임 창**: 타이틀바 드래그 이동·우하단 박스 리사이즈·X 닫기(F9 재오픈) + 에디터창 UX 미러(미저장 ●·**인라인** 폐기확인(런타임=EditorUtility 없음)·자동검증·위반클릭·양방향스크롤·상태색) + **폰트 안전 글리프만**(기본 런타임 테마 폰트 깨진 네모 방지). 로직=`StoryEditController` 공유, 신규 게임코드 0.
+  - **WriterDelivery 빌드 전달(⚠️ 빌드 스모크 영역 해소)**: `Tools▸Story▸Build Writer Delivery`로 `Builds/WriterDelivery/` 산출 — 패널 DLL(`_Data/Managed/LoveAlgo.DevTools.Runtime.dll`)·`StreamingAssets/Story/{Event1,Prologue}.csv` 포함 확인. 작가가 F9 창에서 편집→Save→`_Data/StreamingAssets/Story/*.csv` 회수→GameManager 정상 트리거에도 반영. **빌드 후 오염(폰트·URP·ProjectSettings 누수 디파인) git restore**(빌드 도구가 디파인 토글하나 디스크 revert가 지연 → 커밋 전 restore 필수).
+  - **⚠️ Burst 무한루프 처리(환경성, 소스·커밋 무영향)**: `Library/BurstCache/JIT/*.dll` 로드 실패(**error 4551**)로 컴파일이 무한 재시도(20분/11·20). `Jobs▸Burst▸Enable Compilation` **OFF** + 손상 `Library/BurstCache/JIT` 삭제로 해소(AOT 캐시 `Windows-Intel`은 유지 — 빌드 정상). 2D VN이라 에디터 Burst 비활성 무해, 빌드 AOT 별개. **재발 시: 백신/SmartScreen이 `Library/BurstCache/*.dll` 차단하는지 확인**(프로젝트 폴더 예외 추가) 또는 Unity 종료 후 `Library/BurstCache` 통째 삭제 후 재실행.
+
 - **빌드 가능 기획자 스토리 에디터 + 내러티브 통합 — 2026-06-05 세션 8커밋(EditMode 243→262·PlayMode 60→67 그린, 컴파일 0)**. 타이틀 흐름(아래) 이후:
   - `6031918` **저녁 이벤트 트리거(실 트리거 #1)**: 타임라인 eventTag→스크립트 매핑(`EventScriptCatalogSO`) + GameManager 저녁 이벤트 씨임(하루 종료 시 재생→`NarrativeFinishedEvent` await→하루 전환, fail-open). dev 버튼 대체의 첫 실연결.
   - `670e1a9` **인라인 `<emote=표정/>`**: InlineTagParser emote 파싱(`InlineEmote`) → DialogueView가 타이핑 중 `ShowSpeakerEmoteCommand` 발행 → StageView가 화자→슬롯 직접매칭으로 스프라이트 교체(`_slotChar` 추적·`SlotIndexForSpeaker`). 화자명↔ID 별칭 정규화는 직접 문자열 매칭으로 출발(후속 승격). **⚠️ HANDOFF의 "`<emote>` 제외(제거만)" 해소.**
@@ -132,7 +141,7 @@
 
 ## ▶️ 다음 액션
 
-> **현재(2026-06-05 末)**: 빌드 가능 기획자 스토리 에디터 완성(위 세션 기록). **즉시 다음 = 감독의 빌드 스모크**(`STORY_EDITOR_RUNTIME` 빌드 → F9 패널 렌더 확인 → 안 보이면 PanelSettings 에셋 폴백 → 작가 워크플로우). 그 후 후보: ① 남은 내러티브 명령(매크로 `Setup`/`Wait`·`Video`·**LockScreen**(ADR-013 Overlay)·CharFX Jump/Dim/Glitch)으로 **Prologue 재생 가능화**(현재 이 클러스터에 막힘) ② 실 트리거 확장 — Event2/3·Festival/MT/Confession 스토리 CSV 저작(엔진 포맷, StreamingAssets/Story) + 카탈로그 매핑 ③ 시뮬 루프 심화. **아래는 구(舊) 다음-액션 목록 — 대부분 처리됨, 참고용.**
+> **현재(2026-06-05 末)**: 빌드 가능 기획자 스토리 에디터 + 작가 인게임 창 UX + WriterDelivery 빌드 전달 완료. **Prologue 재생 가능화 진행 — ① Setup·Wait 매크로 완료(22행 해소).** **즉시 다음 = Prologue 남은 블로커**: Place(12, 위치 타이틀카드 — 새 작은 뷰+이벤트)·Scene*(10, SceneStart/SceneEnd=페이드+셋업, Setup 재사용)·Flow LoadingScene/Save/Value/LockScreen(8, LockScreen=ADR-013 Overlay 설계 동반)·Video/DialogueShow(2). 그 후: ② 실 트리거 확장(Event2/3·Festival/MT/Confession 엔진 CSV + 카탈로그) ③ 시뮬 루프 심화. **아래는 구(舊) 다음-액션 목록 — 대부분 처리됨, 참고용.**
 
 이번 세션 **M3 슬라이스2 스테이지 BG+Char 첫 서브슬라이스 — 코드+테스트 완성**(커밋 b967218, EditMode 166/PlayMode 21 그린). 렌더링 구조 결정: **별도 `_Stage` 캔버스(UI Image, `_UI`보다 낮은 sortingOrder)** — 구 UI-Image 동작·동결 px 수치 재사용 + 캔버스 rebuild 격리(ADR-004), SpriteRenderer 카메라/정렬레이어 신설 회피(감독 결정). 감독이 다음 방향 택1:
 
