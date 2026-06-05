@@ -51,6 +51,8 @@ namespace LoveAlgo.Story.StoryEngine
 
         [Tooltip("스테이지 레이어(CG/SD/Overlay) 페이드 기본 시간 동결 SO(ADR-012). 미바인딩 시 폴백 상수 사용.")]
         [SerializeField] StageLayerTuningSO stageLayerTuning;
+        [Tooltip("위치 배너(Place) 동결 수치. 미바인딩 시 폴백 상수(0.45/2.0/0.35).")]
+        [SerializeField] PlaceTuningSO placeTuning;
 
         public GameStateSO State { get => state; set => state = value; }
         public StageTuningSO StageTuning { get => stageTuning; set => stageTuning = value; }
@@ -60,6 +62,7 @@ namespace LoveAlgo.Story.StoryEngine
         public ColorTintTuningSO ColorTintTuning { get => colorTintTuning; set => colorTintTuning = value; }
         public EyeMaskTuningSO EyeMaskTuning { get => eyeMaskTuning; set => eyeMaskTuning = value; }
         public StageLayerTuningSO StageLayerTuning { get => stageLayerTuning; set => stageLayerTuning = value; }
+        public PlaceTuningSO PlaceTuning { get => placeTuning; set => placeTuning = value; }
 
         /// <summary>현재 스크립트가 재생 중인가(재진입 가드).</summary>
         public bool IsRunning { get; private set; }
@@ -172,8 +175,13 @@ namespace LoveAlgo.Story.StoryEngine
                         cursor.MoveNext();
                         break;
 
+                    case LineType.Place:
+                        yield return PlayPlace(line);
+                        cursor.MoveNext();
+                        break;
+
                     default:
-                        // Place/Option(미아) — 이번 슬라이스 미지원, 건너뜀.
+                        // Option(미아) 등 — 이번 슬라이스 미지원, 건너뜀.
                         Log.Info($"[NarrativeController] 슬라이스 범위 밖 라인 스킵: {line}");
                         cursor.MoveNext();
                         break;
@@ -422,6 +430,26 @@ namespace LoveAlgo.Story.StoryEngine
         {
             if (line.NextType == NextType.Delay && line.DelaySeconds > 0f)
                 yield return new WaitForSeconds(Mathf.Min(line.DelaySeconds, maxDelaySeconds));
+        }
+
+        // ── 위치 배너(Place) ──
+        // 순수 PlaceParser로 "제목 | 장소" 분해 → 동결 수치(PlaceTuningSO)로 등장/유지/퇴장 해석 → ShowPlaceCommand
+        // 발행 → PlaceCardView가 배너를 페이드 인→유지→아웃. 비블로킹(Next는 () => true로 await도 즉시 통과, Delay만 존중).
+        IEnumerator PlayPlace(ScriptLine line)
+        {
+            var intent = PlaceParser.Parse(line.Value);
+            if (!intent.IsValid)
+            {
+                Log.Warn($"[NarrativeController] 잘못된 Place 라인 — 건너뜀: \"{line.Value}\"");
+                yield break;
+            }
+
+            float enter = placeTuning != null ? placeTuning.EnterDuration : 0.45f;
+            float hold = placeTuning != null ? placeTuning.HoldDuration : 2.0f;
+            float exit = placeTuning != null ? placeTuning.ExitDuration : 0.35f;
+
+            EventBus.Publish(new ShowPlaceCommand(intent.Title, intent.Place, enter, hold, exit, new CompletionHandle()));
+            yield return WaitNext(line, () => true);
         }
 
         // ── 스크린 페이드(M3 슬라이스2: FadeOut/FadeIn/Flash) ──
