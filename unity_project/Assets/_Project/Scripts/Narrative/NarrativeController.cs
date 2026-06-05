@@ -473,8 +473,56 @@ namespace LoveAlgo.Story.StoryEngine
                 yield break;
             }
 
-            // 캐릭터(Jump/Dim/Glitch)/매크로 등 — 이번 슬라이스 미지원.
+            // 일괄 셋업(Setup) — 즉시(Cut) BG/BGM/Char/Overlay/Eye를 기존 명령으로 재발행.
+            var setup = SetupMacroParser.Parse(line.Value);
+            if (setup.IsValid)
+            {
+                yield return PlaySetup(line, setup);
+                yield break;
+            }
+
+            // 대기(Wait[:초]) — 단순 일시정지(기본 1.0s, maxDelaySeconds로 캡).
+            if (WaitMacroParser.TryParse(line.Value, out float waitSec))
+            {
+                yield return new WaitForSeconds(Mathf.Min(waitSec, maxDelaySeconds));
+                yield break;
+            }
+
+            // 캐릭터(Jump/Dim/Glitch)/나머지 매크로(Scene*/Video 등) — 이번 슬라이스 미지원.
             Log.Info($"[NarrativeController] 슬라이스 범위 밖 FX 스킵: \"{line.Value}\"");
+        }
+
+        // ── FX 매크로(Setup): 즉시 일괄 셋업 ──
+        // SetupMacroParser로 BG/BGM/Char[:slot]/Overlay/Eye 분해 → 기존 명령을 Cut/즉시(dur 0)로 재발행(신규 뷰/이벤트 0).
+        // 즉시 연출이라 개별 완료를 대기하지 않음 — WaitNext에 () => true를 줘 await/click도 즉시 통과(Delay만 존중).
+        IEnumerator PlaySetup(ScriptLine line, SetupIntent s)
+        {
+            if (s.Bg != null)
+                EventBus.Publish(new ShowBackgroundCommand(s.Bg, BgTransition.Cut, 0f, new CompletionHandle()));
+            if (s.Bgm != null)
+                EventBus.Publish(new PlayBgmCommand(s.Bgm));
+            if (s.CharName != null)
+                EventBus.Publish(new ShowCharacterCommand(ParseSetupSlot(s.CharSlot), CharAction.Enter, s.CharName, "", 0f, new CompletionHandle()));
+            if (s.Overlay != null)
+                EventBus.Publish(new ShowStageLayerCommand(StageLayerKind.Overlay, false, s.Overlay, LayerTransition.Cut, 0f, new CompletionHandle()));
+            if (s.Eye != null)
+            {
+                var action = string.Equals(s.Eye, "Open", StringComparison.OrdinalIgnoreCase)
+                    ? EyeMaskAction.Open : EyeMaskAction.CloseImmediate;
+                EventBus.Publish(new EyeMaskCommand(action, 0f, 0f, 0f, new CompletionHandle()));
+            }
+            yield return WaitNext(line, () => true);
+        }
+
+        static CharSlot ParseSetupSlot(string s)
+        {
+            if (string.IsNullOrEmpty(s)) return CharSlot.C;
+            switch (s.Trim().ToLowerInvariant())
+            {
+                case "l": case "left":  return CharSlot.L;
+                case "r": case "right": return CharSlot.R;
+                default:                return CharSlot.C;
+            }
         }
 
         float ResolveFadeDuration(ScreenFadeKind kind)
