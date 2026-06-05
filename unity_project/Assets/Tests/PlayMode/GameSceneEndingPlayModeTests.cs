@@ -21,6 +21,8 @@ namespace LoveAlgo.Tests.PlayMode
         public IEnumerator LastDay_Exhausted_Shows_EndingView()
         {
             yield return SceneManager.LoadSceneAsync("Game", LoadSceneMode.Single);
+            var bootstrap = Object.FindAnyObjectByType<LoveAlgo.Game.GameBootstrap>();
+            if (bootstrap != null) bootstrap.PrologueCsv = ""; // 프롤로그 스킵 — 이 테스트는 엔딩 진입만 격리 검증
             yield return null; // 부팅 + UI OnEnable
 
             var ending = Object.FindAnyObjectByType<EndingView>(FindObjectsInactive.Include);

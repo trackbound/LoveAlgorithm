@@ -22,6 +22,8 @@ namespace LoveAlgo.Tests.PlayMode
         public IEnumerator ScheduleView_SlotClicks_DriveDayLoop()
         {
             yield return SceneManager.LoadSceneAsync("Game", LoadSceneMode.Single);
+            var bootstrap = Object.FindAnyObjectByType<LoveAlgo.Game.GameBootstrap>();
+            if (bootstrap != null) bootstrap.PrologueCsv = ""; // 프롤로그 스킵 — 이 테스트는 스케줄 루프만 격리 검증
             yield return null; // Start 부팅 + ScheduleView.OnEnable(슬롯 생성)
 
             var ui = Object.FindAnyObjectByType<ScheduleView>();
