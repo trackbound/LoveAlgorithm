@@ -12,6 +12,7 @@ namespace LoveAlgo.Core
     public class GameStateData
     {
         public string playerName = "";
+        public string password = ""; // 잠금화면 비밀번호(LockScreen FirstSetup에서 설정). 빈=미설정. (ADR-013 Overlay)
         public long money;
 
         // 플레이어 스탯 (REWRITE_FEATURE_INVENTORY §5: Str/Int/Soc/Per/Fatigue, 0~100)

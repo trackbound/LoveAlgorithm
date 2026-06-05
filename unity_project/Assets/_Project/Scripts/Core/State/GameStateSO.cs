@@ -97,6 +97,10 @@ namespace LoveAlgo.Core
         public long Money { get => _runtime.money; set => _runtime.money = value < 0 ? 0 : value; }
         public void AddMoney(long delta) => Money = _runtime.money + delta;
 
+        // ── 잠금화면 비밀번호(LockScreen FirstSetup, ADR-013 Overlay) ──
+        public string Password { get => _runtime.password; set => _runtime.password = value ?? ""; }
+        public bool IsPasswordSet => !string.IsNullOrEmpty(_runtime.password);
+
         // ── 1일 1회 제한 스케줄 추적 (도메인 규칙, 하루 전환 시 ClearDailyLimits로 리셋) ──
         public bool HasUsedLimited(string scheduleId) => _runtime.usedLimitedToday.Contains(scheduleId);
 
