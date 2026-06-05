@@ -14,4 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: LoveAlgo.Data::LoveAlgo.EventScriptCatalogSO
   entries:
   - eventTag: Event1
-    script: {fileID: 4900000, guid: 3f277f4cd7249f14fa57bb8c6704e682, type: 3}
+    csvPath: Event1.csv

@@ -6,49 +6,32 @@ using LoveAlgo; // EventScriptCatalogSO
 namespace LoveAlgo.Tests.Editor
 {
     /// <summary>
-    /// EventScriptCatalogSO 순수 룩업(Resolve) 검증: 태그→스크립트 매핑 적중, 미매핑/빈 태그/null=null,
-    /// 대소문자 구분(코드 정의 태그와 정확 일치), 인스턴스 Resolve가 정적 룩업에 위임. 더미 TextAsset으로 결정적.
+    /// EventScriptCatalogSO 순수 룩업(Resolve) 검증: 태그→CSV 상대경로 매핑 적중, 미매핑/빈 태그/null=null,
+    /// 대소문자 구분, 인스턴스 Resolve가 정적 룩업에 위임.
     /// </summary>
     public class EventScriptCatalogTests
     {
-        readonly List<Object> _tracked = new();
-
-        TextAsset Dummy(string name)
-        {
-            var t = new TextAsset("dummy") { name = name };
-            _tracked.Add(t);
-            return t;
-        }
-
-        [TearDown]
-        public void TearDown()
-        {
-            foreach (var o in _tracked) if (o != null) Object.DestroyImmediate(o);
-            _tracked.Clear();
-        }
-
-        static EventScriptCatalogSO.Entry E(string tag, TextAsset s) =>
-            new EventScriptCatalogSO.Entry { eventTag = tag, script = s };
+        static EventScriptCatalogSO.Entry E(string tag, string path) =>
+            new EventScriptCatalogSO.Entry { eventTag = tag, csvPath = path };
 
         [Test]
-        public void Resolve_Returns_Mapped_Script()
+        public void Resolve_Returns_Mapped_Path()
         {
-            var ev1 = Dummy("Event1");
-            var list = new List<EventScriptCatalogSO.Entry> { E("Event1", ev1), E("Event2", Dummy("Event2")) };
-            Assert.AreSame(ev1, EventScriptCatalogSO.Resolve(list, "Event1"));
+            var list = new List<EventScriptCatalogSO.Entry> { E("Event1", "Event1.csv"), E("Event2", "Event2.csv") };
+            Assert.AreEqual("Event1.csv", EventScriptCatalogSO.Resolve(list, "Event1"));
         }
 
         [Test]
         public void Resolve_Unmapped_Tag_Returns_Null()
         {
-            var list = new List<EventScriptCatalogSO.Entry> { E("Event1", Dummy("Event1")) };
+            var list = new List<EventScriptCatalogSO.Entry> { E("Event1", "Event1.csv") };
             Assert.IsNull(EventScriptCatalogSO.Resolve(list, "Festival"));
         }
 
         [Test]
         public void Resolve_Null_Or_Empty_Tag_Returns_Null()
         {
-            var list = new List<EventScriptCatalogSO.Entry> { E("Event1", Dummy("Event1")) };
+            var list = new List<EventScriptCatalogSO.Entry> { E("Event1", "Event1.csv") };
             Assert.IsNull(EventScriptCatalogSO.Resolve(list, null));
             Assert.IsNull(EventScriptCatalogSO.Resolve(list, ""));
         }
@@ -56,19 +39,18 @@ namespace LoveAlgo.Tests.Editor
         [Test]
         public void Resolve_Is_Case_Sensitive()
         {
-            var list = new List<EventScriptCatalogSO.Entry> { E("Event1", Dummy("Event1")) };
+            var list = new List<EventScriptCatalogSO.Entry> { E("Event1", "Event1.csv") };
             Assert.IsNull(EventScriptCatalogSO.Resolve(list, "event1"));
         }
 
         [Test]
         public void Instance_Resolve_Delegates_To_Static()
         {
-            var ev1 = Dummy("Event1");
             var so = ScriptableObject.CreateInstance<EventScriptCatalogSO>();
-            so.SetEntries(new List<EventScriptCatalogSO.Entry> { E("Event1", ev1) });
+            so.SetEntries(new List<EventScriptCatalogSO.Entry> { E("Event1", "Event1.csv") });
             try
             {
-                Assert.AreSame(ev1, so.Resolve("Event1"));
+                Assert.AreEqual("Event1.csv", so.Resolve("Event1"));
                 Assert.IsNull(so.Resolve("Nope"));
             }
             finally { Object.DestroyImmediate(so); }

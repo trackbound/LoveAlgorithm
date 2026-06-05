@@ -1,7 +1,8 @@
 using System;
 using System.Collections;
 using LoveAlgo;        // EventScriptCatalogSO
-using LoveAlgo.Common; // EventBus
+using LoveAlgo.Story;  // StoryAssetLoader
+using LoveAlgo.Common; // EventBus, Log
 using LoveAlgo.Core;   // GameStateSO, DayLoop, DayAdvanceResult, GameTimeline, DayInfo, JsonSaveStore
 using LoveAlgo.Events; // DayEndRequestedEvent, DayChangedEvent, RequestPhaseCommand, PlayScriptCommand, NarrativeFinishedEvent
 using UnityEngine;
@@ -39,6 +40,7 @@ namespace LoveAlgo.Game
         public EventScriptCatalogSO EventScripts { get => eventScripts; set => eventScripts = value; }
 
         IDisposable _sub;
+        bool _seamLocked;
 
         void OnEnable() => _sub = EventBus.Subscribe<DayEndRequestedEvent>(OnDayEndRequested);
 
@@ -46,6 +48,8 @@ namespace LoveAlgo.Game
         {
             _sub?.Dispose();
             _sub = null;
+            // 씨임 진행 중 비정상 종료(씬 언로드 등) 시 흐름 게이트가 영구 잠기지 않도록 해제.
+            if (_seamLocked) { NarrativeFlowGate.Unlock(); _seamLocked = false; }
         }
 
         /// <summary>
@@ -62,32 +66,50 @@ namespace LoveAlgo.Game
 
             // seam(M3 내러티브): 저녁 이벤트가 있으면 재생 → 완료까지 await(코루틴), 없으면 즉시 동기 전환.
             // seam(M5 UI): 페이드아웃 → 로딩 진입.
-            TextAsset eveningEvent = ResolveEveningEvent();
-            if (eveningEvent != null)
-                StartCoroutine(PlayEveningEventThenAdvance(eveningEvent));
+            string eveningPath = ResolveEveningEvent();
+            if (!string.IsNullOrEmpty(eveningPath))
+                StartCoroutine(PlayEveningEventThenAdvance(eveningPath));
             else
                 AdvanceDayAndNotify();
         }
 
-        /// <summary>오늘(state.Day)의 타임라인 이벤트 태그에 매핑된 스크립트. 카탈로그/이벤트/매핑이 없으면 null.</summary>
-        TextAsset ResolveEveningEvent()
+        /// <summary>오늘(state.Day)의 타임라인 이벤트 태그에 매핑된 CSV 상대경로. 카탈로그/이벤트/매핑이 없으면 null.</summary>
+        string ResolveEveningEvent()
         {
             if (eventScripts == null) return null;
             DayInfo info = GameTimeline.GetDayInfo(state.Day);
             return info == null ? null : eventScripts.Resolve(info.EventTag);
         }
 
-        /// <summary>저녁 이벤트 재생 → 해당 스크립트 종료(<see cref="NarrativeFinishedEvent"/>)까지 대기 → 하루 전환.</summary>
-        IEnumerator PlayEveningEventThenAdvance(TextAsset script)
+        /// <summary>
+        /// 저녁 이벤트 파일을 읽어 재생 → 종료(<see cref="NarrativeFinishedEvent"/>)까지 대기 → 하루 전환.
+        /// 파일 없음/손상은 fail-open(건너뛰고 진행). 대기 구간은 <c>NarrativeFlowGate</c>로 잠가, 기획 도구가
+        /// 이 사이 Apply로 스크립트를 교체해 완료 이벤트가 영영 안 와 데드락되는 일을 막는다.
+        /// </summary>
+        IEnumerator PlayEveningEventThenAdvance(string csvPath)
         {
+            string csv = StoryAssetLoader.Read(csvPath);
+            if (string.IsNullOrEmpty(csv))
+            {
+                // fail-open: 저녁 이벤트 건너뛰고 하루 진행(기존 "이벤트 없으면 하루 안 막음" 계약 보존).
+                Log.Warn($"[GameManager] 저녁 이벤트 로드 실패 — 건너뜀: {csvPath}");
+                AdvanceDayAndNotify();
+                yield break;
+            }
+
+            NarrativeFlowGate.Lock();
+            _seamLocked = true;
+
             bool finished = false;
-            string scriptName = script.name;
-            // 다른 스크립트의 완료와 섞이지 않도록 이름으로 매칭(정상 시 저녁 이벤트 1개만 재생되나 안전하게).
+            string scriptName = csvPath; // 이름=경로(다른 스크립트 완료와 섞이지 않게 매칭).
             using (EventBus.Subscribe<NarrativeFinishedEvent>(e => { if (e.ScriptName == scriptName) finished = true; }))
             {
-                EventBus.Publish(new PlayScriptCommand(script));
+                EventBus.Publish(new PlayScriptCommand(csv, scriptName));
                 yield return new WaitUntil(() => finished);
             }
+
+            NarrativeFlowGate.Unlock();
+            _seamLocked = false;
             AdvanceDayAndNotify();
         }
 
