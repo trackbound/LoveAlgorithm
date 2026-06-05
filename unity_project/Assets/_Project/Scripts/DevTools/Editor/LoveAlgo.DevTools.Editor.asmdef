@@ -1,0 +1,19 @@
+{
+    "name": "LoveAlgo.DevTools.Editor",
+    "rootNamespace": "LoveAlgo.DevTools.Editor",
+    "references": [
+        "LoveAlgo.Core",
+        "LoveAlgo.Narrative"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
