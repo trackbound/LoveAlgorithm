@@ -1,34 +1,25 @@
 using System.Collections.Generic;
-using System.IO;
-using System.Text;
 using UnityEditor;
-using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
-using LoveAlgo.Common;            // EventBus
-using LoveAlgo.Events;            // PlayScriptCommand
-using LoveAlgo.Story;             // ScriptParser, ScriptLine
-using LoveAlgo.Story.StoryEngine; // ScriptValidator
+using LoveAlgo.Story;             // StoryEditController
+using LoveAlgo.Story.StoryEngine; // ScriptValidator.Violation
 
 namespace LoveAlgo.DevTools.Editor
 {
     /// <summary>
-    /// 기획자 전용 스토리 CSV 라이브 에디터(UI Toolkit EditorWindow, 첫 에디터 도구). 엔진 포맷 CSV를 편집하고
-    /// — Validate(순수 <see cref="ScriptParser"/>+<see cref="ScriptValidator"/> 재사용) / Apply(PlayMode의
-    /// NarrativeController에 <see cref="PlayScriptCommand"/> 발행 → 라이브 재생) / Save(디스크+리임포트) /
-    /// Stop / Reload — 수정→적용 루프를 빠르게 돌린다.
-    ///
-    /// 설계: 런타임을 알지만 건드리지 않는 Editor 전용 어셈블리(ADR-007 그대로 EventBus로만 게임과 연결).
-    /// 구 ScenarioEditor의 런타임 MonoBehaviour/Service Locator/IVT 모델은 답습하지 않음 — EditorWindow 단독.
-    /// MVP: 텍스트 편집 + 검증 + 라이브 적용 + 저장. 표 편집/한글 변환/매핑은 후속(과설계 게이트).
+    /// 기획자 스토리 CSV 에디터(UI Toolkit EditorWindow). StreamingAssets/Story의 CSV를 편집·검증·라이브 적용·저장.
+    /// 로직은 <see cref="StoryEditController"/>(빌드 런타임 패널과 공유)에 위임 — 이쪽은 에디트 모드 검증/저장 +
+    /// Play 시 라이브 적용. Apply/Stop은 흐름 게이트(데이루프 전환 등)가 잠기면 거부된다(안전장치). 빌드용은 별도
+    /// 런타임 패널(STORY_EDITOR_RUNTIME). 구 ScenarioEditor의 런타임 MonoBehaviour 모델은 답습하지 않음.
     /// </summary>
     public class StoryCsvPlannerWindow : EditorWindow
     {
-        const string PlayName = "story-live";
-        const string StopName = "story-stop";
+        readonly StoryEditController _controller = new StoryEditController();
 
-        TextAsset _source;
-        ObjectField _sourceField;
+        DropdownField _storyDropdown;
+        List<string> _stories = new();
+        string _currentRel;
         TextField _editor;
         ScrollView _report;
         Label _status;
@@ -50,10 +41,15 @@ namespace LoveAlgo.DevTools.Editor
             root.style.paddingTop = 6; root.style.paddingBottom = 6;
             root.style.paddingLeft = 6; root.style.paddingRight = 6;
 
-            // 소스 피커: Resources/Story 등의 CSV TextAsset 선택 → .text 로드.
-            _sourceField = new ObjectField("Source CSV") { objectType = typeof(TextAsset), allowSceneObjects = false };
-            _sourceField.RegisterValueChangedCallback(e => LoadFrom(e.newValue as TextAsset));
-            root.Add(_sourceField);
+            // 소스: StreamingAssets/Story 의 .csv 목록(스토리 CSV만).
+            var srcRow = new VisualElement();
+            srcRow.style.flexDirection = FlexDirection.Row;
+            _storyDropdown = new DropdownField("Story CSV");
+            _storyDropdown.style.flexGrow = 1;
+            _storyDropdown.RegisterValueChangedCallback(_ => LoadSelected());
+            srcRow.Add(_storyDropdown);
+            srcRow.Add(MakeButton("Refresh", RefreshList));
+            root.Add(srcRow);
 
             // 툴바.
             var bar = new VisualElement();
@@ -69,7 +65,6 @@ namespace LoveAlgo.DevTools.Editor
             bar.Add(_strictToggle);
             root.Add(bar);
 
-            // CSV 편집기(멀티라인).
             var editorLabel = new Label("CSV"); editorLabel.style.marginTop = 4;
             root.Add(editorLabel);
             _editor = new TextField { multiline = true };
@@ -77,23 +72,22 @@ namespace LoveAlgo.DevTools.Editor
             _editor.style.minHeight = 200;
             root.Add(_editor);
 
-            // 검증 패널.
             var reportLabel = new Label("Validation"); reportLabel.style.marginTop = 4;
             root.Add(reportLabel);
             _report = new ScrollView();
             _report.style.minHeight = 90; _report.style.maxHeight = 170;
+            var border = new Color(0f, 0f, 0f, 0.3f);
             _report.style.borderTopWidth = 1; _report.style.borderBottomWidth = 1;
             _report.style.borderLeftWidth = 1; _report.style.borderRightWidth = 1;
-            var border = new Color(0f, 0f, 0f, 0.3f);
             _report.style.borderTopColor = border; _report.style.borderBottomColor = border;
             _report.style.borderLeftColor = border; _report.style.borderRightColor = border;
             root.Add(_report);
 
-            // 상태바.
             _status = new Label(); _status.style.marginTop = 4; _status.style.opacity = 0.85f;
             root.Add(_status);
 
             EditorApplication.playModeStateChanged += OnPlayModeChanged;
+            RefreshList();
             RefreshModeUI();
         }
 
@@ -102,72 +96,66 @@ namespace LoveAlgo.DevTools.Editor
 
         static Button MakeButton(string text, System.Action onClick) => new Button(onClick) { text = text };
 
-        void LoadFrom(TextAsset asset)
+        void RefreshList()
         {
-            _source = asset;
-            _editor.value = asset != null ? asset.text : "";
-            SetStatus(asset != null ? $"로드: {AssetDatabase.GetAssetPath(asset)}" : "소스 없음");
+            _stories = _controller.ListStories();
+            _storyDropdown.choices = new List<string>(_stories);
+            _storyDropdown.SetValueWithoutNotify(""); // 선택 시 로드(빈 시작).
+            SetStatus(_stories.Count > 0
+                ? $"스토리 CSV {_stories.Count}개 (StreamingAssets/Story)"
+                : "StreamingAssets/Story에 .csv 없음");
+        }
+
+        void LoadSelected()
+        {
+            int idx = _storyDropdown.index;
+            if (idx < 0 || idx >= _stories.Count) return;
+            _currentRel = _stories[idx];
+            _editor.value = _controller.Load(_currentRel);
             _report.Clear();
+            SetStatus($"로드: {_currentRel}");
         }
 
         void Reload()
         {
-            if (_source == null) { SetStatus("리로드할 소스 없음"); return; }
-            var path = AssetDatabase.GetAssetPath(_source);
-            AssetDatabase.ImportAsset(path);
-            var fresh = AssetDatabase.LoadAssetAtPath<TextAsset>(path);
-            _source = fresh;
-            _sourceField.SetValueWithoutNotify(fresh);
-            _editor.value = fresh != null ? fresh.text : "";
+            if (string.IsNullOrEmpty(_currentRel)) { SetStatus("리로드할 소스 없음"); return; }
+            _editor.value = _controller.Load(_currentRel);
             _report.Clear();
-            SetStatus($"리로드: {path}");
+            SetStatus($"리로드: {_currentRel}");
         }
 
         void Validate()
         {
-            bool prev = ScriptParser.Strict;
-            ScriptParser.Strict = _strictToggle.value;
-            List<ScriptLine> lines = ScriptParser.Parse(_editor.value ?? "");
-            List<ScriptValidator.Violation> violations = ScriptValidator.Validate(lines);
-            ScriptParser.Strict = prev; // 전역 토글 원복(러닝 게임 파싱에 영향 없도록).
-            RenderReport(violations, lines.Count);
+            var (violations, lineCount) = _controller.Validate(_editor.value ?? "", _strictToggle.value);
+            RenderReport(violations, lineCount);
         }
 
         void Apply()
         {
-            if (!EditorApplication.isPlaying)
+            if (!EditorApplication.isPlaying) { SetStatus("Apply는 Play 모드 전용 — Game 씬을 Play하세요."); return; }
+            if (!_controller.Apply(_editor.value ?? "", _strictToggle.value))
             {
-                SetStatus("Apply는 Play 모드 전용 — Game 씬을 Play하세요.");
+                SetStatus(_controller.CanApply ? "빈 CSV — Apply 생략" : "전환 중(데이루프 등) — 잠시 후 Apply");
                 return;
             }
-            var csv = _editor.value ?? "";
-            if (string.IsNullOrWhiteSpace(csv)) { SetStatus("빈 CSV — Apply 생략"); return; }
-
-            // 발행(동기 파싱) 동안만 Strict 토글 적용 후 원복.
-            bool prev = ScriptParser.Strict;
-            ScriptParser.Strict = _strictToggle.value;
-            EventBus.Publish(new PlayScriptCommand(csv, PlayName));
-            ScriptParser.Strict = prev;
-            SetStatus("Apply → 러닝 게임에 재생 발행(story-live)");
+            SetStatus("Apply → 러닝 게임에 재생(화면 정리 후, story-live)");
         }
 
         void Stop()
         {
             if (!EditorApplication.isPlaying) { SetStatus("Stop은 Play 모드 전용"); return; }
-            EventBus.Publish(new PlayScriptCommand("", StopName));
-            SetStatus("Stop 발행");
+            SetStatus(_controller.Stop() ? "Stop 발행" : "전환 중 — 잠시 후");
         }
 
         void Save()
         {
-            if (_source == null) { SetStatus("저장할 소스 없음 — Source CSV를 지정하세요"); return; }
-            var path = AssetDatabase.GetAssetPath(_source);
-            if (string.IsNullOrEmpty(path)) { SetStatus("에셋 경로 없음"); return; }
-            File.WriteAllText(path, _editor.value ?? "", new UTF8Encoding(false));
-            AssetDatabase.ImportAsset(path);
-            _source = AssetDatabase.LoadAssetAtPath<TextAsset>(path);
-            _sourceField.SetValueWithoutNotify(_source);
-            SetStatus($"저장: {path}");
+            if (string.IsNullOrEmpty(_currentRel)) { SetStatus("저장할 소스 없음 — Story CSV를 선택하세요"); return; }
+            if (_controller.Save(_currentRel, _editor.value ?? ""))
+            {
+                AssetDatabase.Refresh(); // Project 뷰 동기화(런타임 재생은 파일 I/O라 불필요하지만 무해).
+                SetStatus($"저장: StreamingAssets/Story/{_currentRel}");
+            }
+            else SetStatus($"저장 실패: {_currentRel}");
         }
 
         void RefreshModeUI()
@@ -175,9 +163,7 @@ namespace LoveAlgo.DevTools.Editor
             bool playing = EditorApplication.isPlaying;
             if (_applyBtn != null) _applyBtn.SetEnabled(playing);
             if (_stopBtn != null) _stopBtn.SetEnabled(playing);
-            SetStatus(playing
-                ? "Play 모드 — Apply 가능"
-                : "Edit 모드 — 편집/검증/저장 (Apply는 Play에서)");
+            SetStatus(playing ? "Play 모드 — Apply 가능(전환 중엔 거부)" : "Edit 모드 — 편집/검증/저장 (Apply는 Play에서)");
         }
 
         void RenderReport(List<ScriptValidator.Violation> violations, int lineCount)
