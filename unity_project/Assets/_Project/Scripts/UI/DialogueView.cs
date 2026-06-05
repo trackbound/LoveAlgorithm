@@ -36,7 +36,7 @@ namespace LoveAlgo.UI
         public float AutoAdvanceDelay { get => autoAdvanceDelay; set => autoAdvanceDelay = value; }
         public bool AutoMode { get => _auto; set => _auto = value; }
 
-        IDisposable _sub, _autoSub, _cgSub;
+        IDisposable _sub, _autoSub, _cgSub, _visSub;
         Coroutine _typeRoutine;
         CompletionHandle _active;
         bool _typing;
@@ -53,6 +53,7 @@ namespace LoveAlgo.UI
             _sub = EventBus.Subscribe<ShowDialogueCommand>(OnShow);
             _autoSub = EventBus.Subscribe<SetAutoModeCommand>(e => _auto = e.On);
             _cgSub = EventBus.Subscribe<SetCgModeCommand>(OnCgMode);
+            _visSub = EventBus.Subscribe<SetDialogueVisibleCommand>(e => { if (root != null) root.SetActive(e.Visible); });
         }
 
         void OnDisable()
@@ -60,7 +61,8 @@ namespace LoveAlgo.UI
             _sub?.Dispose();
             _autoSub?.Dispose();
             _cgSub?.Dispose();
-            _sub = _autoSub = _cgSub = null;
+            _visSub?.Dispose();
+            _sub = _autoSub = _cgSub = _visSub = null;
         }
 
         // CG 컷신 진입 시 대사창을 숨기고 종료 시 복원(ADR-007: CG 뷰가 직접 참조하지 않고 명령으로). 대칭 토글.

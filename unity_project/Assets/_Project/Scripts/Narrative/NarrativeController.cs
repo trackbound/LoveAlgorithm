@@ -327,7 +327,14 @@ namespace LoveAlgo.Story.StoryEngine
                 return false;
             }
 
-            // Save/Schedule/Username/LockScreen/Message/MiniGame/LoadingScene/Mark 등 — 이번 슬라이스 미지원.
+            if (string.Equals(head, "Save", StringComparison.OrdinalIgnoreCase))
+            {
+                // 스토리 체크포인트 → 자동저장 슬롯에 세이브(SaveManager가 SaveRequestedEvent 구독). 0=자동저장 슬롯 계약.
+                EventBus.Publish(new SaveRequestedEvent(0, "story-save"));
+                return false;
+            }
+
+            // Schedule/Username/LockScreen/Message/MiniGame/LoadingScene/Value 등 — 이번 슬라이스 미지원.
             Log.Info($"[NarrativeController] 슬라이스 범위 밖 Flow 스킵: \"{value}\"");
             return false;
         }
@@ -524,8 +531,30 @@ namespace LoveAlgo.Story.StoryEngine
                 yield break;
             }
 
-            // 캐릭터(Jump/Dim/Glitch)/나머지 매크로(Scene*/Video 등) — 이번 슬라이스 미지원.
+            // 대사창 표시/숨김(DialogueShow/DialogueHide) — 무인자 토글 → DialogueView가 root SetActive.
+            string fxHead = HeadOf(line.Value);
+            if (string.Equals(fxHead, "DialogueShow", StringComparison.OrdinalIgnoreCase))
+            {
+                EventBus.Publish(new SetDialogueVisibleCommand(true));
+                yield return WaitNext(line, () => true);
+                yield break;
+            }
+            if (string.Equals(fxHead, "DialogueHide", StringComparison.OrdinalIgnoreCase))
+            {
+                EventBus.Publish(new SetDialogueVisibleCommand(false));
+                yield return WaitNext(line, () => true);
+                yield break;
+            }
+
+            // 캐릭터(Jump/Dim/Glitch)/나머지 매크로(Video 등) — 이번 슬라이스 미지원.
             Log.Info($"[NarrativeController] 슬라이스 범위 밖 FX 스킵: \"{line.Value}\"");
+        }
+
+        static string HeadOf(string value)
+        {
+            if (string.IsNullOrEmpty(value)) return "";
+            int ci = value.IndexOf(':');
+            return (ci >= 0 ? value.Substring(0, ci) : value).Trim();
         }
 
         // ── FX 매크로(Setup): 즉시 일괄 셋업 ──

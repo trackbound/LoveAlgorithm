@@ -153,4 +153,11 @@ namespace LoveAlgo.Events
         public readonly bool On;
         public SetAutoModeCommand(bool on) { On = on; }
     }
+
+    /// <summary>대사창(루트) 표시/숨김 명령. FX 매크로 DialogueShow/DialogueHide가 발행 → DialogueView가 root를 토글.</summary>
+    public readonly struct SetDialogueVisibleCommand
+    {
+        public readonly bool Visible;
+        public SetDialogueVisibleCommand(bool visible) { Visible = visible; }
+    }
 }
