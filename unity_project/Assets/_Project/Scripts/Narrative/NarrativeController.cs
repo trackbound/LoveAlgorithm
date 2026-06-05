@@ -142,6 +142,12 @@ namespace LoveAlgo.Story.StoryEngine
                             yield return PlayLoading(line);
                             cursor.MoveNext();
                         }
+                        else if (IsLockScreen(line.Value))
+                        {
+                            // 대기형 Flow(잠금화면) — 비번 입력(Submit)까지 핸들 대기. 컨트롤러+뷰 배선 필수(미배선=hang).
+                            yield return PlayLockScreen(line);
+                            cursor.MoveNext();
+                        }
                         else
                         {
                             bool flowJumped = HandleFlow(line, cursor, ref end);
@@ -498,6 +504,28 @@ namespace LoveAlgo.Story.StoryEngine
 
             var req = new CompletionHandle();
             EventBus.Publish(new ShowLoadingCommand(secs, req));
+            yield return WaitNext(line, () => req.IsComplete);
+        }
+
+        static bool IsLockScreen(string value)
+            => string.Equals(HeadOf(value), "LockScreen", StringComparison.OrdinalIgnoreCase);
+
+        /// <summary>
+        /// 대기형 Flow(잠금화면, LockScreen). 순수 <see cref="LockScreenParser"/>로 분해 후 ShowLockScreenCommand를
+        /// 발행하고 비번 입력 완료(핸들)까지 대기 — LockScreenController(저장·핸들 완료) + LockScreenView(입력 UI)가
+        /// 함께 배선돼 있어야 진행한다(미배선 시 Submit이 없어 hang). 파싱 실패면 스킵.
+        /// </summary>
+        IEnumerator PlayLockScreen(ScriptLine line)
+        {
+            var intent = LockScreenParser.Parse(line.Value);
+            if (!intent.IsValid)
+            {
+                Log.Info($"[NarrativeController] LockScreen 파싱 실패 — 스킵: \"{line.Value}\"");
+                yield break;
+            }
+
+            var req = new CompletionHandle();
+            EventBus.Publish(new ShowLockScreenCommand(intent.Mode, intent.FadeOut, intent.TimeOverride, req));
             yield return WaitNext(line, () => req.IsComplete);
         }
 
