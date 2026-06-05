@@ -45,6 +45,8 @@ namespace LoveAlgo.UI
         bool _auto;
         bool _cgHidden;
         IReadOnlyList<InlinePause> _pauses;
+        IReadOnlyList<InlineEmote> _emotes;
+        string _speaker;
 
         void OnEnable()
         {
@@ -81,8 +83,10 @@ namespace LoveAlgo.UI
             if (_typeRoutine != null) StopCoroutine(_typeRoutine);
             _active = e.Handle;
             if (root != null) root.SetActive(true);
+            _speaker = e.Speaker;
             if (speakerText != null) speakerText.text = e.Speaker ?? "";
             _pauses = e.Pauses; // 인라인 <wait> 멈춤 지점(없으면 null).
+            _emotes = e.Emotes; // 인라인 <emote> 표정 지점(없으면 null).
             _typeRoutine = StartCoroutine(TypeRoutine(e.Text ?? "", e.RequireClick));
         }
 
@@ -115,11 +119,17 @@ namespace LoveAlgo.UI
                                 yield return new WaitForSeconds(_pauses[p].Seconds);
                     }
 
+                    // 인라인 <emote>: i번째 글자 시점에 화자 표정 변경 명령 발행(StageView가 슬롯 해석·교체).
+                    FireEmotesAt(i);
+
                     yield return new WaitForSeconds(charInterval);
                 }
             }
 
             if (bodyText != null) bodyText.maxVisibleCharacters = int.MaxValue;
+            // 즉시표시(루프 미실행)거나 스킵으로 끊긴 경우 — 못 발행한 표정을 최종 상태로 마저 발행.
+            if (_emotes != null && (_skipTyping || charInterval <= 0f || total == 0))
+                FireAllEmotes();
             _typing = false;
 
             if (requireClick)
@@ -145,6 +155,22 @@ namespace LoveAlgo.UI
             _typeRoutine = null;
             _active?.Complete();
             _active = null;
+        }
+
+        // 인라인 <emote> 발행: charIndex 시점의 표정 변경 명령(화자→슬롯 해석은 StageView 구독자 몫).
+        void FireEmotesAt(int charIndex)
+        {
+            if (_emotes == null) return;
+            for (int m = 0; m < _emotes.Count; m++)
+                if (_emotes[m].CharIndex == charIndex)
+                    EventBus.Publish(new ShowSpeakerEmoteCommand(_speaker, _emotes[m].Emote));
+        }
+
+        void FireAllEmotes()
+        {
+            if (_emotes == null) return;
+            for (int m = 0; m < _emotes.Count; m++)
+                EventBus.Publish(new ShowSpeakerEmoteCommand(_speaker, _emotes[m].Emote));
         }
 
         /// <summary>클릭/진행 입력. 타이핑 중이면 즉시 전체 표시, 클릭 대기 중이면 완료 핸들을 풀어준다.</summary>

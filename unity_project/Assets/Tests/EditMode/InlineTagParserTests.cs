@@ -49,11 +49,62 @@ namespace LoveAlgo.Tests.Editor
         }
 
         [Test]
-        public void Unknown_Tag_Stripped_No_Pause()
+        public void Colon_Form_Emote_Is_Not_Recognized_Stripped()
         {
+            // 비정규 콜론형 <emote:x>는 emote로 보지 않고 제거만(정규형은 '=' + 꼬리 '/').
             var p = InlineTagParser.Parse("어<emote:happy>이");
             Assert.AreEqual("어이", p.Text);
-            Assert.IsNull(p.Pauses); // <emote>는 이번 슬라이스 미지원 — 제거만.
+            Assert.IsNull(p.Pauses);
+            Assert.IsNull(p.Emotes);
+        }
+
+        [Test]
+        public void Emote_Strips_Tag_And_Records_At_CharIndex()
+        {
+            var p = InlineTagParser.Parse("로아<emote=활짝웃음/>안녕");
+            Assert.AreEqual("로아안녕", p.Text);
+            Assert.IsNotNull(p.Emotes);
+            Assert.AreEqual(1, p.Emotes.Count);
+            Assert.AreEqual(2, p.Emotes[0].CharIndex); // "로아" 2글자 직후
+            Assert.AreEqual("활짝웃음", p.Emotes[0].Emote);
+            Assert.IsNull(p.Pauses);
+        }
+
+        [Test]
+        public void Emote_At_Start()
+        {
+            var p = InlineTagParser.Parse("<emote=BrightSmile/>나야?");
+            Assert.AreEqual("나야?", p.Text);
+            Assert.AreEqual(0, p.Emotes[0].CharIndex);
+            Assert.AreEqual("BrightSmile", p.Emotes[0].Emote);
+        }
+
+        [Test]
+        public void Emote_Without_Trailing_Slash_Also_Works()
+        {
+            var p = InlineTagParser.Parse("<emote=Happy>야");
+            Assert.AreEqual("야", p.Text);
+            Assert.AreEqual("Happy", p.Emotes[0].Emote);
+        }
+
+        [Test]
+        public void Emote_Empty_Value_Ignored()
+        {
+            var p = InlineTagParser.Parse("a<emote=/>b");
+            Assert.AreEqual("ab", p.Text);
+            Assert.IsNull(p.Emotes);
+        }
+
+        [Test]
+        public void Wait_And_Emote_Mixed_Independently()
+        {
+            var p = InlineTagParser.Parse("a<emote=X/>b<wait:0.5>c");
+            Assert.AreEqual("abc", p.Text);
+            Assert.AreEqual(1, p.Emotes.Count);
+            Assert.AreEqual(1, p.Emotes[0].CharIndex);
+            Assert.AreEqual("X", p.Emotes[0].Emote);
+            Assert.AreEqual(1, p.Pauses.Count);
+            Assert.AreEqual(2, p.Pauses[0].CharIndex);
         }
 
         [Test]

@@ -1,7 +1,8 @@
 using System;
 using System.Collections;
+using System.Collections.Generic; // IReadOnlyList<string>
 using LoveAlgo.Common; // EventBus, Log
-using LoveAlgo.Events; // ShowBackgroundCommand, ShowCharacterCommand, CompletionHandle, NarrativeFinishedEvent
+using LoveAlgo.Events; // ShowBackgroundCommand, ShowCharacterCommand, ShowSpeakerEmoteCommand, CompletionHandle, NarrativeFinishedEvent
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -56,8 +57,11 @@ namespace LoveAlgo.UI
         public SlotBinding SlotR { get => slotR; set => slotR = value; }
         public GameObject CharContainer { get => charContainer; set => charContainer = value; }
 
-        IDisposable _bgSub, _charSub, _finishSub, _cgSub;
+        IDisposable _bgSub, _charSub, _finishSub, _cgSub, _emoteSub;
         bool _cgHidden;
+
+        // 슬롯(L/C/R) 인덱스 → 현재 올라간 캐릭터 식별자(Char Enter 시 기록). 인라인 <emote> 화자→슬롯 해석에 사용.
+        readonly string[] _slotChar = new string[3];
 
         Coroutine _bgRoutine;
         CompletionHandle _bgPending;
@@ -71,6 +75,7 @@ namespace LoveAlgo.UI
             _charSub = EventBus.Subscribe<ShowCharacterCommand>(OnShowCharacter);
             _finishSub = EventBus.Subscribe<NarrativeFinishedEvent>(_ => ClearAll());
             _cgSub = EventBus.Subscribe<SetCgModeCommand>(OnCgMode);
+            _emoteSub = EventBus.Subscribe<ShowSpeakerEmoteCommand>(OnSpeakerEmote);
 
             // 초기 상태: front 보임(빈 스프라이트)·back 숨김·backdrop 꺼짐(BG 없을 땐 시뮬 화면이 까매지지 않게).
             SetAlpha(bgFrontGroup, 1f);
@@ -81,8 +86,8 @@ namespace LoveAlgo.UI
 
         void OnDisable()
         {
-            _bgSub?.Dispose(); _charSub?.Dispose(); _finishSub?.Dispose(); _cgSub?.Dispose();
-            _bgSub = _charSub = _finishSub = _cgSub = null;
+            _bgSub?.Dispose(); _charSub?.Dispose(); _finishSub?.Dispose(); _cgSub?.Dispose(); _emoteSub?.Dispose();
+            _bgSub = _charSub = _finishSub = _cgSub = _emoteSub = null;
         }
 
         // CG 컷신 진입 시 캐릭터를 일괄 숨기고 종료 시 복원(슬롯별 알파 보존 위해 컨테이너 토글). 대칭.
@@ -191,6 +196,10 @@ namespace LoveAlgo.UI
                 return;
             }
 
+            // 슬롯→캐릭터 추적(인라인 <emote> 화자 해석용): Enter=기록, Exit/Clear=해제. Emote=식별 불변.
+            if (e.Action == CharAction.Enter) _slotChar[idx] = e.Character;
+            else if (e.Action == CharAction.Exit || e.Action == CharAction.Clear) _slotChar[idx] = null;
+
             if (_slotRoutines[idx] != null)
             {
                 StopCoroutine(_slotRoutines[idx]);
@@ -249,6 +258,43 @@ namespace LoveAlgo.UI
             h?.Complete();
         }
 
+        // ── 인라인 표정(<emote=표정/>) ──
+        // DialogueView가 타이핑 중 발행한 ShowSpeakerEmoteCommand를 받아, 화자가 올라간 슬롯의 스프라이트를
+        // 표정 버전으로 즉시 교체(완료 핸들 없음 — 타이핑과 병행되는 fire-and-forget). 화자→슬롯은 _slotChar 직접 매칭.
+
+        void OnSpeakerEmote(ShowSpeakerEmoteCommand e)
+        {
+            if (string.IsNullOrEmpty(e.Emote)) return;
+            int idx = ResolveSlotForSpeaker(_slotChar, e.Speaker);
+            if (idx < 0)
+            {
+                Log.Info($"[StageView] <emote> 대상 캐릭터가 무대에 없음: 화자='{e.Speaker}'");
+                return;
+            }
+            var slot = GetSlot((CharSlot)idx);
+            if (slot?.image == null || !slot.image.enabled) return;
+            var sprite = LoadCharSprite(_slotChar[idx], e.Emote);
+            if (sprite != null) slot.image.sprite = sprite;
+            else Log.Warn($"[StageView] <emote> 스프라이트 없음: {_slotChar[idx]}/{e.Emote}");
+        }
+
+        /// <summary>화자 문자열과 일치하는(직접·대소문자 무시) 캐릭터가 올라간 슬롯 인덱스. 없으면 -1(순수).</summary>
+        public static int ResolveSlotForSpeaker(IReadOnlyList<string> slotChars, string speaker)
+        {
+            if (slotChars == null || string.IsNullOrEmpty(speaker)) return -1;
+            string s = speaker.Trim();
+            for (int i = 0; i < slotChars.Count; i++)
+            {
+                string c = slotChars[i];
+                if (!string.IsNullOrEmpty(c) && string.Equals(c.Trim(), s, StringComparison.OrdinalIgnoreCase))
+                    return i;
+            }
+            return -1;
+        }
+
+        /// <summary>화자가 현재 올라간 슬롯 인덱스(추적 상태 기준, 테스트/조회용). 없으면 -1.</summary>
+        public int SlotIndexForSpeaker(string speaker) => ResolveSlotForSpeaker(_slotChar, speaker);
+
         SlotBinding GetSlot(CharSlot slot)
         {
             switch (slot)
@@ -281,6 +327,7 @@ namespace LoveAlgo.UI
             }
             ClearSlotVisual(slotL); ClearSlotVisual(slotC); ClearSlotVisual(slotR);
             SetAlpha(slotL?.group, 0f); SetAlpha(slotC?.group, 0f); SetAlpha(slotR?.group, 0f);
+            for (int i = 0; i < _slotChar.Length; i++) _slotChar[i] = null;
         }
 
         // ── 코루틴 lerp ──

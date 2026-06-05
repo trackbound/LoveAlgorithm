@@ -177,9 +177,9 @@ namespace LoveAlgo.Story.StoryEngine
         IEnumerator PlayText(ScriptLine line)
         {
             bool requireClick = line.NextType == NextType.Click;
-            var parsed = InlineTagParser.Parse(line.Value); // 인라인 태그(<wait:sec>) 분해 → 표시텍스트+멈춤지점.
+            var parsed = InlineTagParser.Parse(line.Value); // 인라인 태그(<wait:sec>·<emote=표정/>) 분해 → 표시텍스트+멈춤/표정 지점.
             var req = new CompletionHandle();
-            EventBus.Publish(new ShowDialogueCommand(line.Speaker, parsed.Text, requireClick, req, parsed.Pauses));
+            EventBus.Publish(new ShowDialogueCommand(line.Speaker, parsed.Text, requireClick, req, parsed.Pauses, parsed.Emotes));
 
             // 뷰가 타이핑/클릭을 마칠 때까지 대기(구독자 없으면 즉시 완료되지 않으므로 가드).
             yield return new WaitUntil(() => req.IsComplete);

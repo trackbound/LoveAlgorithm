@@ -58,6 +58,17 @@ namespace LoveAlgo.Events
     }
 
     /// <summary>
+    /// 인라인 표정 지점. <see cref="CharIndex"/>번째 글자가 표시되는 시점에 화자의 캐릭터가 표정을
+    /// <see cref="Emote"/>로 바꾼다(대사 본문의 <c>&lt;emote=표정/&gt;</c> 태그 위치). 표시 텍스트는 태그 제거 상태.
+    /// </summary>
+    public readonly struct InlineEmote
+    {
+        public readonly int CharIndex;
+        public readonly string Emote;
+        public InlineEmote(int charIndex, string emote) { CharIndex = charIndex; Emote = emote; }
+    }
+
+    /// <summary>
     /// 대사 1줄 표시 명령. <see cref="RequireClick"/>=true(Next=click)면 뷰는 타이핑 후 클릭 입력까지
     /// 기다린 뒤 핸들을 완료한다. false면 타이핑이 끝나는 즉시 완료(딜레이/즉시 진행은 엔진이 처리).
     /// <see cref="Text"/>는 인라인 태그가 제거된 표시용 텍스트이며, <see cref="Pauses"/>가 타이핑 중 멈춤 지점을 준다
@@ -70,16 +81,31 @@ namespace LoveAlgo.Events
         public readonly bool RequireClick;
         public readonly CompletionHandle Handle;
         public readonly IReadOnlyList<InlinePause> Pauses;
+        public readonly IReadOnlyList<InlineEmote> Emotes;
 
         public ShowDialogueCommand(string speaker, string text, bool requireClick, CompletionHandle handle,
-            IReadOnlyList<InlinePause> pauses = null)
+            IReadOnlyList<InlinePause> pauses = null, IReadOnlyList<InlineEmote> emotes = null)
         {
             Speaker = speaker;
             Text = text;
             RequireClick = requireClick;
             Handle = handle;
             Pauses = pauses;
+            Emotes = emotes;
         }
+    }
+
+    /// <summary>
+    /// 화자 캐릭터의 표정 변경 *명령*(인라인 <c>&lt;emote=표정/&gt;</c>). DialogueView가 타이핑 중 해당 지점에서
+    /// 발행 → StageView가 구독해, 그 화자가 올라간 슬롯의 스프라이트를 표정 버전으로 즉시 교체한다(ADR-007:
+    /// UI끼리도 직접참조 없이 EventBus). 화자→슬롯은 StageView가 Char 명령으로 추적한 슬롯→캐릭터에 직접 매칭
+    /// (한글명↔ID 별칭 정규화는 후속 — 컨벤션 로딩과 동일 경계).
+    /// </summary>
+    public readonly struct ShowSpeakerEmoteCommand
+    {
+        public readonly string Speaker;
+        public readonly string Emote;
+        public ShowSpeakerEmoteCommand(string speaker, string emote) { Speaker = speaker; Emote = emote; }
     }
 
     /// <summary>
