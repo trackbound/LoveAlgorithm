@@ -1,0 +1,20 @@
+{
+    "name": "LoveAlgo.DevTools.Runtime",
+    "rootNamespace": "LoveAlgo.DevTools.Runtime",
+    "references": [
+        "LoveAlgo.Core",
+        "LoveAlgo.Narrative",
+        "Unity.InputSystem"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [
+        "STORY_EDITOR_RUNTIME"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
