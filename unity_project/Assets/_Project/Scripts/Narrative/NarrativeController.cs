@@ -546,7 +546,18 @@ namespace LoveAlgo.Story.StoryEngine
                 yield break;
             }
 
-            // 캐릭터(Jump/Dim/Glitch)/나머지 매크로(Video 등) — 이번 슬라이스 미지원.
+            // 영상(Video) — 미구현 스텁: 명시적으로 인식·로그 후 건너뜀(await여도 즉시 통과해 hang 방지).
+            // 실제 재생은 후속(VideoPlayer). graceful skip이라 프롤로그 흐름을 막지 않는다.
+            if (string.Equals(fxHead, "Video", StringComparison.OrdinalIgnoreCase))
+            {
+                int vci = line.Value.IndexOf(':');
+                string videoName = vci >= 0 ? line.Value.Substring(vci + 1).Trim() : "";
+                Log.Info($"[NarrativeController] Video 스텁(미구현) — 건너뜀: \"{videoName}\"");
+                yield return WaitNext(line, () => true);
+                yield break;
+            }
+
+            // 캐릭터(Jump/Dim/Glitch) 등 — 이번 슬라이스 미지원.
             Log.Info($"[NarrativeController] 슬라이스 범위 밖 FX 스킵: \"{line.Value}\"");
         }
 

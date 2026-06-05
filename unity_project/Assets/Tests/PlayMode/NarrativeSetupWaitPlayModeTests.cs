@@ -213,5 +213,26 @@ namespace LoveAlgo.Tests.PlayMode
             CollectionAssert.AreEqual(new[] { "리빌후" }, _dialogues);
             Assert.IsTrue(_finished);
         }
+
+        // ── Video 스텁(미구현, graceful skip) ──
+
+        [UnityTest]
+        public IEnumerator Video_Stub_Await_Does_Not_Hang_And_Continues()
+        {
+            const string csv =
+                "LineID,Type,Speaker,Value,Next\n" +
+                ",FX,,Video:roa_CG01_intro,await\n" + // 미구현이라 즉시 통과(hang 금지)
+                ",Text,,영상후,click\n" +
+                ",Flow,,End,>\n";
+
+            var player = SetUp();
+            yield return null;
+
+            EventBus.Publish(new PlayScriptCommand(csv, "video"));
+            yield return WaitUntilDone(player);
+
+            CollectionAssert.AreEqual(new[] { "영상후" }, _dialogues, "Video await 스텁이 hang하지 않고 다음 대사 진행");
+            Assert.IsTrue(_finished);
+        }
     }
 }
