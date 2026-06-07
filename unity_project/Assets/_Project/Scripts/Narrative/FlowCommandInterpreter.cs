@@ -5,7 +5,7 @@ using LoveAlgo.Affinity; // AffinityFormula, PointCategory
 namespace LoveAlgo.Story.StoryEngine.Flow
 {
     /// <summary>처리된 Flow 명령 종류.</summary>
-    public enum FlowCommandKind { Unknown, AffinityEventChoice, AffinityPoint, Day, Flag }
+    public enum FlowCommandKind { Unknown, AffinityEventChoice, AffinityPoint, Day, Flag, Ending }
 
     /// <summary>
     /// <see cref="FlowCommandInterpreter.Apply"/> 결과. 무엇이 어떻게 바뀌었는지(또는 실패 사유)를 담아
@@ -34,6 +34,10 @@ namespace LoveAlgo.Story.StoryEngine.Flow
         public static FlowCommandResult FlagResult()
             => new(true, FlowCommandKind.Flag, null, 0, 0, null);
 
+        /// <summary>Ending 판정 결과. <see cref="HeroineId"/>=판정 히로인(노멀이면 null).</summary>
+        public static FlowCommandResult EndingResult(string heroineId)
+            => new(true, FlowCommandKind.Ending, heroineId, 0, 0, null);
+
         public static FlowCommandResult Fail(FlowCommandKind kind, string error)
             => new(false, kind, null, 0, 0, error);
     }
@@ -52,6 +56,7 @@ namespace LoveAlgo.Story.StoryEngine.Flow
     ///   Affinity:Point:{heroineId}:{Event|Dialogue|Gift|MiniGame}:{amount}
     ///   Day:{N}  — 일차 표시용 강제 설정(실제 전환/오토세이브 아님; 그건 DayLoop/GameManager 경로)
     ///   Flag:{name}[:true|false]  — 플래그 설정(값 생략 시 true; Set 별칭). 분기(If/선택지 조건)가 읽음. 통지 없음.
+    ///   Ending  — 고백 자동 판정(Day30): DetermineEndingHeroine → Ending_{히로인Id}/Ending_None 플래그 일괄 설정.
     /// </summary>
     public static class FlowCommandInterpreter
     {
@@ -68,6 +73,7 @@ namespace LoveAlgo.Story.StoryEngine.Flow
                 case "Day":      return ApplyDay(gs, parts);
                 case "Flag":
                 case "Set":      return ApplyFlag(gs, parts);
+                case "Ending":   return ApplyEnding(gs);
                 default:         return FlowCommandResult.Fail(FlowCommandKind.Unknown, $"알 수 없는 Flow 명령: {parts[0]}");
             }
         }
@@ -135,6 +141,21 @@ namespace LoveAlgo.Story.StoryEngine.Flow
             bool value = parts.Length < 3 || string.Equals(parts[2], "true", StringComparison.OrdinalIgnoreCase);
             gs.SetFlag(parts[1], value);
             return FlowCommandResult.FlagResult();
+        }
+
+        static FlowCommandResult ApplyEnding(GameStateSO gs)
+        {
+            // Ending — 고백 자동 판정(감독 결정 2026-06-07): AffinityFormula.DetermineEndingHeroine(인벤토리 §4,
+            // 금지선2: 공식 그대로 위임) 결과를 분기 플래그로 노출 → Confession.csv가 If:Flag:Ending_{id}로 분기.
+            // 매 호출 5+1 플래그 전부를 결정적으로 덮어쓴다(재실행/재적용 안전). 판정 없음 = Ending_None.
+            string winner = AffinityFormula.DetermineEndingHeroine(gs);
+            for (int i = 0; i < AffinityFormula.Count; i++)
+            {
+                string id = AffinityFormula.HeroineIdAt(i);
+                gs.SetFlag("Ending_" + id, id == winner);
+            }
+            gs.SetFlag("Ending_None", winner == null);
+            return FlowCommandResult.EndingResult(winner);
         }
     }
 }

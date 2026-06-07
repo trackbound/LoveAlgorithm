@@ -110,6 +110,87 @@ namespace LoveAlgo.Tests.Editor
             finally { Object.DestroyImmediate(gs); }
         }
 
+        // ── Ending — 고백 자동 판정(Day30, 감독 결정 2026-06-07) ──
+
+        [Test]
+        public void Ending_Winner_Sets_Single_Heroine_Flag()
+        {
+            var gs = MakeState();
+            try
+            {
+                // 하예은: 이벤트 선택 1 + 총점 ≥ 임계치(32) → 판정.
+                FlowCommandInterpreter.Apply(gs, "Affinity:EventChoice:HaYeEun:Event1:3");
+                FlowCommandInterpreter.Apply(gs, "Affinity:Point:HaYeEun:Event:24"); // 27
+                FlowCommandInterpreter.Apply(gs, "Affinity:Point:HaYeEun:Gift:8");   // 35 ≥ 32
+
+                var r = FlowCommandInterpreter.Apply(gs, "Ending");
+
+                Assert.IsTrue(r.Ok);
+                Assert.AreEqual(FlowCommandKind.Ending, r.Kind);
+                Assert.AreEqual("HaYeEun", r.HeroineId);
+                Assert.IsTrue(gs.GetFlag("Ending_HaYeEun"), "판정 히로인 플래그 set");
+                Assert.IsFalse(gs.GetFlag("Ending_Roa"), "나머지는 false");
+                Assert.IsFalse(gs.GetFlag("Ending_None"), "판정 성공 시 None=false");
+            }
+            finally { Object.DestroyImmediate(gs); }
+        }
+
+        [Test]
+        public void Ending_NoWinner_Sets_None()
+        {
+            var gs = MakeState();
+            try
+            {
+                var r = FlowCommandInterpreter.Apply(gs, "Ending"); // 아무 점수 없음 → 노멀
+
+                Assert.IsTrue(r.Ok);
+                Assert.IsNull(r.HeroineId);
+                Assert.IsTrue(gs.GetFlag("Ending_None"));
+                Assert.IsFalse(gs.GetFlag("Ending_HaYeEun"));
+            }
+            finally { Object.DestroyImmediate(gs); }
+        }
+
+        [Test]
+        public void Ending_Reapply_Overwrites_Deterministically()
+        {
+            var gs = MakeState();
+            try
+            {
+                FlowCommandInterpreter.Apply(gs, "Ending");
+                Assert.IsTrue(gs.GetFlag("Ending_None"), "1차: 노멀");
+
+                FlowCommandInterpreter.Apply(gs, "Affinity:EventChoice:HaYeEun:Event1:3");
+                FlowCommandInterpreter.Apply(gs, "Affinity:Point:HaYeEun:Event:32"); // 35 ≥ 32
+                FlowCommandInterpreter.Apply(gs, "Ending");
+
+                Assert.IsTrue(gs.GetFlag("Ending_HaYeEun"), "2차: 판정 갱신");
+                Assert.IsFalse(gs.GetFlag("Ending_None"), "None 해제(전체 덮어쓰기)");
+            }
+            finally { Object.DestroyImmediate(gs); }
+        }
+
+        [Test]
+        public void Ending_Roa_Hidden_Requires_Fatigue()
+        {
+            var gs = MakeState();
+            try
+            {
+                // 로아 총점 ≥ 46이어도 피로 < 70이면 히든 루트 미발동(이벤트 선택 없으면 일반 판정도 불가).
+                FlowCommandInterpreter.Apply(gs, "Affinity:Point:Roa:Event:27");
+                FlowCommandInterpreter.Apply(gs, "Affinity:Point:Roa:Dialogue:15");
+                FlowCommandInterpreter.Apply(gs, "Affinity:Point:Roa:Gift:8"); // 50 ≥ 46
+                FlowCommandInterpreter.Apply(gs, "Ending");
+                Assert.IsTrue(gs.GetFlag("Ending_None"), "피로 미달 → 히든 미발동");
+
+                gs.SetStat("Fatigue", 75);
+                var r = FlowCommandInterpreter.Apply(gs, "Ending");
+                Assert.AreEqual("Roa", r.HeroineId, "피로 ≥70 + 총점 ≥46 → 로아 히든");
+                Assert.IsTrue(gs.GetFlag("Ending_Roa"));
+            }
+            finally { Object.DestroyImmediate(gs); }
+        }
+
         [Test]
         public void Null_Or_Empty_Is_Failed_NoOp()
         {

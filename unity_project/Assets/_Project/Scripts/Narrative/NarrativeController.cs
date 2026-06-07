@@ -323,7 +323,8 @@ namespace LoveAlgo.Story.StoryEngine
             if (string.Equals(head, "Affinity", StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(head, "Day", StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(head, "Flag", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(head, "Set", StringComparison.OrdinalIgnoreCase))
+                string.Equals(head, "Set", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(head, "Ending", StringComparison.OrdinalIgnoreCase))
             {
                 // 순수 FlowCommandInterpreter의 어댑터(FlowCommandController)가 적용 + (필요시) 통지. Flag는 적용만.
                 EventBus.Publish(new FlowCommandRequestedEvent(value));
