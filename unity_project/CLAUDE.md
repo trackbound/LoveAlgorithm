@@ -48,16 +48,6 @@ Claude는 코드를 제안하거나 구현할 때 **작업 위험도 등급**을
 
 ---
 
-## 🤖 작업 효율화 (Serena MCP 우선 사용)
-
-코드 탐색 및 수정 시 Grep/Read 대신 Serena 도구를 우선 사용하여 컨텍스트 및 토큰 비용을 최소화합니다:
-- **심볼 찾기**: `find_symbol`, `find_referencing_symbols`
-- **파일 분석**: `get_symbols_overview`, `search_for_pattern`
-- **메서드 수정**: `replace_symbol_body`, `insert_after_symbol`, `insert_before_symbol`
-*(CSV, Markdown, JSON, YAML 등 비-코드 파일 및 100줄 미만 짧은 파일에서만 Read/Grep 사용)*
-
----
-
 ## 🧭 선택지 제시 규칙
 - 감독에게 둘 이상의 선택지를 제시할 때는 **항상 가장 합리적인 안을 첫 번째에 두고 "(추천)" 표시**를 붙인다. 추천 근거 한 줄 동봉. 그냥 "어떻게 할까요"로 판단을 떠넘기지 말 것.
 
