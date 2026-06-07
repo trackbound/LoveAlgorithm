@@ -1,7 +1,7 @@
 LineID,Type,Speaker,Value,Next
 ,Flow,,Mark:scene:로아 첫만남 (CG 인트로),>
 ,FX,,Setup:BG=빈 화면,>
-,FX,,Video:roa_CG01_intro,await
+,FX,,Video:roa_CG01_intro:NoSkip,await
 pro_004,CG,,로아 첫만남:4.0,await
 pro_005,Text,로아,기다리고 있었어!,click
 pro_003,Sound,,BGM:로아,>

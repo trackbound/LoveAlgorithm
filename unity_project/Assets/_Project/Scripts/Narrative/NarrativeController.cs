@@ -668,14 +668,14 @@ namespace LoveAlgo.Story.StoryEngine
                 yield break;
             }
 
-            // 영상(Video) — 미구현 스텁: 명시적으로 인식·로그 후 건너뜀(await여도 즉시 통과해 hang 방지).
-            // 실제 재생은 후속(VideoPlayer). graceful skip이라 프롤로그 흐름을 막지 않는다.
-            if (string.Equals(fxHead, "Video", StringComparison.OrdinalIgnoreCase))
+            // 영상(Video) — Resources/Animation/{파일명} 풀스크린 재생. VideoView가 Prepare→Play→loopPointReached로
+            // 안정 재생, 비-Loop는 종료까지 핸들 보류(await 대기) · Loop는 비블로킹. 클립 없으면 즉시 완료(hang 0).
+            var video = VideoParser.Parse(line.Value);
+            if (video.IsValid)
             {
-                int vci = line.Value.IndexOf(':');
-                string videoName = vci >= 0 ? line.Value.Substring(vci + 1).Trim() : "";
-                Log.Info($"[NarrativeController] Video 스텁(미구현) — 건너뜀: \"{videoName}\"");
-                yield return WaitNext(line, () => true);
+                var req = new CompletionHandle();
+                EventBus.Publish(new PlayVideoCommand(video.Name, video.Loop, video.Skippable, req));
+                yield return WaitNext(line, () => req.IsComplete);
                 yield break;
             }
 
