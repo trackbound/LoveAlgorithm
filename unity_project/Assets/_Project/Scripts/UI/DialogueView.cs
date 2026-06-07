@@ -47,6 +47,7 @@ namespace LoveAlgo.UI
         IReadOnlyList<InlinePause> _pauses;
         IReadOnlyList<InlineEmote> _emotes;
         string _speaker;
+        string _speakerId; // 별칭 해석된 캐릭터 코드 ID(없으면 null → _speaker 폴백)
 
         void OnEnable()
         {
@@ -86,6 +87,7 @@ namespace LoveAlgo.UI
             _active = e.Handle;
             if (root != null) root.SetActive(true);
             _speaker = e.Speaker;
+            _speakerId = e.SpeakerId;
             if (speakerText != null) speakerText.text = e.Speaker ?? "";
             _pauses = e.Pauses; // 인라인 <wait> 멈춤 지점(없으면 null).
             _emotes = e.Emotes; // 인라인 <emote> 표정 지점(없으면 null).
@@ -165,15 +167,18 @@ namespace LoveAlgo.UI
             if (_emotes == null) return;
             for (int m = 0; m < _emotes.Count; m++)
                 if (_emotes[m].CharIndex == charIndex)
-                    EventBus.Publish(new ShowSpeakerEmoteCommand(_speaker, _emotes[m].Emote));
+                    EventBus.Publish(new ShowSpeakerEmoteCommand(EmoteSpeaker, _emotes[m].Emote));
         }
 
         void FireAllEmotes()
         {
             if (_emotes == null) return;
             for (int m = 0; m < _emotes.Count; m++)
-                EventBus.Publish(new ShowSpeakerEmoteCommand(_speaker, _emotes[m].Emote));
+                EventBus.Publish(new ShowSpeakerEmoteCommand(EmoteSpeaker, _emotes[m].Emote));
         }
+
+        // 슬롯 매칭은 해석된 코드 ID 우선(StageView가 Char 명령의 코드 ID를 추적) — 미해석 시 원문 화자명 폴백.
+        string EmoteSpeaker => string.IsNullOrEmpty(_speakerId) ? _speaker : _speakerId;
 
         /// <summary>클릭/진행 입력. 타이핑 중이면 즉시 전체 표시, 클릭 대기 중이면 완료 핸들을 풀어준다.</summary>
         public void Advance()

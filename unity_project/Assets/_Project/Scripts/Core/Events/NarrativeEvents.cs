@@ -82,9 +82,12 @@ namespace LoveAlgo.Events
         public readonly CompletionHandle Handle;
         public readonly IReadOnlyList<InlinePause> Pauses;
         public readonly IReadOnlyList<InlineEmote> Emotes;
+        /// <summary>화자의 캐릭터 코드 ID(엔진이 별칭 카탈로그로 해석, 예: "c01"). 인라인 &lt;emote&gt;의 슬롯
+        /// 매칭용 — 표시는 <see cref="Speaker"/>(원문) 그대로. 미등록 화자/카탈로그 부재면 null(뷰는 Speaker 폴백).</summary>
+        public readonly string SpeakerId;
 
         public ShowDialogueCommand(string speaker, string text, bool requireClick, CompletionHandle handle,
-            IReadOnlyList<InlinePause> pauses = null, IReadOnlyList<InlineEmote> emotes = null)
+            IReadOnlyList<InlinePause> pauses = null, IReadOnlyList<InlineEmote> emotes = null, string speakerId = null)
         {
             Speaker = speaker;
             Text = text;
@@ -92,14 +95,15 @@ namespace LoveAlgo.Events
             Handle = handle;
             Pauses = pauses;
             Emotes = emotes;
+            SpeakerId = speakerId;
         }
     }
 
     /// <summary>
     /// 화자 캐릭터의 표정 변경 *명령*(인라인 <c>&lt;emote=표정/&gt;</c>). DialogueView가 타이핑 중 해당 지점에서
     /// 발행 → StageView가 구독해, 그 화자가 올라간 슬롯의 스프라이트를 표정 버전으로 즉시 교체한다(ADR-007:
-    /// UI끼리도 직접참조 없이 EventBus). 화자→슬롯은 StageView가 Char 명령으로 추적한 슬롯→캐릭터에 직접 매칭
-    /// (한글명↔ID 별칭 정규화는 후속 — 컨벤션 로딩과 동일 경계).
+    /// UI끼리도 직접참조 없이 EventBus). 화자→슬롯은 StageView가 Char 명령으로 추적한 슬롯→캐릭터에 직접 매칭.
+    /// Speaker엔 해석된 캐릭터 코드 ID(<c>ShowDialogueCommand.SpeakerId</c>)가 실린다 — 미해석 시 원문 화자명 폴백.
     /// </summary>
     public readonly struct ShowSpeakerEmoteCommand
     {

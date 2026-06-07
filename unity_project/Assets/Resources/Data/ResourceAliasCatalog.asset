@@ -1,0 +1,239 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c774001b13db7d04f862e8b794184180, type: 3}
+  m_Name: ResourceAliasCatalog
+  m_EditorClassIdentifier:
+  bg:
+  - id: bg_00_00
+    aliases:
+    - "빈 화면"
+  - id: bg_10_01
+    aliases:
+    - "자취방 전경 낮"
+  - id: bg_10_02
+    aliases:
+    - "자취방 전경 밤 불꺼짐"
+  - id: bg_10_03
+    aliases:
+    - "자취방 전경 밤 불켜짐"
+    - "자취방 전경 밤 불커짐"
+  - id: bg_10_04
+    aliases:
+    - "자취방 침대위 아침"
+  - id: bg_10_05
+    aliases:
+    - "자취방 침대위 밤"
+  - id: bg_10_06
+    aliases:
+    - "자취방 책상 모니터"
+  - id: bg_20_01
+    aliases:
+    - "공대 앞 낮"
+  - id: bg_20_02
+    aliases:
+    - "공대 앞 밤"
+  - id: bg_20_03
+    aliases:
+    - "공대 강의실복도"
+  - id: bg_20_04
+    aliases:
+    - "공대 학생복지실"
+  - id: bg_20_05
+    aliases:
+    - "공대 강의실 낮"
+  - id: bg_20_06
+    aliases:
+    - "공대 강의실 낮 벚꽃"
+  - id: bg_30_01
+    aliases:
+    - "캠퍼스거리1 낮 맑음"
+  - id: bg_30_02
+    aliases:
+    - "캠퍼스거리2 낮 맑음"
+  - id: bg_40_01
+    aliases:
+    - "학생회관 앞 낮"
+  - id: bg_40_02
+    aliases:
+    - "학생회관 앞 밤"
+  - id: bg_40_03
+    aliases:
+    - "행정실"
+  - id: bg_40_04
+    aliases:
+    - "학생회관 복도"
+  - id: bg_40_05
+    aliases:
+    - "학생회관 게시판앞"
+  - id: bg_40_06
+    aliases:
+    - "학생회관 동아리방 낮"
+  - id: bg_40_07
+    aliases:
+    - "학생회관 동아리방 벚꽃"
+  - id: bg_60_02
+    aliases:
+    - "편의점 앞 밤"
+  cg:
+  - id: cg_c01_01
+    aliases:
+    - "로아 첫만남"
+  - id: cg_c03_01
+    aliases:
+    - "예은 입부신청서 작성"
+  sd:
+  - id: sd_c02_01
+    aliases:
+    - "다은 속닥"
+  - id: sd_c04_01
+    aliases:
+    - "희원 맥주"
+  - id: sd_c05_01
+    aliases:
+    - "봄 글썹"
+    - "봄 글썽"
+  characters:
+  - id: c01
+    aliases:
+    - "로아"
+    - Roa
+  - id: c02
+    aliases:
+    - "서다은"
+    - SeoDaEun
+  - id: c03
+    aliases:
+    - "하예은"
+    - HaYeEun
+  - id: c04
+    aliases:
+    - "도희원"
+    - DoHeewon
+  - id: c05
+    aliases:
+    - "이봄"
+    - LeeBom
+  emotes:
+  - id: '00'
+    aliases:
+    - "기본"
+    - Default
+  - id: '11'
+    aliases:
+    - "눈웃음"
+  - id: '12'
+    aliases:
+    - "밝게웃음"
+    - BrightSmile
+  - id: '13'
+    aliases:
+    - "활짝웃음"
+  - id: '14'
+    aliases:
+    - "행복"
+    - Happy
+  - id: '21'
+    aliases:
+    - "찌릿"
+  - id: '22'
+    aliases:
+    - "삐짐"
+  - id: '23'
+    aliases:
+    - "머쓱"
+  - id: '24'
+    aliases:
+    - "어질어질"
+  - id: '31'
+    aliases:
+    - "울먹"
+  - id: '32'
+    aliases:
+    - "주르륵"
+  - id: '33'
+    aliases:
+    - "와아앙"
+  - id: '34'
+    aliases:
+    - "부끄"
+  - id: '35'
+    aliases:
+    - "졸려"
+  - id: '41'
+    aliases:
+    - "깜짝"
+  - id: '42'
+    aliases:
+    - "반짝빈짝"
+  - id: '43'
+    aliases:
+    - "궁금"
+  - id: '44'
+    aliases:
+    - "윙크"
+  - id: '45'
+    aliases:
+    - "자신만만"
+  - id: '55'
+    aliases:
+    - "음주"
+  - id: '56'
+    aliases:
+    - "만취"
+  - id: '57'
+    aliases:
+    - "집중"
+  - id: '58'
+    aliases:
+    - "고민"
+  defaultEmote: '00'
+  bgm:
+  - id: whitenoise
+    aliases:
+    - "백색소음"
+    - white_noise
+  - id: daily1
+    aliases:
+    - "일상1"
+  - id: daily2
+    aliases:
+    - "일상2"
+  - id: night
+    aliases:
+    - "밤"
+  - id: daeun
+    aliases:
+    - "서다은"
+  - id: yeeun
+    aliases:
+    - "하예은"
+  - id: heewon
+    aliases:
+    - "도희원"
+  - id: bom
+    aliases:
+    - "이봄"
+  - id: roa
+    aliases:
+    - "로아"
+  - id: title
+    aliases:
+    - "타이틀"
+  sfx:
+  - id: 060_message
+    aliases:
+    - "메시지 알림음"
+    - '060'
+  - id: 200_pen
+    aliases:
+    - "볼펜소리"
+    - '200'

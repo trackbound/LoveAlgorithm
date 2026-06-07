@@ -55,6 +55,9 @@ namespace LoveAlgo.Story.StoryEngine
         [Tooltip("위치 배너(Place) 동결 수치. 미바인딩 시 폴백 상수(0.45/2.0/0.35).")]
         [SerializeField] PlaceTuningSO placeTuning;
 
+        [Tooltip("에셋 별칭(한글명)→코드ID 카탈로그. 엔진이 명령 발행 전 해석(뷰는 모름). 미바인딩 시 원문 그대로.")]
+        [SerializeField] ResourceAliasCatalogSO aliasCatalog;
+
         public GameStateSO State { get => state; set => state = value; }
         public StageTuningSO StageTuning { get => stageTuning; set => stageTuning = value; }
         public ScreenFadeTuningSO ScreenFadeTuning { get => screenFadeTuning; set => screenFadeTuning = value; }
@@ -64,6 +67,7 @@ namespace LoveAlgo.Story.StoryEngine
         public EyeMaskTuningSO EyeMaskTuning { get => eyeMaskTuning; set => eyeMaskTuning = value; }
         public StageLayerTuningSO StageLayerTuning { get => stageLayerTuning; set => stageLayerTuning = value; }
         public PlaceTuningSO PlaceTuning { get => placeTuning; set => placeTuning = value; }
+        public ResourceAliasCatalogSO AliasCatalog { get => aliasCatalog; set => aliasCatalog = value; }
 
         /// <summary>현재 스크립트가 재생 중인가(재진입 가드).</summary>
         public bool IsRunning { get; private set; }
@@ -215,7 +219,9 @@ namespace LoveAlgo.Story.StoryEngine
             bool requireClick = line.NextType == NextType.Click;
             var parsed = InlineTagParser.Parse(line.Value); // 인라인 태그(<wait:sec>·<emote=표정/>) 분해 → 표시텍스트+멈춤/표정 지점.
             var req = new CompletionHandle();
-            EventBus.Publish(new ShowDialogueCommand(line.Speaker, parsed.Text, requireClick, req, parsed.Pauses, parsed.Emotes));
+            // 화자/표정 별칭 해석: 표시는 원문(Speaker), 슬롯 매칭은 코드 ID(SpeakerId)·표정 코드 — 뷰는 카탈로그를 모른다.
+            EventBus.Publish(new ShowDialogueCommand(line.Speaker, parsed.Text, requireClick, req,
+                parsed.Pauses, ResolveInlineEmotes(parsed.Emotes), ResolveSpeakerId(line.Speaker)));
 
             // 뷰가 타이핑/클릭을 마칠 때까지 대기(구독자 없으면 즉시 완료되지 않으므로 가드).
             yield return new WaitUntil(() => req.IsComplete);
@@ -380,7 +386,7 @@ namespace LoveAlgo.Story.StoryEngine
                 : (stageTuning != null ? stageTuning.BgTransitionDefault : 0.5f);
 
             var req = new CompletionHandle();
-            EventBus.Publish(new ShowBackgroundCommand(intent.Name, intent.Transition, dur, req));
+            EventBus.Publish(new ShowBackgroundCommand(ResolveBgName(intent.Name), intent.Transition, dur, req));
             yield return WaitNext(line, () => req.IsComplete);
         }
 
@@ -394,9 +400,54 @@ namespace LoveAlgo.Story.StoryEngine
             }
 
             float dur = ResolveCharDuration(intent.Action);
+            var (ch, em) = ResolveCharEmote(intent.Character, intent.Emote, intent.Action);
             var req = new CompletionHandle();
-            EventBus.Publish(new ShowCharacterCommand(intent.Slot, intent.Action, intent.Character, intent.Emote, dur, req));
+            EventBus.Publish(new ShowCharacterCommand(intent.Slot, intent.Action, ch, em, dur, req));
             yield return WaitNext(line, () => req.IsComplete);
+        }
+
+        // ── 별칭 해석(작가 한글명→코드ID) ──
+        // 발행 직전에 엔진이 해석한다 — 뷰의 컨벤션 로딩(Resources.Load)은 무변경·카탈로그 무지(ColorTint 프리셋 선례).
+        // 카탈로그 미바인딩/미등록 이름은 원문 그대로(passthrough) — 코드명 직접 기입과 신규 에셋이 카탈로그 없이도 동작.
+
+        string ResolveBgName(string n)  => aliasCatalog != null ? aliasCatalog.ResolveBg(n) : n;
+        string ResolveBgmName(string n) => aliasCatalog != null ? aliasCatalog.ResolveBgm(n) : n;
+        string ResolveSfxName(string n) => aliasCatalog != null ? aliasCatalog.ResolveSfx(n) : n;
+
+        string ResolveLayerName(StageLayerKind kind, string n)
+        {
+            if (aliasCatalog == null) return n;
+            switch (kind)
+            {
+                case StageLayerKind.CG: return aliasCatalog.ResolveCg(n);
+                case StageLayerKind.SD: return aliasCatalog.ResolveSd(n);
+                default:                return n; // Overlay: 별칭 미운영(코드명 직기입)
+            }
+        }
+
+        (string character, string emote) ResolveCharEmote(string character, string emote, CharAction action)
+        {
+            if (aliasCatalog == null) return (character, emote);
+            bool known = aliasCatalog.TryResolveCharacter(character, out string id);
+            string ch = known ? id : character;
+            string em = string.IsNullOrEmpty(emote) ? emote : aliasCatalog.ResolveEmote(emote);
+            // 등장 시 표정 생략 → 기본 표정 보정(캐릭터 단독 스프라이트는 없다: c01_00 등). 등록 캐릭터만(코드 직기입 의도 보존).
+            if (action == CharAction.Enter && known && string.IsNullOrEmpty(em))
+                em = aliasCatalog.DefaultEmote;
+            return (ch, em);
+        }
+
+        /// <summary>화자명→캐릭터 코드 ID(인라인 emote 슬롯 매칭용). 미등록 화자({{Player}}/내레이션)면 null.</summary>
+        string ResolveSpeakerId(string speaker)
+            => aliasCatalog != null && aliasCatalog.TryResolveCharacter(speaker, out string id) ? id : null;
+
+        IReadOnlyList<InlineEmote> ResolveInlineEmotes(IReadOnlyList<InlineEmote> emotes)
+        {
+            if (aliasCatalog == null || emotes == null || emotes.Count == 0) return emotes;
+            var resolved = new List<InlineEmote>(emotes.Count);
+            for (int i = 0; i < emotes.Count; i++)
+                resolved.Add(new InlineEmote(emotes[i].CharIndex, aliasCatalog.ResolveEmote(emotes[i].Emote)));
+            return resolved;
         }
 
         float ResolveCharDuration(CharAction action)
@@ -444,10 +495,10 @@ namespace LoveAlgo.Story.StoryEngine
             {
                 case SoundCategory.Bgm:
                     if (intent.IsStop) EventBus.Publish(new StopBgmCommand(intent.Fade));
-                    else EventBus.Publish(new PlayBgmCommand(intent.Name, intent.Fade));
+                    else EventBus.Publish(new PlayBgmCommand(ResolveBgmName(intent.Name), intent.Fade));
                     break;
                 case SoundCategory.Sfx:
-                    EventBus.Publish(new PlaySfxCommand(intent.Name));
+                    EventBus.Publish(new PlaySfxCommand(ResolveSfxName(intent.Name)));
                     break;
                 case SoundCategory.Voice:
                     if (intent.IsStop) EventBus.Publish(new StopVoiceCommand());
@@ -644,11 +695,14 @@ namespace LoveAlgo.Story.StoryEngine
         IEnumerator PlaySetup(ScriptLine line, SetupIntent s)
         {
             if (s.Bg != null)
-                EventBus.Publish(new ShowBackgroundCommand(s.Bg, BgTransition.Cut, 0f, new CompletionHandle()));
+                EventBus.Publish(new ShowBackgroundCommand(ResolveBgName(s.Bg), BgTransition.Cut, 0f, new CompletionHandle()));
             if (s.Bgm != null)
-                EventBus.Publish(new PlayBgmCommand(s.Bgm));
+                EventBus.Publish(new PlayBgmCommand(ResolveBgmName(s.Bgm)));
             if (s.CharName != null)
-                EventBus.Publish(new ShowCharacterCommand(ParseSetupSlot(s.CharSlot), CharAction.Enter, s.CharName, "", 0f, new CompletionHandle()));
+            {
+                var (ch, em) = ResolveCharEmote(s.CharName, "", CharAction.Enter);
+                EventBus.Publish(new ShowCharacterCommand(ParseSetupSlot(s.CharSlot), CharAction.Enter, ch, em, 0f, new CompletionHandle()));
+            }
             if (s.Overlay != null)
                 EventBus.Publish(new ShowStageLayerCommand(StageLayerKind.Overlay, false, s.Overlay, LayerTransition.Cut, 0f, new CompletionHandle()));
             if (s.Eye != null)
@@ -692,7 +746,7 @@ namespace LoveAlgo.Story.StoryEngine
 
             // SceneStart: BG 즉시(Cut) → 눈 처리.
             if (s.Bg != null)
-                EventBus.Publish(new ShowBackgroundCommand(s.Bg, BgTransition.Cut, 0f, new CompletionHandle()));
+                EventBus.Publish(new ShowBackgroundCommand(ResolveBgName(s.Bg), BgTransition.Cut, 0f, new CompletionHandle()));
 
             if (s.EyeClose)
             {
@@ -855,7 +909,7 @@ namespace LoveAlgo.Story.StoryEngine
 
             float dur = intent.Duration >= 0f ? intent.Duration : ResolveLayerFade(kind);
             var req = new CompletionHandle();
-            EventBus.Publish(new ShowStageLayerCommand(kind, intent.IsClose, intent.Name, intent.Transition, dur, req));
+            EventBus.Publish(new ShowStageLayerCommand(kind, intent.IsClose, ResolveLayerName(kind, intent.Name), intent.Transition, dur, req));
             yield return WaitNext(line, () => req.IsComplete);
         }
 

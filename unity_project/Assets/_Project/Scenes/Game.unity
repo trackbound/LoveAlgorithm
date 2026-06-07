@@ -714,6 +714,7 @@ MonoBehaviour:
   eyeMaskTuning: {fileID: 11400000, guid: 40d513b9d9324964b9604241024c9c9c, type: 2}
   stageLayerTuning: {fileID: 11400000, guid: 236386cfa9368f04aa4cf94f64871781, type: 2}
   placeTuning: {fileID: 11400000, guid: 721e85855d458b4409ce5d8478a31e26, type: 2}
+  aliasCatalog: {fileID: 11400000, guid: afee1d55d50d9634fa84808be81360e7, type: 2}
 --- !u!1 &144959709
 GameObject:
   m_ObjectHideFlags: 0
