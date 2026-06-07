@@ -4,6 +4,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.TestTools;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 using LoveAlgo.UI;
 
 namespace LoveAlgo.Tests.PlayMode
@@ -60,6 +61,44 @@ namespace LoveAlgo.Tests.PlayMode
             finally
             {
                 Object.DestroyImmediate(go);
+            }
+        }
+
+        [UnityTest]
+        public IEnumerator FocusedButton_StillShowsHoverSprite_OnPointerEnter()
+        {
+            // 버그 재현·수정: 클릭으로 EventSystem 포커스가 남으면 Unity는 호버해도 SelectionState를 Selected로
+            // 돌려준다(Highlighted보다 우선). 그래도 포인터가 안에 있으면 hover가 떠야 한다.
+            var es = new GameObject("EventSystem", typeof(EventSystem));
+            var evs = es.GetComponent<EventSystem>();
+            var go = new GameObject("Styled", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+            go.SetActive(false);
+            var img = go.GetComponent<Image>();
+            var styled = go.AddComponent<StyledButton>();
+            styled.transition = Selectable.Transition.None; // 어댑터(스프라이트)만 격리
+            styled.targetGraphic = img;
+            var hover = NewSprite();
+            styled.HighlightedSprite = hover; // NormalSprite=null → Normal 시 overrideSprite 해제
+            go.SetActive(true);
+            yield return null;
+
+            try
+            {
+                // 클릭으로 포커스 잔류 모사(hasSelection=true → raw가 Selected)
+                evs.SetSelectedGameObject(go);
+                yield return null;
+                Assert.IsNull(img.overrideSprite, "포커스만(호버 아님) → Normal");
+
+                styled.OnPointerEnter(new PointerEventData(evs));
+                Assert.AreSame(hover, img.overrideSprite, "포커스 상태에서도 호버 시 hover 스프라이트(버그 수정)");
+
+                styled.OnPointerExit(new PointerEventData(evs));
+                Assert.IsNull(img.overrideSprite, "이탈 → Normal");
+            }
+            finally
+            {
+                Object.DestroyImmediate(go);
+                Object.DestroyImmediate(es);
             }
         }
     }

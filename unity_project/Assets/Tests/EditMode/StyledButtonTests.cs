@@ -15,28 +15,49 @@ namespace LoveAlgo.Tests.EditMode
         static Sprite NewSprite() => Sprite.Create(new Texture2D(2, 2), new Rect(0, 0, 2, 2), new Vector2(0.5f, 0.5f));
 
         [Test]
-        public void ResolveEffective_SelectedFocus_MapsToNormal()
+        public void ResolveEffective_FocusOnly_NotHovering_MapsToNormal()
         {
-            // EventSystem 포커스 잔류(Selected)는 Normal로 — 클릭 후 스티키 하이라이트 제거.
-            Assert.AreEqual(VS.Normal, StyledButton.ResolveEffective(VS.Selected, false));
+            // 클릭 후 EventSystem 포커스만 남고 호버 아님 → Normal(스티키 하이라이트 제거).
+            Assert.AreEqual(VS.Normal, StyledButton.ResolveEffective(VS.Selected, false, false));
         }
 
         [Test]
-        public void ResolveEffective_OrdinaryStates_PassThrough()
+        public void ResolveEffective_FocusAndHovering_MapsToHighlighted()
         {
-            Assert.AreEqual(VS.Normal, StyledButton.ResolveEffective(VS.Normal, false));
-            Assert.AreEqual(VS.Highlighted, StyledButton.ResolveEffective(VS.Highlighted, false));
-            Assert.AreEqual(VS.Pressed, StyledButton.ResolveEffective(VS.Pressed, false));
-            Assert.AreEqual(VS.Disabled, StyledButton.ResolveEffective(VS.Disabled, false));
+            // 핵심 버그 수정: 포커스가 남아 raw가 Selected여도 포인터가 안에 있으면 호버를 우선.
+            Assert.AreEqual(VS.Highlighted, StyledButton.ResolveEffective(VS.Selected, false, true));
         }
 
         [Test]
-        public void ResolveEffective_Override_ForcesSelected()
+        public void ResolveEffective_PointerInside_Highlights()
         {
-            // 탭 active: 외부 override가 Selected를 강제(원시 상태 무관).
-            Assert.AreEqual(VS.Selected, StyledButton.ResolveEffective(VS.Normal, true));
-            Assert.AreEqual(VS.Selected, StyledButton.ResolveEffective(VS.Highlighted, true));
-            Assert.AreEqual(VS.Selected, StyledButton.ResolveEffective(VS.Pressed, true));
+            Assert.AreEqual(VS.Highlighted, StyledButton.ResolveEffective(VS.Highlighted, false, true));
+            Assert.AreEqual(VS.Highlighted, StyledButton.ResolveEffective(VS.Normal, false, true)); // 포커스 레이스 보정
+        }
+
+        [Test]
+        public void ResolveEffective_NormalAndPressed_PassThrough()
+        {
+            Assert.AreEqual(VS.Normal, StyledButton.ResolveEffective(VS.Normal, false, false));
+            Assert.AreEqual(VS.Pressed, StyledButton.ResolveEffective(VS.Pressed, false, false)); // 눌림은 이탈 중에도 유지
+            Assert.AreEqual(VS.Pressed, StyledButton.ResolveEffective(VS.Pressed, false, true));
+        }
+
+        [Test]
+        public void ResolveEffective_Override_ForcesSelected_OverHover()
+        {
+            // 탭/토글 active(의도적 Selected)는 원시 상태·호버보다 우선.
+            Assert.AreEqual(VS.Selected, StyledButton.ResolveEffective(VS.Normal, true, false));
+            Assert.AreEqual(VS.Selected, StyledButton.ResolveEffective(VS.Highlighted, true, true));
+            Assert.AreEqual(VS.Selected, StyledButton.ResolveEffective(VS.Pressed, true, false));
+        }
+
+        [Test]
+        public void ResolveEffective_Disabled_Wins()
+        {
+            // 비활성은 토글 active·호버보다 우선(상호작용 불가).
+            Assert.AreEqual(VS.Disabled, StyledButton.ResolveEffective(VS.Disabled, false, false));
+            Assert.AreEqual(VS.Disabled, StyledButton.ResolveEffective(VS.Disabled, true, true));
         }
 
         [Test]
