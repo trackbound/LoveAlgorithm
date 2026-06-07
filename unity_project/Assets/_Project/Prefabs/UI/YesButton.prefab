@@ -65,7 +65,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\uC120\uD0DD\uC9C0"
+  m_text: "\uC608"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 6510102d93eb1d74ba6055e1f3a9a571, type: 2}
   m_sharedMaterial: {fileID: -8511051475557064183, guid: 6510102d93eb1d74ba6055e1f3a9a571, type: 2}
@@ -74,8 +74,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4294967295
-  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
+    rgba: 4278190080
+  m_fontColor: {r: 0, g: 0, b: 0, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -151,7 +151,6 @@ GameObject:
   - component: {fileID: 7075903882404886454}
   - component: {fileID: 3873221320660520869}
   - component: {fileID: 7889717128749948083}
-  - component: {fileID: 551370999828861086}
   m_Layer: 0
   m_Name: YesButton
   m_TagString: Untagged
@@ -177,7 +176,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 100, y: 100}
+  m_SizeDelta: {x: 187, y: 59}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &7091898239398343078
 CanvasRenderer:
@@ -200,7 +199,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.16, g: 0.18, b: 0.28, a: 0.95}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -226,9 +225,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 7573487448000468859}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Script: {fileID: 11500000, guid: 7de9977d3e6de4f44a6c76b982ca7ce0, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Button
+  m_EditorClassIdentifier: LoveAlgo.UI::LoveAlgo.UI.StyledButton
   m_Navigation:
     m_Mode: 3
     m_WrapAround: 0
@@ -236,10 +235,10 @@ MonoBehaviour:
     m_SelectOnDown: {fileID: 0}
     m_SelectOnLeft: {fileID: 0}
     m_SelectOnRight: {fileID: 0}
-  m_Transition: 2
+  m_Transition: 1
   m_Colors:
     m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
-    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_HighlightedColor: {r: 1, g: 1, b: 1, a: 1}
     m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
     m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
     m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
@@ -261,6 +260,19 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+  normalSprite: {fileID: 0}
+  highlightedSprite: {fileID: 21300000, guid: 598d1696830c2ea46ba3ed3e318be397, type: 3}
+  pressedSprite: {fileID: 0}
+  selectedSprite: {fileID: 0}
+  disabledSprite: {fileID: 0}
+  textColors:
+    drive: 1
+    normal: {r: 0, g: 0, b: 0, a: 1}
+    highlighted: {r: 1, g: 1, b: 1, a: 1}
+    pressed: {r: 1, g: 1, b: 1, a: 1}
+    selected: {r: 1, g: 1, b: 1, a: 1}
+    disabled: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+  label: {fileID: 7923528993092384506}
 --- !u!114 &3873221320660520869
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -295,18 +307,3 @@ MonoBehaviour:
   m_FlexibleWidth: -1
   m_FlexibleHeight: -1
   m_LayoutPriority: 1
---- !u!114 &551370999828861086
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7573487448000468859}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a85b1b35ec7e46d4e924a6c51a4fb6fd, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: LoveAlgo.UI::LoveAlgo.UI.ButtonHoverTextColor
-  label: {fileID: 0}
-  normalColor: {r: 0, g: 0, b: 0, a: 1}
-  hoverColor: {r: 1, g: 1, b: 1, a: 1}

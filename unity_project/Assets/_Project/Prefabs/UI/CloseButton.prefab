@@ -225,9 +225,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 7573487448000468859}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Script: {fileID: 11500000, guid: 7de9977d3e6de4f44a6c76b982ca7ce0, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Button
+  m_EditorClassIdentifier: LoveAlgo.UI::LoveAlgo.UI.StyledButton
   m_Navigation:
     m_Mode: 3
     m_WrapAround: 0
@@ -260,6 +260,19 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+  normalSprite: {fileID: 0}
+  highlightedSprite: {fileID: 0}
+  pressedSprite: {fileID: 0}
+  selectedSprite: {fileID: 0}
+  disabledSprite: {fileID: 0}
+  textColors:
+    drive: 0
+    normal: {r: 0, g: 0, b: 0, a: 1}
+    highlighted: {r: 1, g: 1, b: 1, a: 1}
+    pressed: {r: 1, g: 1, b: 1, a: 1}
+    selected: {r: 1, g: 1, b: 1, a: 1}
+    disabled: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+  label: {fileID: 7923528993092384506}
 --- !u!114 &3873221320660520869
 MonoBehaviour:
   m_ObjectHideFlags: 0
