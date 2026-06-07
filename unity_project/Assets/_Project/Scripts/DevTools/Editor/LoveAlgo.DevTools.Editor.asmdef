@@ -4,7 +4,8 @@
     "references": [
         "LoveAlgo.Core",
         "LoveAlgo.Narrative",
-        "LoveAlgo.UI"
+        "LoveAlgo.UI",
+        "UnityEngine.UI"
     ],
     "includePlatforms": [
         "Editor"

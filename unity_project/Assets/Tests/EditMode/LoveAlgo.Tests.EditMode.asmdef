@@ -12,6 +12,7 @@
         "LoveAlgo.Audio",
         "LoveAlgo.UI",
         "LoveAlgo.Shop",
+        "LoveAlgo.DevTools.Editor",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"
     ],

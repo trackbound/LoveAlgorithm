@@ -246,3 +246,32 @@ ID → 사람 가독 이름 변환은 본 문서의 매핑 테이블 또는 Exce
 
 - 신규 파일이 정규식에 매칭되지 않으면 임포트 단계에서 거부 (에디터 스크립트 — 추후 구현).
 - 매핑 테이블에 없는 ID(`c99_*`, `bg_99_*`)는 임시 placeholder 로만 사용. PR/커밋 전 정규 번호로 교체.
+
+---
+
+## 10. UI 버튼 스프라이트 (`Assets/Art/UI/`)
+
+> §1~§9(BG/Char/SD/CG)는 `Assets/Resources/` 런타임 경로 로드 대상이다. **UI 버튼 스프라이트는 `Assets/Art/UI/` 하위에 로스 PNG로 두고 GUID로 참조**한다(아틀라스·Resources 아님). 코드/툴은 아래 **상태 접미사 규약**으로 버튼 시각상태를 해석한다.
+
+### 형식
+```
+btn_{module}_{purpose}.png            # 기본 (normal)
+btn_{module}_{purpose}_hover.png      # 호버 (highlighted)  — 선택
+btn_{module}_{purpose}_disabled.png   # 비활성 (disabled)   — 선택
+btn_{module}_{purpose}_on.png         # 토글 ON (selected)  — 선택
+```
+
+- `_hover`/`_disabled`/`_on` = **상태 형제**. `LoveAlgo.UI.StyledButton`의 `highlightedSprite`/`disabledSprite`/`selectedSprite`에 매핑된다 — 에디터 툴 `Tools/UI/Convert Selection to StyledButton (+auto sprites)`이 같은 폴더에서 이름으로 찾아 자동 할당.
+- 기본(접미사 없음) = `normalSprite` 자리. StyledButton은 normal을 **비워** Image의 기본 스프라이트를 그대로 노출한다.
+- **pressed 전용 스프라이트는 만들지 않는다** — hover(없으면 기본) 위에 네이티브 ColorTint(C8C8C8)가 곱해져 눌림 표현이 된다.
+- **`_on` 토글**은 스프라이트만 규약으로 해석되고, 실제 켜짐/꺼짐 전환은 소유 `*View`가 런타임 `StyledButton.SetSelected(bool)`로 구동한다.
+- **화이트리스트는 `_hover`/`_disabled`/`_on` 셋뿐** — `_kr`(로케일) 등 다른 접미사는 상태가 아니므로 툴이 무시한다.
+
+### 예시 (실재)
+- `btn_dialogue_auto.png` + `_hover` + `_on` → normal·highlighted·selected (Story 대사창 오토 토글)
+- `btn_config_arrow_left.png` + `_disabled` → highlighted 없음(호버는 ColorTint)·disabled (경계 회색화)
+- `btn_config_mode.png` + `_on` → 전체화면/창모드 토글
+- `btn_extra_scene.png` + `_hover`
+
+### 폴더
+모듈별 군집: `Assets/Art/UI/{Story, Popup/Modal/{Config,SaveLoad,Extra}, Simulate/{Shop,Schedule,QuickMenu}, Scene, ...}/`.
