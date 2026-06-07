@@ -86,6 +86,7 @@
 
 ## ⚠️ 새 세션이 반드시 알 것 (안 깨뜨리려면)
 
+- **⚠️ .mcp.json 깨짐 → Unity MCP 미연결(2026-06-07)**: `.mcp.json`이 **없는 패키지** `com.gamelovers.mcp-unity`의 부재 경로(`Library/PackageCache/...@d176a9d737cc/Server~/build/index.js`, node)를 가리켜 서버 spawn 실패 → 이 세션 MCP 안 붙음(`mcp__*unity*` 도구 0개). **실제 설치 패키지 = `com.coplaydev.unity-mcp`**(PackageCache `com.coplaydev.unity-mcp@efaf786e8772`, 최상위 `Editor`/`Runtime`+`package.json` — Unity측 C# 브리지만 있고 MCP 서버 진입점은 패키지 안에 없음). CoplayDev MCP for Unity는 통상 **별도 Python(uv) 서버**라 `.mcp.json`을 그 서버로 재설정 필요(정확 경로/런타임은 CoplayDev 문서 확인). 수정 후 `/mcp` 재연결 또는 Claude Code 재시작. node 자체는 정상(v24). git에서 `.mcp.json` M 상태. **▶ 2026-06-07 정정**: MCP는 **별개 HTTP 서버 `UnityMCP`로 정상 연결**된다(이 세션 모달 작업 전부 MCP로 수행 — 씬 배선·테스트·프리팹화). `.mcp.json`의 stdio `mcp-unity` 항목은 **미사용 orphan**(깨졌어도 무방) — 실제 연결은 HTTP 서버 담당. '미연결'은 stdio 한정 과거 사실, 실사용 MCP는 붙는다(`mcpforunity://instances`로 확인).
 - **~~전환기 공존~~ → 구 코드 폐기 완료(`9152615`)**: 구 Assembly-CSharp(Service Locator·구 매니저·Modules·Contracts·구 UI)는 **전부 삭제됨**. 코드는 이제 `_Project/Scripts/` 피처 asmdef 12개 단일이고, Assembly-CSharp에는 서드파티(DOTween)·Unity생성(InputSystem_Actions)만 잔존(게임코드 아님).
 - **~~autoRef=false 2개~~ → true 복귀 완료(`9152615`)**: 구 동명 ns 충돌이 사라져 `LoveAlgo.Save`·`LoveAlgo.UI` 모두 `autoReferenced: true`(이제 asmdef 12개 전부 autoRef true). 컴파일·테스트 그린 확인.
 - **이름 충돌 패턴**: 신규 타입이 구 동명 타입과 겹치면 → 다른 ns(예: 구 Modules.Audio vs 신 LoveAlgo.Audio) 또는 asmdef 격리(autoRef=false, 예: UIManager). **MCP로 씬에 컴포넌트 부착 시 전체 타입명**(`LoveAlgo.Game.GameManager`)으로 모호성 주의.
@@ -99,6 +100,7 @@
 
 ## ✅ 이번 세션 검증·커밋 완료
 
+- **범용 모달 인프라 + 첫 소비처 타이틀 종료확인 — 2026-06-07 커밋 `1f5b7b5`(🟠, EditMode 308·PlayMode 91 그린, 컴파일 0, 씬 무결성 clean)**: 코드가 발행하는 시스템 확인/알림 다이얼로그(스토리 선택지 ChoiceView와 별개)를 EventBus 완료-핸들로 추가. `ModalRequest`(버튼 인덱스 회수, ChoiceRequest 형제)·`ShowModalCommand`(Core/Events) + `ModalView`(구독→ChoiceSlot 재사용 버튼 동적생성→핸들 회수, ChoiceView 미러) + `TitleView.OnExit`(즉시종료→확인모달, "예"=index0만 QuitGameCommand). Title 씬 `_UI/Modal` 인스턴스 + **`Modal.prefab`**(`_Project/Prefabs/UI/`, 씬별 인스턴스=ADR-013). 감독 Play 확인 완료. MCP는 HTTP `UnityMCP` 서버로 정상 연결(.mcp.json stdio는 미사용 orphan — 아래 정정). **남은 소비처**: Game 씬 시스템 모달(필요 시 같은 prefab 배치).
 - **실 트리거 확장 + 별칭 카탈로그 — 2026-06-07 세션 3커밋(EditMode 308·PlayMode 91 그린, 컴파일 0)**:
   - `8564d02` **에셋 별칭 카탈로그(🟠)**: 스토리 CSV 한글명("공대 강의실 낮"·"로아")↔에셋 코드명(bg_20_05·c01) 간극 해소 — 구 ResourceCatalog 삭제(페이즈2) 후 **BG/Char/SD/BGM 로드가 전부 실패**하던 것(Prologue 포함)을 신규 `ResourceAliasCatalogSO`(Narrative, 데이터=구 asset `9152615^` 회수)로 복구. **해석=NarrativeController 발행 직전**(ColorTint 선례: 뷰는 카탈로그 무지·컨벤션 로딩 무변경), 미등록=passthrough. `ShowDialogueCommand.SpeakerId` 가산(화자→슬롯 emote 매칭은 코드ID, 표시는 원문) + Char Enter 표정 생략→기본표정("00") 보정(등록 캐릭터만). **표정 id는 밑줄 없이("41")** — StageView가 `{char}_{emote}` 합성. CG 파일 한글명 stopgap을 코드명(cg_c01_01)으로 환원(git mv GUID 보존). 에셋=`Resources/Data/ResourceAliasCatalog.asset`, Game.unity NarrativeController.aliasCatalog 바인딩.
   - `930c6d3` **Flow `Ending` 명령**: Day30 고백 = **자동 판정(감독 결정 2026-06-07)** — FlowCommandInterpreter가 `AffinityFormula.DetermineEndingHeroine`(공식 무변경 위임) 호출 → `Ending_{히로인Id}`×5 + `Ending_None` 플래그 일괄 덮어쓰기(재실행 안전) → CSV가 `If:Flag:Ending_*`로 분기.
@@ -147,7 +149,13 @@
 
 ## ▶️ 다음 액션
 
-> **현재(2026-06-07)**: LockScreen 인터랙티브(`8b6640e`)·프롤로그 자동 진입(`bd43f12`)·**별칭 카탈로그 + 실 트리거 확장(Day6~30 전 이벤트일, `8564d02`·`930c6d3`·`8bf6f55`) 완료** — 30일 루프의 이벤트일 전부가 엔진 CSV로 재생된다(내용은 최소 스캐폴드). **다음 후보**: ① 감독 Play 확인(프롤로그 별칭 해소 + 이벤트일 트리거 + 고백 분기 — 배너/잠금/슬롯 레이아웃 튜닝 겸) ② 이벤트 CSV 내용 집필(작가 도구) ③ 시뮬 루프 심화(HUD 레이아웃·엔딩 디테일 — 엔딩 화면이 Ending_* 플래그/판정 히로인 표시하는 보강 포함) ④ 스테이지 상태 세이브(🔴). ⚠️ Modal/TitleView 미커밋 변경은 타 작업자 소유 — 건드리지 말 것. **아래는 구(舊) 다음-액션 목록 — 대부분 처리됨, 참고용.**
+> **현재(2026-06-07)**: LockScreen 인터랙티브(`8b6640e`)·프롤로그 자동 진입(`bd43f12`)·**별칭 카탈로그 + 실 트리거 확장(Day6~30 전 이벤트일, `8564d02`·`930c6d3`·`8bf6f55`) 완료** — 30일 루프의 이벤트일 전부가 엔진 CSV로 재생된다(내용은 최소 스캐폴드). **다음 후보**: ① 감독 Play 확인(프롤로그 별칭 해소 + 이벤트일 트리거 + 고백 분기 — 배너/잠금/슬롯 레이아웃 튜닝 겸) ② 이벤트 CSV 내용 집필(작가 도구) ③ 시뮬 루프 심화(HUD 레이아웃·엔딩 디테일 — 엔딩 화면이 Ending_* 플래그/판정 히로인 표시하는 보강 포함) ④ 스테이지 상태 세이브(🔴). ⚠️ Modal/TitleView는 이 세션 커밋 완료(`1f5b7b5`). **Game.unity·PlaceBanner.prefab은 타 작업자(Place 배너 prefab 추출, 412줄 삭제) 미커밋 — 건드리지 말 것.** **아래는 구(舊) 다음-액션 목록 — 대부분 처리됨, 참고용.**
+
+> **✅ 범용 모달 시스템 — 완료·커밋(`1f5b7b5`, 2026-06-07)**: 아래 인계 ①~⑤ 전부 이행(MCP HTTP 연결 · EditMode 308/PlayMode 91 그린 · Title 씬 ModalView 배선 · `Modal.prefab`화 · 감독 Play 확인 · 커밋). **Game 씬 모달만 미배선**(소비처 생길 때 같은 prefab 배치). 아래는 이행된 인계 기록(참고용). ~~다음 세션 순서~~ = ① MCP 재연결 → ② 컴파일+테스트 그린 → ③ Title 씬 ModalView 배선 → ④ Play 확인 → ⑤ 커밋.
+> - **파일(🟠 High, 미커밋)**: `Core/Events/ModalEvents.cs`(`ModalRequest`=인덱스+`Action<int>` 콜백 값 회수 핸들[`ChoiceRequest` 형제] / `ShowModalCommand`[Title·Message·ButtonLabels·Handle]) · `UI/ModalView.cs`(ShowModalCommand 구독→패널 표시→**ChoiceSlot 재사용** 버튼 동적생성→핸들 회수, `ChoiceView` 미러) · `UI/TitleView.cs` `OnExit` 즉시종료→**확인모달 경유**("예"=index 0만 `QuitGameCommand`). 테스트: `ModalRequestTests`(EditMode +6)·`ModalViewPlayModeTests`(PlayMode +2)·`TitleViewPlayModeTests` Exit 테스트 모달용 갱신.
+> - **설계 결정(감독 2026-06-07)**: 동적 버튼배열+인덱스 회수(ModalKind enum 아님) · 메시지+버튼만(입력필드는 후속, 입력은 LockScreen 담당) · CSV 아닌 **코드 호출 시스템 UI**(스토리 선택지=ChoiceView 별개) · 첫 소비처=타이틀 종료확인. 정본 경계=`docs/vn_conventions.md` §4.
+> - **씬 배선 레시피**: `_UI` > `Modal`(GO, **active**, ModalView 부착) > `Root`(**inactive**) > {Dim Image, Panel{Title TMP, Message TMP}, Buttons(HorizontalLayoutGroup)}. ModalView 5필드 = Root/TitleText/MessageText/ButtonContainer/ButtonPrefab(=`_Project/Prefabs/Narrative/ChoiceSlot.prefab`). **Modal 계층 → prefab화**(`_Project/Prefabs/UI/Modal.prefab`)해 Title·Game 등 씬마다 인스턴스(persistent 단일은 ADR-013 위반이라 안 씀). 비주얼 수치 🟢.
+> - **⚠️ 함정**: ① Modal GO는 씬 시작부터 active(OnEnable 구독), Root는 inactive(시작 시 빈 패널 노출 방지). ② **ModalView 없는 씬에서 `ShowModalCommand` 발행 = 조용히 무시 + 콜백 미수신**(타이틀이면 "예" 눌러도 종료 안 됨) → 발행하는 씬엔 반드시 ModalView 배치. ③ 컴파일은 에디터 Play가 됐으니 통과 추정이나 **테스트 미실행(미확인)**.
 
 이번 세션 **M3 슬라이스2 스테이지 BG+Char 첫 서브슬라이스 — 코드+테스트 완성**(커밋 b967218, EditMode 166/PlayMode 21 그린). 렌더링 구조 결정: **별도 `_Stage` 캔버스(UI Image, `_UI`보다 낮은 sortingOrder)** — 구 UI-Image 동작·동결 px 수치 재사용 + 캔버스 rebuild 격리(ADR-004), SpriteRenderer 카메라/정렬레이어 신설 회피(감독 결정). 감독이 다음 방향 택1:
 
