@@ -6,6 +6,7 @@ using LoveAlgo.Events; // ShowDialogueCommand, CompletionHandle
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems; // IPointerClickHandler
+using UnityEngine.InputSystem;  // Keyboard (스페이스 진행)
 
 namespace LoveAlgo.UI
 {
@@ -180,13 +181,35 @@ namespace LoveAlgo.UI
         // 슬롯 매칭은 해석된 코드 ID 우선(StageView가 Char 명령의 코드 ID를 추적) — 미해석 시 원문 화자명 폴백.
         string EmoteSpeaker => string.IsNullOrEmpty(_speakerId) ? _speaker : _speakerId;
 
-        /// <summary>클릭/진행 입력. 타이핑 중이면 즉시 전체 표시, 클릭 대기 중이면 완료 핸들을 풀어준다.</summary>
-        public void Advance()
+        // 스페이스로도 진행(좌클릭과 동일). 신 Input System 직접 읽기 — 뷰가 활성(내러티브 중)일 때만 Update 동작.
+        // 단 입력 필드(LockScreen 비번 등) 타이핑 중엔 무시 — 스페이스가 텍스트 입력 대신 대사 진행을 가로채지 않도록.
+        void Update()
         {
-            if (_typing) _skipTyping = true;
-            else if (_awaitingClick) _awaitingClick = false;
+            var kb = Keyboard.current;
+            if (kb == null || !kb.spaceKey.wasPressedThisFrame) return;
+            if (IsTextInputFocused()) return;
+            Advance("스페이스");
         }
 
-        public void OnPointerClick(PointerEventData eventData) => Advance();
+        // EventSystem이 현재 포커스한 GO가 입력 중인 TMP_InputField인가(있으면 스페이스를 진행으로 가로채지 않는다).
+        static bool IsTextInputFocused()
+        {
+            var sel = EventSystem.current != null ? EventSystem.current.currentSelectedGameObject : null;
+            if (sel == null) return false;
+            var field = sel.GetComponent<TMP_InputField>();
+            return field != null && field.isFocused;
+        }
+
+        /// <summary>클릭/진행 입력. 타이핑 중이면 즉시 전체 표시, 클릭 대기 중이면 완료 핸들을 풀어준다.
+        /// <paramref name="source"/>는 디버그 로그용 입력 출처(좌클릭/스페이스 등, <see cref="DebugInput"/>).</summary>
+        public void Advance(string source = null)
+        {
+            string s = source ?? "?";
+            if (_typing) { _skipTyping = true; DebugInput.Log($"{s} → 대사 타이핑 스킵"); }
+            else if (_awaitingClick) { _awaitingClick = false; DebugInput.Log($"{s} → 대사 진행(다음)"); }
+            else DebugInput.Log($"{s} → 입력됐으나 진행할 대사 없음");
+        }
+
+        public void OnPointerClick(PointerEventData eventData) => Advance("좌클릭");
     }
 }

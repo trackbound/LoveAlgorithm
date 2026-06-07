@@ -4,6 +4,7 @@ using LoveAlgo.Common; // EventBus
 using LoveAlgo.Events; // ShowModalCommand, ModalRequest
 using TMPro;
 using UnityEngine;
+using UnityEngine.InputSystem; // Keyboard (Esc 모달 취소)
 
 namespace LoveAlgo.UI
 {
@@ -36,6 +37,7 @@ namespace LoveAlgo.UI
         readonly List<ChoiceSlot> _spawned = new();
         IDisposable _sub;
         ModalRequest _active;
+        IReadOnlyList<string> _labels; // 활성 모달 버튼 라벨(디버그 로그용)
 
         void OnEnable() => _sub = EventBus.Subscribe<ShowModalCommand>(OnShow);
 
@@ -52,6 +54,7 @@ namespace LoveAlgo.UI
         {
             Clear();
             _active = e.Handle;
+            _labels = e.ButtonLabels;
             if (root != null) root.SetActive(true);
             if (titleText != null) titleText.text = e.Title ?? "";
             if (messageText != null) messageText.text = e.Message ?? "";
@@ -72,15 +75,38 @@ namespace LoveAlgo.UI
             }
         }
 
+        // 버튼 클릭 콜백(좌클릭). 선택 인덱스를 로그하고 모달을 닫는다.
         void OnSelected(int index)
+        {
+            DebugInput.Log($"좌클릭 → 모달 확인: index={index}{LabelSuffix(index)}");
+            Close(index);
+        }
+
+        // Esc로 모달 취소 — 마지막 버튼(취소 관례)을 선택해 닫는다. 모달 표시 중일 때만.
+        void Update()
+        {
+            var kb = Keyboard.current;
+            if (kb == null || _active == null || !kb.escapeKey.wasPressedThisFrame) return;
+            int cancel = _spawned.Count - 1;
+            if (cancel < 0) return; // 버튼 없는 모달 — 취소 대상 인덱스 없음
+            DebugInput.Log($"Esc → 모달 취소: index={cancel}{LabelSuffix(cancel)}");
+            Close(cancel);
+        }
+
+        // 핸들 회수 + 정리 + 숨김(클릭/Esc 공통). 정리 후 마지막에 통지: 콜백이 또 다른 모달을 띄우거나
+        // 종료를 발행해도 현재 모달 상태와 꼬이지 않게.
+        void Close(int index)
         {
             var handle = _active;
             _active = null;
+            _labels = null;
             Clear();
             if (root != null) root.SetActive(false);
-            // 정리 후 마지막에 통지: 콜백이 또 다른 모달을 띄우거나 종료를 발행해도 현재 모달 상태와 꼬이지 않게.
             handle?.Select(index);
         }
+
+        string LabelSuffix(int index)
+            => (_labels != null && index >= 0 && index < _labels.Count) ? $" '{_labels[index]}'" : "";
 
         void Clear()
         {
