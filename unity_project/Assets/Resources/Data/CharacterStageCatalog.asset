@@ -14,17 +14,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: LoveAlgo.UI::LoveAlgo.UI.CharacterStageCatalogSO
   entries:
   - characterId: c01
-    scale: 0.5
-    offset: {x: 0, y: 0}
+    scale: 0.7
+    offset: {x: 7, y: -1007}
   - characterId: c02
-    scale: 0.5
-    offset: {x: 0, y: 0}
+    scale: 0.7
+    offset: {x: 39, y: -1028}
   - characterId: c03
-    scale: 0.5
-    offset: {x: 0, y: 0}
+    scale: 0.7
+    offset: {x: 75.3, y: -975.7}
   - characterId: c04
-    scale: 0.5
-    offset: {x: 0, y: 0}
+    scale: 0.7
+    offset: {x: 87, y: -1017}
   - characterId: c05
-    scale: 0.5
-    offset: {x: 0, y: 0}
+    scale: 0.65
+    offset: {x: 70, y: -834}

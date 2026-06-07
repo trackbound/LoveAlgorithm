@@ -3,14 +3,14 @@ guid: d560fe3aeeafafa4ca07f2aac86a1592
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -5472283157708684234
-    second: Char_Roa_Default_0
+      213: -7800122713211663244
+    second: C01_00_0
   - first:
-      213: 4584371815251794113
-    second: Char_Roa_Default_1
+      213: 3935380629482153051
+    second: C01_00_1
   - first:
-      213: -6859638465423693763
-    second: Char_Roa_Default_2
+      213: -6473861925189634232
+    second: C01_00_2
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -78,19 +78,6 @@ TextureImporter:
   platformSettings:
   - serializedVersion: 4
     buildTarget: DefaultTexturePlatform
-    maxTextureSize: 4096
-    resizeAlgorithm: 0
-    textureFormat: -1
-    textureCompression: 1
-    compressionQuality: 50
-    crunchedCompression: 0
-    allowsAlphaSplitting: 0
-    overridden: 0
-    ignorePlatformSupport: 0
-    androidETC2FallbackOverride: 0
-    forceMaximumCompressionQuality_BC6H_BC7: 0
-  - serializedVersion: 4
-    buildTarget: Standalone
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
@@ -103,7 +90,7 @@ TextureImporter:
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
   - serializedVersion: 4
-    buildTarget: iOS
+    buildTarget: Standalone
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
@@ -132,13 +119,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Char_Roa_Default_0
+      name: C01_00_0
       rect:
         serializedVersion: 2
-        x: 725
-        y: 1963
-        width: 31
-        height: 11
+        x: 964
+        y: 2610
+        width: 41
+        height: 15
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -147,20 +134,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 634cb62267b8e04b0800000000000000
-      internalID: -5472283157708684234
+      spriteID: 47c009a18b560c390800000000000000
+      internalID: -7800122713211663244
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Char_Roa_Default_1
+      name: C01_00_1
       rect:
         serializedVersion: 2
-        x: 705
-        y: 1946
-        width: 10
-        height: 9
+        x: 937
+        y: 2587
+        width: 14
+        height: 12
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -169,20 +156,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 1c8556e70e5fe9f30800000000000000
-      internalID: 4584371815251794113
+      spriteID: b54ac3cf4d74d9630800000000000000
+      internalID: 3935380629482153051
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Char_Roa_Default_2
+      name: C01_00_2
       rect:
         serializedVersion: 2
-        x: 121
-        y: 150
-        width: 1041
-        height: 1792
+        x: 163
+        y: 200
+        width: 1380
+        height: 2379
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -191,8 +178,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: d38a0dcd82badc0a0800000000000000
-      internalID: -6859638465423693763
+      spriteID: 847352801e83826a0800000000000000
+      internalID: -6473861925189634232
       vertices: []
       indices: 
       edges: []
@@ -211,9 +198,9 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Char_Roa_Default_0: -5472283157708684234
-      Char_Roa_Default_1: 4584371815251794113
-      Char_Roa_Default_2: -6859638465423693763
+      C01_00_0: -7800122713211663244
+      C01_00_1: 3935380629482153051
+      C01_00_2: -6473861925189634232
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

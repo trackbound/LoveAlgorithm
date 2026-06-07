@@ -362,10 +362,8 @@ GameObject:
   - component: {fileID: 7713790328323771971}
   - component: {fileID: 3273785622550719275}
   - component: {fileID: 8555031338639543714}
-  - component: {fileID: 691233192418775027}
-  - component: {fileID: 8230197611764315422}
   m_Layer: 0
-  m_Name: SaveLoad_Slot
+  m_Name: SaveLoadSlot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -444,57 +442,6 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
---- !u!114 &691233192418775027
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7673009745470024640}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 968f758959654a14da2bcb2270630716, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.UI.SaveLoadSlot
-  slotNumberText: {fileID: 0}
-  chapterText: {fileID: 6059924459791275437}
-  dateText: {fileID: 1371981493597504787}
-  screenshotImage: {fileID: 4992465160485493018}
-  emptyLabel: {fileID: 6225978054435597868}
-  dataContainer: {fileID: 9100543756576863448}
-  button: {fileID: 8555031338639543714}
---- !u!114 &8230197611764315422
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7673009745470024640}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 56fc0838e76f26e499c3fb90f6590636, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.UI.ButtonEX
-  mode: 0
-  overrideTargetImage: {fileID: 0}
-  normalSprite: {fileID: 0}
-  hoverSprite: {fileID: 0}
-  onSprite: {fileID: 0}
-  offSprite: {fileID: 0}
-  onHoverSprite: {fileID: 0}
-  offHoverSprite: {fileID: 0}
-  normalChild: {fileID: 0}
-  hoverChild: {fileID: 0}
-  pressedChild: {fileID: 0}
-  usePressedTint: 1
-  pressedTint: {r: 0.85, g: 0.85, b: 0.85, a: 1}
-  colorTargets: []
-  normalColors: []
-  hoverColors: []
-  useScaleEffect: 0
-  hoverScale: 1.05
-  pressedScale: 0.95
-  scaleDuration: 0.1
 --- !u!1 &8335574564802636223
 GameObject:
   m_ObjectHideFlags: 0

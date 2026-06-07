@@ -12,9 +12,8 @@ GameObject:
   - component: {fileID: 2980663222345352801}
   - component: {fileID: 4764688936338871518}
   - component: {fileID: 1847224551043113450}
-  - component: {fileID: 6945649089174495954}
   m_Layer: 0
-  m_Name: collect button
+  m_Name: Collect Button
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -27,16 +26,16 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 378269653703142145}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 2782677407927566053}
+  m_Father: {fileID: 5663037724033625928}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 1105, y: -271}
+  m_AnchoredPosition: {x: 1236.3774, y: -503.701}
   m_SizeDelta: {x: 366, y: 508}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &2980663222345352801
@@ -121,39 +120,6 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
---- !u!114 &6945649089174495954
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 378269653703142145}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 56fc0838e76f26e499c3fb90f6590636, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.UI.ButtonEX
-  mode: 1
-  overrideTargetImage: {fileID: 0}
-  normalSprite: {fileID: 0}
-  hoverSprite: {fileID: 21300000, guid: e8b061328ff8c154cba313c8953a343c, type: 3}
-  onSprite: {fileID: 0}
-  offSprite: {fileID: 0}
-  onHoverSprite: {fileID: 0}
-  offHoverSprite: {fileID: 0}
-  normalChild: {fileID: 0}
-  hoverChild: {fileID: 0}
-  pressedChild: {fileID: 0}
-  usePressedTint: 1
-  pressedTint: {r: 0.85, g: 0.85, b: 0.85, a: 1}
-  colorTargets: []
-  normalColors: []
-  hoverColors: []
-  selectedColors: []
-  useScaleEffect: 0
-  hoverScale: 1.05
-  pressedScale: 0.95
-  scaleDuration: 0.1
 --- !u!1 &759702888100673456
 GameObject:
   m_ObjectHideFlags: 0
@@ -167,7 +133,7 @@ GameObject:
   - component: {fileID: 93519559187017120}
   - component: {fileID: 8004657993138997764}
   m_Layer: 0
-  m_Name: close button
+  m_Name: Close Button
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -287,7 +253,7 @@ GameObject:
   - component: {fileID: 8861543438883913791}
   - component: {fileID: 9087094789278697017}
   m_Layer: 5
-  m_Name: dim
+  m_Name: Dim
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -350,44 +316,6 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!1 &2317091020108408756
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 2782677407927566053}
-  m_Layer: 0
-  m_Name: main buttons
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!224 &2782677407927566053
-RectTransform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2317091020108408756}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 667082160516351457}
-  - {fileID: 5404348846673464303}
-  - {fileID: 8215770337645254453}
-  m_Father: {fileID: 5663037724033625928}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -45.403, y: -84.306}
-  m_SizeDelta: {x: 1297.439, y: 533.21}
-  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &3822446955016726920
 GameObject:
   m_ObjectHideFlags: 0
@@ -399,7 +327,6 @@ GameObject:
   - component: {fileID: 8022157736911491667}
   - component: {fileID: 3846539193281257417}
   - component: {fileID: 8850249731791938174}
-  - component: {fileID: 4770080001347497662}
   m_Layer: 0
   m_Name: ExtraPopup
   m_TagString: Untagged
@@ -448,32 +375,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3822446955016726920}
   m_CullTransparentMesh: 1
---- !u!114 &4770080001347497662
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3822446955016726920}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 11fa8d4f6cb7af9488d34cbdf9997773, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.UI.ExtraPopup
-  rootCanvasGroup: {fileID: 3846539193281257417}
-  panelRect: {fileID: 5663037724033625928}
-  canvasGroup: {fileID: 6203630592037615154}
-  animationType: 2
-  showDuration: 0.3
-  hideDuration: 0.2
-  slideOffset: 300
-  floatOffset: 15
-  sceneButton: {fileID: 8562948023946423359}
-  cgButton: {fileID: 7687164452204154387}
-  collectionButton: {fileID: 1847224551043113450}
-  closeButton: {fileID: 8004657993138997764}
-  hoverOffset: 20
-  hoverDuration: 0.2
 --- !u!1 &6134706601272866481
 GameObject:
   m_ObjectHideFlags: 0
@@ -486,9 +387,8 @@ GameObject:
   - component: {fileID: 1021134723600026260}
   - component: {fileID: 8477387654710346928}
   - component: {fileID: 8562948023946423359}
-  - component: {fileID: 4258537797854641804}
   m_Layer: 0
-  m_Name: scene button
+  m_Name: Scene Button
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -501,16 +401,16 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6134706601272866481}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 2782677407927566053}
+  m_Father: {fileID: 5663037724033625928}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 192, y: -271}
+  m_AnchoredPosition: {x: 323.3775, y: -503.701}
   m_SizeDelta: {x: 366, y: 508}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &1021134723600026260
@@ -595,39 +495,6 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
---- !u!114 &4258537797854641804
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6134706601272866481}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 56fc0838e76f26e499c3fb90f6590636, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.UI.ButtonEX
-  mode: 1
-  overrideTargetImage: {fileID: 0}
-  normalSprite: {fileID: 0}
-  hoverSprite: {fileID: 21300000, guid: f3cbb4f3d25f54146b60bcdad5be9555, type: 3}
-  onSprite: {fileID: 0}
-  offSprite: {fileID: 0}
-  onHoverSprite: {fileID: 0}
-  offHoverSprite: {fileID: 0}
-  normalChild: {fileID: 0}
-  hoverChild: {fileID: 0}
-  pressedChild: {fileID: 0}
-  usePressedTint: 1
-  pressedTint: {r: 0.85, g: 0.85, b: 0.85, a: 1}
-  colorTargets: []
-  normalColors: []
-  hoverColors: []
-  selectedColors: []
-  useScaleEffect: 0
-  hoverScale: 1.05
-  pressedScale: 0.95
-  scaleDuration: 0.1
 --- !u!1 &8176704400247085019
 GameObject:
   m_ObjectHideFlags: 0
@@ -640,7 +507,7 @@ GameObject:
   - component: {fileID: 3241721887431017898}
   - component: {fileID: 5015800019560726319}
   m_Layer: 0
-  m_Name: title
+  m_Name: Title Text
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -915,7 +782,7 @@ GameObject:
   - component: {fileID: 5436713563345101671}
   - component: {fileID: 4255610099714294755}
   m_Layer: 0
-  m_Name: panel
+  m_Name: Panel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -935,7 +802,9 @@ RectTransform:
   m_Children:
   - {fileID: 831693071188337826}
   - {fileID: 1624020512665340801}
-  - {fileID: 2782677407927566053}
+  - {fileID: 667082160516351457}
+  - {fileID: 5404348846673464303}
+  - {fileID: 8215770337645254453}
   m_Father: {fileID: 8022157736911491667}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
@@ -1005,9 +874,8 @@ GameObject:
   - component: {fileID: 4908260021724717305}
   - component: {fileID: 6861741883253143832}
   - component: {fileID: 7687164452204154387}
-  - component: {fileID: 5695937966995131757}
   m_Layer: 0
-  m_Name: cg button
+  m_Name: CG Button
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1020,16 +888,16 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8842771405911750256}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 2782677407927566053}
+  m_Father: {fileID: 5663037724033625928}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 655, y: -271}
+  m_AnchoredPosition: {x: 786.3775, y: -503.701}
   m_SizeDelta: {x: 366, y: 508}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &4908260021724717305
@@ -1114,36 +982,3 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
---- !u!114 &5695937966995131757
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8842771405911750256}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 56fc0838e76f26e499c3fb90f6590636, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::LoveAlgo.UI.ButtonEX
-  mode: 1
-  overrideTargetImage: {fileID: 0}
-  normalSprite: {fileID: 0}
-  hoverSprite: {fileID: 21300000, guid: 78fb767dd7602e4488318fc2ec8dbe39, type: 3}
-  onSprite: {fileID: 0}
-  offSprite: {fileID: 0}
-  onHoverSprite: {fileID: 0}
-  offHoverSprite: {fileID: 0}
-  normalChild: {fileID: 0}
-  hoverChild: {fileID: 0}
-  pressedChild: {fileID: 0}
-  usePressedTint: 1
-  pressedTint: {r: 0.85, g: 0.85, b: 0.85, a: 1}
-  colorTargets: []
-  normalColors: []
-  hoverColors: []
-  selectedColors: []
-  useScaleEffect: 0
-  hoverScale: 1.05
-  pressedScale: 0.95
-  scaleDuration: 0.1

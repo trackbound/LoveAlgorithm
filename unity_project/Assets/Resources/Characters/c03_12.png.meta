@@ -3,11 +3,11 @@ guid: b9368cef00694184c840cfd0f3aa58a6
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -7743283697179655804
-    second: Char_Yeun_BrightSmile_0
+      213: 2476773815125022734
+    second: C03_12_0
   - first:
-      213: -6270103186015626915
-    second: Char_Yeun_BrightSmile_1
+      213: 2999163868644846654
+    second: C03_12_1
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -75,19 +75,6 @@ TextureImporter:
   platformSettings:
   - serializedVersion: 4
     buildTarget: DefaultTexturePlatform
-    maxTextureSize: 4096
-    resizeAlgorithm: 0
-    textureFormat: -1
-    textureCompression: 1
-    compressionQuality: 50
-    crunchedCompression: 0
-    allowsAlphaSplitting: 0
-    overridden: 0
-    ignorePlatformSupport: 0
-    androidETC2FallbackOverride: 0
-    forceMaximumCompressionQuality_BC6H_BC7: 0
-  - serializedVersion: 4
-    buildTarget: Standalone
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
@@ -100,7 +87,7 @@ TextureImporter:
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
   - serializedVersion: 4
-    buildTarget: iOS
+    buildTarget: Standalone
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
@@ -129,13 +116,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Char_Yeun_BrightSmile_0
+      name: C03_12_0
       rect:
         serializedVersion: 2
-        x: 80
-        y: 63
-        width: 801
-        height: 1885
+        x: 111
+        y: 89
+        width: 1075
+        height: 2532
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -144,20 +131,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 481888ac0845a8490800000000000000
-      internalID: -7743283697179655804
+      spriteID: e08148f89a44f5220800000000000000
+      internalID: 2476773815125022734
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Char_Yeun_BrightSmile_1
+      name: C03_12_1
       rect:
         serializedVersion: 2
-        x: 789
-        y: 1367
-        width: 22
-        height: 39
+        x: 1064
+        y: 1841
+        width: 28
+        height: 53
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -166,8 +153,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: d595e7c6f5e1cf8a0800000000000000
-      internalID: -6270103186015626915
+      spriteID: e3c23c5f5ab2f9920800000000000000
+      internalID: 2999163868644846654
       vertices: []
       indices: 
       edges: []
@@ -186,8 +173,8 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Char_Yeun_BrightSmile_0: -7743283697179655804
-      Char_Yeun_BrightSmile_1: -6270103186015626915
+      C03_12_0: 2476773815125022734
+      C03_12_1: 2999163868644846654
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

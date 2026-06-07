@@ -3,14 +3,14 @@ guid: db102518662b017498ec9bc149ddcc96
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -4023985346938851457
-    second: Char_Roa_EyeSmile_0
+      213: -4010353457711097207
+    second: C01_11_0
   - first:
-      213: -7113863127714966384
-    second: Char_Roa_EyeSmile_1
+      213: 2959848611761515610
+    second: C01_11_1
   - first:
-      213: -6704302080042166964
-    second: Char_Roa_EyeSmile_2
+      213: -5922335272566638890
+    second: C01_11_2
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -78,19 +78,6 @@ TextureImporter:
   platformSettings:
   - serializedVersion: 4
     buildTarget: DefaultTexturePlatform
-    maxTextureSize: 4096
-    resizeAlgorithm: 0
-    textureFormat: -1
-    textureCompression: 1
-    compressionQuality: 50
-    crunchedCompression: 0
-    allowsAlphaSplitting: 0
-    overridden: 0
-    ignorePlatformSupport: 0
-    androidETC2FallbackOverride: 0
-    forceMaximumCompressionQuality_BC6H_BC7: 0
-  - serializedVersion: 4
-    buildTarget: Standalone
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
@@ -103,7 +90,7 @@ TextureImporter:
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
   - serializedVersion: 4
-    buildTarget: iOS
+    buildTarget: Standalone
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
@@ -132,13 +119,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Char_Roa_EyeSmile_0
+      name: C01_11_0
       rect:
         serializedVersion: 2
-        x: 725
-        y: 1963
-        width: 31
-        height: 11
+        x: 964
+        y: 2610
+        width: 41
+        height: 15
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -147,20 +134,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: f7f255e95aee728c0800000000000000
-      internalID: -4023985346938851457
+      spriteID: 98ade5927cc5858c0800000000000000
+      internalID: -4010353457711097207
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Char_Roa_EyeSmile_1
+      name: C01_11_1
       rect:
         serializedVersion: 2
-        x: 705
-        y: 1946
-        width: 10
-        height: 9
+        x: 937
+        y: 2587
+        width: 14
+        height: 12
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -169,20 +156,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 094dccb1d2b764d90800000000000000
-      internalID: -7113863127714966384
+      spriteID: a5c6af461ae731920800000000000000
+      internalID: 2959848611761515610
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Char_Roa_EyeSmile_2
+      name: C01_11_2
       rect:
         serializedVersion: 2
-        x: 121
-        y: 150
-        width: 1041
-        height: 1792
+        x: 163
+        y: 200
+        width: 1380
+        height: 2379
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -191,8 +178,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: c459c2477c885f2a0800000000000000
-      internalID: -6704302080042166964
+      spriteID: 6d636ed8273afcda0800000000000000
+      internalID: -5922335272566638890
       vertices: []
       indices: 
       edges: []
@@ -211,9 +198,9 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Char_Roa_EyeSmile_0: -4023985346938851457
-      Char_Roa_EyeSmile_1: -7113863127714966384
-      Char_Roa_EyeSmile_2: -6704302080042166964
+      C01_11_0: -4010353457711097207
+      C01_11_1: 2959848611761515610
+      C01_11_2: -5922335272566638890
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

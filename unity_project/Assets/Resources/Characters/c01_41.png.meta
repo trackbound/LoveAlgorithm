@@ -3,14 +3,17 @@ guid: 2268d673bdb5aff4397d71d9f7781b69
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -1593533623542906665
-    second: Char_Roa_Surprise_0
+      213: -1171726460361044900
+    second: C01_41_0
   - first:
-      213: -3468178578808957672
-    second: Char_Roa_Surprise_1
+      213: -4000462665666214637
+    second: C01_41_1
   - first:
-      213: -8187818257571278092
-    second: Char_Roa_Surprise_2
+      213: 6971665693378570284
+    second: C01_41_2
+  - first:
+      213: 4073764616844183359
+    second: C01_41_3
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -78,19 +81,6 @@ TextureImporter:
   platformSettings:
   - serializedVersion: 4
     buildTarget: DefaultTexturePlatform
-    maxTextureSize: 4096
-    resizeAlgorithm: 0
-    textureFormat: -1
-    textureCompression: 1
-    compressionQuality: 50
-    crunchedCompression: 0
-    allowsAlphaSplitting: 0
-    overridden: 0
-    ignorePlatformSupport: 0
-    androidETC2FallbackOverride: 0
-    forceMaximumCompressionQuality_BC6H_BC7: 0
-  - serializedVersion: 4
-    buildTarget: Standalone
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
@@ -103,7 +93,7 @@ TextureImporter:
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
   - serializedVersion: 4
-    buildTarget: iOS
+    buildTarget: Standalone
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
@@ -132,13 +122,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Char_Roa_Surprise_0
+      name: C01_41_0
       rect:
         serializedVersion: 2
-        x: 725
-        y: 1963
-        width: 31
-        height: 11
+        x: 964
+        y: 2610
+        width: 41
+        height: 15
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -147,20 +137,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 7d0851fbc91a2e9e0800000000000000
-      internalID: -1593533623542906665
+      spriteID: c5c014c0ef03dbfe0800000000000000
+      internalID: -1171726460361044900
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Char_Roa_Surprise_1
+      name: C01_41_1
       rect:
         serializedVersion: 2
-        x: 705
-        y: 1946
-        width: 10
-        height: 9
+        x: 937
+        y: 2587
+        width: 14
+        height: 12
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -169,20 +159,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 815197035fd8edfc0800000000000000
-      internalID: -3468178578808957672
+      spriteID: 315c0c3a6608b78c0800000000000000
+      internalID: -4000462665666214637
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Char_Roa_Surprise_2
+      name: C01_41_2
       rect:
         serializedVersion: 2
         x: 0
-        y: 150
-        width: 1162
-        height: 1792
+        y: 200
+        width: 1543
+        height: 2379
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -191,8 +181,30 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 4f29108fca60f5e80800000000000000
-      internalID: -8187818257571278092
+      spriteID: c286b9ab20550c060800000000000000
+      internalID: 6971665693378570284
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: C01_41_3
+      rect:
+        serializedVersion: 2
+        x: 162
+        y: 1176
+        width: 40
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f378d85d55be88830800000000000000
+      internalID: 4073764616844183359
       vertices: []
       indices: 
       edges: []
@@ -211,9 +223,10 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Char_Roa_Surprise_0: -1593533623542906665
-      Char_Roa_Surprise_1: -3468178578808957672
-      Char_Roa_Surprise_2: -8187818257571278092
+      C01_41_0: -1171726460361044900
+      C01_41_1: -4000462665666214637
+      C01_41_2: 6971665693378570284
+      C01_41_3: 4073764616844183359
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

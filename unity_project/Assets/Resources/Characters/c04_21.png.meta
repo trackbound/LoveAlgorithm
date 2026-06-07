@@ -3,14 +3,20 @@ guid: 117bf907234191549b54f8a6f32e2363
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 4921116874998109924
-    second: Char_Heewon_Glare_0
+      213: 6220142892272432957
+    second: C04_21_0
   - first:
-      213: 5747908317108469867
-    second: Char_Heewon_Glare_1
+      213: -1220346210225664072
+    second: C04_21_1
   - first:
-      213: -8513888274833725605
-    second: Char_Heewon_Glare_2
+      213: -100003970589054549
+    second: C04_21_2
+  - first:
+      213: -6909980969268682919
+    second: C04_21_3
+  - first:
+      213: -491479869551750361
+    second: C04_21_4
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -78,19 +84,6 @@ TextureImporter:
   platformSettings:
   - serializedVersion: 4
     buildTarget: DefaultTexturePlatform
-    maxTextureSize: 4096
-    resizeAlgorithm: 0
-    textureFormat: -1
-    textureCompression: 1
-    compressionQuality: 50
-    crunchedCompression: 0
-    allowsAlphaSplitting: 0
-    overridden: 0
-    ignorePlatformSupport: 0
-    androidETC2FallbackOverride: 0
-    forceMaximumCompressionQuality_BC6H_BC7: 0
-  - serializedVersion: 4
-    buildTarget: Standalone
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
@@ -103,7 +96,7 @@ TextureImporter:
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
   - serializedVersion: 4
-    buildTarget: iOS
+    buildTarget: Standalone
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
@@ -132,13 +125,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Char_Heewon_Glare_0
+      name: C04_21_0
       rect:
         serializedVersion: 2
-        x: 111
-        y: 100
-        width: 885
-        height: 1889
+        x: 163
+        y: 151
+        width: 1296
+        height: 2766
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -147,20 +140,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 4e6517089b15b4440800000000000000
-      internalID: 4921116874998109924
+      spriteID: d37b11a3103625650800000000000000
+      internalID: 6220142892272432957
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Char_Heewon_Glare_1
+      name: C04_21_1
       rect:
         serializedVersion: 2
-        x: 137
-        y: 1293
-        width: 8
-        height: 9
+        x: 201
+        y: 1898
+        width: 11
+        height: 13
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -169,18 +162,40 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: b6083c2292ca4cf40800000000000000
-      internalID: 5747908317108469867
+      spriteID: 8bf41846695701fe0800000000000000
+      internalID: -1220346210225664072
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Char_Heewon_Glare_2
+      name: C04_21_2
       rect:
         serializedVersion: 2
-        x: 158
-        y: 1275
+        x: 232
+        y: 1872
+        width: 9
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ba929e82be6bc9ef0800000000000000
+      internalID: -100003970589054549
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: C04_21_3
+      rect:
+        serializedVersion: 2
+        x: 240
+        y: 1878
         width: 17
         height: 12
       alignment: 0
@@ -191,8 +206,30 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: b572c29f8b798d980800000000000000
-      internalID: -8513888274833725605
+      spriteID: 95fd70a4be0da10a0800000000000000
+      internalID: -6909980969268682919
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: C04_21_4
+      rect:
+        serializedVersion: 2
+        x: 234
+        y: 1760
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 723dc11a9a9ed29f0800000000000000
+      internalID: -491479869551750361
       vertices: []
       indices: 
       edges: []
@@ -211,9 +248,11 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Char_Heewon_Glare_0: 4921116874998109924
-      Char_Heewon_Glare_1: 5747908317108469867
-      Char_Heewon_Glare_2: -8513888274833725605
+      C04_21_0: 6220142892272432957
+      C04_21_1: -1220346210225664072
+      C04_21_2: -100003970589054549
+      C04_21_3: -6909980969268682919
+      C04_21_4: -491479869551750361
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

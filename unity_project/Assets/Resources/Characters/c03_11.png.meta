@@ -3,11 +3,11 @@ guid: 47b72dbec306a7b46a53db9933ead76c
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 4377098568949489160
-    second: Char_Yeun_EyeSmile_0
+      213: 8345470366959118224
+    second: C03_11_0
   - first:
-      213: -8968101071992963029
-    second: Char_Yeun_EyeSmile_1
+      213: -3145237999439233496
+    second: C03_11_1
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -75,19 +75,6 @@ TextureImporter:
   platformSettings:
   - serializedVersion: 4
     buildTarget: DefaultTexturePlatform
-    maxTextureSize: 4096
-    resizeAlgorithm: 0
-    textureFormat: -1
-    textureCompression: 1
-    compressionQuality: 50
-    crunchedCompression: 0
-    allowsAlphaSplitting: 0
-    overridden: 0
-    ignorePlatformSupport: 0
-    androidETC2FallbackOverride: 0
-    forceMaximumCompressionQuality_BC6H_BC7: 0
-  - serializedVersion: 4
-    buildTarget: Standalone
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
@@ -100,7 +87,7 @@ TextureImporter:
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
   - serializedVersion: 4
-    buildTarget: iOS
+    buildTarget: Standalone
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
@@ -129,13 +116,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Char_Yeun_EyeSmile_0
+      name: C03_11_0
       rect:
         serializedVersion: 2
-        x: 80
-        y: 63
-        width: 801
-        height: 1885
+        x: 111
+        y: 89
+        width: 1075
+        height: 2532
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -144,20 +131,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 80eda1525f39ebc30800000000000000
-      internalID: 4377098568949489160
+      spriteID: 097a522251111d370800000000000000
+      internalID: 8345470366959118224
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Char_Yeun_EyeSmile_1
+      name: C03_11_1
       rect:
         serializedVersion: 2
-        x: 789
-        y: 1367
-        width: 22
-        height: 39
+        x: 1064
+        y: 1841
+        width: 28
+        height: 53
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -166,8 +153,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: b204f0e0797ea8380800000000000000
-      internalID: -8968101071992963029
+      spriteID: 82e3d5524bed954d0800000000000000
+      internalID: -3145237999439233496
       vertices: []
       indices: 
       edges: []
@@ -186,8 +173,8 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Char_Yeun_EyeSmile_0: 4377098568949489160
-      Char_Yeun_EyeSmile_1: -8968101071992963029
+      C03_11_0: 8345470366959118224
+      C03_11_1: -3145237999439233496
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

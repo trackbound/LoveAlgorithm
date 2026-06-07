@@ -3,14 +3,14 @@ guid: 6c6537c5394d1b14b96f783e05293756
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -2905998142649978618
-    second: Char_Roa_Glare_0
+      213: 7524300314273971716
+    second: C01_21_0
   - first:
-      213: -3288692031768649593
-    second: Char_Roa_Glare_1
+      213: -760394863314161933
+    second: C01_21_1
   - first:
-      213: 2648970083122357514
-    second: Char_Roa_Glare_2
+      213: 7101019244308795832
+    second: C01_21_2
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -78,19 +78,6 @@ TextureImporter:
   platformSettings:
   - serializedVersion: 4
     buildTarget: DefaultTexturePlatform
-    maxTextureSize: 4096
-    resizeAlgorithm: 0
-    textureFormat: -1
-    textureCompression: 1
-    compressionQuality: 50
-    crunchedCompression: 0
-    allowsAlphaSplitting: 0
-    overridden: 0
-    ignorePlatformSupport: 0
-    androidETC2FallbackOverride: 0
-    forceMaximumCompressionQuality_BC6H_BC7: 0
-  - serializedVersion: 4
-    buildTarget: Standalone
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
@@ -103,7 +90,7 @@ TextureImporter:
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
   - serializedVersion: 4
-    buildTarget: iOS
+    buildTarget: Standalone
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
@@ -132,13 +119,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Char_Roa_Glare_0
+      name: C01_21_0
       rect:
         serializedVersion: 2
-        x: 725
-        y: 1963
-        width: 31
-        height: 11
+        x: 964
+        y: 2610
+        width: 41
+        height: 15
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -147,20 +134,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 601376df512dba7d0800000000000000
-      internalID: -2905998142649978618
+      spriteID: 40ef8a7354fab6860800000000000000
+      internalID: 7524300314273971716
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Char_Roa_Glare_1
+      name: C01_21_1
       rect:
         serializedVersion: 2
-        x: 705
-        y: 1946
-        width: 10
-        height: 9
+        x: 937
+        y: 2587
+        width: 14
+        height: 12
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -169,20 +156,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 780a5c675083c52d0800000000000000
-      internalID: -3288692031768649593
+      spriteID: 3fea02b86e88275f0800000000000000
+      internalID: -760394863314161933
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Char_Roa_Glare_2
+      name: C01_21_2
       rect:
         serializedVersion: 2
-        x: 121
-        y: 150
-        width: 1041
-        height: 1792
+        x: 163
+        y: 200
+        width: 1380
+        height: 2379
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -191,8 +178,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: a052529714803c420800000000000000
-      internalID: 2648970083122357514
+      spriteID: 8b11d304163eb8260800000000000000
+      internalID: 7101019244308795832
       vertices: []
       indices: 
       edges: []
@@ -211,9 +198,9 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Char_Roa_Glare_0: -2905998142649978618
-      Char_Roa_Glare_1: -3288692031768649593
-      Char_Roa_Glare_2: 2648970083122357514
+      C01_21_0: 7524300314273971716
+      C01_21_1: -760394863314161933
+      C01_21_2: 7101019244308795832
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

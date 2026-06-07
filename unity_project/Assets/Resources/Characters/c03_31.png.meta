@@ -3,11 +3,11 @@ guid: b91da5193c93956459051295acf8691b
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 953640188365701520
-    second: Char_Yeun_Tearful_0
+      213: 4616435765236592284
+    second: C03_31_0
   - first:
-      213: -1414933244488654995
-    second: Char_Yeun_Tearful_1
+      213: 107513058441785261
+    second: C03_31_1
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -75,19 +75,6 @@ TextureImporter:
   platformSettings:
   - serializedVersion: 4
     buildTarget: DefaultTexturePlatform
-    maxTextureSize: 4096
-    resizeAlgorithm: 0
-    textureFormat: -1
-    textureCompression: 1
-    compressionQuality: 50
-    crunchedCompression: 0
-    allowsAlphaSplitting: 0
-    overridden: 0
-    ignorePlatformSupport: 0
-    androidETC2FallbackOverride: 0
-    forceMaximumCompressionQuality_BC6H_BC7: 0
-  - serializedVersion: 4
-    buildTarget: Standalone
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
@@ -100,7 +87,7 @@ TextureImporter:
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
   - serializedVersion: 4
-    buildTarget: iOS
+    buildTarget: Standalone
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
@@ -129,13 +116,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Char_Yeun_Tearful_0
+      name: C03_31_0
       rect:
         serializedVersion: 2
-        x: 80
-        y: 63
-        width: 801
-        height: 1885
+        x: 111
+        y: 89
+        width: 1075
+        height: 2532
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -144,20 +131,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 091031fd2b20c3d00800000000000000
-      internalID: 953640188365701520
+      spriteID: c9ee55b9edfd01040800000000000000
+      internalID: 4616435765236592284
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Char_Yeun_Tearful_1
+      name: C03_31_1
       rect:
         serializedVersion: 2
-        x: 789
-        y: 1367
-        width: 22
-        height: 39
+        x: 1064
+        y: 1841
+        width: 28
+        height: 53
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -166,8 +153,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: d6fdc55f5b52d5ce0800000000000000
-      internalID: -1414933244488654995
+      spriteID: daf63299e86fd7100800000000000000
+      internalID: 107513058441785261
       vertices: []
       indices: 
       edges: []
@@ -186,8 +173,8 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Char_Yeun_Tearful_0: 953640188365701520
-      Char_Yeun_Tearful_1: -1414933244488654995
+      C03_31_0: 4616435765236592284
+      C03_31_1: 107513058441785261
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

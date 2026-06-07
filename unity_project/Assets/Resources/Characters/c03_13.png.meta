@@ -3,11 +3,11 @@ guid: a62bed84668f06e4dade7c910c8d9127
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 5274852888340957895
-    second: Char_Yeun_Happy_0
+      213: 237636601972439070
+    second: C03_13_0
   - first:
-      213: 5817746445360095590
-    second: Char_Yeun_Happy_1
+      213: -7232004392016598246
+    second: C03_13_1
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -75,19 +75,6 @@ TextureImporter:
   platformSettings:
   - serializedVersion: 4
     buildTarget: DefaultTexturePlatform
-    maxTextureSize: 4096
-    resizeAlgorithm: 0
-    textureFormat: -1
-    textureCompression: 1
-    compressionQuality: 50
-    crunchedCompression: 0
-    allowsAlphaSplitting: 0
-    overridden: 0
-    ignorePlatformSupport: 0
-    androidETC2FallbackOverride: 0
-    forceMaximumCompressionQuality_BC6H_BC7: 0
-  - serializedVersion: 4
-    buildTarget: Standalone
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
@@ -100,7 +87,7 @@ TextureImporter:
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
   - serializedVersion: 4
-    buildTarget: iOS
+    buildTarget: Standalone
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
@@ -129,13 +116,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Char_Yeun_Happy_0
+      name: C03_13_0
       rect:
         serializedVersion: 2
-        x: 80
-        y: 63
-        width: 725
-        height: 1885
+        x: 111
+        y: 89
+        width: 973
+        height: 2532
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -144,20 +131,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 7ca810c21ca043940800000000000000
-      internalID: 5274852888340957895
+      spriteID: e18b23efa314c4300800000000000000
+      internalID: 237636601972439070
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Char_Yeun_Happy_1
+      name: C03_13_1
       rect:
         serializedVersion: 2
-        x: 789
-        y: 1367
-        width: 22
-        height: 39
+        x: 1064
+        y: 1841
+        width: 28
+        height: 53
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -166,8 +153,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 661eafc7199ccb050800000000000000
-      internalID: 5817746445360095590
+      spriteID: a1b29cf7252c2ab90800000000000000
+      internalID: -7232004392016598246
       vertices: []
       indices: 
       edges: []
@@ -186,8 +173,8 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Char_Yeun_Happy_0: 5274852888340957895
-      Char_Yeun_Happy_1: 5817746445360095590
+      C03_13_0: 237636601972439070
+      C03_13_1: -7232004392016598246
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

@@ -3,14 +3,20 @@ guid: dbe10096b17952a4c913c293d92cddb1
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 5675760046176600117
-    second: Char_Heewon_EyeSmile_0
+      213: -5610291358057301543
+    second: C04_11_0
   - first:
-      213: 5293509460189574348
-    second: Char_Heewon_EyeSmile_1
+      213: -3974263290196851685
+    second: C04_11_1
   - first:
-      213: -2318975475823448345
-    second: Char_Heewon_EyeSmile_2
+      213: -8012339265252677844
+    second: C04_11_2
+  - first:
+      213: -2516439043763268143
+    second: C04_11_3
+  - first:
+      213: -4698939409914022229
+    second: C04_11_4
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -78,19 +84,6 @@ TextureImporter:
   platformSettings:
   - serializedVersion: 4
     buildTarget: DefaultTexturePlatform
-    maxTextureSize: 4096
-    resizeAlgorithm: 0
-    textureFormat: -1
-    textureCompression: 1
-    compressionQuality: 50
-    crunchedCompression: 0
-    allowsAlphaSplitting: 0
-    overridden: 0
-    ignorePlatformSupport: 0
-    androidETC2FallbackOverride: 0
-    forceMaximumCompressionQuality_BC6H_BC7: 0
-  - serializedVersion: 4
-    buildTarget: Standalone
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
@@ -103,7 +96,7 @@ TextureImporter:
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
   - serializedVersion: 4
-    buildTarget: iOS
+    buildTarget: Standalone
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
@@ -132,13 +125,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Char_Heewon_EyeSmile_0
+      name: C04_11_0
       rect:
         serializedVersion: 2
-        x: 111
-        y: 100
-        width: 885
-        height: 1889
+        x: 163
+        y: 151
+        width: 1296
+        height: 2766
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -147,20 +140,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 53006b6c0b954ce40800000000000000
-      internalID: 5675760046176600117
+      spriteID: 9d9fc840cbd3422b0800000000000000
+      internalID: -5610291358057301543
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Char_Heewon_EyeSmile_1
+      name: C04_11_1
       rect:
         serializedVersion: 2
-        x: 137
-        y: 1293
-        width: 8
-        height: 9
+        x: 201
+        y: 1898
+        width: 11
+        height: 13
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -169,18 +162,40 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: cc4f4cdcec2567940800000000000000
-      internalID: 5293509460189574348
+      spriteID: b1401f7189498d8c0800000000000000
+      internalID: -3974263290196851685
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Char_Heewon_EyeSmile_2
+      name: C04_11_2
       rect:
         serializedVersion: 2
-        x: 158
-        y: 1275
+        x: 232
+        y: 1872
+        width: 9
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c2723b2b3e37ec090800000000000000
+      internalID: -8012339265252677844
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: C04_11_3
+      rect:
+        serializedVersion: 2
+        x: 240
+        y: 1878
         width: 17
         height: 12
       alignment: 0
@@ -191,8 +206,30 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 7ee63b8571851dfd0800000000000000
-      internalID: -2318975475823448345
+      spriteID: 1d51199b500d31dd0800000000000000
+      internalID: -2516439043763268143
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: C04_11_4
+      rect:
+        serializedVersion: 2
+        x: 234
+        y: 1760
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ba6bdf2b0830aceb0800000000000000
+      internalID: -4698939409914022229
       vertices: []
       indices: 
       edges: []
@@ -211,9 +248,11 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Char_Heewon_EyeSmile_0: 5675760046176600117
-      Char_Heewon_EyeSmile_1: 5293509460189574348
-      Char_Heewon_EyeSmile_2: -2318975475823448345
+      C04_11_0: -5610291358057301543
+      C04_11_1: -3974263290196851685
+      C04_11_2: -8012339265252677844
+      C04_11_3: -2516439043763268143
+      C04_11_4: -4698939409914022229
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

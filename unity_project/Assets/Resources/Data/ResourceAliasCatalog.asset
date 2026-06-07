@@ -11,229 +11,228 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c774001b13db7d04f862e8b794184180, type: 3}
   m_Name: ResourceAliasCatalog
-  m_EditorClassIdentifier:
+  m_EditorClassIdentifier: 
   bg:
   - id: bg_00_00
     aliases:
-    - "빈 화면"
+    - "\uBE48 \uD654\uBA74"
   - id: bg_10_01
     aliases:
-    - "자취방 전경 낮"
+    - "\uC790\uCDE8\uBC29 \uC804\uACBD \uB0AE"
   - id: bg_10_02
     aliases:
-    - "자취방 전경 밤 불꺼짐"
+    - "\uC790\uCDE8\uBC29 \uC804\uACBD \uBC24 \uBD88\uAEBC\uC9D0"
   - id: bg_10_03
     aliases:
-    - "자취방 전경 밤 불켜짐"
-    - "자취방 전경 밤 불커짐"
+    - "\uC790\uCDE8\uBC29 \uC804\uACBD \uBC24 \uBD88\uCF1C\uC9D0"
   - id: bg_10_04
     aliases:
-    - "자취방 침대위 아침"
+    - "\uC790\uCDE8\uBC29 \uCE68\uB300\uC704 \uC544\uCE68"
   - id: bg_10_05
     aliases:
-    - "자취방 침대위 밤"
+    - "\uC790\uCDE8\uBC29 \uCE68\uB300\uC704 \uBC24"
   - id: bg_10_06
     aliases:
-    - "자취방 책상 모니터"
+    - "\uC790\uCDE8\uBC29 \uCC45\uC0C1 \uBAA8\uB2C8\uD130"
   - id: bg_20_01
     aliases:
-    - "공대 앞 낮"
+    - "\uACF5\uB300 \uC55E \uB0AE"
   - id: bg_20_02
     aliases:
-    - "공대 앞 밤"
+    - "\uACF5\uB300 \uC55E \uBC24"
   - id: bg_20_03
     aliases:
-    - "공대 강의실복도"
+    - "\uACF5\uB300 \uAC15\uC758\uC2E4\uBCF5\uB3C4"
   - id: bg_20_04
     aliases:
-    - "공대 학생복지실"
+    - "\uACF5\uB300 \uD559\uC0DD\uBCF5\uC9C0\uC2E4"
   - id: bg_20_05
     aliases:
-    - "공대 강의실 낮"
+    - "\uACF5\uB300 \uAC15\uC758\uC2E4 \uB0AE"
   - id: bg_20_06
     aliases:
-    - "공대 강의실 낮 벚꽃"
+    - "\uACF5\uB300 \uAC15\uC758\uC2E4 \uB0AE \uBC9A\uAF43"
   - id: bg_30_01
     aliases:
-    - "캠퍼스거리1 낮 맑음"
+    - "\uCEA0\uD37C\uC2A4\uAC70\uB9AC1 \uB0AE \uB9D1\uC74C"
   - id: bg_30_02
     aliases:
-    - "캠퍼스거리2 낮 맑음"
+    - "\uCEA0\uD37C\uC2A4\uAC70\uB9AC2 \uB0AE \uB9D1\uC74C"
   - id: bg_40_01
     aliases:
-    - "학생회관 앞 낮"
+    - "\uD559\uC0DD\uD68C\uAD00 \uC55E \uB0AE"
   - id: bg_40_02
     aliases:
-    - "학생회관 앞 밤"
+    - "\uD559\uC0DD\uD68C\uAD00 \uC55E \uBC24"
   - id: bg_40_03
     aliases:
-    - "행정실"
+    - "\uD589\uC815\uC2E4"
   - id: bg_40_04
     aliases:
-    - "학생회관 복도"
+    - "\uD559\uC0DD\uD68C\uAD00 \uBCF5\uB3C4"
   - id: bg_40_05
     aliases:
-    - "학생회관 게시판앞"
+    - "\uD559\uC0DD\uD68C\uAD00 \uAC8C\uC2DC\uD310\uC55E"
   - id: bg_40_06
     aliases:
-    - "학생회관 동아리방 낮"
+    - "\uD559\uC0DD\uD68C\uAD00 \uB3D9\uC544\uB9AC\uBC29 \uB0AE"
   - id: bg_40_07
     aliases:
-    - "학생회관 동아리방 벚꽃"
+    - "\uD559\uC0DD\uD68C\uAD00 \uB3D9\uC544\uB9AC\uBC29 \uBC9A\uAF43"
   - id: bg_60_02
     aliases:
-    - "편의점 앞 밤"
+    - "\uD3B8\uC758\uC810 \uC55E \uBC24"
   cg:
   - id: cg_c01_01
     aliases:
-    - "로아 첫만남"
+    - "\uB85C\uC544 \uCCAB\uB9CC\uB0A8"
   - id: cg_c03_01
     aliases:
-    - "예은 입부신청서 작성"
+    - "\uC608\uC740 \uC785\uBD80\uC2E0\uCCAD\uC11C \uC791\uC131"
   sd:
   - id: sd_c02_01
     aliases:
-    - "다은 속닥"
+    - "\uB2E4\uC740 \uC18D\uB2E5"
   - id: sd_c04_01
     aliases:
-    - "희원 맥주"
+    - "\uD76C\uC6D0 \uB9E5\uC8FC"
   - id: sd_c05_01
     aliases:
-    - "봄 글썹"
-    - "봄 글썽"
+    - "\uBD04 \uAE00\uC379"
+    - "\uBD04 \uAE00\uC37D"
   characters:
   - id: c01
     aliases:
-    - "로아"
+    - "\uB85C\uC544"
     - Roa
   - id: c02
     aliases:
-    - "서다은"
+    - "\uC11C\uB2E4\uC740"
     - SeoDaEun
   - id: c03
     aliases:
-    - "하예은"
+    - "\uD558\uC608\uC740"
     - HaYeEun
   - id: c04
     aliases:
-    - "도희원"
+    - "\uB3C4\uD76C\uC6D0"
     - DoHeewon
   - id: c05
     aliases:
-    - "이봄"
+    - "\uC774\uBD04"
     - LeeBom
   emotes:
-  - id: '00'
+  - id: 00
     aliases:
-    - "기본"
+    - "\uAE30\uBCF8"
     - Default
-  - id: '11'
+  - id: 11
     aliases:
-    - "눈웃음"
-  - id: '12'
+    - "\uB208\uC6C3\uC74C"
+  - id: 12
     aliases:
-    - "밝게웃음"
+    - "\uBC1D\uAC8C\uC6C3\uC74C"
     - BrightSmile
-  - id: '13'
+  - id: 13
     aliases:
-    - "활짝웃음"
-  - id: '14'
+    - "\uD65C\uC9DD\uC6C3\uC74C"
+  - id: 14
     aliases:
-    - "행복"
+    - "\uD589\uBCF5"
     - Happy
-  - id: '21'
+  - id: 21
     aliases:
-    - "찌릿"
-  - id: '22'
+    - "\uCC0C\uB9BF"
+  - id: 22
     aliases:
-    - "삐짐"
-  - id: '23'
+    - "\uC090\uC9D0"
+  - id: 23
     aliases:
-    - "머쓱"
-  - id: '24'
+    - "\uBA38\uC4F1"
+  - id: 24
     aliases:
-    - "어질어질"
-  - id: '31'
+    - "\uC5B4\uC9C8\uC5B4\uC9C8"
+  - id: 31
     aliases:
-    - "울먹"
-  - id: '32'
+    - "\uC6B8\uBA39"
+  - id: 32
     aliases:
-    - "주르륵"
-  - id: '33'
+    - "\uC8FC\uB974\uB975"
+  - id: 33
     aliases:
-    - "와아앙"
-  - id: '34'
+    - "\uC640\uC544\uC559"
+  - id: 34
     aliases:
-    - "부끄"
-  - id: '35'
+    - "\uBD80\uB044"
+  - id: 35
     aliases:
-    - "졸려"
-  - id: '41'
+    - "\uC878\uB824"
+  - id: 41
     aliases:
-    - "깜짝"
-  - id: '42'
+    - "\uAE5C\uC9DD"
+  - id: 42
     aliases:
-    - "반짝빈짝"
-  - id: '43'
+    - "\uBC18\uC9DD\uBE48\uC9DD"
+  - id: 43
     aliases:
-    - "궁금"
-  - id: '44'
+    - "\uAD81\uAE08"
+  - id: 44
     aliases:
-    - "윙크"
-  - id: '45'
+    - "\uC719\uD06C"
+  - id: 45
     aliases:
-    - "자신만만"
-  - id: '55'
+    - "\uC790\uC2E0\uB9CC\uB9CC"
+  - id: 55
     aliases:
-    - "음주"
-  - id: '56'
+    - "\uC74C\uC8FC"
+  - id: 56
     aliases:
-    - "만취"
-  - id: '57'
+    - "\uB9CC\uCDE8"
+  - id: 57
     aliases:
-    - "집중"
-  - id: '58'
+    - "\uC9D1\uC911"
+  - id: 58
     aliases:
-    - "고민"
-  defaultEmote: '00'
+    - "\uACE0\uBBFC"
+  defaultEmote: 00
   bgm:
   - id: whitenoise
     aliases:
-    - "백색소음"
+    - "\uBC31\uC0C9\uC18C\uC74C"
     - white_noise
   - id: daily1
     aliases:
-    - "일상1"
+    - "\uC77C\uC0C11"
   - id: daily2
     aliases:
-    - "일상2"
+    - "\uC77C\uC0C12"
   - id: night
     aliases:
-    - "밤"
+    - "\uBC24"
   - id: daeun
     aliases:
-    - "서다은"
+    - "\uC11C\uB2E4\uC740"
   - id: yeeun
     aliases:
-    - "하예은"
+    - "\uD558\uC608\uC740"
   - id: heewon
     aliases:
-    - "도희원"
+    - "\uB3C4\uD76C\uC6D0"
   - id: bom
     aliases:
-    - "이봄"
+    - "\uC774\uBD04"
   - id: roa
     aliases:
-    - "로아"
+    - "\uB85C\uC544"
   - id: title
     aliases:
-    - "타이틀"
+    - "\uD0C0\uC774\uD2C0"
   sfx:
   - id: 060_message
     aliases:
-    - "메시지 알림음"
-    - '060'
+    - "\uBA54\uC2DC\uC9C0 \uC54C\uB9BC\uC74C"
+    - 060
   - id: 200_pen
     aliases:
-    - "볼펜소리"
-    - '200'
+    - "\uBCFC\uD39C\uC18C\uB9AC"
+    - 200

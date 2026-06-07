@@ -3,14 +3,14 @@ guid: 4c421b9a60bd0d84898833a30fa45c87
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 6875315737034676721
-    second: Char_Roa_Happy_0
+      213: -2418878683377888373
+    second: C01_13_0
   - first:
-      213: -5915565667576348261
-    second: Char_Roa_Happy_1
+      213: 608057576240930781
+    second: C01_13_1
   - first:
-      213: 9174964851500649928
-    second: Char_Roa_Happy_2
+      213: -7363454862794198549
+    second: C01_13_2
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -78,19 +78,6 @@ TextureImporter:
   platformSettings:
   - serializedVersion: 4
     buildTarget: DefaultTexturePlatform
-    maxTextureSize: 4096
-    resizeAlgorithm: 0
-    textureFormat: -1
-    textureCompression: 1
-    compressionQuality: 50
-    crunchedCompression: 0
-    allowsAlphaSplitting: 0
-    overridden: 0
-    ignorePlatformSupport: 0
-    androidETC2FallbackOverride: 0
-    forceMaximumCompressionQuality_BC6H_BC7: 0
-  - serializedVersion: 4
-    buildTarget: Standalone
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
@@ -103,7 +90,7 @@ TextureImporter:
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
   - serializedVersion: 4
-    buildTarget: iOS
+    buildTarget: Standalone
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
@@ -132,13 +119,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Char_Roa_Happy_0
+      name: C01_13_0
       rect:
         serializedVersion: 2
-        x: 725
-        y: 1963
-        width: 31
-        height: 11
+        x: 964
+        y: 2610
+        width: 41
+        height: 15
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -147,20 +134,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 1f9da906c370a6f50800000000000000
-      internalID: 6875315737034676721
+      spriteID: b831f7a37aa6e6ed0800000000000000
+      internalID: -2418878683377888373
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Char_Roa_Happy_1
+      name: C01_13_1
       rect:
         serializedVersion: 2
-        x: 705
-        y: 1946
-        width: 10
-        height: 9
+        x: 937
+        y: 2587
+        width: 14
+        height: 12
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -169,20 +156,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: b918d9a0e50b7eda0800000000000000
-      internalID: -5915565667576348261
+      spriteID: ddf53dad421407800800000000000000
+      internalID: 608057576240930781
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Char_Roa_Happy_2
+      name: C01_13_2
       rect:
         serializedVersion: 2
-        x: 121
-        y: 150
-        width: 1041
-        height: 1792
+        x: 163
+        y: 200
+        width: 1380
+        height: 2379
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -191,8 +178,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 8cd0460ebe5045f70800000000000000
-      internalID: 9174964851500649928
+      spriteID: be17787c0d0cfc990800000000000000
+      internalID: -7363454862794198549
       vertices: []
       indices: 
       edges: []
@@ -211,9 +198,9 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Char_Roa_Happy_0: 6875315737034676721
-      Char_Roa_Happy_1: -5915565667576348261
-      Char_Roa_Happy_2: 9174964851500649928
+      C01_13_0: -2418878683377888373
+      C01_13_1: 608057576240930781
+      C01_13_2: -7363454862794198549
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
