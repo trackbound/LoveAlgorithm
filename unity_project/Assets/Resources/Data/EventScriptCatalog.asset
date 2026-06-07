@@ -15,3 +15,21 @@ MonoBehaviour:
   entries:
   - eventTag: Event1
     csvPath: Event1.csv
+  - eventTag: Festival_Day1
+    csvPath: Festival_Day1.csv
+  - eventTag: Festival_Day2
+    csvPath: Festival_Day2.csv
+  - eventTag: Festival_Day3
+    csvPath: Festival_Day3.csv
+  - eventTag: Event2
+    csvPath: Event2.csv
+  - eventTag: MT_Day1
+    csvPath: MT_Day1.csv
+  - eventTag: MT_Day2
+    csvPath: MT_Day2.csv
+  - eventTag: MT_Day3
+    csvPath: MT_Day3.csv
+  - eventTag: Event3
+    csvPath: Event3.csv
+  - eventTag: Confession
+    csvPath: Confession.csv

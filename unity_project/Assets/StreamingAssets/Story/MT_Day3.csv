@@ -1,0 +1,11 @@
+LineID,Type,Speaker,Value,Next
+# === MT 3일차 (검증용 최소 스캐폴드) ===
+
+,BG,,빈 화면:Cross,await
+,Sound,,BGM:일상1,>
+,Place,,MT 마지막 날 | 귀갓길,await
+,Text,,"짐을 챙기고 버스에 올랐다. 다들 곯아떨어졌다.",click
+,Text,,"창밖으로 멀어지는 바다를 보며 생각했다. 남은 날이 많지 않다.",click
+,BG,,빈 화면:Cross,await
+,Flow,,Save,await
+,Flow,,End,>

@@ -1,0 +1,45 @@
+LineID,Type,Speaker,Value,Next
+# === 축제 3일차 (검증용 최소 스캐폴드) ===
+# 기획서: "집에 데려다줌" 선택 +4. CSV 호출 컨벤션: Affinity:EventChoice:{heroineId}:Festival:4
+
+,BG,,학생회관 앞 밤:Cross,await
+,Sound,,BGM:밤,>
+,Place,,축제 마지막 밤 | 학생회관 앞,await
+,Text,,"축제의 마지막 밤. 다들 흩어지는 분위기다.",click
+,Text,,"오늘은 누구를 집에 데려다줄까.",click
+
+,Choice,,,
+,Option,,"하예은을 데려다준다.|walk_hayeeun",
+,Option,,"서다은을 데려다준다.|walk_seodaeun",
+,Option,,"이봄을 데려다준다.|walk_leebom",
+,Option,,"도희원을 데려다준다.|walk_doheewon",
+,Option,,"먼저 집에 가서 로아를 본다.|walk_roa",
+
+walk_hayeeun,Flow,,Affinity:EventChoice:HaYeEun:Festival:4,>
+,Char,,C:Enter:하예은:부끄,await
+,Text,하예은,"오늘... 같이 걸어줘서 고마워.",click
+,Flow,,Jump:festival_end,>
+
+walk_seodaeun,Flow,,Affinity:EventChoice:SeoDaEun:Festival:4,>
+,Char,,C:Enter:서다은:기본,await
+,Text,서다은,"...밤길은 위험하니까. 그게 다야.",click
+,Flow,,Jump:festival_end,>
+
+walk_leebom,Flow,,Affinity:EventChoice:LeeBom:Festival:4,>
+,Char,,C:Enter:이봄:활짝웃음,await
+,Text,이봄,"축제 진짜 재밌었지? 내일도 이랬으면!",click
+,Flow,,Jump:festival_end,>
+
+walk_doheewon,Flow,,Affinity:EventChoice:DoHeewon:Festival:4,>
+,Char,,C:Enter:도희원:눈웃음,await
+,Text,도희원,"의외네. 끝까지 매너가 좋잖아.",click
+,Flow,,Jump:festival_end,>
+
+walk_roa,Flow,,Affinity:EventChoice:Roa:Festival:4,>
+,Text,로아,"<emote=밝게웃음/>어서 와! 축제 얘기 들려줘!",click
+,Flow,,Jump:festival_end,>
+
+festival_end,Text,,"축제가 끝났다. 일상이 돌아온다.",click
+,BG,,빈 화면:Cross,await
+,Flow,,Save,await
+,Flow,,End,>

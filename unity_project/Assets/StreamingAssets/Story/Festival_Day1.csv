@@ -1,0 +1,15 @@
+LineID,Type,Speaker,Value,Next
+# === 축제 1일차 (검증용 최소 스캐폴드 — 작가 도구로 살 붙이는 골격) ===
+# 기획서: Day10~12 축제(단체 이벤트). 점수는 3일차 "집에 데려다줌" +4에서만.
+
+,BG,,캠퍼스거리1 낮 맑음:Cross,await
+,Sound,,BGM:일상2,>
+,Place,,대학 축제 첫째 날 | 캠퍼스,await
+,Text,,"캠퍼스가 들썩인다. 축제의 시작이다.",click
+,Text,,"동아리 부스 준비로 다들 정신이 없다.",click
+,Char,,C:Enter:이봄:활짝웃음,await
+,Text,이봄,"{{Player}}! 우리 부스 이쪽이야! 빨리 와!",click
+,Text,,"정신없이 첫째 날이 지나갔다.",click
+,BG,,빈 화면:Cross,await
+,Flow,,Save,await
+,Flow,,End,>
