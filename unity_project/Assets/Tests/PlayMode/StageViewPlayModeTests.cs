@@ -152,5 +152,37 @@ namespace LoveAlgo.Tests.PlayMode
             }
             finally { Object.DestroyImmediate(root); }
         }
+
+        [UnityTest]
+        public IEnumerator Char_Enter_AppliesHeroinePlacement_FromCatalog()
+        {
+            // StageView가 시드 CharacterStageCatalog를 로드해 Enter 시 슬롯 기본 위에 스케일·오프셋을 합성하는지.
+            // 기대값은 자산에서 직접 읽어 비교(감독 튜닝값과 비결합) — 동시에 손수 작성한 .asset의 직렬화/바인딩도 검증.
+            var view = MakeView(out var root);
+            try
+            {
+                yield return null;
+
+                var cat = Resources.Load<CharacterStageCatalogSO>("Data/CharacterStageCatalog");
+                Assert.IsNotNull(cat, "시드 CharacterStageCatalog 로드(자산 직렬화·스크립트 바인딩 정상).");
+                var expected = cat.Resolve(CharId);
+
+                // 슬롯 authored 기본을 비항등으로 두어 합성을 관찰(첫 Enter 직전에 baseline 캡처됨).
+                var rt = view.SlotC.image.rectTransform;
+                rt.localScale = Vector3.one;
+                rt.anchoredPosition = new Vector2(100f, 50f);
+                var baseScale = rt.localScale;
+                var basePos = rt.anchoredPosition;
+
+                var req = new CompletionHandle();
+                EventBus.Publish(new ShowCharacterCommand(CharSlot.C, CharAction.Enter, CharId, Emote, 0f, req));
+                yield return WaitDone(req);
+
+                Assert.IsTrue(req.IsComplete);
+                Assert.AreEqual(baseScale * expected.Scale, rt.localScale, "히로인 스케일 배율이 슬롯 기본에 적용.");
+                Assert.AreEqual(basePos + expected.Offset, rt.anchoredPosition, "히로인 오프셋이 슬롯 기본에 합성.");
+            }
+            finally { Object.DestroyImmediate(root); }
+        }
     }
 }

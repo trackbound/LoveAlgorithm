@@ -47,6 +47,12 @@ namespace LoveAlgo.UI
         [SerializeField] string bgRoot = "BG";
         [SerializeField] string charRoot = "Characters";
 
+        [Header("히로인별 스테이지 배치(크기·오프셋)")]
+        [Tooltip("캐릭터 ID별 스케일 배율 + x/y 오프셋 카탈로그. 미바인딩 시 stageCatalogPath의 Resources에서 로드. 미발견·미등록은 슬롯 기본 그대로(항등).")]
+        [SerializeField] CharacterStageCatalogSO stageCatalog;
+        [Tooltip("stageCatalog 미바인딩 시 Resources에서 찾을 경로(Resources 하위). 비우면 자동 로드 생략.")]
+        [SerializeField] string stageCatalogPath = "Data/CharacterStageCatalog";
+
         public Image Backdrop { get => backdrop; set => backdrop = value; }
         public Image BgFront { get => bgFront; set => bgFront = value; }
         public CanvasGroup BgFrontGroup { get => bgFrontGroup; set => bgFrontGroup = value; }
@@ -56,6 +62,7 @@ namespace LoveAlgo.UI
         public SlotBinding SlotC { get => slotC; set => slotC = value; }
         public SlotBinding SlotR { get => slotR; set => slotR = value; }
         public GameObject CharContainer { get => charContainer; set => charContainer = value; }
+        public CharacterStageCatalogSO StageCatalog { get => stageCatalog; set => stageCatalog = value; }
 
         IDisposable _bgSub, _charSub, _finishSub, _cgSub, _emoteSub, _resetSub;
         bool _cgHidden;
@@ -68,6 +75,11 @@ namespace LoveAlgo.UI
 
         readonly Coroutine[] _slotRoutines = new Coroutine[3];
         readonly CompletionHandle[] _slotPending = new CompletionHandle[3];
+
+        // 슬롯의 authored 기본 스케일/위치(배치 합성의 baseline). 슬롯별 첫 배치 직전 1회 캡처.
+        readonly Vector3[] _baseScale = new Vector3[3];
+        readonly Vector2[] _basePos = new Vector2[3];
+        readonly bool[] _baseCaptured = new bool[3];
 
         void OnEnable()
         {
@@ -83,6 +95,10 @@ namespace LoveAlgo.UI
             SetAlpha(bgBackGroup, 0f);
             if (bgBack != null) bgBack.enabled = false;
             if (backdrop != null) backdrop.enabled = false;
+
+            // 히로인 배치 카탈로그: 미바인딩 시 Resources에서 로드(미발견 시 null → 항등 적용). 슬롯 기본은 슬롯별 첫 적용 직전 캡처.
+            if (stageCatalog == null && !string.IsNullOrEmpty(stageCatalogPath))
+                stageCatalog = Resources.Load<CharacterStageCatalogSO>(stageCatalogPath);
         }
 
         void OnDisable()
@@ -224,6 +240,7 @@ namespace LoveAlgo.UI
                     }
                     slot.image.sprite = sprite;
                     slot.image.enabled = true;
+                    ApplyPlacement(idx, slot, e.Character);
                     yield return FadeGroup(slot.group, 0f, 1f, e.Duration);
                     break;
                 }
@@ -311,6 +328,29 @@ namespace LoveAlgo.UI
             if (slot?.image == null) return;
             slot.image.sprite = null;
             slot.image.enabled = false;
+        }
+
+        // ── 히로인별 배치(크기·오프셋) ──
+
+        // 슬롯의 authored 기본 스케일/위치를 슬롯별 첫 배치 직전 1회 캡처. 바인딩/활성 타이밍과 무관하게 변형 전 값을 baseline으로.
+        void EnsureBaseCaptured(int idx, SlotBinding slot)
+        {
+            if (_baseCaptured[idx]) return;
+            var rt = slot.image.rectTransform;
+            _baseScale[idx] = rt.localScale;
+            _basePos[idx] = rt.anchoredPosition;
+            _baseCaptured[idx] = true;
+        }
+
+        // 캐릭터 Enter 시 히로인별 스케일·오프셋을 슬롯 기본 위에 적용(미등록·카탈로그 없음 = 항등 = 슬롯 기본 그대로).
+        void ApplyPlacement(int idx, SlotBinding slot, string character)
+        {
+            if (slot?.image == null) return;
+            EnsureBaseCaptured(idx, slot);
+            var p = stageCatalog != null ? stageCatalog.Resolve(character) : StagePlacement.Identity;
+            var rt = slot.image.rectTransform;
+            rt.localScale = p.ScaleFrom(_baseScale[idx]);
+            rt.anchoredPosition = p.PositionFrom(_basePos[idx]);
         }
 
         /// <summary>BG·모든 슬롯 즉시 클리어(내러티브 종료 시 시뮬레이션으로 새지 않도록).</summary>
