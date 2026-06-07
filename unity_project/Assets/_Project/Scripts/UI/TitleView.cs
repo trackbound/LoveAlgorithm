@@ -1,6 +1,6 @@
 using LoveAlgo.Common; // EventBus, Log
 using LoveAlgo.Core;    // JsonSaveStore
-using LoveAlgo.Events;  // StartNewGameCommand, ContinueGameCommand, QuitGameCommand, PlayBgmCommand
+using LoveAlgo.Events;  // StartNewGameCommand, ContinueGameCommand, QuitGameCommand, ShowModalCommand, ModalRequest, PlayBgmCommand
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -13,7 +13,8 @@ namespace LoveAlgo.UI
     /// 동작 범위:
     /// - New Game(Start) → <see cref="StartNewGameCommand"/>, Continue → <see cref="ContinueGameCommand"/>
     ///   (둘 다 SceneFlowController가 받아 게임 씬 로드). Continue는 오토세이브가 없으면 비활성(interactable=false).
-    /// - Exit → <see cref="QuitGameCommand"/>(SceneFlowController가 받아 종료).
+    /// - Exit → 확인 모달(<see cref="ShowModalCommand"/>) → "예"일 때만 <see cref="QuitGameCommand"/> 발행
+    ///   (SceneFlowController가 받아 종료). 모달 뷰(ModalView)는 Title 씬에 배선해야 한다(없으면 콜백 미수신=종료 불가).
     /// - Settings(Config)/Load/Extra → 목적지 화면이 아직 없어 클릭 시 안내 로그만(후속 마일스톤에서 실 구현).
     ///   과설계 게이트: 화면·커맨드를 미리 만들지 않고 배선 구조만 준비.
     ///
@@ -31,6 +32,13 @@ namespace LoveAlgo.UI
 
         [Tooltip("타이틀 진입 시 재생할 BGM 이름(Resources/Audio/BGM/{name}). 비우면 재생 안 함.")]
         [SerializeField] string titleBgm = "title";
+
+        [Header("종료 확인 모달")]
+        [SerializeField] string exitConfirmTitle = "게임 종료";
+        [SerializeField] string exitConfirmMessage = "정말 종료하시겠습니까?";
+        [Tooltip("버튼 0 = 종료(예), 버튼 1 = 취소(아니오).")]
+        [SerializeField] string exitConfirmYes = "예";
+        [SerializeField] string exitConfirmNo = "아니오";
 
         public Button NewGameButton { get => newGameButton; set => newGameButton = value; }
         public Button ContinueButton { get => continueButton; set => continueButton = value; }
@@ -62,7 +70,12 @@ namespace LoveAlgo.UI
 
         void OnNewGame() => EventBus.Publish(new StartNewGameCommand());
         void OnContinue() => EventBus.Publish(new ContinueGameCommand());
-        void OnExit() => EventBus.Publish(new QuitGameCommand());
+        // Exit은 즉시 종료하지 않고 확인 모달을 띄운다 — "예"(index 0)일 때만 QuitGameCommand 발행
+        // (ADR-007: 표시는 ModalView, 종료 동작은 콜백→구독자). 첫 범용 모달 소비처.
+        void OnExit() => EventBus.Publish(new ShowModalCommand(
+            exitConfirmTitle, exitConfirmMessage,
+            new[] { exitConfirmYes, exitConfirmNo },
+            new ModalRequest(i => { if (i == 0) EventBus.Publish(new QuitGameCommand()); })));
 
         // 목적지 화면 미존재 — 클릭 피드백만(화면/커맨드 신설 없이 배선만 준비). 후속 마일스톤에서 실 구현.
         void OnSettings() => LogTodo("설정(Config)");

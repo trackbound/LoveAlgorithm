@@ -93,8 +93,9 @@ namespace LoveAlgo.Tests.PlayMode
         }
 
         [UnityTest]
-        public IEnumerator ExitButton_Click_Publishes_QuitGameCommand()
+        public IEnumerator ExitButton_Click_ShowsConfirmModal_YesQuits()
         {
+            // Exit은 즉시 종료하지 않고 확인 모달(ShowModalCommand)을 띄운다. "예"(index 0)일 때만 QuitGameCommand.
             var btnGo = new GameObject("ExitButton", typeof(RectTransform), typeof(Button));
             var go = new GameObject("TitleView");
             go.SetActive(false);
@@ -103,16 +104,56 @@ namespace LoveAlgo.Tests.PlayMode
             go.SetActive(true); // Awake → onClick.AddListener(OnExit)
             yield return null;
 
-            bool published = false;
-            var sub = EventBus.Subscribe<QuitGameCommand>(_ => published = true);
+            ShowModalCommand captured = default;
+            bool gotModal = false, quit = false;
+            var modalSub = EventBus.Subscribe<ShowModalCommand>(e => { captured = e; gotModal = true; });
+            var quitSub = EventBus.Subscribe<QuitGameCommand>(_ => quit = true);
             try
             {
                 view.ExitButton.onClick.Invoke();
-                Assert.IsTrue(published, "Exit 버튼 클릭 → QuitGameCommand 발행");
+                Assert.IsTrue(gotModal, "Exit 클릭 → 확인 모달 발행");
+                Assert.AreEqual(2, captured.ButtonLabels.Count, "예/아니오 2버튼");
+                Assert.IsFalse(quit, "모달만 떠선 종료 안 함");
+
+                captured.Handle.Select(0); // "예"
+                Assert.IsTrue(quit, "예 선택 → QuitGameCommand 발행");
             }
             finally
             {
-                sub.Dispose();
+                modalSub.Dispose();
+                quitSub.Dispose();
+                Object.DestroyImmediate(go);
+                Object.DestroyImmediate(btnGo);
+            }
+        }
+
+        [UnityTest]
+        public IEnumerator ExitConfirmModal_No_DoesNotQuit()
+        {
+            var btnGo = new GameObject("ExitButton", typeof(RectTransform), typeof(Button));
+            var go = new GameObject("TitleView");
+            go.SetActive(false);
+            var view = go.AddComponent<TitleView>();
+            view.ExitButton = btnGo.GetComponent<Button>();
+            go.SetActive(true);
+            yield return null;
+
+            ShowModalCommand captured = default;
+            bool gotModal = false, quit = false;
+            var modalSub = EventBus.Subscribe<ShowModalCommand>(e => { captured = e; gotModal = true; });
+            var quitSub = EventBus.Subscribe<QuitGameCommand>(_ => quit = true);
+            try
+            {
+                view.ExitButton.onClick.Invoke();
+                Assert.IsTrue(gotModal, "Exit 클릭 → 확인 모달 발행");
+
+                captured.Handle.Select(1); // "아니오"
+                Assert.IsFalse(quit, "아니오 선택 → 종료 안 함");
+            }
+            finally
+            {
+                modalSub.Dispose();
+                quitSub.Dispose();
                 Object.DestroyImmediate(go);
                 Object.DestroyImmediate(btnGo);
             }
