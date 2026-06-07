@@ -16,7 +16,7 @@ namespace LoveAlgo.UI
     ///
     /// <para><b>왜 상속인가</b>: Selectable의 검증된 상태머신(포인터 enter/exit/down/up, disabled, navigation)과
     /// <c>onClick</c>을 그대로 재사용 → 기존 모든 <c>Button</c> 필드(ChoiceSlot·TitleView·CategoryTab)에 무변경으로
-    /// 꽂힌다. 별도 컴포넌트(ButtonHoverTextColor식)는 상태머신을 중복 구현해야 하고 ColorTint pressed와
+    /// 꽂힌다. 별도의 포인터 핸들러 컴포넌트는 상태머신을 중복 구현해야 하고 ColorTint pressed와
     /// 결합할 수 없어 이 클래스가 그것을 포섭(대체)한다.</para>
     /// </summary>
     public class StyledButton : Button
