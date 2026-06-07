@@ -70,12 +70,16 @@ namespace LoveAlgo.UI
 
         void OnNewGame() => EventBus.Publish(new StartNewGameCommand());
         void OnContinue() => EventBus.Publish(new ContinueGameCommand());
-        // Exit은 즉시 종료하지 않고 확인 모달을 띄운다 — "예"(index 0)일 때만 QuitGameCommand 발행
-        // (ADR-007: 표시는 ModalView, 종료 동작은 콜백→구독자). 첫 범용 모달 소비처.
+        // Exit은 즉시 종료하지 않고 확인 모달을 띄운다 — 아니오(좌, No)·예(우, Yes) 순서, "예"(index 1)일 때만
+        // QuitGameCommand 발행(ADR-007: 표시·아트는 ModalView/프리팹, 종료 동작은 콜백→구독자). 첫 범용 모달 소비처.
         void OnExit() => EventBus.Publish(new ShowModalCommand(
             exitConfirmTitle, exitConfirmMessage,
-            new[] { exitConfirmYes, exitConfirmNo },
-            new ModalRequest(i => { if (i == 0) EventBus.Publish(new QuitGameCommand()); })));
+            new[]
+            {
+                new ModalButton(exitConfirmNo, ModalButtonKind.No),
+                new ModalButton(exitConfirmYes, ModalButtonKind.Yes),
+            },
+            new ModalRequest(i => { if (i == 1) EventBus.Publish(new QuitGameCommand()); })));
 
         // 목적지 화면 미존재 — 클릭 피드백만(화면/커맨드 신설 없이 배선만 준비). 후속 마일스톤에서 실 구현.
         void OnSettings() => LogTodo("설정(Config)");

@@ -112,10 +112,10 @@ namespace LoveAlgo.Tests.PlayMode
             {
                 view.ExitButton.onClick.Invoke();
                 Assert.IsTrue(gotModal, "Exit 클릭 → 확인 모달 발행");
-                Assert.AreEqual(2, captured.ButtonLabels.Count, "예/아니오 2버튼");
+                Assert.AreEqual(2, captured.Buttons.Count, "아니오/예 2버튼");
                 Assert.IsFalse(quit, "모달만 떠선 종료 안 함");
 
-                captured.Handle.Select(0); // "예"
+                captured.Handle.Select(1); // "예"(우, index 1)
                 Assert.IsTrue(quit, "예 선택 → QuitGameCommand 발행");
             }
             finally
@@ -147,7 +147,7 @@ namespace LoveAlgo.Tests.PlayMode
                 view.ExitButton.onClick.Invoke();
                 Assert.IsTrue(gotModal, "Exit 클릭 → 확인 모달 발행");
 
-                captured.Handle.Select(1); // "아니오"
+                captured.Handle.Select(0); // "아니오"(좌, index 0)
                 Assert.IsFalse(quit, "아니오 선택 → 종료 안 함");
             }
             finally

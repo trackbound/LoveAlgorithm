@@ -35,23 +35,38 @@ namespace LoveAlgo.Events
     }
 
     /// <summary>
-    /// 범용 모달 표시 명령. <see cref="ButtonLabels"/> 순서대로 버튼을 만들고, 클릭 시 <see cref="Handle"/>에
-    /// 인덱스를 채운다(ADR-007: 표시만, 의미 해석은 호출부). 메시지+버튼만 — 텍스트 입력은 후속(입력은 LockScreen
-    /// 담당). 스토리 선택지가 아니라 코드에서 발행하는 시스템 모달이다. 핸들은 참조형 클래스라 readonly struct
-    /// 명령에 안전하게 실린다(<see cref="ShowChoiceCommand"/>와 동일 관용).
+    /// 모달 버튼의 종류(아트 스킨 키). 뷰가 종류→스타일 버튼 프리팹으로 매핑한다(ADR-007: 명령은 의미만, 아트는 뷰).
+    /// 호출부는 의미(<see cref="Yes"/>=긍정·<see cref="No"/>=부정·<see cref="Close"/>=닫기)만 지정하고 어떤
+    /// 스프라이트/색인지는 모른다. <see cref="Default"/>=전용 아트 없을 때 폴백. 공용 팝업 버튼(btn_common_*) 확장 시 값 추가.
+    /// </summary>
+    public enum ModalButtonKind { Default, Yes, No, Close }
+
+    /// <summary>모달 버튼 1개 = 표시 라벨 + 종류(스킨). 종류로 뷰가 프리팹을 고르고 라벨을 그 위에 얹는다.</summary>
+    public readonly struct ModalButton
+    {
+        public readonly string Label;
+        public readonly ModalButtonKind Kind;
+        public ModalButton(string label, ModalButtonKind kind = ModalButtonKind.Default) { Label = label; Kind = kind; }
+    }
+
+    /// <summary>
+    /// 범용 모달 표시 명령. <see cref="Buttons"/> 순서대로(좌→우) 버튼을 만들고, 클릭 시 <see cref="Handle"/>에
+    /// 인덱스를 채운다(ADR-007: 표시만, 의미 해석은 호출부). 각 버튼은 라벨+종류(<see cref="ModalButton"/>)를 가지며
+    /// 뷰가 종류→스타일 프리팹으로 스폰한다. 메시지+버튼만 — 텍스트 입력은 후속(입력은 LockScreen 담당). 스토리
+    /// 선택지가 아니라 코드에서 발행하는 시스템 모달이다. 핸들은 참조형 클래스라 readonly struct에 안전하게 실린다.
     /// </summary>
     public readonly struct ShowModalCommand
     {
         public readonly string Title;
         public readonly string Message;
-        public readonly IReadOnlyList<string> ButtonLabels;
+        public readonly IReadOnlyList<ModalButton> Buttons;
         public readonly ModalRequest Handle;
 
-        public ShowModalCommand(string title, string message, IReadOnlyList<string> buttonLabels, ModalRequest handle)
+        public ShowModalCommand(string title, string message, IReadOnlyList<ModalButton> buttons, ModalRequest handle)
         {
             Title = title;
             Message = message;
-            ButtonLabels = buttonLabels;
+            Buttons = buttons;
             Handle = handle;
         }
     }

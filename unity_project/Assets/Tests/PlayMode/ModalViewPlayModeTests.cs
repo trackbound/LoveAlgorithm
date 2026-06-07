@@ -53,7 +53,7 @@ namespace LoveAlgo.Tests.PlayMode
             container = containerGo.transform;
             view.ButtonContainer = container;
 
-            view.ButtonPrefab = MakeButtonPrefab();
+            view.DefaultButtonPrefab = MakeButtonPrefab();
             return view;
         }
 
@@ -68,7 +68,7 @@ namespace LoveAlgo.Tests.PlayMode
             {
                 EventBus.Publish(new ShowModalCommand(
                     "게임 종료", "정말 종료하시겠습니까?",
-                    new[] { "예", "아니오" }, new ModalRequest()));
+                    new[] { new ModalButton("예"), new ModalButton("아니오") }, new ModalRequest()));
 
                 Assert.AreEqual("게임 종료", view.TitleText.text, "제목 세팅");
                 Assert.AreEqual("정말 종료하시겠습니까?", view.MessageText.text, "본문 세팅");
@@ -93,7 +93,7 @@ namespace LoveAlgo.Tests.PlayMode
             try
             {
                 EventBus.Publish(new ShowModalCommand(
-                    "확인", "선택", new[] { "예", "아니오" }, handle));
+                    "확인", "선택", new[] { new ModalButton("예"), new ModalButton("아니오") }, handle));
                 yield return null;
 
                 var buttons = container.GetComponentsInChildren<Button>();
