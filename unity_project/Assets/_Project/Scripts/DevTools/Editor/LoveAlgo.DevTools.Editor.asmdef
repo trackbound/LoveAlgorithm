@@ -3,7 +3,8 @@
     "rootNamespace": "LoveAlgo.DevTools.Editor",
     "references": [
         "LoveAlgo.Core",
-        "LoveAlgo.Narrative"
+        "LoveAlgo.Narrative",
+        "LoveAlgo.UI"
     ],
     "includePlatforms": [
         "Editor"
