@@ -23,7 +23,12 @@ namespace LoveAlgo.UI
         public Color NormalColor { get => normalColor; set => normalColor = value; }
         public Color HoverColor { get => hoverColor; set => hoverColor = value; }
 
-        void OnEnable() => Apply(normalColor); // 활성/스폰 시 기본색으로(잔여 호버색 방지).
+        void OnEnable()
+        {
+            // 미바인딩 시 자식 라벨 자동 연결(프리팹 스캐폴딩 편의 — 버튼 하위 단일 TMP 가정).
+            if (label == null) label = GetComponentInChildren<TMP_Text>(true);
+            Apply(normalColor); // 활성/스폰 시 기본색으로(잔여 호버색 방지).
+        }
 
         public void OnPointerEnter(PointerEventData eventData) => Apply(hoverColor);
         public void OnPointerExit(PointerEventData eventData) => Apply(normalColor);
