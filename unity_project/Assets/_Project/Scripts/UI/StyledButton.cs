@@ -3,6 +3,8 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems; // OnPointerEnter/Exit (호버 자체 추적)
+using LoveAlgo.Common; // EventBus
+using LoveAlgo.Events; // PlaySfxCommand
 
 namespace LoveAlgo.UI
 {
@@ -24,6 +26,9 @@ namespace LoveAlgo.UI
     {
         /// <summary><see cref="Selectable.SelectionState"/>(protected)의 public 미러 — 순수층이 외부에 노출하는 상태.</summary>
         public enum VisualState { Normal, Highlighted, Pressed, Selected, Disabled }
+
+        /// <summary>호버/클릭이 <see cref="UiSoundSO"/>의 어느 항목을 쓸지. General=일반 버튼/모달, Choice=선택지 전용, Silent=무음.</summary>
+        public enum UiSoundRole { General, Choice, Silent }
 
         /// <summary>상태별 라벨 글씨색. <see cref="drive"/>=false면 라벨 색을 건드리지 않는다(흰→흰 버튼 등).</summary>
         [Serializable]
@@ -62,6 +67,10 @@ namespace LoveAlgo.UI
         [Tooltip("색을 바꿀 라벨(TMP). 미바인딩 시 자식에서 자동 탐색.")]
         [SerializeField] TMP_Text label;
 
+        [Header("UI 사운드 (UiSound 테이블에서 해석)")]
+        [Tooltip("호버/클릭 시 어떤 SFX 묶음을 쓸지. General=일반 버튼/모달, Choice=선택지 전용, Silent=무음.")]
+        [SerializeField] UiSoundRole soundRole = UiSoundRole.General;
+
         bool _selectedOverride;
         bool _pointerInside; // 호버 중 여부 — 포커스(Selected)가 Highlighted를 가리는 문제 보정용
 
@@ -73,6 +82,7 @@ namespace LoveAlgo.UI
         public Sprite PressedSprite { get => pressedSprite; set => pressedSprite = value; }
         public Sprite SelectedSprite { get => selectedSprite; set => selectedSprite = value; }
         public Sprite DisabledSprite { get => disabledSprite; set => disabledSprite = value; }
+        public UiSoundRole SoundRole { get => soundRole; set => soundRole = value; }
 
         // ── 순수 정적 결정층 (VisualState 기반, GameObject 불필요 — EditMode 단위테스트 대상) ──────
 
@@ -126,6 +136,45 @@ namespace LoveAlgo.UI
             }
         }
 
+        // ── UI 사운드: 역할→이름 해석(순수) + 발행(얇은 어댑터) ─────────────────────────
+        // 재생은 AudioManager(PlaySfxCommand 구독)가 담당. 여기선 해석 + 발행만(ADR-007). 빈값=무음.
+
+        static UiSoundSO _soundTable;
+        static bool _soundTableLoaded;
+
+        /// <summary>공유 UI 사운드 등록 테이블(Resources/Data/UiSound). 부재 시 null = 전부 무음.</summary>
+        static UiSoundSO SoundTable
+        {
+            get
+            {
+                if (!_soundTableLoaded)
+                {
+                    _soundTable = Resources.Load<UiSoundSO>("Data/UiSound");
+                    _soundTableLoaded = true;
+                }
+                return _soundTable;
+            }
+        }
+
+        /// <summary>역할+호버/클릭 → SFX 이름(순수, table/항목 없으면 null). EditMode 테스트 대상.</summary>
+        public static string ResolveSfx(UiSoundRole role, bool hover, UiSoundSO table)
+        {
+            if (table == null) return null;
+            switch (role)
+            {
+                case UiSoundRole.Silent: return null;
+                case UiSoundRole.Choice: return hover ? table.ChoiceHover : table.ChoiceClick;
+                default:                 return hover ? table.ButtonHover : table.ButtonClick;
+            }
+        }
+
+        // 이름이 있으면 AudioManager로 발행(빈값=무음 → "SFX 없음" 경고 스팸 방지).
+        void PlayUiSfx(bool hover)
+        {
+            string sfx = ResolveSfx(soundRole, hover, SoundTable);
+            if (!string.IsNullOrEmpty(sfx)) EventBus.Publish(new PlaySfxCommand(sfx));
+        }
+
         // ── 얇은 어댑터 (SelectionState ↔ VisualState 매핑 + 적용) ─────────────────────────
 
         protected override void DoStateTransition(SelectionState state, bool instant)
@@ -164,6 +213,7 @@ namespace LoveAlgo.UI
             _pointerInside = true;
             base.OnPointerEnter(eventData);
             RefreshState();
+            if (IsInteractable()) PlayUiSfx(hover: true); // 비활성 버튼은 무음
         }
 
         public override void OnPointerExit(PointerEventData eventData)
@@ -171,6 +221,14 @@ namespace LoveAlgo.UI
             _pointerInside = false;
             base.OnPointerExit(eventData);
             RefreshState();
+        }
+
+        // 클릭음: 실제 클릭이 성립하는 조건(상호작용 가능 + 좌클릭)에서만 — base가 onClick을 트리거하는 조건과 일치.
+        public override void OnPointerClick(PointerEventData eventData)
+        {
+            if (IsInteractable() && eventData.button == PointerEventData.InputButton.Left)
+                PlayUiSfx(hover: false);
+            base.OnPointerClick(eventData);
         }
 
         protected override void OnDisable()
