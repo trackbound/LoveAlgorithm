@@ -125,33 +125,13 @@ namespace LoveAlgo.DevTools.Editor
             return ConvertResult.Converted;
         }
 
-        /// <summary>targetGraphic 스프라이트 이름 → 같은 폴더의 _hover/_disabled/_on 형제를 찾아 상태 필드에 할당.</summary>
+        /// <summary>targetGraphic 스프라이트 이름 → 같은 폴더의 _hover/_disabled/_on 형제를 StyledButton 상태 필드에 할당(공유 resolver).</summary>
         static void AssignStateSprites(StyledButton styled, bool overwrite)
         {
-            var img = styled.targetGraphic as Image;
-            if (img == null || img.sprite == null) return;
-
-            string path = AssetDatabase.GetAssetPath(img.sprite);
-            if (string.IsNullOrEmpty(path)) return; // 빌트인/아틀라스 등 프로젝트 외 → 패스
-            string dir = ToDir(System.IO.Path.GetDirectoryName(path));
-            string baseName = StyledButtonSpriteConvention.NormalizeBase(System.IO.Path.GetFileNameWithoutExtension(path));
-
-            // 같은 폴더(직속)의 스프라이트 이름 → 에셋경로.
-            var byName = new Dictionary<string, string>();
-            foreach (var guid in AssetDatabase.FindAssets("t:Sprite", new[] { dir }))
-            {
-                string p = AssetDatabase.GUIDToAssetPath(guid);
-                if (ToDir(System.IO.Path.GetDirectoryName(p)) != dir) continue; // 하위 폴더 제외
-                byName[System.IO.Path.GetFileNameWithoutExtension(p)] = p;
-            }
-
-            var r = StyledButtonSpriteConvention.Resolve(baseName, new HashSet<string>(byName.Keys));
-            if (r.Highlighted != null && (overwrite || styled.HighlightedSprite == null))
-                styled.HighlightedSprite = AssetDatabase.LoadAssetAtPath<Sprite>(byName[r.Highlighted]);
-            if (r.Disabled != null && (overwrite || styled.DisabledSprite == null))
-                styled.DisabledSprite = AssetDatabase.LoadAssetAtPath<Sprite>(byName[r.Disabled]);
-            if (r.Selected != null && (overwrite || styled.SelectedSprite == null))
-                styled.SelectedSprite = AssetDatabase.LoadAssetAtPath<Sprite>(byName[r.Selected]);
+            var r = ButtonStateSpriteResolver.Resolve(styled.targetGraphic as Image);
+            if (r.Hover != null && (overwrite || styled.HighlightedSprite == null)) styled.HighlightedSprite = r.Hover;
+            if (r.Disabled != null && (overwrite || styled.DisabledSprite == null)) styled.DisabledSprite = r.Disabled;
+            if (r.On != null && (overwrite || styled.SelectedSprite == null)) styled.SelectedSprite = r.On;
         }
 
         static MonoScript ResolveStyledButtonScript()
@@ -170,8 +150,6 @@ namespace LoveAlgo.DevTools.Editor
             if (!Application.isPlaying && c.gameObject.scene.IsValid())
                 EditorSceneManager.MarkSceneDirty(c.gameObject.scene);
         }
-
-        static string ToDir(string p) => string.IsNullOrEmpty(p) ? p : p.Replace('\\', '/');
 
         static void Log(string msg) => Debug.Log($"[StyledButtonWireTool] {msg}");
 
