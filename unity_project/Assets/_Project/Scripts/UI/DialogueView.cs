@@ -109,12 +109,21 @@ namespace LoveAlgo.UI
                 bodyText.maxVisibleCharacters = 0;
             }
 
+            // 타이핑 사운드 1회 캡처(per-char 프로퍼티 접근 방지). snd 부재/빈값이면 typeSfx=null → 무음.
+            var snd = UiSoundSO.Shared;
+            string typeSfx = snd != null ? snd.DialogueType : null;
+            int typeStride = snd != null ? snd.TypeStride : 1;
+
             if (charInterval > 0f && total > 0)
             {
                 for (int i = 0; i <= total; i++)
                 {
                     if (_skipTyping) break;
                     if (bodyText != null) bodyText.maxVisibleCharacters = i;
+
+                    // 타이핑 블립(스로틀: stride 글자마다 1회 + 공백 제외). per-char 기관총/공백음 방지.
+                    if (!string.IsNullOrEmpty(typeSfx) && ShouldTypeBlip(text, i, typeStride))
+                        EventBus.Publish(new PlaySfxCommand(typeSfx));
 
                     // 인라인 <wait>: i번째 글자 표시 직후 멈춤(스킵 중이면 무시).
                     if (_pauses != null)
@@ -205,11 +214,30 @@ namespace LoveAlgo.UI
         public void Advance(string source = null)
         {
             string s = source ?? "?";
-            if (_typing) { _skipTyping = true; DebugInput.Log($"{s} → 대사 타이핑 스킵"); }
-            else if (_awaitingClick) { _awaitingClick = false; DebugInput.Log($"{s} → 대사 진행(다음)"); }
+            if (_typing) { _skipTyping = true; DebugInput.Log($"{s} → 대사 타이핑 스킵"); } // 스킵(완성 가속)은 무음
+            else if (_awaitingClick)
+            {
+                _awaitingClick = false;
+                // 다음 줄로 넘어갈 때만 진행음(요구사항: 타이핑 완성/스킵 시에는 재생 안 함).
+                var snd = UiSoundSO.Shared;
+                if (snd != null && !string.IsNullOrEmpty(snd.DialogueAdvance))
+                    EventBus.Publish(new PlaySfxCommand(snd.DialogueAdvance));
+                DebugInput.Log($"{s} → 대사 진행(다음)");
+            }
             else DebugInput.Log($"{s} → 입력됐으나 진행할 대사 없음");
         }
 
         public void OnPointerClick(PointerEventData eventData) => Advance("좌클릭");
+
+        /// <summary>i번째 글자 표시 시점에 타이핑 블립을 낼지(순수): stride 글자마다 1회 + 공백 제외 + 경계 가드.
+        /// (호출 측이 typeSfx 비어있는지는 먼저 가드한다.) EditMode 테스트 대상.</summary>
+        public static bool ShouldTypeBlip(string text, int i, int stride)
+        {
+            if (string.IsNullOrEmpty(text)) return false;
+            if (i <= 0 || i > text.Length) return false;
+            if (stride < 1) stride = 1;
+            if (i % stride != 0) return false;
+            return !char.IsWhiteSpace(text[i - 1]);
+        }
     }
 }

@@ -46,5 +46,23 @@ namespace LoveAlgo.UI
 
         /// <summary>타이핑 블립 재생 간격(글자 수). 0/음수 방어로 최소 1.</summary>
         public int TypeStride => Mathf.Max(1, typeStride);
+
+        // 공유 인스턴스: 트리거 지점(StyledButton·DialogueView 등)이 Resources에서 1회 로드해 공유.
+        static UiSoundSO _shared;
+        static bool _sharedLoaded;
+
+        /// <summary>공유 등록 테이블(Resources/Data/UiSound). 에셋 부재 시 null = 전부 무음.</summary>
+        public static UiSoundSO Shared
+        {
+            get
+            {
+                if (!_sharedLoaded)
+                {
+                    _shared = Resources.Load<UiSoundSO>("Data/UiSound");
+                    _sharedLoaded = true;
+                }
+                return _shared;
+            }
+        }
     }
 }

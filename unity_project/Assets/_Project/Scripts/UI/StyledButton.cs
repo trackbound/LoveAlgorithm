@@ -139,23 +139,6 @@ namespace LoveAlgo.UI
         // ── UI 사운드: 역할→이름 해석(순수) + 발행(얇은 어댑터) ─────────────────────────
         // 재생은 AudioManager(PlaySfxCommand 구독)가 담당. 여기선 해석 + 발행만(ADR-007). 빈값=무음.
 
-        static UiSoundSO _soundTable;
-        static bool _soundTableLoaded;
-
-        /// <summary>공유 UI 사운드 등록 테이블(Resources/Data/UiSound). 부재 시 null = 전부 무음.</summary>
-        static UiSoundSO SoundTable
-        {
-            get
-            {
-                if (!_soundTableLoaded)
-                {
-                    _soundTable = Resources.Load<UiSoundSO>("Data/UiSound");
-                    _soundTableLoaded = true;
-                }
-                return _soundTable;
-            }
-        }
-
         /// <summary>역할+호버/클릭 → SFX 이름(순수, table/항목 없으면 null). EditMode 테스트 대상.</summary>
         public static string ResolveSfx(UiSoundRole role, bool hover, UiSoundSO table)
         {
@@ -171,7 +154,7 @@ namespace LoveAlgo.UI
         // 이름이 있으면 AudioManager로 발행(빈값=무음 → "SFX 없음" 경고 스팸 방지).
         void PlayUiSfx(bool hover)
         {
-            string sfx = ResolveSfx(soundRole, hover, SoundTable);
+            string sfx = ResolveSfx(soundRole, hover, UiSoundSO.Shared);
             if (!string.IsNullOrEmpty(sfx)) EventBus.Publish(new PlaySfxCommand(sfx));
         }
 
