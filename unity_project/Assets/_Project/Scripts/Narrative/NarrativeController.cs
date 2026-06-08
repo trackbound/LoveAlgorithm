@@ -217,6 +217,9 @@ namespace LoveAlgo.Story.StoryEngine
         IEnumerator PlayText(ScriptLine line)
         {
             bool requireClick = line.NextType == NextType.Click;
+            // 독백(화자 빈 칸 Text) 진입/이탈 토글 — IsNarration이 곧 감독 정의(빈 화자=독백, {{player}}는 화자 채워짐=대사).
+            // 뷰(MonologueOverlayView)가 중복 토글을 흡수하므로 매 Text 라인마다 발행해도 무방.
+            EventBus.Publish(new SetMonologueOverlayCommand(line.IsNarration));
             var parsed = InlineTagParser.Parse(line.Value); // 인라인 태그(<wait:sec>·<emote=표정/>) 분해 → 표시텍스트+멈춤/표정 지점.
             var req = new CompletionHandle();
             // 화자/표정 별칭 해석: 표시는 원문(Speaker), 슬롯 매칭은 코드 ID(SpeakerId)·표정 코드 — 뷰는 카탈로그를 모른다.

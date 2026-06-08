@@ -164,4 +164,16 @@ namespace LoveAlgo.Events
         public readonly bool Visible;
         public SetDialogueVisibleCommand(bool visible) { Visible = visible; }
     }
+
+    /// <summary>
+    /// 독백 오버레이 표시/숨김 명령. 화자가 빈 Text 라인(독백/내레이션)에 진입하면 <see cref="Active"/>=true,
+    /// 화자 있는 대사면 false로 <c>NarrativeController.PlayText</c>가 발행(판정=<c>ScriptLine.IsNarration</c>) →
+    /// <c>MonologueOverlayView</c>가 전용 오버레이를 페이드 토글한다(ADR-007: 엔진은 뷰를 모름).
+    /// 로아 전용 오버레이(<see cref="StageLayerKind"/>.Overlay)와 별개의 상위 레이어 — 트리거(자동)·z(더 위)가 다르다.
+    /// </summary>
+    public readonly struct SetMonologueOverlayCommand
+    {
+        public readonly bool Active;
+        public SetMonologueOverlayCommand(bool active) { Active = active; }
+    }
 }
