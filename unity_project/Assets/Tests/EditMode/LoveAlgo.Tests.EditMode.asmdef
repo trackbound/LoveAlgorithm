@@ -13,6 +13,7 @@
         "LoveAlgo.UI",
         "LoveAlgo.Shop",
         "LoveAlgo.Settings",
+        "LoveAlgo.Messenger",
         "LoveAlgo.DevTools.Editor",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"

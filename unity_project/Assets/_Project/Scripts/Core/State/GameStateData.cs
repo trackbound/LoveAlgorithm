@@ -52,9 +52,34 @@ namespace LoveAlgo.Core
         public List<IntEntry> dailyDuplicateUsage = new();
         public int lastDuplicateDay;
 
+        // ── 메신저 (기획서 2026-06-11, REWRITE_FEATURE_INVENTORY §7 MessengerSaveData 예약 이행) ──
+        // 시퀀스 도착/읽음/선택 인덱스만 영속하고 대화 이력 전문은 저장하지 않는다 — 시퀀스 CSV 정의에서
+        // 재구성하므로 작가가 텍스트를 고쳐도 세이브가 호환된다(감독 결정 2026-06-11). 가산적 확장이라
+        // 구버전 세이브 로드 시 기본값(빈 목록/0)으로 채워져 마이그레이션 무해.
+        public List<MessengerSeqRecord> messengerSeqs = new();
+
+        // 플레이어 메신저 프로필(기획서: 프로필/배경 4~5종 중 선택 + 상태메시지 직접 입력. 빈 상메=기본 문구 표시).
+        public int messengerProfileImage;
+        public int messengerProfileBg;
+        public string messengerStatusMessage = "";
+
         [Serializable] public struct IntEntry { public string key; public int value; }
         [Serializable] public struct BoolEntry { public string key; public bool value; }
         [Serializable] public struct StringEntry { public string key; public string value; }
+
+        /// <summary>
+        /// 메신저 시퀀스 1건의 영속 기록. roomId는 카탈로그 정의의 비정규화 사본(세이브 자족 — 방별 조회용).
+        /// choices = 시퀀스 내 선택지 그룹 등장 순서대로 고른 옵션 인덱스(이력 재구성 입력).
+        /// </summary>
+        [Serializable]
+        public class MessengerSeqRecord
+        {
+            public string seqId = "";
+            public string roomId = "";
+            public int deliveredDay;
+            public bool read;
+            public List<int> choices = new();
+        }
 
         /// <summary>히로인 1명의 카테고리별 누적 포인트 + 이벤트 선택 횟수.</summary>
         [Serializable]
