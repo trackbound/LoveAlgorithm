@@ -5,6 +5,8 @@
         "LoveAlgo.Core",
         "LoveAlgo.Narrative",
         "LoveAlgo.UI",
+        "LoveAlgo.Messenger",
+        "Unity.TextMeshPro",
         "UnityEngine.UI"
     ],
     "includePlatforms": [
