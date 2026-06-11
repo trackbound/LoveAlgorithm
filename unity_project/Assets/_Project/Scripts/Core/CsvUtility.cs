@@ -1,10 +1,11 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace LoveAlgo.Story
+namespace LoveAlgo.Core
 {
     /// <summary>
-    /// CSV 파싱 공통 유틸리티 (따옴표 내부 개행/쉼표/이스케이프 따옴표 지원)
+    /// CSV 파싱 공통 유틸리티 (따옴표 내부 개행/쉼표/이스케이프 따옴표 지원).
+    /// 스토리·메신저 등 CSV 포맷 피처들이 공유하는 인프라라 Core 소속(피처 간 직접 참조 금지, ADR-011).
     /// </summary>
     public static class CsvUtility
     {

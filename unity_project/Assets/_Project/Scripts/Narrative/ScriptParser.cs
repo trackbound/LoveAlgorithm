@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using LoveAlgo.Core; // CsvUtility (Core 공용 인프라)
 
 namespace LoveAlgo.Story
 {
