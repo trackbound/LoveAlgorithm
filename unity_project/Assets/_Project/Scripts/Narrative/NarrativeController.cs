@@ -152,6 +152,12 @@ namespace LoveAlgo.Story.StoryEngine
                             yield return PlayLockScreen(line);
                             cursor.MoveNext();
                         }
+                        else if (MessengerCommandParser.IsMessenger(line.Value))
+                        {
+                            // 메신저 시퀀스 도착(Messenger:{id}[:Wait]) — Wait면 읽힘까지 대기하는 대기형 Flow.
+                            yield return PlayMessenger(line);
+                            cursor.MoveNext();
+                        }
                         else
                         {
                             bool flowJumped = HandleFlow(line, cursor, ref end);
@@ -367,7 +373,7 @@ namespace LoveAlgo.Story.StoryEngine
                 return false;
             }
 
-            // Username/LockScreen/Message/MiniGame 등 — 이번 슬라이스 미지원.
+            // Username/MiniGame 등 — 이번 슬라이스 미지원. (LockScreen·Messenger는 Run 루프의 대기형 분기가 선처리.)
             Log.Info($"[NarrativeController] 슬라이스 범위 밖 Flow 스킵: \"{value}\"");
             return false;
         }
@@ -564,6 +570,31 @@ namespace LoveAlgo.Story.StoryEngine
 
         static bool IsLockScreen(string value)
             => string.Equals(HeadOf(value), "LockScreen", StringComparison.OrdinalIgnoreCase);
+
+        /// <summary>
+        /// 메신저 Flow(<c>Messenger:{시퀀스id}[:Wait]</c>, 별칭 Message). 도착 명령만 발행 — 카탈로그 해석·
+        /// 상태 기록은 MessengerController 몫(ADR-007). Wait면 "확인 필수 메시지": 유저가 메신저를 열어
+        /// 끝까지 읽을 때까지 핸들 대기(미등록 id는 컨트롤러가 즉시 완료 = fail-open이라 hang 없음).
+        /// </summary>
+        IEnumerator PlayMessenger(ScriptLine line)
+        {
+            var intent = MessengerCommandParser.Parse(line.Value);
+            if (!intent.IsValid)
+            {
+                Log.Info($"[NarrativeController] Messenger 파싱 실패 — 스킵: \"{line.Value}\"");
+                yield break;
+            }
+
+            if (!intent.Wait)
+            {
+                EventBus.Publish(new DeliverMessengerSequenceCommand(intent.SequenceId));
+                yield break;
+            }
+
+            var req = new CompletionHandle();
+            EventBus.Publish(new DeliverMessengerSequenceCommand(intent.SequenceId, req));
+            yield return WaitNext(line, () => req.IsComplete);
+        }
 
         /// <summary>
         /// 대기형 Flow(잠금화면, LockScreen). 순수 <see cref="LockScreenParser"/>로 분해 후 ShowLockScreenCommand를

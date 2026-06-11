@@ -193,6 +193,21 @@ Flow,,LockScreen:Auto:Time=23:58,await        # IsPasswordSet ? Normal : FirstSe
 └─ 비번 분실 흐름       ──→ Flow,,LockScreen:Reset,await
 ```
 
+## 메신저 (Messenger)
+
+스토리에서 메신저 시퀀스를 도착시킨다(별칭 `Message`). 시퀀스 내용은 별도 메신저 CSV
+(`StreamingAssets/Messenger/`)에 작성하고, 시퀀스 id ↔ CSV 매핑은 `MessengerScriptCatalog.asset`에 등록한다.
+
+```
+Flow,,Messenger:<시퀀스id>,>            # 도착만(폰 버튼 진동·배지) — 스토리는 즉시 계속
+Flow,,Messenger:<시퀀스id>:Wait,await   # 확인 필수 — 유저가 메신저를 열어 끝까지 읽을 때까지 정지
+```
+
+- `Wait` 없음 = 백그라운드 도착. 유저가 나중에 폰 버튼/빠른 메뉴로 열람.
+- `Wait` = 기획서 "확인 필수인 메시지" — 진동 후 읽힘까지 스크립트 대기(선택지 응답 포함).
+- 카탈로그 미등록 id는 경고 후 스킵(대기도 즉시 해제) — 진행이 막히지 않는다.
+- 일자 자동 도착(예: 이벤트 전날 약속 메시지)은 CSV가 아니라 카탈로그의 `deliverDay`로 지정.
+
 ## Char 액션
 
 ```

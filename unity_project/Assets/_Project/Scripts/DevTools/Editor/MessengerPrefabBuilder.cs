@@ -47,9 +47,13 @@ namespace LoveAlgo.DevTools.Editor
             var messenger = BuildMessenger(state, friendCatalog, scriptCatalog, friendSlot, chatRoomSlot, bubbleIn, bubbleOut, optionSlot);
             SavePrefab(messenger, $"{PrefabDir}/Messenger.prefab");
 
+            // ── 폰 버튼(메신저 진입점 1) ──
+            var tuning = EnsureAsset<MessengerTuningSO>($"{DataDir}/MessengerTuning.asset");
+            SavePrefab(BuildPhoneButton(state, tuning), $"{PrefabDir}/PhoneButton.prefab");
+
             AssetDatabase.SaveAssets();
-            Debug.Log($"[MessengerPrefabBuilder] 산출 완료 → {PrefabDir} (Messenger + 슬롯/말풍선 5종). " +
-                      "FriendCatalog/MessengerScriptCatalog는 빈 카탈로그로 생성 — 엔트리는 감독/기획 입력.");
+            Debug.Log($"[MessengerPrefabBuilder] 산출 완료 → {PrefabDir} (Messenger + PhoneButton + 슬롯/말풍선 5종). " +
+                      "FriendCatalog/MessengerScriptCatalog는 없으면 빈 생성 — 엔트리는 채움 메뉴/기획 입력.");
         }
 
         /// <summary>
@@ -183,6 +187,41 @@ namespace LoveAlgo.DevTools.Editor
             chatPanel.gameObject.SetActive(false);
             root.SetActive(false);
             return messengerGo;
+        }
+
+        /// <summary>
+        /// 폰 버튼 — 우측 가장자리에 살짝 보이는 말풍선 박스(+MESSAGE 라벨+배지). 전용 아트(btn_phone*)가
+        /// 감독 정리로 삭제된 상태라 메신저 말풍선 아트로 구성 — 아트 도착 시 스프라이트만 교체.
+        /// 화면 밖으로 나간 만큼이 호버 슬라이드로 드러난다(노출 폭/위치는 감독 튜닝).
+        /// </summary>
+        static GameObject BuildPhoneButton(GameStateSO state, MessengerTuningSO tuning)
+        {
+            var go = Rect("PhoneButton", null);
+            var rt = (RectTransform)go.transform;
+            rt.anchorMin = rt.anchorMax = new Vector2(1f, 0.8f);
+            rt.pivot = new Vector2(1f, 0.5f);
+            rt.sizeDelta = new Vector2(210, 64);
+            rt.anchoredPosition = new Vector2(150, 0); // 150px 화면 밖 = 60px만 노출(슬라이드로 전체 공개)
+
+            var img = go.AddComponent<Image>();
+            img.sprite = Sprite9("chat_out"); img.type = Image.Type.Sliced;
+
+            var view = go.AddComponent<PhoneButtonView>();
+            view.Group = go.AddComponent<CanvasGroup>();
+            view.Button = go.AddComponent<Button>();
+            view.State = state;
+            view.Tuning = tuning;
+
+            var label = Label(go.transform, "Label", AggroFont, 18, TitlePink, new Vector2(24, 0), new Vector2(160, 30), TextAlignmentOptions.MidlineLeft);
+            label.text = "MESSAGE";
+
+            var badge = Img(Rect("Badge", go.transform), "new_badge");
+            var bRt = badge.GetComponent<RectTransform>();
+            bRt.anchorMin = bRt.anchorMax = new Vector2(0, 1);
+            bRt.sizeDelta = new Vector2(26, 26); bRt.anchoredPosition = new Vector2(8, -4);
+            badge.gameObject.SetActive(false); // 부팅: 미읽음 없음
+            view.Badge = badge.gameObject;
+            return go;
         }
 
         // ───────────────────────── 서브 프리팹 ─────────────────────────
