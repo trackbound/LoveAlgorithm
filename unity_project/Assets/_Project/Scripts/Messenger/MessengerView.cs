@@ -23,6 +23,8 @@ namespace LoveAlgo.Messenger
         [SerializeField] FriendListView friendList;
         [SerializeField] ChatListView chatList;
         [SerializeField] ChatRoomView chatRoom;
+        [SerializeField] ProfilePanelView profilePanel;
+        [SerializeField] ProfileEditView profileEdit;
 
         public GameObject Root { get => root; set => root = value; }
         public GameObject FriendPanel { get => friendPanel; set => friendPanel = value; }
@@ -33,6 +35,8 @@ namespace LoveAlgo.Messenger
         public FriendListView FriendList { get => friendList; set => friendList = value; }
         public ChatListView ChatList { get => chatList; set => chatList = value; }
         public ChatRoomView ChatRoom { get => chatRoom; set => chatRoom = value; }
+        public ProfilePanelView ProfilePanel { get => profilePanel; set => profilePanel = value; }
+        public ProfileEditView ProfileEdit { get => profileEdit; set => profileEdit = value; }
 
         readonly List<IDisposable> _subs = new();
 
@@ -48,6 +52,9 @@ namespace LoveAlgo.Messenger
             _subs.Add(EventBus.Subscribe<OpenMessengerCommand>(OnOpen));
             _subs.Add(EventBus.Subscribe<CloseMessengerCommand>(OnClose));
             if (chatList != null) chatList.RoomSelected += OnRoomSelected;
+            if (friendList != null) friendList.FriendClicked += OnFriendClicked;
+            if (profilePanel != null) profilePanel.EditRequested += OnEditRequested;
+            if (profileEdit != null) profileEdit.Saved += OnProfileSaved;
         }
 
         void OnDisable()
@@ -55,6 +62,9 @@ namespace LoveAlgo.Messenger
             foreach (var s in _subs) s?.Dispose();
             _subs.Clear();
             if (chatList != null) chatList.RoomSelected -= OnRoomSelected;
+            if (friendList != null) friendList.FriendClicked -= OnFriendClicked;
+            if (profilePanel != null) profilePanel.EditRequested -= OnEditRequested;
+            if (profileEdit != null) profileEdit.Saved -= OnProfileSaved;
         }
 
         void OnOpen(OpenMessengerCommand cmd)
@@ -84,6 +94,8 @@ namespace LoveAlgo.Messenger
             if (friendPanel != null) friendPanel.SetActive(true);
             if (chatPanel != null) chatPanel.SetActive(false);
             if (chatRoom != null) chatRoom.Hide();
+            if (profileEdit != null) profileEdit.Close();
+            if (profilePanel != null) profilePanel.Clear();
             if (friendList != null) friendList.Refresh();
         }
 
@@ -101,6 +113,22 @@ namespace LoveAlgo.Messenger
             if (chatRoom != null) chatRoom.Show(roomId);
             // 읽음 반영(New 배지 갱신) — 가벼운 목록 리프레시.
             if (chatList != null) chatList.Refresh();
+        }
+
+        void OnFriendClicked(string id)
+        {
+            if (profilePanel != null) profilePanel.Show(id); // 기획서: 행 클릭 → 우측 프로필 출력
+        }
+
+        void OnEditRequested()
+        {
+            if (profileEdit != null) profileEdit.Open();
+        }
+
+        void OnProfileSaved()
+        {
+            if (profilePanel != null) profilePanel.Refresh();   // 새 사진/배경/상메 반영
+            if (friendList != null) friendList.Refresh();       // 플레이어 행 상메 갱신
         }
     }
 }

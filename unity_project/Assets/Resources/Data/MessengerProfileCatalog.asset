@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ca3078593bfcd6741aed5bb9b9ba02c9, type: 3}
+  m_Name: MessengerProfileCatalog
+  m_EditorClassIdentifier: LoveAlgo.Messenger::LoveAlgo.Messenger.MessengerProfileCatalogSO
+  profileImages:
+  - {fileID: -3495064862585532047, guid: 0fe91e2b1423a80499dfcf88326adc33, type: 3}
+  - {fileID: 8181349283761010761, guid: 0dc886e43e1afca4c923e50cb102c44e, type: 3}
+  backgrounds:
+  - {fileID: -8974631244425184286, guid: 0cca3c0130237554b9d22ee59539c23d, type: 3}
+  - {fileID: -4703156577264768749, guid: 147562e61f751bd49813d62d993de26b, type: 3}

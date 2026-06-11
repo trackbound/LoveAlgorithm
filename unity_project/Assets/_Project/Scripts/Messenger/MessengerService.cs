@@ -82,6 +82,24 @@ namespace LoveAlgo.Messenger
             return records;
         }
 
+        // ── 플레이어 프로필(기획서: 프로필/배경 4~5종 중 선택 + 상태메시지 직접 입력) ──
+
+        /// <summary>프로필 선택 결과 기록(음수 인덱스는 0으로 보정, null 상메는 빈 문자열).</summary>
+        public static void SetPlayerProfile(GameStateSO gs, int imageIndex, int bgIndex, string statusMessage)
+        {
+            if (gs == null) return;
+            gs.Data.messengerProfileImage = imageIndex < 0 ? 0 : imageIndex;
+            gs.Data.messengerProfileBg = bgIndex < 0 ? 0 : bgIndex;
+            gs.Data.messengerStatusMessage = statusMessage ?? "";
+        }
+
+        /// <summary>표시용 상태메시지 — 미설정(빈 값)이면 기본 문구(기획서 '기본 상태메시지' 규칙).</summary>
+        public static string PlayerStatus(GameStateSO gs, string fallback)
+        {
+            string set = gs != null ? gs.Data.messengerStatusMessage : null;
+            return string.IsNullOrEmpty(set) ? (fallback ?? "") : set;
+        }
+
         public static GameStateData.MessengerSeqRecord FindRecord(GameStateSO gs, string seqId)
         {
             if (gs == null || string.IsNullOrEmpty(seqId)) return null;

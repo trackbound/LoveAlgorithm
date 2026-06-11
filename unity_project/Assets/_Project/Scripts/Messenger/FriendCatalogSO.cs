@@ -20,6 +20,8 @@ namespace LoveAlgo.Messenger
             public string displayName;
             [Tooltip("프로필 사진(작은 원형). 비우면 기본 실루엣.")]
             public Sprite portrait;
+            [Tooltip("프로필 화면 배경(친구 클릭 시 우측 영역). 비우면 기본 배경. 진행도별 변경은 후속.")]
+            public Sprite profileBg;
             [Tooltip("기본 상태메시지(기획서: '상태 메세지입니다.' 류 기본 문구).")]
             public string defaultStatus;
         }

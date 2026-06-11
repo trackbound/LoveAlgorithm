@@ -42,9 +42,21 @@ namespace LoveAlgo.DevTools.Editor
             var bubbleIn = SavePrefab(BuildBubble("BubbleIn", "chat_in", withSender: true), $"{PrefabDir}/BubbleIn.prefab").GetComponent<MessengerBubble>();
             var bubbleOut = SavePrefab(BuildBubble("BubbleOut", "chat_out", withSender: false), $"{PrefabDir}/BubbleOut.prefab").GetComponent<MessengerBubble>();
             var optionSlot = SavePrefab(BuildOptionSlot(), $"{PrefabDir}/MessengerOptionSlot.prefab").GetComponent<MessengerOptionSlot>();
+            var profileChoice = SavePrefab(BuildProfileChoiceSlot(), $"{PrefabDir}/ProfileChoiceSlot.prefab").GetComponent<ProfileChoiceSlot>();
+
+            // 프로필 후보 카탈로그 — 비어 있을 때만 현재 가용 아트로 기본 채움(감독 편집 보존, 후보 아트 도착 시 추가)
+            var profileCatalog = EnsureAsset<MessengerProfileCatalogSO>($"{DataDir}/MessengerProfileCatalog.asset");
+            if (profileCatalog.ProfileImages.Count == 0 && profileCatalog.Backgrounds.Count == 0)
+            {
+                profileCatalog.SetData(
+                    new System.Collections.Generic.List<Sprite> { LoadSprite("profile_pic_basic_l"), LoadSprite("profile_test") },
+                    new System.Collections.Generic.List<Sprite> { LoadSprite("profile_bg_basic"), LoadSprite("profile_bg_test") });
+                EditorUtility.SetDirty(profileCatalog);
+            }
 
             // ── 메인 프리팹 ──
-            var messenger = BuildMessenger(state, friendCatalog, scriptCatalog, friendSlot, chatRoomSlot, bubbleIn, bubbleOut, optionSlot);
+            var messenger = BuildMessenger(state, friendCatalog, scriptCatalog, profileCatalog,
+                friendSlot, chatRoomSlot, bubbleIn, bubbleOut, optionSlot, profileChoice);
             SavePrefab(messenger, $"{PrefabDir}/Messenger.prefab");
 
             // ── 폰 버튼(메신저 진입점 1) ──
@@ -96,7 +108,8 @@ namespace LoveAlgo.DevTools.Editor
         // ───────────────────────── 메인 ─────────────────────────
 
         static GameObject BuildMessenger(GameStateSO state, FriendCatalogSO friends, MessengerScriptCatalogSO catalog,
-            FriendSlot friendSlot, ChatRoomSlot chatRoomSlot, MessengerBubble bubbleIn, MessengerBubble bubbleOut, MessengerOptionSlot optionSlot)
+            MessengerProfileCatalogSO profileCatalog, FriendSlot friendSlot, ChatRoomSlot chatRoomSlot,
+            MessengerBubble bubbleIn, MessengerBubble bubbleOut, MessengerOptionSlot optionSlot, ProfileChoiceSlot profileChoice)
         {
             var messengerGo = Rect("Messenger", null);
             Stretch(messengerGo);
@@ -137,6 +150,10 @@ namespace LoveAlgo.DevTools.Editor
             friendList.Friends = friends;
             friendList.State = state;
             view.FriendList = friendList;
+
+            // 우측 프로필 영역(기획서: 접근 시 빈 화면 → 행 클릭 시 프로필, 플레이어만 편집)
+            view.ProfilePanel = BuildProfilePanel(friendPanel.transform, window.transform, state, friends, profileCatalog);
+            view.ProfileEdit = BuildProfileEdit(friendPanel.transform, state, profileCatalog, profileChoice);
 
             // ── 채팅 탭 패널 ──
             var chatPanel = Img(Rect("ChatPanel", window.transform), "chatlist_bg_none");
@@ -222,6 +239,185 @@ namespace LoveAlgo.DevTools.Editor
             badge.gameObject.SetActive(false); // 부팅: 미읽음 없음
             view.Badge = badge.gameObject;
             return go;
+        }
+
+        /// <summary>친구 탭 우측 프로필 영역 + 사진 확대 오버레이(기획서 p7~12). 줌은 창 전체 위라 window에 단다.</summary>
+        static ProfilePanelView BuildProfilePanel(Transform friendPanel, Transform window,
+            GameStateSO state, FriendCatalogSO friends, MessengerProfileCatalogSO profileCatalog)
+        {
+            var area = Rect("ProfileArea", friendPanel);
+            var aRt = (RectTransform)area.transform;
+            aRt.anchorMin = new Vector2(0.48f, 0.03f); aRt.anchorMax = new Vector2(0.98f, 0.97f);
+            aRt.offsetMin = aRt.offsetMax = Vector2.zero;
+            var panel = area.AddComponent<ProfilePanelView>();
+            panel.State = state;
+            panel.Friends = friends;
+            panel.ProfileCatalog = profileCatalog;
+
+            // 빈 화면(기본) — 흐린 기본 실루엣만
+            var empty = Rect("Empty", area.transform);
+            Stretch(empty);
+            var emptyIcon = Img(Circle(empty.transform, "Silhouette", 120, Vector2.zero), "profile_pic_basic_l");
+            var eRt = emptyIcon.GetComponent<RectTransform>();
+            eRt.anchorMin = eRt.anchorMax = new Vector2(0.5f, 0.5f);
+            emptyIcon.color = new Color(1f, 1f, 1f, 0.35f);
+            panel.EmptyRoot = empty;
+
+            // 프로필 콘텐츠
+            var content = Rect("Content", area.transform);
+            Stretch(content);
+            panel.BgImage = Img(Rect("Bg", content.transform), "profile_bg_basic");
+            Stretch(panel.BgImage.gameObject);
+
+            var dim = Img(Rect("BottomDim", content.transform), "profile_bg_dim"); // 기획: 배경 사진 하단 Dim
+            var dRt = dim.GetComponent<RectTransform>();
+            dRt.anchorMin = new Vector2(0, 0); dRt.anchorMax = new Vector2(1, 0);
+            dRt.pivot = new Vector2(0.5f, 0); dRt.sizeDelta = new Vector2(0, 200); dRt.anchoredPosition = Vector2.zero;
+
+            var portrait = Img(Rect("Portrait", content.transform), "profile_pic_basic_l");
+            var pRt = portrait.GetComponent<RectTransform>();
+            pRt.anchorMin = pRt.anchorMax = new Vector2(0.5f, 0.32f);
+            pRt.sizeDelta = new Vector2(140, 140);
+            panel.PortraitImage = portrait;
+            panel.PortraitButton = portrait.gameObject.AddComponent<Button>();
+
+            panel.NameText = CenterLabel(content.transform, "Name", AggroFont, 25, Color.white, new Vector2(0.5f, 0.17f), new Vector2(360, 36));
+            panel.StatusText = CenterLabel(content.transform, "Status", BodyFont, 16, new Color(1f, 1f, 1f, 0.9f), new Vector2(0.5f, 0.09f), new Vector2(380, 30));
+            panel.EditButton = IconButton(content.transform, "Edit", "btn_edit", new Vector2(-34, -34), 44);
+            var ebRt = panel.EditButton.GetComponent<RectTransform>();
+            ebRt.anchorMin = ebRt.anchorMax = new Vector2(1, 1);
+            content.SetActive(false);
+
+            // 사진 확대(줌) — 창 전체 오버레이, 아무 곳 클릭 닫기
+            var zoom = Rect("ProfileZoom", window);
+            Stretch(zoom);
+            var zoomBg = Img(Rect("ZoomBg", zoom.transform), "profiepic_zoom_bg", new Color(1f, 1f, 1f, 0.97f));
+            Stretch(zoomBg.gameObject);
+            panel.ZoomCloseButton = zoomBg.gameObject.AddComponent<Button>();
+            var zoomImg = Img(Rect("ZoomImage", zoom.transform), "profile_pic_zoom");
+            var zRt = zoomImg.GetComponent<RectTransform>();
+            zRt.anchorMin = zRt.anchorMax = new Vector2(0.5f, 0.55f);
+            zRt.sizeDelta = new Vector2(420, 420);
+            panel.ZoomImage = zoomImg;
+            var zoomName = Img(Rect("ZoomNameBox", zoom.transform), "profile_text_zoom");
+            var znRt = zoomName.GetComponent<RectTransform>();
+            znRt.anchorMin = znRt.anchorMax = new Vector2(0.5f, 0.22f);
+            znRt.sizeDelta = new Vector2(320, 56);
+            panel.ZoomNameText = CenterLabel(zoomName.transform, "Name", AggroFont, 23, TitlePink, new Vector2(0.5f, 0.5f), new Vector2(300, 36));
+            zoom.SetActive(false);
+            panel.ZoomRoot = zoom;
+
+            return panel;
+        }
+
+        /// <summary>플레이어 프로필 편집 화면(기획서 p9~10) — 친구 패널을 덮는 오버레이.</summary>
+        static ProfileEditView BuildProfileEdit(Transform friendPanel, GameStateSO state,
+            MessengerProfileCatalogSO profileCatalog, ProfileChoiceSlot profileChoice)
+        {
+            var root = Rect("ProfileEdit", friendPanel);
+            Stretch(root);
+            var edit = root.AddComponent<ProfileEditView>();
+            edit.Root = root;
+            edit.State = state;
+            edit.ProfileCatalog = profileCatalog;
+            edit.SlotPrefab = profileChoice;
+
+            var bg = Img(Rect("Bg", root.transform), "profile edit_bg");
+            Stretch(bg.gameObject);
+
+            var title = Img(Rect("TitleBox", root.transform), "profile edit_title box");
+            var tRt = title.GetComponent<RectTransform>();
+            tRt.anchorMin = new Vector2(0.04f, 1); tRt.anchorMax = new Vector2(0.4f, 1);
+            tRt.pivot = new Vector2(0.5f, 1); tRt.sizeDelta = new Vector2(0, 48); tRt.anchoredPosition = new Vector2(0, -18);
+
+            edit.ImageContainer = ChoiceRow(root.transform, "ImageRow", 0.70f);
+            edit.BgContainer = ChoiceRow(root.transform, "BgRow", 0.46f);
+
+            // 상태메시지 입력(TMP 기본 구조 재사용)
+            var inputGo = TMP_DefaultControls.CreateInputField(new TMP_DefaultControls.Resources());
+            inputGo.name = "StatusInput";
+            inputGo.transform.SetParent(root.transform, false);
+            var iRt = (RectTransform)inputGo.transform;
+            iRt.anchorMin = new Vector2(0.06f, 0.24f); iRt.anchorMax = new Vector2(0.56f, 0.32f);
+            iRt.offsetMin = iRt.offsetMax = Vector2.zero;
+            edit.StatusInput = inputGo.GetComponent<TMP_InputField>();
+            var placeholder = edit.StatusInput.placeholder as TextMeshProUGUI;
+            if (placeholder != null) placeholder.text = "기본 상태메시지";
+
+            edit.SaveButton = IconButton(root.transform, "Save", "btn_save edit", new Vector2(-110, 40), 44);
+            var sRt = edit.SaveButton.GetComponent<RectTransform>();
+            sRt.anchorMin = sRt.anchorMax = new Vector2(1, 0); sRt.sizeDelta = new Vector2(120, 44);
+            edit.CloseButton = IconButton(root.transform, "Close", "btn_close edit", new Vector2(-34, -28), 36);
+            var cRt = edit.CloseButton.GetComponent<RectTransform>();
+            cRt.anchorMin = cRt.anchorMax = new Vector2(1, 1);
+
+            // 우측 미리보기(기획: 동일하게 dim 적용)
+            var preview = Rect("Preview", root.transform);
+            var pvRt = (RectTransform)preview.transform;
+            pvRt.anchorMin = new Vector2(0.62f, 0.08f); pvRt.anchorMax = new Vector2(0.96f, 0.92f);
+            pvRt.offsetMin = pvRt.offsetMax = Vector2.zero;
+            edit.PreviewBg = Img(Rect("PreviewBg", preview.transform), "profile_bg_basic");
+            Stretch(edit.PreviewBg.gameObject);
+            var pvDim = Img(Rect("PreviewDim", preview.transform), "profile_bg_dim");
+            Stretch(pvDim.gameObject);
+            var pvPortrait = Img(Circle(preview.transform, "PreviewPortrait", 110, Vector2.zero), "profile_pic_basic_l");
+            var ppRt = pvPortrait.GetComponent<RectTransform>();
+            ppRt.anchorMin = ppRt.anchorMax = new Vector2(0.5f, 0.45f);
+            edit.PreviewPortrait = pvPortrait;
+
+            root.SetActive(false);
+            return edit;
+        }
+
+        /// <summary>후보 선택 가로 행(편집 화면) — HorizontalLayoutGroup 컨테이너.</summary>
+        static Transform ChoiceRow(Transform parent, string name, float anchorY)
+        {
+            var row = Rect(name, parent);
+            var rt = (RectTransform)row.transform;
+            rt.anchorMin = new Vector2(0.06f, anchorY); rt.anchorMax = new Vector2(0.56f, anchorY + 0.18f);
+            rt.offsetMin = rt.offsetMax = Vector2.zero;
+            var layout = row.AddComponent<HorizontalLayoutGroup>();
+            layout.spacing = 12;
+            layout.childControlWidth = false; layout.childControlHeight = false;
+            layout.childForceExpandWidth = false; layout.childForceExpandHeight = false;
+            layout.childAlignment = TextAnchor.MiddleLeft;
+            return row.transform;
+        }
+
+        static GameObject BuildProfileChoiceSlot()
+        {
+            var go = Rect("ProfileChoiceSlot", null);
+            Size(go, 96, 96);
+            var bg = go.AddComponent<Image>();
+            bg.sprite = Sprite9("list_bg"); bg.type = Image.Type.Sliced;
+            var slot = go.AddComponent<ProfileChoiceSlot>();
+            slot.Button = go.AddComponent<Button>();
+            go.AddComponent<LayoutElement>().preferredWidth = 96;
+
+            var candidate = Img(Rect("Candidate", go.transform), null);
+            var cRt = candidate.GetComponent<RectTransform>();
+            cRt.anchorMin = Vector2.zero; cRt.anchorMax = Vector2.one;
+            cRt.offsetMin = new Vector2(6, 6); cRt.offsetMax = new Vector2(-6, -6);
+            candidate.preserveAspect = true;
+            slot.Image = candidate;
+
+            var frame = Img(Rect("SelectedFrame", go.transform), "profile pic_select");
+            Stretch(frame.gameObject);
+            frame.gameObject.SetActive(false);
+            slot.SelectedFrame = frame.gameObject;
+            return go;
+        }
+
+        /// <summary>가운데 정렬 라벨(앵커 비율 위치).</summary>
+        static TextMeshProUGUI CenterLabel(Transform parent, string name, string fontPath, float size, Color color,
+            Vector2 anchor, Vector2 dim)
+        {
+            var tmp = Label(parent, name, fontPath, size, color, Vector2.zero, dim, TextAlignmentOptions.Center);
+            var rt = (RectTransform)tmp.transform;
+            rt.anchorMin = rt.anchorMax = anchor;
+            rt.pivot = new Vector2(0.5f, 0.5f);
+            rt.anchoredPosition = Vector2.zero;
+            return tmp;
         }
 
         // ───────────────────────── 서브 프리팹 ─────────────────────────
