@@ -22,11 +22,14 @@ namespace LoveAlgo.Save
             };
         }
 
-        /// <summary>슬롯에 저장(capture + JsonSaveStore.Save). gs null이면 false.</summary>
+        /// <summary>슬롯에 저장(capture + JsonSaveStore.Save). gs null이면 false. 썸네일 파일명을 규약대로 채워두되
+        /// 실제 PNG 기록은 분리(인게임 ThumbnailCaptureController가 비동기 기록 — Load UI는 파일 있으면 표시).</summary>
         public static bool Save(int slot, GameStateSO gs, string chapterLabel = "")
         {
             if (gs == null) return false;
-            return JsonSaveStore.Save(slot, Capture(gs, chapterLabel));
+            var data = Capture(gs, chapterLabel);
+            data.thumbnailFile = JsonSaveStore.ThumbnailFileFor(slot);
+            return JsonSaveStore.Save(slot, data);
         }
 
         /// <summary>슬롯에서 로드해 gs에 복원. 파일 없음/손상/gs null이면 false(상태 불변).</summary>

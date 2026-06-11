@@ -1,16 +1,18 @@
 using System;
 using System.Collections.Generic;
 using LoveAlgo.Common; // EventBus
-using LoveAlgo.Events;  // StartNewGameCommand, ContinueGameCommand, QuitGameCommand
+using LoveAlgo.Core;    // OverlayGate
+using LoveAlgo.Events;  // StartNewGameCommand, ContinueGameCommand, QuitGameCommand, ReturnToTitleCommand
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 namespace LoveAlgo.Game
 {
     /// <summary>
-    /// 씬 전환 어댑터(<c>PhaseController</c> 얇은 어댑터 패턴 미러). 씬별 자족 — 타이틀 씬에 두고
-    /// 타이틀 메뉴 의도(새 게임/이어하기/종료)를 구독한다. 새 게임/이어하기는 부팅 모드(<see cref="GameEntry"/>)를
-    /// 설정하고 게임 씬을 로드하며, 종료는 앱을 닫는다(ADR-013 씬축, persistent 매니저 없이). <c>GameStateSO</c>는
+    /// 씬 전환 어댑터(<c>PhaseController</c> 얇은 어댑터 패턴 미러). 씬별 자족 — 타이틀 씬(메뉴 의도:
+    /// 새 게임/이어하기/로드/종료)과 게임 씬(빠른메뉴 의도: 타이틀 복귀/로드/종료)에 각각 두고 구독한다.
+    /// 새 게임/이어하기/로드는 부팅 모드(<see cref="GameEntry"/>)를 설정하고 게임 씬을 로드하며,
+    /// 종료는 앱을 닫는다(ADR-013 씬축, persistent 매니저 없이). <c>GameStateSO</c>는
     /// .asset이라 씬 간 공유되고, 런타임 초기화/복원은 게임 씬의 <c>GameBootstrap</c>이 수행하므로 여기선
     /// 모드 설정 + 씬 로드(+종료)만 담당한다.
     /// </summary>
@@ -18,6 +20,8 @@ namespace LoveAlgo.Game
     {
         [Tooltip("로드할 게임 씬 이름. Build Settings에 등록돼 있어야 한다.")]
         [SerializeField] string gameSceneName = "Game";
+        [Tooltip("복귀할 타이틀 씬 이름. Build Settings에 등록돼 있어야 한다.")]
+        [SerializeField] string titleSceneName = "Title";
 
         readonly List<IDisposable> _subs = new();
 
@@ -25,7 +29,9 @@ namespace LoveAlgo.Game
         {
             _subs.Add(EventBus.Subscribe<StartNewGameCommand>(OnStartNewGame));
             _subs.Add(EventBus.Subscribe<ContinueGameCommand>(OnContinueGame));
+            _subs.Add(EventBus.Subscribe<LoadGameCommand>(OnLoadGame));
             _subs.Add(EventBus.Subscribe<QuitGameCommand>(OnQuit));
+            _subs.Add(EventBus.Subscribe<ReturnToTitleCommand>(OnReturnToTitle));
         }
 
         void OnDisable()
@@ -46,6 +52,22 @@ namespace LoveAlgo.Game
         {
             GameEntry.PendingMode = BootMode.Continue;
             SceneManager.LoadScene(gameSceneName);
+        }
+
+        /// <summary>특정 슬롯 로드 요청(SaveLoadView): 부팅 모드=Continue + 슬롯 설정 후 게임 씬 로드.</summary>
+        public void OnLoadGame(LoadGameCommand e)
+        {
+            GameEntry.PendingMode = BootMode.Continue;
+            GameEntry.SelectedSlot = e.Slot;
+            SceneManager.LoadScene(gameSceneName);
+        }
+
+        /// <summary>타이틀 복귀 요청(인게임 빠른메뉴): 타이틀 씬 로드. 오버레이 게이트는 정적이라 씬을 넘는
+        /// 유일 상태 — 뷰 OnDisable 누수가드가 정리하지만 만일을 대비해 선제 Reset(이중 안전, 중복 무해).</summary>
+        public void OnReturnToTitle(ReturnToTitleCommand _)
+        {
+            OverlayGate.Reset();
+            SceneManager.LoadScene(titleSceneName);
         }
 
         /// <summary>

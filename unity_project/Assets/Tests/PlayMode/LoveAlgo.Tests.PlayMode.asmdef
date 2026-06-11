@@ -12,6 +12,8 @@
         "LoveAlgo.Audio",
         "LoveAlgo.UI",
         "LoveAlgo.Shop",
+        "LoveAlgo.Settings",
+        "LoveAlgo.MessageStack",
         "Unity.TextMeshPro",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"

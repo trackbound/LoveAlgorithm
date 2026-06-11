@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic; // IReadOnlyList<InlinePause>
 using LoveAlgo.Common; // EventBus
+using LoveAlgo.Core;   // SettingsSO (속도 초기값)
 using LoveAlgo.Events; // ShowDialogueCommand, CompletionHandle
 using TMPro;
 using UnityEngine;
@@ -30,14 +31,36 @@ namespace LoveAlgo.UI
         [Tooltip("오토 모드에서 타이핑 완료 후 자동 진행까지 지연(초). 클릭하면 즉시 진행.")]
         [SerializeField] float autoAdvanceDelay = 1.2f;
 
+        [Header("설정 속도 매핑 (정규화 0=느림~1=빠름 → 초)")]
+        [SerializeField] float slowCharInterval = 0.08f;
+        [SerializeField] float fastCharInterval = 0.004f;
+        [SerializeField] float slowAutoDelay = 2.5f;
+        [SerializeField] float fastAutoDelay = 0.3f;
+        [Tooltip("속도 초기값 소스(미바인딩 시 SettingsSO.Shared).")]
+        [SerializeField] SettingsSO settings;
+
+        [Header("진행 표시(End Mark)")]
+        [Tooltip("대사 진행 아이콘(NextIndicator RectTransform). 타이핑 완료 후 본문 마지막 글자 뒤에 표시하고 진행 시 숨김. 미지정 시 무시.")]
+        [SerializeField] RectTransform endMark;
+        [Tooltip("마지막 글자 오른쪽 끝 기준 아이콘 위치 보정(px). 아이콘 중심이 글자 끝에 오므로 x는 보통 +(절반폭+여백). y=세로 미세조정.")]
+        [SerializeField] Vector2 endMarkOffset = new Vector2(20f, 0f);
+        [Tooltip("진행 아이콘 위아래 바운스 진폭(px). 0이면 정지.")]
+        [SerializeField] float endMarkBobAmplitude = 4f;
+        [Tooltip("진행 아이콘 바운스 속도(라디안/초).")]
+        [SerializeField] float endMarkBobSpeed = 6f;
+
         public GameObject Root { get => root; set => root = value; }
         public TMP_Text SpeakerText { get => speakerText; set => speakerText = value; }
         public TMP_Text BodyText { get => bodyText; set => bodyText = value; }
         public float CharInterval { get => charInterval; set => charInterval = value; }
         public float AutoAdvanceDelay { get => autoAdvanceDelay; set => autoAdvanceDelay = value; }
         public bool AutoMode { get => _auto; set => _auto = value; }
+        public RectTransform EndMark { get => endMark; set => endMark = value; }
+        public Vector2 EndMarkOffset { get => endMarkOffset; set => endMarkOffset = value; }
+        public float EndMarkBobAmplitude { get => endMarkBobAmplitude; set => endMarkBobAmplitude = value; }
+        public float EndMarkBobSpeed { get => endMarkBobSpeed; set => endMarkBobSpeed = value; }
 
-        IDisposable _sub, _autoSub, _cgSub, _visSub;
+        IDisposable _sub, _autoSub, _cgSub, _visSub, _textSpeedSub, _autoSpeedSub;
         Coroutine _typeRoutine;
         CompletionHandle _active;
         bool _typing;
@@ -45,6 +68,8 @@ namespace LoveAlgo.UI
         bool _awaitingClick;
         bool _auto;
         bool _cgHidden;
+        bool _endMarkShown;
+        float _endMarkBaseY;
         IReadOnlyList<InlinePause> _pauses;
         IReadOnlyList<InlineEmote> _emotes;
         string _speaker;
@@ -56,6 +81,10 @@ namespace LoveAlgo.UI
             _autoSub = EventBus.Subscribe<SetAutoModeCommand>(e => _auto = e.On);
             _cgSub = EventBus.Subscribe<SetCgModeCommand>(OnCgMode);
             _visSub = EventBus.Subscribe<SetDialogueVisibleCommand>(e => { if (root != null) root.SetActive(e.Visible); });
+            _textSpeedSub = EventBus.Subscribe<SetTextSpeedCommand>(e => ApplyTextSpeed(e.Value01));
+            _autoSpeedSub = EventBus.Subscribe<SetAutoSpeedCommand>(e => ApplyAutoSpeed(e.Value01));
+            ApplyFromSettings(); // 영속 속도 채택(SettingsController 부팅 재발행 전이라도 직접 반영)
+            HideEndMark(); // 씬에 authored-active로 둔 아이콘을 플레이 시작 시 숨김(첫 대사 완료 전까지 비표시).
         }
 
         void OnDisable()
@@ -64,8 +93,25 @@ namespace LoveAlgo.UI
             _autoSub?.Dispose();
             _cgSub?.Dispose();
             _visSub?.Dispose();
-            _sub = _autoSub = _cgSub = _visSub = null;
+            _textSpeedSub?.Dispose();
+            _autoSpeedSub?.Dispose();
+            _sub = _autoSub = _cgSub = _visSub = _textSpeedSub = _autoSpeedSub = null;
         }
+
+        // ── 설정 속도(정규화 0=느림~1=빠름 → 초) ──
+        void ApplyFromSettings()
+        {
+            var s = settings != null ? settings : SettingsSO.Shared;
+            if (s == null) return;
+            ApplyTextSpeed(s.TextSpeed);
+            ApplyAutoSpeed(s.AutoSpeed);
+        }
+
+        void ApplyTextSpeed(float t01) => charInterval = MapSpeed(t01, slowCharInterval, fastCharInterval);
+        void ApplyAutoSpeed(float t01) => autoAdvanceDelay = MapSpeed(t01, slowAutoDelay, fastAutoDelay);
+
+        /// <summary>정규화 0(느림)~1(빠름) → 초(느림 경계~빠름 경계). 빠를수록 작은 초. EditMode 테스트 대상.</summary>
+        public static float MapSpeed(float t01, float slowSeconds, float fastSeconds) => Mathf.Lerp(slowSeconds, fastSeconds, Mathf.Clamp01(t01));
 
         // CG 컷신 진입 시 대사창을 숨기고 종료 시 복원(ADR-007: CG 뷰가 직접 참조하지 않고 명령으로). 대칭 토글.
         void OnCgMode(SetCgModeCommand e)
@@ -73,6 +119,7 @@ namespace LoveAlgo.UI
             if (root == null) return;
             if (e.Active)
             {
+                HideEndMark();
                 if (root.activeSelf) { root.SetActive(false); _cgHidden = true; }
             }
             else if (_cgHidden)
@@ -85,6 +132,7 @@ namespace LoveAlgo.UI
         void OnShow(ShowDialogueCommand e)
         {
             if (_typeRoutine != null) StopCoroutine(_typeRoutine);
+            HideEndMark(); // 새 줄 타이핑 시작 — 직전 진행 아이콘 숨김.
             _active = e.Handle;
             if (root != null) root.SetActive(true);
             _speaker = e.Speaker;
@@ -149,13 +197,14 @@ namespace LoveAlgo.UI
             if (requireClick)
             {
                 _awaitingClick = true;
+                ShowEndMarkAtTextEnd(); // 타이핑 완료 + 클릭 대기 → 본문 끝에 진행 아이콘 표시.
                 if (_auto)
                 {
                     // 오토: 지연만큼 대기하되 클릭(_awaitingClick=false)이 오면 즉시 진행.
                     float t = 0f;
                     while (_awaitingClick && t < autoAdvanceDelay)
                     {
-                        t += Time.deltaTime;
+                        if (!OverlayGate.IsBlocked) t += Time.deltaTime; // 오버레이 열림 중 오토 일시정지
                         yield return null;
                     }
                     _awaitingClick = false;
@@ -166,6 +215,7 @@ namespace LoveAlgo.UI
                 }
             }
 
+            HideEndMark(); // 진행/오토 완료 — 아이콘 숨김.
             _typeRoutine = null;
             _active?.Complete();
             _active = null;
@@ -194,6 +244,7 @@ namespace LoveAlgo.UI
         // 단 입력 필드(LockScreen 비번 등) 타이핑 중엔 무시 — 스페이스가 텍스트 입력 대신 대사 진행을 가로채지 않도록.
         void Update()
         {
+            UpdateEndMarkBob();
             var kb = Keyboard.current;
             if (kb == null || !kb.spaceKey.wasPressedThisFrame) return;
             if (IsTextInputFocused()) return;
@@ -213,6 +264,7 @@ namespace LoveAlgo.UI
         /// <paramref name="source"/>는 디버그 로그용 입력 출처(좌클릭/스페이스 등, <see cref="DebugInput"/>).</summary>
         public void Advance(string source = null)
         {
+            if (OverlayGate.IsBlocked) return; // 오버레이(설정/세이브로드) 열림 중 진행/스킵 차단 — 키보드 직접 읽기 보호
             string s = source ?? "?";
             if (_typing) { _skipTyping = true; DebugInput.Log($"{s} → 대사 타이핑 스킵"); } // 스킵(완성 가속)은 무음
             else if (_awaitingClick)
@@ -238,6 +290,45 @@ namespace LoveAlgo.UI
             if (stride < 1) stride = 1;
             if (i % stride != 0) return false;
             return !char.IsWhiteSpace(text[i - 1]);
+        }
+
+        // 본문 마지막 가시 글자 뒤(그 줄의 세로 중앙)에 진행 아이콘을 배치·활성화한다. bodyText와 endMark는 같은 부모
+        // (대사창 Box)의 형제지만, 글자 좌표는 TMP 로컬이라 월드 경유로 변환해 앵커/피벗에 무관하게 정확히 배치한다
+        // (아이콘 피벗=중앙 가정, endMarkOffset으로 간격/세로 보정).
+        void ShowEndMarkAtTextEnd()
+        {
+            if (endMark == null || bodyText == null) return;
+            bodyText.ForceMeshUpdate();
+            TMP_TextInfo ti = bodyText.textInfo;
+            int last = -1;
+            for (int i = ti.characterCount - 1; i >= 0; i--)
+                if (ti.characterInfo[i].isVisible) { last = i; break; }
+            if (last < 0) { HideEndMark(); return; } // 가시 글자 없음(빈 내레이션 등) → 표시 안 함.
+
+            TMP_CharacterInfo ci = ti.characterInfo[last];
+            TMP_LineInfo line = ti.lineInfo[ci.lineNumber];
+            Vector3 local = new Vector3(ci.topRight.x, (line.ascender + line.descender) * 0.5f, 0f);
+
+            if (!endMark.gameObject.activeSelf) endMark.gameObject.SetActive(true);
+            endMark.position = bodyText.rectTransform.TransformPoint(local); // 아이콘 중심을 글자 끝·줄 중앙으로.
+            endMark.localPosition += (Vector3)endMarkOffset;                  // 간격/세로 보정(부모 스케일 1·무회전 가정).
+            _endMarkBaseY = endMark.localPosition.y;
+            _endMarkShown = true;
+        }
+
+        void HideEndMark()
+        {
+            _endMarkShown = false;
+            if (endMark != null && endMark.gameObject.activeSelf) endMark.gameObject.SetActive(false);
+        }
+
+        // 표시 중일 때만 위아래 사인 바운스(정지 스프라이트라 트랜스폼으로 생동감). 메뉴 등 timeScale=0에도 돌도록 unscaled.
+        void UpdateEndMarkBob()
+        {
+            if (!_endMarkShown || endMark == null || endMarkBobAmplitude == 0f) return;
+            Vector3 lp = endMark.localPosition;
+            lp.y = _endMarkBaseY + Mathf.Sin(Time.unscaledTime * endMarkBobSpeed) * endMarkBobAmplitude;
+            endMark.localPosition = lp;
         }
     }
 }

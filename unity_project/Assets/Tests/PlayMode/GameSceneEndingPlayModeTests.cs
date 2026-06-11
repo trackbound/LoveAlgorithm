@@ -5,30 +5,38 @@ using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
+using UnityEngine.UI;
 using LoveAlgo;          // GameConstants
 using LoveAlgo.Common;   // EventBus
 using LoveAlgo.Core;     // GameStateSO, JsonSaveStore
 using LoveAlgo.Events;   // ShowDialogueCommand, ShowChoiceCommand
-using LoveAlgo.Schedule; // ScheduleView
+using LoveAlgo.Schedule; // ScheduleActionButton, ScheduleType
 using LoveAlgo.UI;       // EndingView
 using GameManager = LoveAlgo.Game.GameManager;
 
 namespace LoveAlgo.Tests.PlayMode
 {
     /// <summary>
-    /// 슬라이스 C: 30일 루프의 종료점. 마지막 날 행동을 소진하면 저녁 이벤트 씨임이 Confession.csv(실 트리거
-    /// 슬라이스에서 Day30 매핑)를 재생하고, 종료 후 하루 전환 → PhaseController 그룹 토글로 EndingView가
-    /// 표시되는지 실 씬에서 검증. 대사는 핸들을 즉시 완료시켜 클릭 없이 진행(핸들 완료가 엔진 계약 — 뷰와 병행 무해).
+    /// 슬라이스 C: 30일 루프의 종료점. 마지막 날 행동을 소진하면 저녁 이벤트 씨임이 Confession.csv(Day30 매핑)를
+    /// 재생하고, 종료 후 하루 전환 → PhaseController 그룹 토글로 EndingView가 표시되는지 실 씬에서 검증.
+    /// 정적 스케줄 액션 버튼(편의점=PartTime_Store)을 눌러 루프를 구동한다. 대사는 핸들을 즉시 완료시켜 진행.
     /// </summary>
     public class GameSceneEndingPlayModeTests
     {
+        static ScheduleActionButton FindAction(ScheduleType type)
+        {
+            foreach (var b in UnityEngine.Object.FindObjectsByType<ScheduleActionButton>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+                if (b.Type == type) return b;
+            return null;
+        }
+
         [UnityTest]
         public IEnumerator LastDay_Exhausted_Plays_Confession_Then_Shows_EndingView()
         {
             yield return SceneManager.LoadSceneAsync("Game", LoadSceneMode.Single);
             var bootstrap = UnityEngine.Object.FindAnyObjectByType<LoveAlgo.Game.GameBootstrap>();
             if (bootstrap != null) bootstrap.PrologueCsv = ""; // 프롤로그 스킵 — 이 테스트는 엔딩 진입만 격리 검증
-            yield return null; // 부팅 + UI OnEnable
+            yield return null; // 부팅 + UI 활성
 
             var ending = UnityEngine.Object.FindAnyObjectByType<EndingView>(FindObjectsInactive.Include);
             Assert.IsNotNull(ending, "씬에 EndingView 존재");
@@ -36,8 +44,19 @@ namespace LoveAlgo.Tests.PlayMode
 
             var gm = UnityEngine.Object.FindAnyObjectByType<GameManager>();
             var state = gm.State;
-            var ui = UnityEngine.Object.FindAnyObjectByType<ScheduleView>();
-            Assert.IsNotNull(ui, "씬에 ScheduleView 존재");
+
+            // 정적 액션 버튼(PartTime_Store) 활성까지 대기(부팅→스케줄 페이즈, 1프레임 초과 가능).
+            ScheduleActionButton action = null;
+            float uiDeadline = Time.realtimeSinceStartup + 5f;
+            while (Time.realtimeSinceStartup < uiDeadline)
+            {
+                action = FindAction(ScheduleType.PartTime_Store);
+                if (action != null && action.isActiveAndEnabled) break;
+                action = null;
+                yield return null;
+            }
+            Assert.IsNotNull(action, "PartTime_Store 정적 액션 버튼이 활성화되어야 함");
+            var button = action.GetComponent<Button>();
 
             state.Day = GameConstants.MaxDay; // 마지막 날로 점프
             JsonSaveStore.Delete(JsonSaveStore.AutoSaveSlot);
@@ -57,7 +76,7 @@ namespace LoveAlgo.Tests.PlayMode
                 // → RequestPhaseCommand(Ending) → 그룹 토글
                 int apd = GameConstants.ActionsPerDay;
                 for (int i = 0; i < apd; i++)
-                    ui.Slots[0].Button.onClick.Invoke();
+                    button.onClick.Invoke();
 
                 // 연출(BG 크로스/배너)이 실시간 코루틴이라 종료까지 프레임 대기(상한 30s).
                 float deadline = Time.realtimeSinceStartup + 30f;

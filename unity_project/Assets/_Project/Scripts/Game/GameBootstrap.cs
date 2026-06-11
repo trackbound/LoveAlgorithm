@@ -44,8 +44,9 @@ namespace LoveAlgo.Game
                 Debug.LogError("[GameBootstrap] state(GameStateSO) 미바인딩 — 부팅 불가.");
                 return;
             }
+            int slot = GameEntry.SelectedSlot; // Consume이 리셋하므로 먼저 읽는다
             var mode = GameEntry.Consume();
-            if (mode == BootMode.Continue && GameBoot.ContinueGame(state, balance)) return;
+            if (mode == BootMode.Continue && GameBoot.ContinueGame(state, balance, slot)) return;
             GameBoot.NewGame(state, balance); // NewGame이거나 Continue 폴백(세이브 없음/손상)
             PlayPrologue();                   // 새 게임 1회: 프롤로그 자동 재생
         }

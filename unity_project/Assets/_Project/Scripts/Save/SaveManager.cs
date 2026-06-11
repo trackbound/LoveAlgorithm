@@ -46,6 +46,7 @@ namespace LoveAlgo.Save
             }
 
             bool ok = SaveService.Save(e.Slot, state, BuildChapterLabel());
+            if (ok) EventBus.Publish(new CaptureThumbnailCommand(e.Slot)); // 썸네일 PNG 비동기 기록(인게임 컨트롤러 구독, 없으면 no-op)
             EventBus.Publish(new SaveCompletedEvent(e.Slot, ok));
         }
 

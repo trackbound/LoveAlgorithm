@@ -42,6 +42,7 @@ namespace LoveAlgo.Audio
 
         Coroutine _bgmFade;
         readonly List<IDisposable> _subs = new();
+        float _bgmVolume = 1f, _sfxVolume = 1f; // 설정 볼륨(SetVolumeCommand) — 재생/페이드 타깃에 반영
 
         void OnEnable()
         {
@@ -51,6 +52,7 @@ namespace LoveAlgo.Audio
             _subs.Add(EventBus.Subscribe<PlaySfxCommand>(e => PlaySfx(e.Name)));
             _subs.Add(EventBus.Subscribe<PlayVoiceCommand>(e => PlayVoice(e.Name)));
             _subs.Add(EventBus.Subscribe<StopVoiceCommand>(_ => StopVoice()));
+            _subs.Add(EventBus.Subscribe<SetVolumeCommand>(OnSetVolume));
         }
 
         void OnDisable()
@@ -112,7 +114,7 @@ namespace LoveAlgo.Audio
         {
             bgmSource.clip = clip;
             bgmSource.loop = true;
-            bgmSource.volume = 1f;
+            bgmSource.volume = _bgmVolume;
             bgmSource.Play();
         }
 
@@ -124,8 +126,8 @@ namespace LoveAlgo.Audio
             bgmSource.clip = clip;
             bgmSource.loop = true;
             bgmSource.Play();
-            yield return FadeVolume(0f, 1f, fade);
-            bgmSource.volume = 1f;
+            yield return FadeVolume(0f, _bgmVolume, fade);
+            bgmSource.volume = _bgmVolume;
             _bgmFade = null;
         }
 
@@ -134,7 +136,7 @@ namespace LoveAlgo.Audio
             yield return FadeVolume(bgmSource.volume, 0f, fade);
             bgmSource.Stop();
             bgmSource.clip = null;
-            bgmSource.volume = 1f;
+            bgmSource.volume = _bgmVolume;
             _bgmFade = null;
         }
 
@@ -158,7 +160,7 @@ namespace LoveAlgo.Audio
             EnsureSources();
             var clip = ClipLoader?.Invoke("SFX", name);
             if (clip == null) { Debug.LogWarning($"[AudioManager] SFX 없음: {name}"); return; }
-            sfxSource.PlayOneShot(clip);
+            sfxSource.PlayOneShot(clip, _sfxVolume);
         }
 
         public void PlayVoice(string name)
@@ -174,6 +176,23 @@ namespace LoveAlgo.Audio
         public void StopVoice()
         {
             if (voiceSource != null) voiceSource.Stop();
+        }
+
+        // ── 볼륨(설정) ──
+        // SetVolumeCommand로 채널 볼륨 갱신. 재생/페이드가 _bgmVolume/_sfxVolume를 타깃으로 쓴다(PlayBgm가 1f로
+        // 덮어쓰던 문제 해소). 페이드 중이면 코루틴이 _bgmVolume로 수렴하므로 즉시 덮어쓰지 않는다.
+        void OnSetVolume(SetVolumeCommand e)
+        {
+            switch (e.Channel)
+            {
+                case AudioChannel.Bgm:
+                    _bgmVolume = Mathf.Clamp01(e.Value);
+                    if (bgmSource != null && _bgmFade == null) bgmSource.volume = _bgmVolume;
+                    break;
+                case AudioChannel.Sfx:
+                    _sfxVolume = Mathf.Clamp01(e.Value);
+                    break;
+            }
         }
     }
 }

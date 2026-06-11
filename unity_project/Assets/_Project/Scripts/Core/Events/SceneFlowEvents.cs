@@ -27,4 +27,13 @@ namespace LoveAlgo.Events
     public readonly struct QuitGameCommand
     {
     }
+
+    /// <summary>
+    /// 메인 타이틀 복귀 *의도*(EventBus). 인게임 빠른메뉴(<c>QuickMenuView</c>)가 발행 → 게임 씬의
+    /// <c>SceneFlowController</c>가 구독해 타이틀 씬을 로드한다(서브메뉴 기획서 — 확인 팝업 없음,
+    /// 진행은 마지막 오토세이브 시점까지 보존). 파라미터 없음.
+    /// </summary>
+    public readonly struct ReturnToTitleCommand
+    {
+    }
 }

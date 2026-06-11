@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using LoveAlgo.Common; // EventBus
+using LoveAlgo.Core;   // OverlayGate
 
 namespace LoveAlgo.Schedule
 {
@@ -40,7 +41,10 @@ namespace LoveAlgo.Schedule
         }
 
         void OnSlotSelected(ScheduleType type)
-            => EventBus.Publish(new ScheduleSelectedCommand(type));
+        {
+            if (OverlayGate.IsBlocked) return; // 오버레이 열림 중 선택 무시(안전망 — 마우스는 raycast가 막음)
+            EventBus.Publish(new ScheduleSelectedCommand(type));
+        }
 
         void Clear()
         {

@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e1a35bc3ed5e7bc4ab076b34a447e046, type: 3}
+  m_Name: MessageSequence_ROA
+  m_EditorClassIdentifier: LoveAlgo.MessageStack::LoveAlgo.MessageStack.MessageSequenceSO
+  senderName: ROA
+  startDelay: 1
+  lines:
+  - text: "\uC5B4\uB514\uC57C?"
+    delay: 1
+  - text: "\uC65C \uC548 \uC640\u2026"
+    delay: 1.5
+  - text: "\uBC14\uC05C \uAC70\uC57C?"
+    delay: 1.5
+  - text: "\uBCF4\uACE0 \uC2F6\uC5B4!"
+    delay: 1.5
+  - text: "\uC9C0\uAE08 \uC5B4\uB514\uB0D0\uACE0."
+    delay: 1.5
+  - text: "\u2026\uAE30\uB2E4\uB9B4\uAC8C."
+    delay: 1.5

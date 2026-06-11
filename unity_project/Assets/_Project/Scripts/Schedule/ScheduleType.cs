@@ -111,6 +111,24 @@ namespace LoveAlgo.Schedule
             return effectMap.TryGetValue(type, out var e) ? e : new("알 수 없음", "", 0, 0, 0, 0, 0, 0);
         }
 
+        /// <summary>스케줄 효과를 "힘 +3, 피로도 +10" 요약 문자열로(0 항목 생략·부호 포함). 확인 팝업용.
+        /// 투자처럼 효과표가 전부 0이면 빈 문자열(실 변화는 런타임 RNG).</summary>
+        public static string FormatEffect(ScheduleType type) => FormatEffect(Get(type));
+
+        /// <summary>효과 구조체를 요약 문자열로(순수 — 데이터 출처 무관, EditMode 테스트 가능).</summary>
+        public static string FormatEffect(ScheduleEffect e)
+        {
+            var parts = new List<string>(6);
+            void Add(string label, int v) { if (v != 0) parts.Add($"{label} {(v > 0 ? "+" : "")}{v}"); }
+            Add("힘", e.strengthChange);
+            Add("지성", e.intelligenceChange);
+            Add("사교성", e.socialChange);
+            Add("끈기", e.perseveranceChange);
+            Add("피로도", e.fatigueChange);
+            if (e.moneyChange != 0) parts.Add($"돈 {(e.moneyChange > 0 ? "+" : "")}{e.moneyChange:N0}");
+            return parts.Count > 0 ? string.Join(", ", parts) : "";
+        }
+
         public static ScheduleCategory GetCategory(ScheduleType type) => type switch
         {
             ScheduleType.PartTime_Store or

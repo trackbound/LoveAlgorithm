@@ -15,8 +15,8 @@ namespace LoveAlgo.UI
     ///   (둘 다 SceneFlowController가 받아 게임 씬 로드). Continue는 오토세이브가 없으면 비활성(interactable=false).
     /// - Exit → 확인 모달(<see cref="ShowModalCommand"/>) → "예"일 때만 <see cref="QuitGameCommand"/> 발행
     ///   (SceneFlowController가 받아 종료). 모달 뷰(ModalView)는 Title 씬에 배선해야 한다(없으면 콜백 미수신=종료 불가).
-    /// - Settings(Config)/Load/Extra → 목적지 화면이 아직 없어 클릭 시 안내 로그만(후속 마일스톤에서 실 구현).
-    ///   과설계 게이트: 화면·커맨드를 미리 만들지 않고 배선 구조만 준비.
+    /// - Settings(Config) → <see cref="ShowSettingsCommand"/>, Load → <see cref="ShowSaveLoadCommand"/>(Overlay 팝업; 각각
+    ///   SettingsView/SaveLoadView가 구독·표시). Extra → 목적지 미존재로 안내 로그만(후속). 필요한 것만 배선(과설계 게이트).
     ///
     /// 진입 연출: <see cref="Start"/>에서 타이틀 BGM 재생 명령(<see cref="PlayBgmCommand"/>)을 발행한다 —
     /// Title 씬의 AudioManager가 구독·재생(ADR-007). titleBgm을 비우면 발행하지 않는다.
@@ -81,9 +81,9 @@ namespace LoveAlgo.UI
             },
             new ModalRequest(i => { if (i == 1) EventBus.Publish(new QuitGameCommand()); })));
 
-        // 목적지 화면 미존재 — 클릭 피드백만(화면/커맨드 신설 없이 배선만 준비). 후속 마일스톤에서 실 구현.
-        void OnSettings() => LogTodo("설정(Config)");
-        void OnLoad() => LogTodo("불러오기(Load)");
+        // Settings/Load는 Overlay 팝업 커맨드 발행(SettingsView/SaveLoadView가 구독·표시). Extra는 목적지 미존재 — 안내 로그만.
+        void OnSettings() => EventBus.Publish(new ShowSettingsCommand());
+        void OnLoad() => EventBus.Publish(new ShowSaveLoadCommand(SaveLoadMode.Load));
         void OnExtra() => LogTodo("부가 콘텐츠(Extra)");
         static void LogTodo(string what) => Log.Info($"[Title] {what} 화면은 준비 중입니다(후속 마일스톤).");
 

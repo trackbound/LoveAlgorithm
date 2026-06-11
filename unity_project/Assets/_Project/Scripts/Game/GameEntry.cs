@@ -1,3 +1,5 @@
+using LoveAlgo.Core; // JsonSaveStore.AutoSaveSlot
+
 namespace LoveAlgo.Game
 {
     /// <summary>게임 씬 부팅 모드.</summary>
@@ -19,11 +21,15 @@ namespace LoveAlgo.Game
     {
         public static BootMode PendingMode = BootMode.NewGame;
 
-        /// <summary>현재 모드를 반환하고 NewGame으로 리셋한다(1회성 소비).</summary>
+        /// <summary>Continue 시 로드할 슬롯(기본=자동저장 슬롯0). LoadGameCommand가 특정 슬롯으로 설정.</summary>
+        public static int SelectedSlot = JsonSaveStore.AutoSaveSlot;
+
+        /// <summary>현재 모드를 반환하고 기본값(NewGame·자동저장 슬롯)으로 리셋한다(1회성 소비).</summary>
         public static BootMode Consume()
         {
             var mode = PendingMode;
             PendingMode = BootMode.NewGame;
+            SelectedSlot = JsonSaveStore.AutoSaveSlot;
             return mode;
         }
     }

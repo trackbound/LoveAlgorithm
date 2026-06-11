@@ -15,10 +15,13 @@ namespace LoveAlgo.UI
     {
         [Tooltip("선택지 비주얼 루트(선택). 표시 중에만 활성, 선택 후 숨김.")]
         [SerializeField] GameObject root;
+        [Tooltip("선택지 표시 중 화면을 어둡게 덮는 딤 배경(선택). root와 함께 토글 — 뒤 UI 클릭 차단용.")]
+        [SerializeField] GameObject dim;
         [SerializeField] Transform slotContainer;
         [SerializeField] ChoiceSlot slotPrefab;
 
         public GameObject Root { get => root; set => root = value; }
+        public GameObject Dim { get => dim; set => dim = value; }
         public Transform SlotContainer { get => slotContainer; set => slotContainer = value; }
         public ChoiceSlot SlotPrefab { get => slotPrefab; set => slotPrefab = value; }
 
@@ -40,6 +43,7 @@ namespace LoveAlgo.UI
             Clear();
             _active = e.Handle;
             if (root != null) root.SetActive(true);
+            if (dim != null) dim.SetActive(true);
 
             if (slotPrefab == null || slotContainer == null)
             {
@@ -63,6 +67,7 @@ namespace LoveAlgo.UI
             _active = null;
             Clear();
             if (root != null) root.SetActive(false);
+            if (dim != null) dim.SetActive(false);
         }
 
         void Clear()

@@ -98,5 +98,42 @@ namespace LoveAlgo.Tests.Editor
                 Object.DestroyImmediate(gs);
             }
         }
+
+        [Test]
+        public void ContinueGame_Loads_From_Specified_Slot()
+        {
+            const int Slot = 7; // 유저 슬롯(자동저장 슬롯0과 구분 — 지정 슬롯 로드 검증)
+            var backup = JsonSaveStore.Load(Slot);
+            var gs = ScriptableObject.CreateInstance<GameStateSO>();
+            try
+            {
+                gs.ResetRuntime();
+                gs.Day = 12;
+                gs.Money = 4321;
+                JsonSaveStore.Save(Slot, new SaveData { state = gs.Data });
+
+                gs.Day = 1; gs.Money = 0; // 더럽힘 — 지정 슬롯에서 복원해야
+
+                bool ok = GameBoot.ContinueGame(gs, null, Slot);
+
+                Assert.IsTrue(ok, "지정 슬롯 로드 성공");
+                Assert.AreEqual(12, gs.Day, "지정 슬롯의 일차 복원");
+                Assert.AreEqual(4321, gs.Money, "지정 슬롯의 소지금 복원");
+            }
+            finally
+            {
+                if (backup != null) JsonSaveStore.Save(Slot, backup);
+                else JsonSaveStore.Delete(Slot);
+                Object.DestroyImmediate(gs);
+            }
+        }
+
+        [Test]
+        public void GameEntry_Consume_Resets_SelectedSlot()
+        {
+            GameEntry.SelectedSlot = 9;
+            GameEntry.Consume();
+            Assert.AreEqual(JsonSaveStore.AutoSaveSlot, GameEntry.SelectedSlot, "소비 후 자동저장 슬롯으로 리셋");
+        }
     }
 }
