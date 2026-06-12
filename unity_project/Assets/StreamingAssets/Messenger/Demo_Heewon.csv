@@ -1,0 +1,6 @@
+Type,Speaker,Value
+# 데모 — 도희원: 선택 대기 재진입 확인용(답 안 하고 닫았다 다시 열면 이어짐) + Flag 효과
+Msg,c04,과제 자료 정리본 필요해?
+Option,,필요해! 고마워|Flag:Demo_GotNotes
+Option,,괜찮아. 직접 할게
+Msg,c04,그래. 필요하면 언제든 말해

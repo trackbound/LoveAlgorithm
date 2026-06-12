@@ -11,7 +11,7 @@ namespace LoveAlgo.Messenger
     /// <code>
     /// Msg,로아,안녕! 내일 시간 있어?      ← 상대 말풍선(Speaker=발신자)
     /// Me,,그럼 내일 봐!                  ← 주인공 말풍선
-    /// Option,,있지! 같이 가자|Love:로아:1 ← 선택지(연속 Option 행 = 그룹 1개)
+    /// Option,,있지! 같이 가자|Love:Roa:1  ← 선택지(연속 Option 행 = 그룹 1개, Love는 호감도 정본 id)
     /// </code>
     /// 옵션 셀은 스토리 Option에서 점프 슬롯만 뺀 <c>텍스트|효과...|if:조건</c> — 메신저는 분기 없는 선형.
     /// </summary>

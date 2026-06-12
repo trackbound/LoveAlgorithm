@@ -25,7 +25,8 @@ namespace LoveAlgo.Messenger
     /// <summary>
     /// 선택지 1개. 셀 문법은 스토리 Option에서 점프 슬롯만 뺀 형태(메신저는 분기 없음):
     /// <c>버튼텍스트|효과1|효과2|...|if:조건</c>. 효과 문자열은 스토리 선택지와 동일 문법
-    /// (예: <c>Love:로아:1</c>) — 해석·발행은 어댑터 몫이라 여기선 원문 보관.
+    /// (예: <c>Love:Roa:1</c> — Love의 히로인 id는 호감도 정본 id(Roa/HaYeEun/...)로, 발신자
+    /// c0X(에셋/친구 id)와 다른 공간) — 해석·발행은 어댑터 몫이라 여기선 원문 보관.
     /// </summary>
     public sealed class MessengerOption
     {

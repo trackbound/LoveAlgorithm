@@ -23,7 +23,7 @@ namespace LoveAlgo.DevTools.Editor
         const string BodyFont = "Assets/Fonts/Pretendard-SemiBold SDF.asset";
 
         // 기획서 폰트 정보의 컬러 스펙
-        static readonly Color TitlePink = Hex("#ff99b6");
+        internal static readonly Color TitlePink = Hex("#ff99b6");
         static readonly Color DarkText = Hex("#4a4a4a");
 
         [MenuItem("Tools/Messenger/Build Messenger Prefabs")]
@@ -516,14 +516,14 @@ namespace LoveAlgo.DevTools.Editor
 
         // ───────────────────────── 헬퍼 ─────────────────────────
 
-        static GameObject Rect(string name, Transform parent)
+        internal static GameObject Rect(string name, Transform parent)
         {
             var go = new GameObject(name, typeof(RectTransform));
             if (parent != null) go.transform.SetParent(parent, false);
             return go;
         }
 
-        static void Stretch(GameObject go)
+        internal static void Stretch(GameObject go)
         {
             var rt = (RectTransform)go.transform;
             rt.anchorMin = Vector2.zero; rt.anchorMax = Vector2.one;
@@ -537,15 +537,15 @@ namespace LoveAlgo.DevTools.Editor
             rt.offsetMin = new Vector2(left, 0);
         }
 
-        static void Size(GameObject go, float w, float h)
+        internal static void Size(GameObject go, float w, float h)
         {
             var rt = (RectTransform)go.transform;
             rt.sizeDelta = new Vector2(w, h);
         }
 
-        static Image Img(GameObject go, string spriteName) => Img(go, spriteName, Color.white);
+        internal static Image Img(GameObject go, string spriteName) => Img(go, spriteName, Color.white);
 
-        static Image Img(GameObject go, string spriteName, Color color)
+        internal static Image Img(GameObject go, string spriteName, Color color)
         {
             var img = go.AddComponent<Image>();
             if (!string.IsNullOrEmpty(spriteName)) img.sprite = LoadSprite(spriteName);
@@ -574,7 +574,7 @@ namespace LoveAlgo.DevTools.Editor
             return go.AddComponent<Button>();
         }
 
-        static TextMeshProUGUI Label(Transform parent, string name, string fontPath, float size, Color color,
+        internal static TextMeshProUGUI Label(Transform parent, string name, string fontPath, float size, Color color,
             Vector2 pos, Vector2 dim, TextAlignmentOptions align)
         {
             var go = Rect(name, parent);
@@ -620,14 +620,14 @@ namespace LoveAlgo.DevTools.Editor
             return content.transform;
         }
 
-        static Sprite LoadSprite(string name)
+        internal static Sprite LoadSprite(string name)
         {
             var sprite = AssetDatabase.LoadAssetAtPath<Sprite>($"{ArtDir}/{name}.png");
             if (sprite == null) Debug.LogWarning($"[MessengerPrefabBuilder] 스프라이트 없음: {ArtDir}/{name}.png");
             return sprite;
         }
 
-        static Sprite Sprite9(string name) => LoadSprite(name);
+        internal static Sprite Sprite9(string name) => LoadSprite(name);
 
         static GameObject SavePrefab(GameObject go, string path)
         {
@@ -636,7 +636,7 @@ namespace LoveAlgo.DevTools.Editor
             return prefab;
         }
 
-        static T EnsureAsset<T>(string path) where T : ScriptableObject
+        internal static T EnsureAsset<T>(string path) where T : ScriptableObject
         {
             var asset = AssetDatabase.LoadAssetAtPath<T>(path);
             if (asset == null)
@@ -647,7 +647,7 @@ namespace LoveAlgo.DevTools.Editor
             return asset;
         }
 
-        static GameStateSO FindGameState()
+        internal static GameStateSO FindGameState()
         {
             foreach (var guid in AssetDatabase.FindAssets("t:GameStateSO"))
             {
@@ -686,7 +686,7 @@ namespace LoveAlgo.DevTools.Editor
             }
         }
 
-        static void EnsureFolder(string path)
+        internal static void EnsureFolder(string path)
         {
             if (AssetDatabase.IsValidFolder(path)) return;
             var parent = Path.GetDirectoryName(path)?.Replace('\\', '/');

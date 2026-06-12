@@ -1,0 +1,10 @@
+Type,Speaker,Value
+# 데모 — 로아: 약속 잡기(선택지 2개 + Love 효과 + 따옴표 쉼표/\n 문법 예시)
+# Love의 히로인 id는 호감도 정본 id(Roa/HaYeEun/SeoDaEun/LeeBom/DoHeewon) — 스토리 Affinity 명령과 동일.
+# (발신자 Speaker의 c0X는 친구/에셋 id — 두 id 공간이 다름에 주의)
+Msg,c01,선배! 지금 뭐 해?
+Msg,c01,"내일 축제 같이 갈 사람 찾는 중인데, 선배 시간 돼?"
+Option,,좋아. 같이 가자|Love:Roa:1
+Option,,음… 생각 좀 해볼게
+Msg,c01,ㅎㅎ 답장 고마워!\n그럼 내일 봐~
+Me,,응 내일 보자
