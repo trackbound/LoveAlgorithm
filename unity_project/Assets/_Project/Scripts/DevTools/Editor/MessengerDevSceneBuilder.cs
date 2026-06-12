@@ -147,7 +147,7 @@ namespace LoveAlgo.DevTools.Editor
             return instance;
         }
 
-        static Button DevButton(Transform parent, string label)
+        internal static Button DevButton(Transform parent, string label)
         {
             var go = MessengerPrefabBuilder.Rect(label, parent);
             MessengerPrefabBuilder.Size(go, 240, 52);

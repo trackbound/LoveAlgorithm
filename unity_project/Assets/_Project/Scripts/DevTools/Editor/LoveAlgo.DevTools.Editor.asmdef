@@ -6,6 +6,7 @@
         "LoveAlgo.Narrative",
         "LoveAlgo.UI",
         "LoveAlgo.Messenger",
+        "LoveAlgo.Gacha",
         "Unity.TextMeshPro",
         "Unity.InputSystem",
         "UnityEngine.UI"

@@ -2,7 +2,9 @@
     "name": "LoveAlgo.Gacha",
     "rootNamespace": "",
     "references": [
-        "LoveAlgo.Core"
+        "LoveAlgo.Core",
+        "Unity.TextMeshPro",
+        "UnityEngine.UI"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
