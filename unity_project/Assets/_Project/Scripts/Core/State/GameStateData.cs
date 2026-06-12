@@ -63,6 +63,13 @@ namespace LoveAlgo.Core
         public int messengerProfileBg;
         public string messengerStatusMessage = "";
 
+        // ── 랜덤가챠 (기획서 2026-06-12 — 퍼즐 조각 수집형) ──
+        // 보유 조각 인덱스 목록(조각 정의는 GachaTuningSO — 상태는 인덱스만, 가산적 확장이라 구세이브 무해).
+        // 추첨은 미보유 풀 한정이라 중복 인덱스는 생기지 않는다(GachaPuzzleService가 강제).
+        public List<int> gachaOwnedPieces = new();
+        // 완성 후 추가 구매 누적(업적: +5 퍼즐 콜렉터 / +10 퍼즐 마스터 — 호칭은 flags에 영속).
+        public int gachaBonusPurchases;
+
         [Serializable] public struct IntEntry { public string key; public int value; }
         [Serializable] public struct BoolEntry { public string key; public bool value; }
         [Serializable] public struct StringEntry { public string key; public string value; }
