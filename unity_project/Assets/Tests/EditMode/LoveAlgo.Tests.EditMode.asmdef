@@ -15,6 +15,7 @@
         "LoveAlgo.Settings",
         "LoveAlgo.Messenger",
         "LoveAlgo.Gacha",
+        "LoveAlgo.Tutorial",
         "LoveAlgo.DevTools.Editor",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"

@@ -16,6 +16,7 @@
         "LoveAlgo.MessageStack",
         "LoveAlgo.Messenger",
         "LoveAlgo.Gacha",
+        "LoveAlgo.Tutorial",
         "Unity.TextMeshPro",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"

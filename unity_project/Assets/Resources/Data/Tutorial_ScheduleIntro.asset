@@ -1,0 +1,291 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c441966a9bae0884e866ba73548be150, type: 3}
+  m_Name: Tutorial_ScheduleIntro
+  m_EditorClassIdentifier: LoveAlgo.Tutorial::LoveAlgo.Tutorial.TutorialSequenceSO
+  prefsKey: Tutorial_ScheduleIntro
+  steps:
+  - text: "\uC548\uB155, {{Player}}!\n\uC624\uB298 \uD558\uB8E8, \uB9C8\uC74C\uC5D0
+      \uB4E4\uC5B4?"
+    emote: 0
+    highlightAnchor: 
+    requiredClickAnchor: 
+    appearDelay: 2
+    autoAdvanceSeconds: 0
+    dim: {fileID: -6014287167801783743, guid: 8e9ae244b1efaa24ba6ecb584d5364d1, type: 3}
+    roaPosition: {x: -330, y: 0}
+  - text: "\uC5EC\uAE30\uC11C\uB294 \uC624\uB298 \uD558\uB8E8\uC758 \uC5EC\uC720
+      \uC2DC\uAC04\uC744 \uC5B4\uB5BB\uAC8C \uBCF4\uB0BC\uC9C0 \uC120\uD0DD\uD560
+      \uC218 \uC788\uC5B4.\n\uC9C0\uAE08 {{Player}}\uC758 \uC0C1\uD0DC\uB97C \uD655\uC778\uD560
+      \uC218\uB3C4 \uC788\uACE0!"
+    emote: 0
+    highlightAnchor: 
+    requiredClickAnchor: 
+    appearDelay: 0
+    autoAdvanceSeconds: 0
+    dim: {fileID: -6014287167801783743, guid: 8e9ae244b1efaa24ba6ecb584d5364d1, type: 3}
+    roaPosition: {x: -330, y: 0}
+  - text: "\uC5B4\uB5A4 \uC0AC\uB78C\uC774 \uB418\uACE0 \uC2F6\uC740\uC9C0 \uACE0\uBBFC\uD558\uACE0,
+      \uADF8\uC5D0 \uB530\uB77C\uC11C \uC131\uC7A5\uD558\uB294 \uAC70\uC57C.\n\uB108\uB294
+      \uBB34\uC5C7\uC774\uB4E0 \uB108\uAC00 \uC6D0\uD558\uB294 \uB300\uB85C \uB420
+      \uC218 \uC788\uAC70\uB4E0! \uB0B4\uAC00 \uB3C4\uC640\uC904\uAC8C!"
+    emote: 0
+    highlightAnchor: 
+    requiredClickAnchor: 
+    appearDelay: 0
+    autoAdvanceSeconds: 0
+    dim: {fileID: -6014287167801783743, guid: 8e9ae244b1efaa24ba6ecb584d5364d1, type: 3}
+    roaPosition: {x: -330, y: 0}
+  - text: "\uC790, \uADF8\uB7FC \uD558\uB098\uC529 \uC124\uBA85\uD574 \uC904\uAC8C.\n\uC67C\uCABD
+      \uCC3D\uC740 {{Player}}\uC758 \uC0C1\uD0DC\uB97C \uB098\uD0C0\uB0B4."
+    emote: 1
+    highlightAnchor: LeftPanel
+    requiredClickAnchor: 
+    appearDelay: 0
+    autoAdvanceSeconds: 0
+    dim: {fileID: 1362544716727445981, guid: 2f5c103c1a490f740aa3f7fb1e61b61f, type: 3}
+    roaPosition: {x: -150, y: -250}
+  - text: "\uC624\uB978\uCABD \uCC3D\uC740 \uC624\uB298 \uC5B4\uB5A4 \uC77C\uC744
+      \uD560 \uC9C0\n\uC120\uD0DD\uD560 \uC218 \uC788\uB294 \uACF3\uC774\uC57C."
+    emote: 1
+    highlightAnchor: RightPanel
+    requiredClickAnchor: 
+    appearDelay: 0
+    autoAdvanceSeconds: 0
+    dim: {fileID: 6065155022964899042, guid: f17d65c4df14d5b42a98fcb6d1bbb5d0, type: 3}
+    roaPosition: {x: -560, y: -250}
+  - text: "\uC67C\uCABD \uCC3D\uBD80\uD130 \uD55C \uBC88 \uBCFC\uAE4C?"
+    emote: 1
+    highlightAnchor: LeftPanel
+    requiredClickAnchor: 
+    appearDelay: 0
+    autoAdvanceSeconds: 0
+    dim: {fileID: 1362544716727445981, guid: 2f5c103c1a490f740aa3f7fb1e61b61f, type: 3}
+    roaPosition: {x: -150, y: -250}
+  - text: "\uC704\uCABD\uC758 \uC815\uBCF4 \uCC3D\uC5D0\uC11C\uB294 \uC6B0\uB9AC\uAC00
+      \uD568\uAED8\uD55C \uC9C0 \uBA70\uCE60\uC774 \uB410\uB294\uC9C0 \uC54C \uC218
+      \uC788\uC5B4.\n\uADF8\uB9AC\uACE0 \uC9C0\uAE08 {{Player}}\uC758 \uC9C0\uAC11
+      \uC0AC\uC815\uB3C4 \uBCFC \uC218 \uC788\uC9C0!"
+    emote: 0
+    highlightAnchor: InfoPanel
+    requiredClickAnchor: 
+    appearDelay: 0
+    autoAdvanceSeconds: 0
+    dim: {fileID: 2953526040205146464, guid: 01a790fb870056345af1f5d7153c7a3a, type: 3}
+    roaPosition: {x: -150, y: -250}
+  - text: "\uD53C\uB85C\uB3C4\uB294 \uC544\uB798\uCABD\uC758 \uC2A4\uD0EF \uCC3D\uC5D0\uC11C
+      \uBCFC \uC218 \uC788\uC5B4.\n\uCD1D 5\uAC1C\uC758 \uC2A4\uD0EF\uC744 \uBCFC
+      \uC218 \uC788\uB294 \uACF3\uC774\uC57C."
+    emote: 2
+    highlightAnchor: StatPanel
+    requiredClickAnchor: 
+    appearDelay: 0
+    autoAdvanceSeconds: 0
+    dim: {fileID: -1611021755507880063, guid: 5ba69c7bca60e6b45ba33a8b5aa0ede9, type: 3}
+    roaPosition: {x: -150, y: -250}
+  - text: "\uCCB4\uB825, \uC9C0\uC131, \uC0AC\uAD50\uC131, \uB048\uAE30 \uBAA8\uB450
+      \uBA4B\uC9C4 \uC0AC\uB78C\uC758 \uD544\uC218 \uC5ED\uB7C9\uC774\uC9C0!\n\uC5B4\uB5A4
+      \uD589\uB3D9\uC744 \uD558\uB290\uB0D0\uC5D0 \uB530\uB77C\uC11C \uB2E4\uB974\uAC8C
+      \uC131\uC7A5\uD574."
+    emote: 1
+    highlightAnchor: StatPanel
+    requiredClickAnchor: 
+    appearDelay: 0
+    autoAdvanceSeconds: 0
+    dim: {fileID: -1611021755507880063, guid: 5ba69c7bca60e6b45ba33a8b5aa0ede9, type: 3}
+    roaPosition: {x: -150, y: -250}
+  - text: "\uD558\uC9C0\uB9CC \uD53C\uB85C\uB3C4\uB294 \uB108\uBB34 \uB192\uC544\uC9C0\uBA74
+      \uC544\uBB34\uB7F0 \uD65C\uB3D9\uB3C4 \uD558\uC9C0 \uBABB\uD558\uACE0\n\uC26C\uC5B4\uC57C
+      \uD558\uB2C8\uAE4C, \uC9C0\uCF1C\uBCF4\uBA74\uC11C \uC870\uC2EC\uD574\uC57C
+      \uD574."
+    emote: 0
+    highlightAnchor: StatPanel
+    requiredClickAnchor: 
+    appearDelay: 0
+    autoAdvanceSeconds: 0
+    dim: {fileID: -1611021755507880063, guid: 5ba69c7bca60e6b45ba33a8b5aa0ede9, type: 3}
+    roaPosition: {x: -150, y: -250}
+  - text: "\uB098 \uC790\uC2E0\uC744 \uC544\uB084 \uC904 \uC544\uB294 \uAC8C \uAC00\uC7A5
+      \uB9E4\uB825\uC801\uC778 \uC0AC\uB78C\uC758 \uD2B9\uC9D5\uC774\uB77C\uACE0!"
+    emote: 1
+    highlightAnchor: StatPanel
+    requiredClickAnchor: 
+    appearDelay: 0
+    autoAdvanceSeconds: 0
+    dim: {fileID: -1611021755507880063, guid: 5ba69c7bca60e6b45ba33a8b5aa0ede9, type: 3}
+    roaPosition: {x: -150, y: -250}
+  - text: "\uCC38, \uCCAB \uB0A0\uC744 \uC798 \uBCF4\uB0B4\uACE0 \uC788\uC73C\uB2C8
+      \uD2B9\uBCC4\uD788 \uBE44\uBC00\uC744 \uB9D0\uD574\uC8FC\uC790\uBA74\u2026\n\uC5B4\uB5A4
+      \uB9E4\uB825\uC744 \uD2B9\uD788 \uC798 \uBCF4\uC5EC\uC8FC\uB294\uC9C0\uC5D0
+      \uB530\uB77C\uC11C\n\uC5B4\uB5A4 \uC0AC\uB78C\uACFC \uAC00\uAE4C\uC6CC\uC9C8
+      \uC218 \uC788\uC744\uC9C0 \uB2EC\uB77C\uC9C8 \uC218\uB3C4 \uC788\uC5B4!"
+    emote: 0
+    highlightAnchor: StatPanel
+    requiredClickAnchor: 
+    appearDelay: 0
+    autoAdvanceSeconds: 0
+    dim: {fileID: -1611021755507880063, guid: 5ba69c7bca60e6b45ba33a8b5aa0ede9, type: 3}
+    roaPosition: {x: -150, y: -250}
+  - text: "\uC774\uBC88\uC5D0\uB294 \uC624\uB978\uCABD \uCC3D\uC744 \uD55C \uBC88
+      \uBCFC\uAE4C?\n\uC624\uB978\uCABD \uCC3D\uC740 \uC5B4\uB5A4 \uD589\uB3D9\uC744
+      \uD560 \uC9C0 \uC120\uD0DD\uD558\uB294 \uACF3\uC774\uC57C."
+    emote: 1
+    highlightAnchor: RightPanel
+    requiredClickAnchor: 
+    appearDelay: 0
+    autoAdvanceSeconds: 0
+    dim: {fileID: 6065155022964899042, guid: f17d65c4df14d5b42a98fcb6d1bbb5d0, type: 3}
+    roaPosition: {x: -560, y: -250}
+  - text: "\uC544\uB974\uBC14\uC774\uD2B8, \uC6B4\uB3D9, \uACF5\uBD80 \uC911 \uD55C
+      \uAC1C\uC758 \uD589\uB3D9\uB9CC \uD560 \uC218 \uC788\uACE0,\n\uD55C \uBC88
+      \uC120\uD0DD\uD558\uBA74 \uBC14\uAFB8\uAC70\uB098 \uCDE8\uC18C\uD560 \uC218
+      \uC5C6\uC73C\uB2C8 \uC870\uC2EC\uD574!"
+    emote: 1
+    highlightAnchor: ActionArea
+    requiredClickAnchor: 
+    appearDelay: 0
+    autoAdvanceSeconds: 0
+    dim: {fileID: -3273055551629193799, guid: eaf08d8c942e8b5409a43c2d9b0c4d7d, type: 3}
+    roaPosition: {x: -560, y: -250}
+  - text: "\uB9CC\uC57D \uB3C8\uC744 \uB354 \uBC8C\uACE0 \uC2F6\uB2E4\uBA74, \uC624\uB978\uCABD
+      \uCC3D\uC5D0\uC11C \uC544\uB974\uBC14\uC774\uD2B8 \uD0ED\uC744 \uC120\uD0DD\uD574\uBD10.\n\uD560
+      \uC218 \uC788\uB294 \uC544\uB974\uBC14\uC774\uD2B8\uC758 \uC885\uB958\uB97C
+      \uC790\uC720\uB86D\uAC8C \uC120\uD0DD\uD560 \uC218 \uC788\uACE0,\n\uC885\uB958\uBCC4\uB85C
+      \uBC8C \uC218 \uC788\uB294 \uAE08\uC561\uACFC \uC313\uC774\uB294 \uD53C\uB85C\uB3C4\uAC00
+      \uB2EC\uB77C."
+    emote: 0
+    highlightAnchor: PartTimeTab
+    requiredClickAnchor: 
+    appearDelay: 0
+    autoAdvanceSeconds: 0
+    dim: {fileID: -7715929495020364517, guid: 0e01210d2f5b897409de6fd7fab560c2, type: 3}
+    roaPosition: {x: -560, y: -250}
+  - text: "\uC6B4\uB3D9\uC774\uB098 \uACF5\uBD80 \uD65C\uB3D9\uC744 \uC120\uD0DD\uD558\uBA74
+      \uADF8\uC5D0 \uB530\uB77C {{Player}}\uC758 \uC2A4\uD0EF\uC774 \uB2EC\uB77C\uC838.\n\uC5B4\uB5A4
+      \uD589\uB3D9\uC744 \uC5BC\uB9C8\uB098 \uD558\uB294\uC9C0\uC5D0 \uB530\uB77C\uC11C
+      \uC5B4\uB5A4 \uC2A4\uD0EF\uC774 \uBCC0\uD654\uD560\uC9C0\uB3C4 \uB2EC\uB77C\uC9C0\uC9C0!"
+    emote: 0
+    highlightAnchor: WorkStudyArea
+    requiredClickAnchor: 
+    appearDelay: 0
+    autoAdvanceSeconds: 0
+    dim: {fileID: 1013834593337562759, guid: 6573d9f938bbebd49b00f11d86206425, type: 3}
+    roaPosition: {x: -560, y: -250}
+  - text: "\uAC00\uC7A5 \uC624\uB978\uCABD\uC5D0\uB294 \uC544\uC774\uD15C \uAD6C\uB9E4
+      \uBC84\uD2BC\uC774 \uC788\uC5B4.\n\uC774 \uBC84\uD2BC\uC744 \uB204\uB974\uBA74
+      \uC0C1\uC810\uC73C\uB85C \uC774\uB3D9\uD574. \uD55C \uBC88 \uB20C\uB7EC\uBD10!"
+    emote: 0
+    highlightAnchor: ShopButton
+    requiredClickAnchor: ShopButton
+    appearDelay: 0
+    autoAdvanceSeconds: 0
+    dim: {fileID: 2042883586357678283, guid: 096d74301276cec42a7bbea3359a1542, type: 3}
+    roaPosition: {x: -560, y: -250}
+  - text: "\uC0C1\uC810\uC5D0\uC11C\uB294 \uC5EC\uB7EC\uAC00\uC9C0 \uC544\uC774\uD15C\uC744
+      \uC0B4 \uC218 \uC788\uC5B4.\n\uC774 \uC911 \uB204\uAD70\uAC00\uAC00 \uD2B9\uBCC4\uD788
+      \uC88B\uC544\uD558\uB294 \uC544\uC774\uD15C\uB3C4 \uC11E\uC5EC \uC788\uB2E4\uACE0!"
+    emote: 0
+    highlightAnchor: 
+    requiredClickAnchor: 
+    appearDelay: 0
+    autoAdvanceSeconds: 0
+    dim: {fileID: -6014287167801783743, guid: 8e9ae244b1efaa24ba6ecb584d5364d1, type: 3}
+    roaPosition: {x: -330, y: 0}
+  - text: "\uC67C\uCABD \uC704\uB97C \uBCF4\uBA74 \uC9C0\uAE08 {{Player}}\uAC00 \uAC00\uC9C4
+      \uB3C8\uC758 \uC561\uC218\uAC00 \uD45C\uC2DC\uB418\uACE0,"
+    emote: 0
+    highlightAnchor: ShopBalance
+    requiredClickAnchor: 
+    appearDelay: 0
+    autoAdvanceSeconds: 0
+    dim: {fileID: 340546965160294435, guid: 8b4ce5cbcdfa90f488e28a56baa4fb4c, type: 3}
+    roaPosition: {x: -150, y: -250}
+  - text: "\uADF8 \uC544\uB798\uCABD\uC5D0\uB294 \uB0B4\uAC00 \uACE0\uB978 \uBB3C\uAC74\uC744
+      \uBCFC \uC218 \uC788\uB294 \uC7A5\uBC14\uAD6C\uB2C8\uAC00 \uC788\uC5B4.\n\uD55C\uBC88\uC5D0
+      \uC5EC\uB7EC\uAC00\uC9C0 \uBB3C\uAC74\uC744 \uC5EC\uB7EC \uAC1C \uC0B4 \uC218\uB3C4
+      \uC788\uACE0, \uCD1D\uD569\uD574\uC11C \uC5BC\uB9C8\uC778\uC9C0\uB3C4 \uBCF4\uC5EC."
+    emote: 0
+    highlightAnchor: ShopCart
+    requiredClickAnchor: 
+    appearDelay: 0
+    autoAdvanceSeconds: 0
+    dim: {fileID: 340546965160294435, guid: 8b4ce5cbcdfa90f488e28a56baa4fb4c, type: 3}
+    roaPosition: {x: -150, y: -250}
+  - text: "\uC624\uB978\uCABD\uC5D0\uC11C\uB294 \uC5B4\uB5A4 \uC544\uC774\uD15C\uC744
+      \uC0B4 \uC218 \uC788\uB294\uC9C0 \uBCFC \uC218 \uC788\uC5B4.\n\uB2E4\uC591\uD55C
+      \uC544\uC774\uD15C\uC774 \uC788\uC73C\uB2C8\uAE4C, \uC790\uC138\uD788 \uC0B4\uD3B4\uBD10!"
+    emote: 0
+    highlightAnchor: ShopItems
+    requiredClickAnchor: 
+    appearDelay: 0
+    autoAdvanceSeconds: 0
+    dim: {fileID: -6603946382626977966, guid: 72dce119e369a1341846426153a896d0, type: 3}
+    roaPosition: {x: -560, y: -250}
+  - text: "\uC544\uC774\uD15C\uB9C8\uB2E4 \uC2A4\uD0EF\uC5D0 \uBBF8\uCE58\uB294 \uC601\uD5A5\uC774
+      \uC804\uBD80 \uB2E4\uB974\uACE0, \uAD6C\uB9E4\uD558\uBA74 \uADF8 \uC601\uD5A5\uC774
+      \uBC14\uB85C \uC801\uC6A9\uB3FC.\n\uC5B4\uB5A4 \uD65C\uB3D9\uC5D0 \uB3C4\uC6C0\uC774
+      \uB420 \uC544\uC774\uD15C\uC778\uC9C0\uB97C \uB5A0\uC62C\uB824 \uBCF4\uBA74
+      \uC720\uCD94\uD560 \uC218 \uC788\uC744\uC9C0\uB3C4 \uBAB0\uB77C!"
+    emote: 0
+    highlightAnchor: ShopItems
+    requiredClickAnchor: 
+    appearDelay: 0
+    autoAdvanceSeconds: 0
+    dim: {fileID: -6603946382626977966, guid: 72dce119e369a1341846426153a896d0, type: 3}
+    roaPosition: {x: -560, y: -250}
+  - text: "\uB3CC\uC544\uAC00\uAE30 \uBC84\uD2BC\uC744 \uB204\uB974\uBA74 \uC774\uC804
+      \uD654\uBA74\uC73C\uB85C \uB3CC\uC544\uAC08 \uC218 \uC788\uC5B4.\n\uC18C\uAC1C\uB294
+      \uC774\uCBE4\uC774\uB2C8\uAE4C, \uD55C \uBC88 \uB20C\uB7EC\uBCFC\uB798?"
+    emote: 0
+    highlightAnchor: ShopBack
+    requiredClickAnchor: ShopBack
+    appearDelay: 0
+    autoAdvanceSeconds: 0
+    dim: {fileID: 5482661186875735092, guid: 99b903984c8d9614eacc3a51fe37eb76, type: 3}
+    roaPosition: {x: -560, y: -250}
+  - text: "\uC9C0\uB8E8\uD55C \uC124\uBA85\uC774\uC9C0\uB9CC \uB4E4\uC5B4\uC918\uC11C
+      \uACE0\uB9C8\uC6CC, {{Player}}!"
+    emote: 0
+    highlightAnchor: 
+    requiredClickAnchor: 
+    appearDelay: 0
+    autoAdvanceSeconds: 0
+    dim: {fileID: -6014287167801783743, guid: 8e9ae244b1efaa24ba6ecb584d5364d1, type: 3}
+    roaPosition: {x: -330, y: 0}
+  - text: "\uD589\uB3D9 \uC120\uD0DD\uCC3D\uC740 \uD558\uB8E8\uC5D0 \uD55C \uBC88
+      \uC5F4\uB824.\n\uADF8 \uB54C\uB9C8\uB2E4 {{Player}}\uAC00 \uC5B4\uB5BB\uAC8C
+      \uC2DC\uAC04\uC744 \uBCF4\uB0BC\uC9C0 \uB108\uBB34 \uAD81\uAE08\uD574!"
+    emote: 0
+    highlightAnchor: 
+    requiredClickAnchor: 
+    appearDelay: 0
+    autoAdvanceSeconds: 0
+    dim: {fileID: -6014287167801783743, guid: 8e9ae244b1efaa24ba6ecb584d5364d1, type: 3}
+    roaPosition: {x: -330, y: 0}
+  - text: "\uC5B4\uB5A4 \uC0AC\uB78C\uC774 \uB418\uC5B4\uAC08\uC9C0, \uAE30\uB300\uD560\uAC8C.
+      \uBD84\uBA85\uD788\u2026 \uBA4B, \uBA4B\uC788\uC744 \uAC70\uB2C8\uAE4C!"
+    emote: 0
+    highlightAnchor: 
+    requiredClickAnchor: 
+    appearDelay: 0
+    autoAdvanceSeconds: 0
+    dim: {fileID: -6014287167801783743, guid: 8e9ae244b1efaa24ba6ecb584d5364d1, type: 3}
+    roaPosition: {x: -330, y: 0}
+  - text: "\uADF8\uB7FC \uB09C \uC774\uC81C {{Player}}\uB97C \uAE30\uB2E4\uB9AC\uACE0
+      \uC788\uC744\uAC8C. \uB2E4\uB140\uC640!"
+    emote: 3
+    highlightAnchor: 
+    requiredClickAnchor: 
+    appearDelay: 0
+    autoAdvanceSeconds: 4
+    dim: {fileID: -6014287167801783743, guid: 8e9ae244b1efaa24ba6ecb584d5364d1, type: 3}
+    roaPosition: {x: -330, y: 0}
