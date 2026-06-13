@@ -16,9 +16,21 @@ namespace LoveAlgo.Tests.PlayMode
     /// </summary>
     public class StageViewPlayModeTests
     {
-        const string BgKey = "bg_00_00";       // Resources/BG/bg_00_00
         const string CharId = "c01";           // Resources/Characters/c01_00
         const string Emote = "00";
+
+        // BG 에셋은 감독의 명명 재작업(코드명↔한글명)과 무관하게 "Resources/BG/{name} 로딩 컨벤션"만
+        // 검증하도록 실존하는 첫 스프라이트를 사용한다(특정 파일명 고정 시 리네임마다 적색).
+        static string BgKey
+        {
+            get
+            {
+                var all = Resources.LoadAll<Sprite>("BG");
+                Assert.IsTrue(all != null && all.Length > 0,
+                    "Resources/BG에 Sprite가 1개 이상 있어야 한다(스테이지 BG 로딩 컨벤션 전제).");
+                return all[0].name;
+            }
+        }
 
         static Image MakeImage(string name, out CanvasGroup group)
         {

@@ -17,6 +17,11 @@ namespace LoveAlgo.Tests.PlayMode
     /// </summary>
     public class TitleViewPlayModeTests
     {
+        // 잔존 Game 씬의 SceneFlowController 무력화 — 이 픽스처는 Start/Continue/Quit 의도를 실발행한다
+        // (씬 로드/에디터 정지로 런이 끊기는 것 방지, HANDOFF PlayMode 격리 주의).
+        [SetUp]
+        public void NeutralizeResidentSceneFlow() => ResidentSceneGuard.DisableSceneFlowControllers();
+
         [UnityTest]
         public IEnumerator NewGameButton_Click_Publishes_StartNewGameCommand()
         {

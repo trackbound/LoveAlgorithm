@@ -33,6 +33,10 @@ namespace LoveAlgo.Tests.PlayMode
 
         QuickMenuView CreateView()
         {
+            // 잔존 Game 씬의 SceneFlowController 무력화 — 이 픽스처는 ReturnToTitle/Quit을 실발행한다
+            // (씬 로드/에디터 정지로 런이 끊기는 것 방지, HANDOFF PlayMode 격리 주의).
+            ResidentSceneGuard.DisableSceneFlowControllers();
+
             _root = new GameObject("QuickMenu");
             _root.SetActive(false); // Awake 전 버튼 주입(SaveLoadView 테스트 패턴)
             var view = _root.AddComponent<QuickMenuView>();
@@ -85,22 +89,28 @@ namespace LoveAlgo.Tests.PlayMode
             yield return null;
 
             var saveLoads = new List<ShowSaveLoadCommand>();
-            int settings = 0, toTitle = 0;
+            int settings = 0, toTitle = 0, messenger = 0;
             _subs.Add(EventBus.Subscribe<ShowSaveLoadCommand>(e => saveLoads.Add(e)));
             _subs.Add(EventBus.Subscribe<ShowSettingsCommand>(_ => settings++));
             _subs.Add(EventBus.Subscribe<ReturnToTitleCommand>(_ => toTitle++));
+            _subs.Add(EventBus.Subscribe<OpenMessengerCommand>(e =>
+            {
+                messenger++;
+                Assert.IsTrue(string.IsNullOrEmpty(e.RoomId), "빠른메뉴 진입 = 기본 화면(친구 탭)");
+            }));
 
             view.SaveButton.onClick.Invoke();
             view.LoadButton.onClick.Invoke();
             view.SettingsButton.onClick.Invoke();
             view.TitleButton.onClick.Invoke();
-            view.MessengerButton.onClick.Invoke(); // 준비 중 — 안내 로그만(발행 없음·예외 없음)
+            view.MessengerButton.onClick.Invoke();
 
             Assert.AreEqual(2, saveLoads.Count);
             Assert.AreEqual(SaveLoadMode.Save, saveLoads[0].Mode, "저장하기 → Save 모드");
             Assert.AreEqual(SaveLoadMode.Load, saveLoads[1].Mode, "불러오기 → Load 모드");
             Assert.AreEqual(1, settings, "환경설정 → ShowSettingsCommand");
             Assert.AreEqual(1, toTitle, "메인 타이틀 → ReturnToTitleCommand(확인 팝업 없음 — 기획서)");
+            Assert.AreEqual(1, messenger, "메신저 → OpenMessengerCommand");
         }
 
         [UnityTest]
@@ -125,6 +135,45 @@ namespace LoveAlgo.Tests.PlayMode
             view.QuitButton.onClick.Invoke();
             modal.Handle.Select(1);
             Assert.AreEqual(1, quits, "예 → QuitGameCommand 발행");
+        }
+
+        [UnityTest]
+        public IEnumerator Visibility_FollowsPhase_AndMessengerOpen()
+        {
+            var view = CreateView();
+            var state = ScriptableObject.CreateInstance<GameStateSO>();
+            var group = _root.AddComponent<CanvasGroup>();
+            view.State = state;   // OnEnable 이후 주입 — 직후 이벤트로 재평가시킨다
+            view.Group = group;
+            yield return null;
+
+            try
+            {
+                // Story = 숨김(서브메뉴 기획서: 스탯/자유행동·메신저에서만), Schedule = 표시
+                state.Phase = ScreenPhase.Story;
+                EventBus.Publish(new ScreenPhaseChangedEvent(ScreenPhase.Schedule, ScreenPhase.Story));
+                Assert.IsFalse(view.IsShown, "Story 페이즈 → 숨김");
+
+                state.Phase = ScreenPhase.Schedule;
+                EventBus.Publish(new ScreenPhaseChangedEvent(ScreenPhase.Story, ScreenPhase.Schedule));
+                Assert.IsTrue(view.IsShown, "Schedule 페이즈 → 표시");
+
+                // Story 중에도 메신저 열림이면 표시(기획서: 메신저 화면 우측)
+                state.Phase = ScreenPhase.Story;
+                EventBus.Publish(new ScreenPhaseChangedEvent(ScreenPhase.Schedule, ScreenPhase.Story));
+                EventBus.Publish(new OpenMessengerCommand());
+                Assert.IsTrue(view.IsShown, "메신저 열림 → 표시");
+
+                view.ToggleButton.onClick.Invoke();
+                Assert.IsTrue(view.IsExpanded, "표시 중 펼침 가능");
+                EventBus.Publish(new CloseMessengerCommand());
+                Assert.IsFalse(view.IsShown, "메신저 닫힘+Story → 숨김");
+                Assert.IsFalse(view.IsExpanded, "숨김 전환 시 펼침 잔존 방지");
+            }
+            finally
+            {
+                UnityEngine.Object.DestroyImmediate(state);
+            }
         }
 
         [UnityTest]

@@ -30,7 +30,6 @@ namespace LoveAlgo.Tests.PlayMode
             rootGo.SetActive(false); // 바인딩 후 활성화 → OnEnable 타이밍 정렬
 
             dlg = rootGo.AddComponent<DialogueView>();
-            dlg.CharInterval = 0f; // 즉시 표시(타이핑 루프 생략)
             dlg.Root = rootGo;
 
             var bodyGo = new GameObject("Body", typeof(RectTransform));
@@ -47,6 +46,9 @@ namespace LoveAlgo.Tests.PlayMode
             dlg.EndMark = mark;
 
             rootGo.SetActive(true);
+            // OnEnable의 ApplyFromSettings()가 SettingsSO 영속 속도로 charInterval을 덮어쓰므로
+            // 활성화(OnEnable) "후"에 주입해야 즉시표시가 유지된다(머신별 PlayerPrefs 비의존).
+            dlg.CharInterval = 0f;
             return canvasGo;
         }
 

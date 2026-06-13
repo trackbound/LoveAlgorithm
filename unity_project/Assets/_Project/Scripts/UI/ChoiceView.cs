@@ -29,6 +29,26 @@ namespace LoveAlgo.UI
         IDisposable _sub;
         ChoiceRequest _active;
 
+        void Awake()
+        {
+            // root/dim은 반드시 비주얼 "자식" — 자기 자신이면 선택 후 숨김이 GO를 꺼서 구독까지 죽는다
+            // (2026-06-12 프롤로그 2번째 선택지 무반응 실증 — ModalView와 동일 사고 계열).
+            if (root == gameObject)
+            {
+                Debug.LogError("[ChoiceView] root가 뷰 GO 자신으로 바인딩 — 비주얼 자식(Root 래퍼)을 바인딩해야 한다. 토글 생략.");
+                root = null;
+            }
+            if (dim == gameObject)
+            {
+                Debug.LogError("[ChoiceView] dim이 뷰 GO 자신으로 바인딩 — 비주얼 자식이어야 한다. 토글 생략.");
+                dim = null;
+            }
+            // 씬에 authored-active로 저장된 비주얼을 플레이 시작 시 숨김(Story 그룹 활성화 때 빈 패널 노출 방지
+            // — ModalView 부팅 숨김 미러). 표시는 ShowChoiceCommand로만.
+            if (root != null) root.SetActive(false);
+            if (dim != null) dim.SetActive(false);
+        }
+
         void OnEnable() => _sub = EventBus.Subscribe<ShowChoiceCommand>(OnShow);
 
         void OnDisable()

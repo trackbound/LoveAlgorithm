@@ -52,6 +52,20 @@ namespace LoveAlgo.UI
         ModalRequest _active;
         IReadOnlyList<ModalButton> _buttons; // 활성 모달 버튼(라벨+종류, 디버그 로그용)
 
+        void Awake()
+        {
+            // root는 반드시 비주얼 "자식"(딤+패널) — 자기 자신이면 숨김이 GO를 꺼서 구독까지 죽는다
+            // (2026-06-12 Game.unity 인스턴스 오바인딩 실증). 치명 동작을 막고 에러로 시정 지시.
+            if (root == gameObject)
+            {
+                Debug.LogError("[ModalView] root가 모달 GO 자신으로 바인딩 — 비주얼 자식(딤+패널)을 바인딩해야 한다. 부팅 숨김 생략.");
+                return;
+            }
+            // 씬에 authored-active로 저장된 비주얼을 플레이 시작 시 숨김 — 부팅 일괄 활성화(UiBootActivator)가
+            // GO를 켤 때 placeholder 모달이 노출되는 사고 방지(DialogueView.HideEndMark 선례). 표시는 ShowModalCommand로만.
+            if (root != null) root.SetActive(false);
+        }
+
         void OnEnable() => _sub = EventBus.Subscribe<ShowModalCommand>(OnShow);
 
         void OnDisable()

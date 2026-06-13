@@ -20,11 +20,17 @@ namespace LoveAlgo.Tests.PlayMode
         [UnityTest]
         public IEnumerator DialogueView_Fires_SpeakerEmote_With_Speaker_And_Emote()
         {
+            // 잔존 Game 씬의 DialogueView 제거 — 부팅 내러티브가 켜져 있으면 같은 명령을 같이 처리해
+            // 발행 수가 이중 계상된다(HANDOFF PlayMode 격리 주의, DialogueEndMark Build 가드 미러).
+            foreach (var v in Object.FindObjectsByType<DialogueView>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+                Object.DestroyImmediate(v.gameObject);
+
             var go = new GameObject("DialogueView");
             go.SetActive(false);
             var view = go.AddComponent<DialogueView>();
-            view.CharInterval = 0f; // 즉시 표시 → 표정은 최종-발행 경로로 나간다(TMP 불필요).
             go.SetActive(true);     // Awake/OnEnable → ShowDialogueCommand 구독
+            // OnEnable의 ApplyFromSettings()가 영속 속도로 덮어쓰므로 활성화 후 주입(즉시 표시 → 최종-발행 경로).
+            view.CharInterval = 0f;
             yield return null;
 
             string gotSpeaker = null, gotEmote = null;
