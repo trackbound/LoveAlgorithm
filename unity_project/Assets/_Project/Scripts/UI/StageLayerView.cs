@@ -99,7 +99,13 @@ namespace LoveAlgo.UI
 
                 SetAlpha(img, 0f);
                 img.enabled = true;
-                if (e.Kind == StageLayerKind.CG) EventBus.Publish(new SetCgModeCommand(true));
+                if (e.Kind == StageLayerKind.CG)
+                {
+                    // CG 진입 = 오토모드 정지(인벤토리 §CG). CG 모드 발행보다 먼저 — 대사창 root 하위
+                    // 구독자(인포 바)가 꺼지기 전에 받도록.
+                    EventBus.Publish(new SetAutoModeCommand(false));
+                    EventBus.Publish(new SetCgModeCommand(true));
+                }
                 yield return Fade(img, 0f, 1f, e.Transition, e.Duration);
             }
 

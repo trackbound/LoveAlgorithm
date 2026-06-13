@@ -68,6 +68,7 @@ namespace LoveAlgo.UI
         bool _awaitingClick;
         bool _auto;
         bool _cgHidden;
+        bool _hiddenByUser; // 인포 바 "숨기기" — CSV SetDialogueVisibleCommand(연출 채널)와 분리된 로컬 상태.
         bool _endMarkShown;
         float _endMarkBaseY;
         IReadOnlyList<InlinePause> _pauses;
@@ -80,7 +81,11 @@ namespace LoveAlgo.UI
             _sub = EventBus.Subscribe<ShowDialogueCommand>(OnShow);
             _autoSub = EventBus.Subscribe<SetAutoModeCommand>(e => _auto = e.On);
             _cgSub = EventBus.Subscribe<SetCgModeCommand>(OnCgMode);
-            _visSub = EventBus.Subscribe<SetDialogueVisibleCommand>(e => { if (root != null) root.SetActive(e.Visible); });
+            _visSub = EventBus.Subscribe<SetDialogueVisibleCommand>(e =>
+            {
+                if (e.Visible) _hiddenByUser = false; // 스크립트가 명시 표시하면 사용자 숨김 해제(이중 상태 잔존 방지)
+                if (root != null) root.SetActive(e.Visible);
+            });
             _textSpeedSub = EventBus.Subscribe<SetTextSpeedCommand>(e => ApplyTextSpeed(e.Value01));
             _autoSpeedSub = EventBus.Subscribe<SetAutoSpeedCommand>(e => ApplyAutoSpeed(e.Value01));
             ApplyFromSettings(); // 영속 속도 채택(SettingsController 부팅 재발행 전이라도 직접 반영)
@@ -129,12 +134,32 @@ namespace LoveAlgo.UI
             }
         }
 
+        /// <summary>사용자 숨김 상태(인포 바 "숨기기"). CSV 연출 숨김(<see cref="SetDialogueVisibleCommand"/>)과 별개.</summary>
+        public bool IsHiddenByUser => _hiddenByUser;
+
+        /// <summary>인포 바 "숨기기": 대사창 비주얼을 끄고 다음 좌클릭/스페이스에서 복원한다 — 그 복원 입력은
+        /// 진행으로 소비하지 않는다. 오토 진행도 복원까지 일시정지(숨긴 채 스토리가 흘러가지 않게).</summary>
+        public void HideByUser()
+        {
+            if (_hiddenByUser || root == null || !root.activeSelf) return; // CSV/CG로 이미 꺼진 상태에선 무동작
+            _hiddenByUser = true;
+            HideEndMark();
+            root.SetActive(false);
+            DebugInput.Log("숨기기 → 대사창 숨김(클릭/스페이스로 복원)");
+        }
+
+        void RestoreByUser()
+        {
+            _hiddenByUser = false;
+            if (root != null && !_cgHidden && !root.activeSelf) root.SetActive(true);
+        }
+
         void OnShow(ShowDialogueCommand e)
         {
             if (_typeRoutine != null) StopCoroutine(_typeRoutine);
             HideEndMark(); // 새 줄 타이핑 시작 — 직전 진행 아이콘 숨김.
             _active = e.Handle;
-            if (root != null) root.SetActive(true);
+            if (root != null && !_hiddenByUser) root.SetActive(true); // 사용자 숨김 중엔 강제 표시 금지(복원 입력까지 유지)
             _speaker = e.Speaker;
             _speakerId = e.SpeakerId;
             if (speakerText != null) speakerText.text = e.Speaker ?? "";
@@ -204,7 +229,8 @@ namespace LoveAlgo.UI
                     float t = 0f;
                     while (_awaitingClick && t < autoAdvanceDelay)
                     {
-                        if (!OverlayGate.IsBlocked) t += Time.deltaTime; // 오버레이 열림 중 오토 일시정지
+                        // 오버레이 열림/사용자 숨김 중 오토 일시정지(숨긴 채 스토리가 흘러가지 않게)
+                        if (!OverlayGate.IsBlocked && !_hiddenByUser) t += Time.deltaTime;
                         yield return null;
                     }
                     _awaitingClick = false;
@@ -245,6 +271,26 @@ namespace LoveAlgo.UI
         void Update()
         {
             UpdateEndMarkBob();
+
+            var mouse = Mouse.current;
+
+            // 사용자 숨김 중: 좌클릭/스페이스 = 복원만(Advance가 진행 대신 복원으로 소비). 좌클릭은 뷰 GO의
+            // 전체화면 투명 클릭캐처(OnPointerClick)가 root 비활성과 무관하게 받으므로 여기서 폴링하지 않는다
+            // — press 폴링+release 클릭의 이중 Advance(복원 클릭이 진행까지 소비) 방지. 휠 로그 등 다른 입력은 숨김 동안 무시.
+            if (_hiddenByUser)
+            {
+                var k = Keyboard.current;
+                if (k != null && k.spaceKey.wasPressedThisFrame && !IsTextInputFocused()) Advance("스페이스");
+                return;
+            }
+
+            // 휠 업 = 대사 로그 열기(VN 관례, 감독 승인 진입점). 오버레이 열림 중엔 무시(게이트 — 로그 자신 포함).
+            if (mouse != null && mouse.scroll.ReadValue().y > 0.01f && !OverlayGate.IsBlocked)
+            {
+                DebugInput.Log("휠 업 → 대사 로그 열기");
+                EventBus.Publish(new OpenDialogueLogCommand());
+            }
+
             var kb = Keyboard.current;
             if (kb == null || !kb.spaceKey.wasPressedThisFrame) return;
             if (IsTextInputFocused()) return;
@@ -266,6 +312,7 @@ namespace LoveAlgo.UI
         {
             if (OverlayGate.IsBlocked) return; // 오버레이(설정/세이브로드) 열림 중 진행/스킵 차단 — 키보드 직접 읽기 보호
             string s = source ?? "?";
+            if (_hiddenByUser) { RestoreByUser(); DebugInput.Log($"{s} → 대사창 복원(숨김 해제)"); return; } // 복원 입력은 진행 미소비
             if (_typing) { _skipTyping = true; DebugInput.Log($"{s} → 대사 타이핑 스킵"); } // 스킵(완성 가속)은 무음
             else if (_awaitingClick)
             {
