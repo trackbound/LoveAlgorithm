@@ -3,7 +3,7 @@ LineID,Type,Speaker,Value,Next
 # 기획서: 3차 이벤트 기본점수 +9. Event1/Event2와 같은 히로인 재선택 시 +2(로아 제외 — 공식이 자동 처리).
 # CSV 호출 컨벤션: Affinity:EventChoice:{heroineId}:Event3:9
 
-,BG,,캠퍼스거리1 낮 맑음:Cross,await
+,BG,,캠퍼스_맑음:Cross,await
 ,Sound,,BGM:일상1,>
 ,Place,,3차 이벤트 | 캠퍼스,await
 ,Text,,"종강이 머지않았다. 마음을 전할 기회도 이제 얼마 없다.",click
@@ -41,6 +41,6 @@ pick_roa,Flow,,Affinity:EventChoice:Roa:Event3:9,>
 ,Flow,,Jump:event3_end,>
 
 event3_end,Text,,"해가 진다. 이제 정말 며칠 남지 않았다.",click
-,BG,,빈 화면:Cross,await
+,BG,,블랙:Cross,await
 ,Flow,,Save,await
 ,Flow,,End,>

@@ -3,7 +3,7 @@ LineID,Type,Speaker,Value,Next
 # 기획서: "밤바다 산책 상대" 선택 +5. CSV 호출 컨벤션: Affinity:EventChoice:{heroineId}:MT:5
 # ⚠️ 밤바다 BG 에셋 미존재 — 빈 화면 대체(ASSET_REQUESTS 후보).
 
-,BG,,빈 화면:Cross,await
+,BG,,블랙:Cross,await
 ,Sound,,BGM:밤,>
 ,Place,,MT 둘째 날 밤 | 밤바다,await
 ,Text,,"바비큐가 끝나고 다들 흩어졌다. 파도 소리가 들린다.",click
@@ -41,6 +41,6 @@ sea_roa,Flow,,Affinity:EventChoice:Roa:MT:5,>
 ,Flow,,Jump:mt2_end,>
 
 mt2_end,Text,,"밤이 깊어간다. 내일이면 돌아가는 날이다.",click
-,BG,,빈 화면:Cross,await
+,BG,,블랙:Cross,await
 ,Flow,,Save,await
 ,Flow,,End,>

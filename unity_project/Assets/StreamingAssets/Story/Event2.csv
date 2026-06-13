@@ -2,7 +2,7 @@ LineID,Type,Speaker,Value,Next
 # === 2차 개인 이벤트 (검증용 최소 스캐폴드) ===
 # 기획서: 2차 이벤트 기본점수 +6. CSV 호출 컨벤션: Affinity:EventChoice:{heroineId}:Event2:6
 
-,BG,,캠퍼스거리1 낮 맑음:Cross,await
+,BG,,캠퍼스_맑음:Cross,await
 ,Sound,,BGM:일상1,>
 ,Place,,2차 이벤트 | 캠퍼스,await
 ,Text,,"중간고사가 끝난 주말. 이번에도 누군가와 시간을 보낼 수 있다.",click
@@ -44,6 +44,6 @@ pick_roa,Flow,,Affinity:EventChoice:Roa:Event2:6,>
 ,Flow,,Jump:event2_end,>
 
 event2_end,Text,,"알찬 하루가 저물었다.",click
-,BG,,빈 화면:Cross,await
+,BG,,블랙:Cross,await
 ,Flow,,Save,await
 ,Flow,,End,>

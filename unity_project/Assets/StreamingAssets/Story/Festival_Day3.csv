@@ -2,7 +2,7 @@ LineID,Type,Speaker,Value,Next
 # === 축제 3일차 (검증용 최소 스캐폴드) ===
 # 기획서: "집에 데려다줌" 선택 +4. CSV 호출 컨벤션: Affinity:EventChoice:{heroineId}:Festival:4
 
-,BG,,학생회관 앞 밤:Cross,await
+,BG,,학관_밤:Cross,await
 ,Sound,,BGM:밤,>
 ,Place,,축제 마지막 밤 | 학생회관 앞,await
 ,Text,,"축제의 마지막 밤. 다들 흩어지는 분위기다.",click
@@ -40,6 +40,6 @@ walk_roa,Flow,,Affinity:EventChoice:Roa:Festival:4,>
 ,Flow,,Jump:festival_end,>
 
 festival_end,Text,,"축제가 끝났다. 일상이 돌아온다.",click
-,BG,,빈 화면:Cross,await
+,BG,,블랙:Cross,await
 ,Flow,,Save,await
 ,Flow,,End,>

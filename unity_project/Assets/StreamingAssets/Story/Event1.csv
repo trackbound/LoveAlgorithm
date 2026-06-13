@@ -4,7 +4,7 @@ LineID,Type,Speaker,Value,Next
 # CSV 호출 컨벤션: Affinity:EventChoice:{heroineId}:Event1:3
 
 # --- 진입 ---
-,BG,,캠퍼스거리1 낮 맑음:Cross,await
+,BG,,캠퍼스_맑음:Cross,await
 ,Sound,,BGM:일상1,>
 ,Place,,1차 이벤트 | 캠퍼스,await
 ,Text,,"개강 후 한 달이 지났다.\n이번 주말, 누구와 시간을 보낼지 정해야 한다.",click
@@ -53,6 +53,6 @@ pick_roa,Flow,,Affinity:EventChoice:Roa:Event1:3,>
 
 # --- 공통 종료 ---
 event1_end,Text,,"하루가 저물었다.",click
-,BG,,빈 화면:Cross,await
+,BG,,블랙:Cross,await
 ,Flow,,Save,await
 ,Flow,,End,>

@@ -91,5 +91,62 @@ namespace LoveAlgo.Tests.Editor
 
         static void AssertLabel(string tag, HashSet<string> labels, string target, string raw)
             => Assert.IsTrue(labels.Contains(target), $"{tag}: 점프 대상 '{target}' 존재 — \"{raw}\"");
+
+        /// <summary>
+        /// 스토리 CSV가 참조하는 BG 전수가 실제 로드 가능한지(별칭 해석 → 미등록=passthrough=에셋명 직접,
+        /// 감독 컨벤션 2026-06-11). BG 에셋 리네임이 CSV/카탈로그와 어긋나면 런타임에 배경만 조용히
+        /// 안 뜨므로 여기서 선제 차단. 카탈로그 엔트리 CSV + 프롤로그를 함께 검사한다.
+        /// </summary>
+        [Test]
+        public void All_Story_Bg_References_Are_Loadable()
+        {
+            var alias = Resources.Load<ResourceAliasCatalogSO>("Data/ResourceAliasCatalog");
+            var files = LoadCatalog().Entries.Select(e => e.csvPath).Append("Prologue.csv").Distinct();
+
+            foreach (string csv in files)
+            {
+                string path = Path.Combine(StoryDir, csv);
+                if (!File.Exists(path)) continue; // 파일 존재는 위 테스트가 검증
+
+                foreach (var line in ScriptParser.Parse(File.ReadAllText(path)))
+                foreach (string name in BgNamesOf(line))
+                {
+                    string id = alias != null ? alias.ResolveBg(name) : name;
+                    Assert.IsNotNull(Resources.Load<Sprite>($"BG/{id}"),
+                        $"{csv}: BG '{name}' → Resources/BG/{id} 부재 — 에셋명/별칭 카탈로그 확인");
+                }
+            }
+        }
+
+        // BG 참조 추출: BG 라인("이름[:전환[:dur]]") + FX Setup 매크로("Setup:BG=이름|…") +
+        // SceneStart("SceneStart[:bg[:EyeClose]]"). 매크로 포맷은 STORY_COMMANDS 동결.
+        static IEnumerable<string> BgNamesOf(ScriptLine line)
+        {
+            if (line.Type == LineType.BG && !string.IsNullOrWhiteSpace(line.Value))
+            {
+                yield return line.Value.Split(':')[0].Trim();
+            }
+            else if (line.Type == LineType.FX && !string.IsNullOrEmpty(line.Value))
+            {
+                if (line.Value.StartsWith("Setup", System.StringComparison.OrdinalIgnoreCase))
+                {
+                    int idx = line.Value.IndexOf(':');
+                    if (idx < 0) yield break;
+                    foreach (var seg in line.Value.Substring(idx + 1).Split('|'))
+                    {
+                        var s = seg.Trim();
+                        if (s.StartsWith("BG=", System.StringComparison.OrdinalIgnoreCase) && s.Length > 3)
+                            yield return s.Substring(3).Trim();
+                    }
+                }
+                else if (line.Value.StartsWith("SceneStart:", System.StringComparison.OrdinalIgnoreCase))
+                {
+                    var parts = line.Value.Split(':');
+                    if (parts.Length >= 2 && !string.IsNullOrWhiteSpace(parts[1]) &&
+                        !parts[1].Trim().Equals("EyeClose", System.StringComparison.OrdinalIgnoreCase))
+                        yield return parts[1].Trim();
+                }
+            }
+        }
     }
 }
