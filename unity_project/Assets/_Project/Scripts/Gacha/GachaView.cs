@@ -294,8 +294,8 @@ namespace LoveAlgo.Gacha
             {
                 foreach (var rt in pieces)
                 {
-                    rt.anchoredPosition += new Vector2(Mathf.Sin((t + rt.GetInstanceID() % 7) * 6f) * 1.6f, -260f * Time.deltaTime);
-                    rt.localRotation = Quaternion.Euler(0f, 0f, t * 240f + rt.GetInstanceID() % 360);
+                    rt.anchoredPosition += new Vector2(Mathf.Sin((t + rt.GetEntityId().GetHashCode() % 7) * 6f) * 1.6f, -260f * Time.deltaTime);
+                    rt.localRotation = Quaternion.Euler(0f, 0f, t * 240f + rt.GetEntityId().GetHashCode() % 360);
                 }
                 yield return null;
             }
