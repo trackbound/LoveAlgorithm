@@ -193,6 +193,29 @@ Flow,,LockScreen:Auto:Time=23:58,await        # IsPasswordSet ? Normal : FirstSe
 └─ 비번 분실 흐름       ──→ Flow,,LockScreen:Reset,await
 ```
 
+## 이름 입력 (Username) + `{{Player}}` 치환
+
+새 게임 초기에 주인공 이름을 입력받는다(기획서 §로그 — Username Screen). 빈 입력은 확인이
+무시되므로 입력이 강제된다. 저장된 이름은 세이브(playerName)에 영속.
+
+```
+Flow,,Username,await                          # 이름 입력 화면 — 확인까지 스크립트 정지
+```
+
+- `{{Player}}` 토큰은 **Speaker/Value 어디서든** 입력된 이름으로 치환된다(케이스 무시).
+  이름 미입력 상태(Username 이전 재생 등)는 `플레이어`로 폴백.
+- **Speaker가 `{{Player}}`인 줄 = 주인공 대사** — 대사 로그에서 주인공 전용 박스
+  (namebox/textbox_player)로 분류된다. 엔진이 예약 SpeakerId `player`를 부여.
+- Prologue 적용: `pro_016`(로아가 이름 묻기) 직후 1줄.
+
+## 대사 로그 (Backlog)
+
+CSV 명령이 아닌 런타임 UI(스토리 중 **마우스 휠 업**으로 열람)지만, 작가가 알아야 할 표시 규칙:
+
+- **연속 동일 화자**는 한 박스에 줄로 누적된다(스크립트 경계에서 새 박스).
+- **독백(화자 빈칸)**은 화자 무관 연속 병합 — 박스 없는 흰 텍스트.
+- 히로인 5인(로아·다은·봄·희원·예은)은 초상 표시, 엑스트라는 동일 박스에 초상 없음.
+
 ## 메신저 (Messenger)
 
 스토리에서 메신저 시퀀스를 도착시킨다(별칭 `Message`). 시퀀스 내용은 별도 메신저 CSV
