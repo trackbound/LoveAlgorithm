@@ -310,6 +310,7 @@ GameObject:
   - component: {fileID: 1586859190022063816}
   - component: {fileID: 4456934668960751313}
   - component: {fileID: 682740779749241086}
+  - component: {fileID: 7889707188147354658}
   m_Layer: 0
   m_Name: CartSlot
   m_TagString: Untagged
@@ -380,6 +381,24 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &7889707188147354658
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 388481427537898800}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc4da383b9452154c93ef2e17658a967, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: LoveAlgo.Shop::LoveAlgo.Shop.CartSlotView
+  icon: {fileID: 3477435427663557232}
+  nameText: {fileID: 6747458327057933047}
+  priceText: {fileID: 4981212416990803776}
+  qtyText: {fileID: 7954884356238690092}
+  upButton: {fileID: 9158002930070536930}
+  downButton: {fileID: 3491786969368870277}
 --- !u!1 &2322412005639230554
 GameObject:
   m_ObjectHideFlags: 0

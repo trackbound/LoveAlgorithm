@@ -267,6 +267,7 @@ GameObject:
   - component: {fileID: 7449663510375539227}
   - component: {fileID: 7730803947369819323}
   - component: {fileID: 8399301631740623782}
+  - component: {fileID: 4573086401289091373}
   m_Layer: 0
   m_Name: ItemTooltip
   m_TagString: Untagged
@@ -373,6 +374,24 @@ CanvasGroup:
   m_Interactable: 0
   m_BlocksRaycasts: 0
   m_IgnoreParentGroups: 0
+--- !u!114 &4573086401289091373
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 805363960312654809}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bb23d25b4398a8e43a7e642088107c32, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: LoveAlgo.Shop::LoveAlgo.Shop.ItemTooltipView
+  canvasGroup: {fileID: 8399301631740623782}
+  icon: {fileID: 5868117321993106010}
+  nameText: {fileID: 8196179776511872002}
+  priceText: {fileID: 2752239294666215730}
+  descText: {fileID: 7347310009036050389}
+  offset: {x: 0, y: 160}
 --- !u!1 &7930283148364991736
 GameObject:
   m_ObjectHideFlags: 0
