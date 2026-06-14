@@ -1,7 +1,8 @@
 using System;
+using System.Collections;
 using LoveAlgo.Common; // EventBus
 using LoveAlgo.Core;   // JsonSaveStore
-using LoveAlgo.Events; // CaptureThumbnailCommand
+using LoveAlgo.Events; // CaptureThumbnailCommand, ThumbnailSavedEvent
 using UnityEngine;
 
 namespace LoveAlgo.UI
@@ -22,7 +23,14 @@ namespace LoveAlgo.UI
         {
             string path = JsonSaveStore.ThumbnailPath(JsonSaveStore.ThumbnailFileFor(e.Slot));
             if (!isActiveAndEnabled) return; // 코루틴 시작 불가 시 스킵(다음 저장에 재시도)
-            StartCoroutine(ThumbnailCapture.CaptureToFile(path));
+            StartCoroutine(CaptureThenNotify(e.Slot, path));
+        }
+
+        // 캡처(프레임 종료 대기)가 끝난 뒤 통지 — 열려 있는 세이브 팝업이 저장 직후 썸네일을 바로 반영하도록.
+        IEnumerator CaptureThenNotify(int slot, string path)
+        {
+            yield return ThumbnailCapture.CaptureToFile(path);
+            EventBus.Publish(new ThumbnailSavedEvent(slot));
         }
     }
 }

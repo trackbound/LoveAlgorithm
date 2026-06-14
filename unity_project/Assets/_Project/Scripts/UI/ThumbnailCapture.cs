@@ -28,7 +28,7 @@ namespace LoveAlgo.UI
         static List<Canvas> DisableForegroundCanvases()
         {
             var disabled = new List<Canvas>();
-            foreach (var c in UnityEngine.Object.FindObjectsByType<Canvas>(FindObjectsSortMode.None))
+            foreach (var c in UnityEngine.Object.FindObjectsByType<Canvas>())
                 if (c != null && c.enabled && c.sortingOrder >= 0) { c.enabled = false; disabled.Add(c); }
             return disabled;
         }

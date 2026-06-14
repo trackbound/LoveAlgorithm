@@ -29,4 +29,12 @@ namespace LoveAlgo.Events
         public readonly int Slot;
         public CaptureThumbnailCommand(int slot) { Slot = slot; }
     }
+
+    /// <summary>슬롯 썸네일 PNG 기록 완료 통지(ThumbnailCaptureController 발행). 캡처가 프레임 종료 비동기라
+    /// 저장 직후 갱신으론 썸네일이 안 잡힘 — 세이브 팝업이 이걸 받아 해당 페이지를 재갱신한다.</summary>
+    public readonly struct ThumbnailSavedEvent
+    {
+        public readonly int Slot;
+        public ThumbnailSavedEvent(int slot) { Slot = slot; }
+    }
 }

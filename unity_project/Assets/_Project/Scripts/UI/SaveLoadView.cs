@@ -41,6 +41,7 @@ namespace LoveAlgo.UI
         int _page;
         bool _visible;
         IDisposable _showSub;
+        IDisposable _thumbSub;
         IDisposable _gate; // OverlayGate 토큰(표시 중에만 non-null — 뒤로가기 CloseTop이 닫기 호출)
         ButtonSpriteSwap _prevSwap, _nextSwap;
 
@@ -58,11 +59,18 @@ namespace LoveAlgo.UI
             SetVisible(false); // 부팅 숨김(프리팹 CanvasGroup alpha0과 정합)
         }
 
-        void OnEnable() => _showSub = EventBus.Subscribe<ShowSaveLoadCommand>(e => Show(e.Mode));
+        void OnEnable()
+        {
+            _showSub = EventBus.Subscribe<ShowSaveLoadCommand>(e => Show(e.Mode));
+            _thumbSub = EventBus.Subscribe<ThumbnailSavedEvent>(OnThumbnailSaved);
+        }
+
         void OnDisable()
         {
             _showSub?.Dispose();
             _showSub = null;
+            _thumbSub?.Dispose();
+            _thumbSub = null;
             _gate?.Dispose(); // 표시 중 비활성 시 게이트 누수 방지(중복 무해)
             _gate = null;
             _visible = false;
@@ -127,11 +135,19 @@ namespace LoveAlgo.UI
                 EventBus.Publish(new LoadGameCommand(slot));
                 SetVisible(false);
             }
-            else // Save: 현재 상태를 슬롯에 저장(SaveManager 구독). 썸네일은 비동기 — 다음 열람 시 표시.
+            else // Save: 현재 상태를 슬롯에 저장(SaveManager 구독). 썸네일은 비동기 — ThumbnailSavedEvent 수신 시 반영.
             {
                 EventBus.Publish(new SaveRequestedEvent(slot, "manual"));
                 RefreshPage();
             }
+        }
+
+        // 저장 직후 비동기 캡처(프레임 종료) 완료 통지 — 표시 중이고 그 슬롯이 현재 페이지면 갱신해 썸네일 즉시 표시.
+        void OnThumbnailSaved(ThumbnailSavedEvent e)
+        {
+            if (!_visible) return;
+            int first = SlotForCell(_page, 0, slotsPerPage);
+            if (e.Slot >= first && e.Slot < first + slotsPerPage) RefreshPage();
         }
 
         Sprite LoadThumbnail(SaveData data, int slot)
