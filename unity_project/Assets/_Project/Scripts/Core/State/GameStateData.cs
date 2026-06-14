@@ -63,6 +63,29 @@ namespace LoveAlgo.Core
         public int messengerProfileBg;
         public string messengerStatusMessage = "";
 
+        // ── 스토리 위치 (스토리 중 세이브 → 로드 시 그 장면 재개. 2026-06-13) ──
+        // storyScriptId: "prologue" 또는 저녁 이벤트 CSV 상대경로(GameManager 씨임의 scriptName과 동일 규약).
+        // 빈 문자열 = 스토리 중 아님(스케줄 재개 — 종전 동작). NarrativeController가 대기 라인(Text/Choice)에서
+        // 기록하고 정상 종료 시 비운다. 가산적 확장 — 구버전 세이브는 기본값(빈/0)으로 로드돼 마이그레이션 무해.
+        public string storyScriptId = "";
+        public int storyLineIndex;
+
+        // 무대 스냅샷(장면 정체성: BG/BGM/슬롯 캐릭터). 엔진이 명령 발행 시점에 "해석된 코드ID"로 미러 —
+        // 별칭 카탈로그가 바뀌어도 복원이 흔들리지 않는다. 연출 순간값(틴트/아이마스크/흔들림)은 비저장,
+        // CG도 비저장(CG 중엔 대사창과 인포 바가 숨어 세이브 UI 접근 자체가 불가).
+        public string storyBg = "";
+        public string storyBgm = "";
+        public List<StoryCharRecord> storyChars = new();
+
+        /// <summary>스토리 무대 슬롯 1칸의 캐릭터 기록. slot = CharSlot enum 정수값(L=0/C=1/R=2).</summary>
+        [Serializable]
+        public class StoryCharRecord
+        {
+            public int slot;
+            public string id = "";
+            public string emote = "";
+        }
+
         // ── 랜덤가챠 (기획서 2026-06-12 — 퍼즐 조각 수집형) ──
         // 보유 조각 인덱스 목록(조각 정의는 GachaTuningSO — 상태는 인덱스만, 가산적 확장이라 구세이브 무해).
         // 추첨은 미보유 풀 한정이라 중복 인덱스는 생기지 않는다(GachaPuzzleService가 강제).

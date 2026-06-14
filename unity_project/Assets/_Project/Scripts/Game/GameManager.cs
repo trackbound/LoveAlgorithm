@@ -82,11 +82,20 @@ namespace LoveAlgo.Game
         }
 
         /// <summary>
+        /// 스토리 위치 세이브 복원(GameBootstrap 호출): 저녁 이벤트 도중 저장된 게임을 같은 씨임으로 재개한다 —
+        /// 종료 시 하루 전환까지 원 흐름 그대로(부트가 직접 발행하면 이벤트가 끝나도 하루가 안 넘어가 소프트락).
+        /// <paramref name="csvPath"/>는 세이브의 storyScriptId(=저녁 씨임의 scriptName 규약).
+        /// </summary>
+        public void ResumeEveningEvent(string csvPath, int startIndex)
+            => StartCoroutine(PlayEveningEventThenAdvance(csvPath, startIndex));
+
+        /// <summary>
         /// 저녁 이벤트 파일을 읽어 재생 → 종료(<see cref="NarrativeFinishedEvent"/>)까지 대기 → 하루 전환.
         /// 파일 없음/손상은 fail-open(건너뛰고 진행). 대기 구간은 <c>NarrativeFlowGate</c>로 잠가, 기획 도구가
         /// 이 사이 Apply로 스크립트를 교체해 완료 이벤트가 영영 안 와 데드락되는 일을 막는다.
+        /// <paramref name="startIndex"/>는 스토리 위치 복원 재개 앵커(0=처음부터 — 종전 동작).
         /// </summary>
-        IEnumerator PlayEveningEventThenAdvance(string csvPath)
+        IEnumerator PlayEveningEventThenAdvance(string csvPath, int startIndex = 0)
         {
             string csv = StoryAssetLoader.Read(csvPath);
             if (string.IsNullOrEmpty(csv))
@@ -101,10 +110,10 @@ namespace LoveAlgo.Game
             _seamLocked = true;
 
             bool finished = false;
-            string scriptName = csvPath; // 이름=경로(다른 스크립트 완료와 섞이지 않게 매칭).
+            string scriptName = csvPath; // 이름=경로(다른 스크립트 완료와 섞이지 않게 매칭). 위치 세이브의 storyScriptId와 동일 규약.
             using (EventBus.Subscribe<NarrativeFinishedEvent>(e => { if (e.ScriptName == scriptName) finished = true; }))
             {
-                EventBus.Publish(new PlayScriptCommand(csv, scriptName));
+                EventBus.Publish(new PlayScriptCommand(csv, scriptName, startIndex));
                 yield return new WaitUntil(() => finished);
             }
 

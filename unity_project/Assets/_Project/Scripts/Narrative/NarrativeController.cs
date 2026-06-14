@@ -111,15 +111,19 @@ namespace LoveAlgo.Story.StoryEngine
                 return;
             }
 
-            _currentRun = StartCoroutine(Run(lines, cmd.Name));
+            _currentRun = StartCoroutine(Run(lines, cmd.Name, cmd.StartIndex));
         }
 
-        IEnumerator Run(List<ScriptLine> lines, string scriptName)
+        IEnumerator Run(List<ScriptLine> lines, string scriptName, int startIndex = 0)
         {
             IsRunning = true;
             EventBus.Publish(new RequestPhaseCommand(ScreenPhase.Story));
 
             var cursor = new ScriptCursor(lines);
+            // 스토리 위치 복원: 저장된 대기 라인(Text/Choice) 앵커에서 재개. 앵커 이전의 효과 라인(Flag/Affinity 등)은
+            // 이미 적용된 채 세이브에 들어있으므로 재실행하지 않는다(이중 적용 방지). 범위 밖이면 처음부터(fail-open).
+            if (startIndex > 0 && !cursor.JumpToIndex(startIndex))
+                Log.Warn($"[NarrativeController] 시작 인덱스 {startIndex} 범위 밖 — 처음부터 재생 (name='{scriptName}').");
             bool end = false;
 
             while (!end && cursor.HasCurrent)
@@ -128,11 +132,13 @@ namespace LoveAlgo.Story.StoryEngine
                 switch (line.Type)
                 {
                     case LineType.Text:
+                        RecordStoryAnchor(scriptName, cursor.Index); // 대기 라인 = 재개 앵커(세이브가 이 줄을 가리킴)
                         yield return PlayText(line);
                         cursor.MoveNext();
                         break;
 
                     case LineType.Choice:
+                        RecordStoryAnchor(scriptName, cursor.Index); // 선택 중 세이브 → 로드 시 선택지 재표시
                         yield return PlayChoice(cursor);
                         // PlayChoice가 점프했으면 커서는 이미 대상; 아니면 Choice+Option 블록을 건너뛴다.
                         // 점프 여부는 _lastChoiceJumped로 전달(코루틴은 반환값을 못 주므로 필드 경유).
@@ -150,6 +156,12 @@ namespace LoveAlgo.Story.StoryEngine
                         {
                             // 대기형 Flow(잠금화면) — 비번 입력(Submit)까지 핸들 대기. 컨트롤러+뷰 배선 필수(미배선=hang).
                             yield return PlayLockScreen(line);
+                            cursor.MoveNext();
+                        }
+                        else if (IsUsername(line.Value))
+                        {
+                            // 대기형 Flow(이름 입력) — 확인까지 핸들 대기(LockScreen 미러). 이후 라인부터 {{Player}} 치환에 반영.
+                            yield return PlayUsername(line);
                             cursor.MoveNext();
                         }
                         else if (MessengerCommandParser.IsMessenger(line.Value))
@@ -214,10 +226,66 @@ namespace LoveAlgo.Story.StoryEngine
                 }
             }
 
+            ClearStoryPosition(); // 정상 종료 = 스토리 밖 → 이후 세이브는 스케줄 재개(종전 동작)
             EventBus.Publish(new RequestPhaseCommand(ScreenPhase.Schedule));
             EventBus.Publish(new NarrativeFinishedEvent(scriptName));
             IsRunning = false;
             _currentRun = null;
+        }
+
+        // ── 스토리 위치 세이브(🔴 세이브 스키마, 2026-06-13) ──
+        // 엔진이 진행하며 상태를 항상 최신으로 유지 → SaveManager가 언제 직렬화해도 일관(별도 캡처 시점 없음).
+        // 무대 미러는 "해석된 코드ID"를 기록(발행 직전 값) — 별칭 카탈로그 변경에 면역. 복원은 GameBootstrap.
+
+        void RecordStoryAnchor(string scriptName, int index)
+        {
+            if (state == null) return;
+            state.Data.storyScriptId = scriptName ?? "";
+            state.Data.storyLineIndex = index;
+        }
+
+        void ClearStoryPosition()
+        {
+            if (state == null) return;
+            var d = state.Data;
+            d.storyScriptId = "";
+            d.storyLineIndex = 0;
+            d.storyBg = "";
+            d.storyBgm = "";
+            d.storyChars.Clear();
+        }
+
+        void RecordBg(string resolvedName)
+        {
+            if (state != null) state.Data.storyBg = resolvedName ?? "";
+        }
+
+        void RecordBgm(string resolvedName)
+        {
+            if (state != null) state.Data.storyBgm = resolvedName ?? "";
+        }
+
+        void RecordChar(CharSlot slot, CharAction action, string id, string emote)
+        {
+            if (state == null) return;
+            var chars = state.Data.storyChars;
+            int found = -1;
+            for (int i = 0; i < chars.Count; i++)
+                if (chars[i].slot == (int)slot) { found = i; break; }
+
+            if (action == CharAction.Exit || action == CharAction.Clear)
+            {
+                if (found >= 0) chars.RemoveAt(found);
+                return;
+            }
+            // Enter/Emote: 슬롯 기록 생성/갱신(Emote는 표정만 갱신 — id 빈 값이면 기존 유지).
+            if (found < 0)
+            {
+                chars.Add(new GameStateData.StoryCharRecord { slot = (int)slot, id = id ?? "", emote = emote ?? "" });
+                return;
+            }
+            if (!string.IsNullOrEmpty(id)) chars[found].id = id;
+            chars[found].emote = emote ?? "";
         }
 
         IEnumerator PlayText(ScriptLine line)
@@ -226,11 +294,18 @@ namespace LoveAlgo.Story.StoryEngine
             // 독백(화자 빈 칸 Text) 진입/이탈 토글 — IsNarration이 곧 감독 정의(빈 화자=독백, {{player}}는 화자 채워짐=대사).
             // 뷰(MonologueOverlayView)가 중복 토글을 흡수하므로 매 Text 라인마다 발행해도 무방.
             EventBus.Publish(new SetMonologueOverlayCommand(line.IsNarration));
-            var parsed = InlineTagParser.Parse(line.Value); // 인라인 태그(<wait:sec>·<emote=표정/>) 분해 → 표시텍스트+멈춤/표정 지점.
+
+            // {{Player}} 치환(화자+본문) — 인라인 태그 분해 "전" 원문에 수행해야 태그 CharIndex가 안 어긋난다.
+            // 주인공 화자는 예약 ID "player"로 발행 — 로그/뷰가 치환된 실명과 무관하게 주인공을 판별(StageView 슬롯 매칭엔 미등록=무해).
+            string playerName = state != null ? state.Data.playerName : null;
+            bool isPlayer = PlayerNameFormat.IsPlayerSpeaker(line.Speaker);
+            string speaker = PlayerNameFormat.Apply(line.Speaker, playerName);
+            var parsed = InlineTagParser.Parse(PlayerNameFormat.Apply(line.Value, playerName)); // 인라인 태그(<wait:sec>·<emote=표정/>) 분해 → 표시텍스트+멈춤/표정 지점.
             var req = new CompletionHandle();
             // 화자/표정 별칭 해석: 표시는 원문(Speaker), 슬롯 매칭은 코드 ID(SpeakerId)·표정 코드 — 뷰는 카탈로그를 모른다.
-            EventBus.Publish(new ShowDialogueCommand(line.Speaker, parsed.Text, requireClick, req,
-                parsed.Pauses, ResolveInlineEmotes(parsed.Emotes), ResolveSpeakerId(line.Speaker)));
+            EventBus.Publish(new ShowDialogueCommand(speaker, parsed.Text, requireClick, req,
+                parsed.Pauses, ResolveInlineEmotes(parsed.Emotes),
+                isPlayer ? PlayerNameFormat.PlayerSpeakerId : ResolveSpeakerId(line.Speaker)));
 
             // 뷰가 타이핑/클릭을 마칠 때까지 대기(구독자 없으면 즉시 완료되지 않으므로 가드).
             yield return new WaitUntil(() => req.IsComplete);
@@ -396,7 +471,9 @@ namespace LoveAlgo.Story.StoryEngine
                 : (stageTuning != null ? stageTuning.BgTransitionDefault : 0.5f);
 
             var req = new CompletionHandle();
-            EventBus.Publish(new ShowBackgroundCommand(ResolveBgName(intent.Name), intent.Transition, dur, req));
+            string bgName = ResolveBgName(intent.Name);
+            RecordBg(bgName);
+            EventBus.Publish(new ShowBackgroundCommand(bgName, intent.Transition, dur, req));
             yield return WaitNext(line, () => req.IsComplete);
         }
 
@@ -411,6 +488,7 @@ namespace LoveAlgo.Story.StoryEngine
 
             float dur = ResolveCharDuration(intent.Action);
             var (ch, em) = ResolveCharEmote(intent.Character, intent.Emote, intent.Action);
+            RecordChar(intent.Slot, intent.Action, ch, em);
             var req = new CompletionHandle();
             EventBus.Publish(new ShowCharacterCommand(intent.Slot, intent.Action, ch, em, dur, req));
             yield return WaitNext(line, () => req.IsComplete);
@@ -504,8 +582,17 @@ namespace LoveAlgo.Story.StoryEngine
             switch (intent.Category)
             {
                 case SoundCategory.Bgm:
-                    if (intent.IsStop) EventBus.Publish(new StopBgmCommand(intent.Fade));
-                    else EventBus.Publish(new PlayBgmCommand(ResolveBgmName(intent.Name), intent.Fade));
+                    if (intent.IsStop)
+                    {
+                        RecordBgm(null);
+                        EventBus.Publish(new StopBgmCommand(intent.Fade));
+                    }
+                    else
+                    {
+                        string bgmName = ResolveBgmName(intent.Name);
+                        RecordBgm(bgmName);
+                        EventBus.Publish(new PlayBgmCommand(bgmName, intent.Fade));
+                    }
                     break;
                 case SoundCategory.Sfx:
                     EventBus.Publish(new PlaySfxCommand(ResolveSfxName(intent.Name)));
@@ -570,6 +657,17 @@ namespace LoveAlgo.Story.StoryEngine
 
         static bool IsLockScreen(string value)
             => string.Equals(HeadOf(value), "LockScreen", StringComparison.OrdinalIgnoreCase);
+
+        static bool IsUsername(string value)
+            => string.Equals(HeadOf(value), "Username", StringComparison.OrdinalIgnoreCase);
+
+        /// <summary>이름 입력 Flow(<c>Username</c>) — 확인(저장)까지 핸들 대기(LockScreen 미러, 뷰 미배선=hang 주의).</summary>
+        IEnumerator PlayUsername(ScriptLine line)
+        {
+            var req = new CompletionHandle();
+            EventBus.Publish(new ShowUsernameCommand(req));
+            yield return WaitNext(line, () => req.IsComplete);
+        }
 
         /// <summary>
         /// 메신저 Flow(<c>Messenger:{시퀀스id}[:Wait]</c>, 별칭 Message). 도착 명령만 발행 — 카탈로그 해석·
@@ -730,13 +828,23 @@ namespace LoveAlgo.Story.StoryEngine
         IEnumerator PlaySetup(ScriptLine line, SetupIntent s)
         {
             if (s.Bg != null)
-                EventBus.Publish(new ShowBackgroundCommand(ResolveBgName(s.Bg), BgTransition.Cut, 0f, new CompletionHandle()));
+            {
+                string bgName = ResolveBgName(s.Bg);
+                RecordBg(bgName);
+                EventBus.Publish(new ShowBackgroundCommand(bgName, BgTransition.Cut, 0f, new CompletionHandle()));
+            }
             if (s.Bgm != null)
-                EventBus.Publish(new PlayBgmCommand(ResolveBgmName(s.Bgm)));
+            {
+                string bgmName = ResolveBgmName(s.Bgm);
+                RecordBgm(bgmName);
+                EventBus.Publish(new PlayBgmCommand(bgmName));
+            }
             if (s.CharName != null)
             {
                 var (ch, em) = ResolveCharEmote(s.CharName, "", CharAction.Enter);
-                EventBus.Publish(new ShowCharacterCommand(ParseSetupSlot(s.CharSlot), CharAction.Enter, ch, em, 0f, new CompletionHandle()));
+                var slot = ParseSetupSlot(s.CharSlot);
+                RecordChar(slot, CharAction.Enter, ch, em);
+                EventBus.Publish(new ShowCharacterCommand(slot, CharAction.Enter, ch, em, 0f, new CompletionHandle()));
             }
             if (s.Overlay != null)
                 EventBus.Publish(new ShowStageLayerCommand(StageLayerKind.Overlay, false, s.Overlay, LayerTransition.Cut, 0f, new CompletionHandle()));
@@ -781,7 +889,11 @@ namespace LoveAlgo.Story.StoryEngine
 
             // SceneStart: BG 즉시(Cut) → 눈 처리.
             if (s.Bg != null)
-                EventBus.Publish(new ShowBackgroundCommand(ResolveBgName(s.Bg), BgTransition.Cut, 0f, new CompletionHandle()));
+            {
+                string bgName = ResolveBgName(s.Bg);
+                RecordBg(bgName);
+                EventBus.Publish(new ShowBackgroundCommand(bgName, BgTransition.Cut, 0f, new CompletionHandle()));
+            }
 
             if (s.EyeClose)
             {

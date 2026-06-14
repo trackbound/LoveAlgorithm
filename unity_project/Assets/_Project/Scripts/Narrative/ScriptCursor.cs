@@ -37,6 +37,14 @@ namespace LoveAlgo.Story
         /// <summary>다음 라인으로 한 칸 전진.</summary>
         public void MoveNext() => _i++;
 
+        /// <summary>라인 인덱스로 직접 점프(스토리 위치 세이브 복원용). 범위 밖이면 false(커서 불변).</summary>
+        public bool JumpToIndex(int index)
+        {
+            if (index < 0 || index >= _lines.Count) return false;
+            _i = index;
+            return true;
+        }
+
         /// <summary>LineID로 점프. 성공 시 커서를 그 위치로 옮기고 true.</summary>
         public bool TryJump(string lineId)
         {

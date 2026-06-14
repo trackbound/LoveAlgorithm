@@ -30,19 +30,24 @@ namespace LoveAlgo.Events
         public readonly TextAsset Script;
         public readonly string InlineCsv;
         public readonly string Name;
+        // 재생 시작 라인 인덱스(0=처음부터 — 종전 동작). 스토리 위치 세이브 복원이 대기 라인(Text/Choice)
+        // 앵커에서 재개할 때 사용. 범위 밖이면 엔진이 경고 후 처음부터(fail-open).
+        public readonly int StartIndex;
 
-        public PlayScriptCommand(TextAsset script, string name = null)
+        public PlayScriptCommand(TextAsset script, string name = null, int startIndex = 0)
         {
             Script = script;
             InlineCsv = null;
             Name = string.IsNullOrEmpty(name) ? (script != null ? script.name : "") : name;
+            StartIndex = startIndex;
         }
 
-        public PlayScriptCommand(string inlineCsv, string name)
+        public PlayScriptCommand(string inlineCsv, string name, int startIndex = 0)
         {
             Script = null;
             InlineCsv = inlineCsv;
             Name = name ?? "";
+            StartIndex = startIndex;
         }
     }
 

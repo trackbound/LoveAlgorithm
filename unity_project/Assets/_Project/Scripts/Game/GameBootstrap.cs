@@ -26,10 +26,13 @@ namespace LoveAlgo.Game
         [SerializeField] bool newGameOnStart = true;
         [Tooltip("새 게임 첫 진입 시 1회 재생할 프롤로그 CSV(StreamingAssets/Story/ 기준 파일명). 비우면 스킵.")]
         [SerializeField] string prologueCsv = "Prologue.csv";
+        [Tooltip("저녁 이벤트 중 세이브 복원 위임 대상(같은 _Bootstrap의 GameManager). 비우면 씬에서 자동 탐색.")]
+        [SerializeField] GameManager gameManager;
 
         public GameStateSO State { get => state; set => state = value; }
         public GameBalanceSO Balance { get => balance; set => balance = value; }
         public string PrologueCsv { get => prologueCsv; set => prologueCsv = value; }
+        public GameManager Manager { get => gameManager; set => gameManager = value; }
 
         void Start()
         {
@@ -46,9 +49,66 @@ namespace LoveAlgo.Game
             }
             int slot = GameEntry.SelectedSlot; // Consume이 리셋하므로 먼저 읽는다
             var mode = GameEntry.Consume();
-            if (mode == BootMode.Continue && GameBoot.ContinueGame(state, balance, slot)) return;
+            if (mode == BootMode.Continue && GameBoot.ContinueGame(state, balance, slot))
+            {
+                TryResumeStory(); // 스토리 중 세이브였다면 그 장면 재개(아니면 종전대로 스케줄)
+                return;
+            }
             GameBoot.NewGame(state, balance); // NewGame이거나 Continue 폴백(세이브 없음/손상)
             PlayPrologue();                   // 새 게임 1회: 프롤로그 자동 재생
+        }
+
+        /// <summary>
+        /// 스토리 위치 세이브 복원: 세이브의 storyScriptId가 비어있지 않으면 ① 무대 스냅샷 재현(해석된 코드ID라
+        /// 별칭 재해석 없이 Setup 미러 — BG Cut/BGM/캐릭터 즉시) ② 저장 앵커(Text/Choice 라인)부터 스크립트 재개.
+        /// "prologue"는 직접 발행(원 부팅 흐름과 동일 — 종료 시 스케줄 복귀), 그 외(=저녁 이벤트 csvPath)는
+        /// GameManager 씨임으로 위임해 종료 후 하루 전환까지 원 흐름을 보존한다. 해석 실패는 fail-open
+        /// (경고 후 위치를 비우고 스케줄 재개 — 진행이 막히지 않는다). 테스트 직호출 가능하게 public.
+        /// </summary>
+        public void TryResumeStory()
+        {
+            if (state == null) return;
+            var d = state.Data;
+            if (string.IsNullOrEmpty(d.storyScriptId)) return; // 스토리 밖 세이브 → 스케줄 재개(종전 동작)
+
+            string id = d.storyScriptId;
+            int index = d.storyLineIndex;
+
+            // 무대 재현 — 스냅샷은 발행 시점 미러라 그대로 재발행(핸들은 뷰가 완료, 대기 불요).
+            if (!string.IsNullOrEmpty(d.storyBg))
+                EventBus.Publish(new ShowBackgroundCommand(d.storyBg, BgTransition.Cut, 0f, new CompletionHandle()));
+            if (!string.IsNullOrEmpty(d.storyBgm))
+                EventBus.Publish(new PlayBgmCommand(d.storyBgm));
+            foreach (var c in d.storyChars)
+            {
+                if (c == null || string.IsNullOrEmpty(c.id)) continue;
+                EventBus.Publish(new ShowCharacterCommand((CharSlot)c.slot, CharAction.Enter, c.id, c.emote, 0f, new CompletionHandle()));
+            }
+
+            if (id == "prologue")
+            {
+                string csv = StoryAssetLoader.Read(prologueCsv);
+                if (!string.IsNullOrEmpty(csv))
+                {
+                    EventBus.Publish(new PlayScriptCommand(csv, "prologue", index));
+                    return;
+                }
+            }
+            else
+            {
+                // 저녁 이벤트(storyScriptId=csvPath 규약) → GameManager 씨임 재진입(종료 시 하루 전환 보존).
+                var gm = gameManager != null ? gameManager : FindAnyObjectByType<GameManager>();
+                if (gm != null)
+                {
+                    gm.ResumeEveningEvent(id, index);
+                    return;
+                }
+            }
+
+            // fail-open: 해석 불가(파일 삭제/dev 스크립트 잔존/GameManager 부재) — 위치를 비우고 스케줄 재개.
+            Log.Warn($"[GameBootstrap] 스토리 위치 복원 실패(scriptId='{id}') — 스케줄에서 재개.");
+            d.storyScriptId = "";
+            d.storyLineIndex = 0;
         }
 
         /// <summary>
