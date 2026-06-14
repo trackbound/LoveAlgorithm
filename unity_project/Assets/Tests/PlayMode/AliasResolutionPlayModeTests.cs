@@ -112,22 +112,27 @@ namespace LoveAlgo.Tests.PlayMode
         {
             const string csv =
                 "LineID,Type,Speaker,Value,Next\n" +
-                ",BG,,bg_60_01:Cut,>\n" +          // 미등록 코드명 → 그대로
-                ",Text,{{Player}},독백,click\n" +  // 미등록 화자 → SpeakerId null
+                ",BG,,bg_60_01:Cut,>\n" +            // 미등록 코드명 → 그대로
+                ",Text,교수님,미등록 화자,click\n" +   // 미등록 화자 → SpeakerId null
+                ",Text,{{Player}},주인공 대사,click\n" + // 예약 화자 → SpeakerId "player" + 이름 치환
                 ",Flow,,End,>\n";
 
             var player = SetUp();
             yield return null;
 
-            string bg = null, speakerId = "sentinel";
+            string bg = null;
+            var speakers = new List<string>();
+            var speakerIds = new List<string>();
             _subs.Add(EventBus.Subscribe<ShowBackgroundCommand>(e => { bg = e.Name; e.Handle?.Complete(); }));
-            _subs.Add(EventBus.Subscribe<ShowDialogueCommand>(e => { speakerId = e.SpeakerId; e.Handle.Complete(); }));
+            _subs.Add(EventBus.Subscribe<ShowDialogueCommand>(e => { speakers.Add(e.Speaker); speakerIds.Add(e.SpeakerId); e.Handle.Complete(); }));
 
             EventBus.Publish(new PlayScriptCommand(csv, "alias"));
             yield return WaitUntilDone(player);
 
             Assert.AreEqual("bg_60_01", bg, "미등록 이름 passthrough");
-            Assert.IsNull(speakerId, "미등록 화자 SpeakerId=null(뷰는 Speaker 폴백)");
+            Assert.IsNull(speakerIds[0], "미등록 화자 SpeakerId=null(뷰는 Speaker 폴백)");
+            Assert.AreEqual(PlayerNameFormat.PlayerSpeakerId, speakerIds[1], "{{Player}} 화자 → 예약 SpeakerId(로그 주인공 박스)");
+            Assert.AreEqual(PlayerNameFormat.FallbackName, speakers[1], "이름 미입력 상태 → 표시 화자 폴백 치환");
 
             // 카탈로그 미바인딩이어도 안전(전부 passthrough).
             player.AliasCatalog = null;
