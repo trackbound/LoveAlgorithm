@@ -147,10 +147,10 @@ GameObject:
   m_Component:
   - component: {fileID: 3396451459028408747}
   - component: {fileID: 7091898239398343078}
+  - component: {fileID: 7889717128749948083}
   - component: {fileID: 8494906734865712188}
   - component: {fileID: 7075903882404886454}
   - component: {fileID: 3873221320660520869}
-  - component: {fileID: 7889717128749948083}
   m_Layer: 0
   m_Name: ChoiceSlot
   m_TagString: Untagged
@@ -186,6 +186,26 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7573487448000468859}
   m_CullTransparentMesh: 1
+--- !u!114 &7889717128749948083
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7573487448000468859}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 306cc8c2b49d7114eaa3623786fc2126, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.LayoutElement
+  m_IgnoreLayout: 0
+  m_MinWidth: -1
+  m_MinHeight: 56
+  m_PreferredWidth: 720
+  m_PreferredHeight: 72
+  m_FlexibleWidth: -1
+  m_FlexibleHeight: -1
+  m_LayoutPriority: 1
 --- !u!114 &8494906734865712188
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -226,7 +246,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7de9977d3e6de4f44a6c76b982ca7ce0, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: LoveAlgo.UI::LoveAlgo.UI.StyledButton
   m_Navigation:
     m_Mode: 3
@@ -235,7 +255,7 @@ MonoBehaviour:
     m_SelectOnDown: {fileID: 0}
     m_SelectOnLeft: {fileID: 0}
     m_SelectOnRight: {fileID: 0}
-  m_Transition: 1
+  m_Transition: 2
   m_Colors:
     m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
     m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
@@ -245,7 +265,7 @@ MonoBehaviour:
     m_ColorMultiplier: 1
     m_FadeDuration: 0.1
   m_SpriteState:
-    m_HighlightedSprite: {fileID: 0}
+    m_HighlightedSprite: {fileID: 21300000, guid: 575a54af94b08b44fa096a0590277a3f, type: 3}
     m_PressedSprite: {fileID: 0}
     m_SelectedSprite: {fileID: 0}
     m_DisabledSprite: {fileID: 0}
@@ -288,23 +308,3 @@ MonoBehaviour:
   m_EditorClassIdentifier: LoveAlgo.UI::LoveAlgo.UI.ChoiceOptionSlot
   button: {fileID: 7075903882404886454}
   labelText: {fileID: 7923528993092384506}
---- !u!114 &7889717128749948083
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7573487448000468859}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 306cc8c2b49d7114eaa3623786fc2126, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.LayoutElement
-  m_IgnoreLayout: 0
-  m_MinWidth: -1
-  m_MinHeight: 56
-  m_PreferredWidth: 720
-  m_PreferredHeight: 72
-  m_FlexibleWidth: -1
-  m_FlexibleHeight: -1
-  m_LayoutPriority: 1
