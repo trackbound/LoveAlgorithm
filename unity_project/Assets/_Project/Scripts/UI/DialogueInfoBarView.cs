@@ -1,15 +1,16 @@
 using System;
 using LoveAlgo.Common; // EventBus
 using LoveAlgo.Core;   // SaveLoadMode
-using LoveAlgo.Events; // ShowSaveLoadCommand, OpenDialogueLogCommand, SetAutoModeCommand
+using LoveAlgo.Events; // ShowSaveLoadCommand, OpenDialogueLogCommand, SetAutoModeCommand, ReturnToTitleCommand, ShowSettingsCommand
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace LoveAlgo.UI
 {
     /// <summary>
-    /// 대사창 인포 바(*View): 스토리 중 세이브/로그/오토/숨기기 버튼 — 표시·발행만(ADR-007).
+    /// 대사창 인포 바(*View): 스토리 중 타이틀/불러오기/설정/로그/오토/저장/숨기기 버튼 — 표시·발행만(ADR-007).
     /// Story 페이즈엔 빠른메뉴가 숨으므로(기획 분담: Schedule=빠른메뉴 / Story=대사창 바) 이 바가 스토리 쪽 진입점.
+    /// 타이틀/불러오기/설정/저장은 QuickMenuView와 동일 명령을 발행(정본 단일 — ReturnToTitle/SaveLoad/Settings).
     /// DialogueView root 자식으로 배선 — CG/DialogueHide/페이즈 토글에 자동 연동되므로 자체 숨김·게이트 로직 없음.
     ///
     /// 오토 상태는 <see cref="SetAutoModeCommand"/> 스트림이 정본 — 자기 발행 포함 구독으로만 아이콘을 미러해
@@ -20,6 +21,9 @@ namespace LoveAlgo.UI
     /// </summary>
     public class DialogueInfoBarView : MonoBehaviour
     {
+        [SerializeField] Button titleButton;
+        [SerializeField] Button loadButton;
+        [SerializeField] Button configButton;
         [SerializeField] Button saveButton;
         [SerializeField] Button logButton;
         [SerializeField] Button autoButton;
@@ -31,6 +35,9 @@ namespace LoveAlgo.UI
         [Tooltip("숨기기 대상 대사 뷰(같은 트리). 미바인딩 시 부모에서 자동 탐색.")]
         [SerializeField] DialogueView dialogueView;
 
+        public Button TitleButton { get => titleButton; set => titleButton = value; }
+        public Button LoadButton { get => loadButton; set => loadButton = value; }
+        public Button ConfigButton { get => configButton; set => configButton = value; }
         public Button SaveButton { get => saveButton; set => saveButton = value; }
         public Button LogButton { get => logButton; set => logButton = value; }
         public Button AutoButton { get => autoButton; set => autoButton = value; }
@@ -46,6 +53,9 @@ namespace LoveAlgo.UI
         void Awake()
         {
             if (dialogueView == null) dialogueView = GetComponentInParent<DialogueView>(true);
+            Bind(titleButton, () => EventBus.Publish(new ReturnToTitleCommand()));      // 기획서: 확인 팝업 없음(QuickMenu 미러)
+            Bind(loadButton, () => EventBus.Publish(new ShowSaveLoadCommand(SaveLoadMode.Load)));
+            Bind(configButton, () => EventBus.Publish(new ShowSettingsCommand()));
             Bind(saveButton, () => EventBus.Publish(new ShowSaveLoadCommand(SaveLoadMode.Save)));
             Bind(logButton, () => EventBus.Publish(new OpenDialogueLogCommand()));
             Bind(autoButton, () => EventBus.Publish(new SetAutoModeCommand(!_auto)));

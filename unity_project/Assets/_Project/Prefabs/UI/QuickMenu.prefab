@@ -620,7 +620,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 0}
+  m_Sprite: {fileID: 21300000, guid: 7818fc3d42fba4648ba73494e0e3ca7f, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -1167,7 +1167,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 0}
+  m_Sprite: {fileID: 21300000, guid: 596c1cd9dd80cb74289417bec982f3ca, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -1510,6 +1510,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7412227293570359859}
   - component: {fileID: 3288642307905933196}
+  - component: {fileID: 1330281357225056638}
   m_Layer: 0
   m_Name: QuickMenu
   m_TagString: Untagged
@@ -1524,7 +1525,7 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5704133813965209590}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -1551,6 +1552,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 10416c1343ed5944faf98ce8947bb304, type: 3}
   m_Name: 
   m_EditorClassIdentifier: LoveAlgo.UI::LoveAlgo.UI.QuickMenuView
+  state: {fileID: 11400000, guid: 305637b563feb1c4e877cc99c3421f0d, type: 2}
+  canvasGroup: {fileID: 1330281357225056638}
   toggleButton: {fileID: 8806583040546197291}
   menuRoot: {fileID: 6903295217200899169}
   titleButton: {fileID: 5621759054857874829}
@@ -1565,6 +1568,18 @@ MonoBehaviour:
   quitConfirmMessage: "\uC815\uB9D0 \uC885\uB8CC\uD558\uC2DC\uACA0\uC2B5\uB2C8\uAE4C?"
   quitConfirmYes: "\uC608"
   quitConfirmNo: "\uC544\uB2C8\uC624"
+--- !u!225 &1330281357225056638
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5704133813965209590}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &6137634582786150927
 GameObject:
   m_ObjectHideFlags: 0

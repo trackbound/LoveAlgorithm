@@ -39,6 +39,16 @@ namespace LoveAlgo.UI
         [Tooltip("속도 초기값 소스(미바인딩 시 SettingsSO.Shared).")]
         [SerializeField] SettingsSO settings;
 
+        [Header("숨기기 슬라이드 + 보이기 버튼 (인포바 Hide)")]
+        [Tooltip("숨기기 시 아래로 슬라이드할 패널. 미지정 시 root의 RectTransform.")]
+        [SerializeField] RectTransform slidePanel;
+        [Tooltip("숨김 동안 기존 대사창 위치에 뜨는 '보이기' 버튼 루트(GameObject). 부팅 inactive.")]
+        [SerializeField] GameObject showButton;
+        [Tooltip("슬라이드 다운/업 시간(초). 0이면 즉시.")]
+        [SerializeField] float slideDuration = 0.25f;
+        [Tooltip("하강 거리(px). 0이면 패널 높이+여백 자동(화면 아래로 완전히 사라짐).")]
+        [SerializeField] float slideDistance = 0f;
+
         [Header("진행 표시(End Mark)")]
         [Tooltip("대사 진행 아이콘(NextIndicator RectTransform). 타이핑 완료 후 본문 마지막 글자 뒤에 표시하고 진행 시 숨김. 미지정 시 무시.")]
         [SerializeField] RectTransform endMark;
@@ -50,6 +60,10 @@ namespace LoveAlgo.UI
         [SerializeField] float endMarkBobSpeed = 6f;
 
         public GameObject Root { get => root; set => root = value; }
+        public RectTransform SlidePanel { get => slidePanel; set => slidePanel = value; }
+        public GameObject ShowButton { get => showButton; set => showButton = value; }
+        public float SlideDuration { get => slideDuration; set => slideDuration = value; }
+        public float SlideDistance { get => slideDistance; set => slideDistance = value; }
         public TMP_Text SpeakerText { get => speakerText; set => speakerText = value; }
         public TMP_Text BodyText { get => bodyText; set => bodyText = value; }
         public float CharInterval { get => charInterval; set => charInterval = value; }
@@ -71,6 +85,10 @@ namespace LoveAlgo.UI
         bool _hiddenByUser; // 인포 바 "숨기기" — CSV SetDialogueVisibleCommand(연출 채널)와 분리된 로컬 상태.
         bool _endMarkShown;
         float _endMarkBaseY;
+        RectTransform _slideRt;     // 슬라이드 대상(slidePanel 또는 root)
+        float _panelHomeY;          // 슬라이드 홈 y(첫 숨김 전 캡처)
+        bool _slideHomeCaptured;
+        Coroutine _slideRoutine;
         IReadOnlyList<InlinePause> _pauses;
         IReadOnlyList<InlineEmote> _emotes;
         string _speaker;
@@ -83,13 +101,33 @@ namespace LoveAlgo.UI
             _cgSub = EventBus.Subscribe<SetCgModeCommand>(OnCgMode);
             _visSub = EventBus.Subscribe<SetDialogueVisibleCommand>(e =>
             {
-                if (e.Visible) _hiddenByUser = false; // 스크립트가 명시 표시하면 사용자 숨김 해제(이중 상태 잔존 방지)
+                // 스크립트(연출)가 명시 표시하면 사용자 숨김 상태·슬라이드·보이기 버튼을 모두 원복(이중 상태 잔존 방지).
+                if (e.Visible && _hiddenByUser)
+                {
+                    _hiddenByUser = false;
+                    if (showButton != null) showButton.SetActive(false);
+                    StartSlide(toHome: true);
+                }
                 if (root != null) root.SetActive(e.Visible);
             });
             _textSpeedSub = EventBus.Subscribe<SetTextSpeedCommand>(e => ApplyTextSpeed(e.Value01));
             _autoSpeedSub = EventBus.Subscribe<SetAutoSpeedCommand>(e => ApplyAutoSpeed(e.Value01));
             ApplyFromSettings(); // 영속 속도 채택(SettingsController 부팅 재발행 전이라도 직접 반영)
             HideEndMark(); // 씬에 authored-active로 둔 아이콘을 플레이 시작 시 숨김(첫 대사 완료 전까지 비표시).
+            EnsureSlideRef(); // 슬라이드 홈 y 캡처(패널이 홈 위치일 때 = 부팅 직후).
+            if (showButton != null) showButton.SetActive(false); // 보이기 버튼은 숨김 상태에서만 노출.
+        }
+
+        // 슬라이드 대상/홈 위치 확보(지연 캡처 — 패널이 홈에 있을 때 1회).
+        void EnsureSlideRef()
+        {
+            if (_slideRt == null)
+                _slideRt = slidePanel != null ? slidePanel : (root != null ? root.transform as RectTransform : null);
+            if (_slideRt != null && !_slideHomeCaptured)
+            {
+                _panelHomeY = _slideRt.anchoredPosition.y;
+                _slideHomeCaptured = true;
+            }
         }
 
         void OnDisable()
@@ -137,21 +175,59 @@ namespace LoveAlgo.UI
         /// <summary>사용자 숨김 상태(인포 바 "숨기기"). CSV 연출 숨김(<see cref="SetDialogueVisibleCommand"/>)과 별개.</summary>
         public bool IsHiddenByUser => _hiddenByUser;
 
-        /// <summary>인포 바 "숨기기": 대사창 비주얼을 끄고 다음 좌클릭/스페이스에서 복원한다 — 그 복원 입력은
-        /// 진행으로 소비하지 않는다. 오토 진행도 복원까지 일시정지(숨긴 채 스토리가 흘러가지 않게).</summary>
+        /// <summary>인포 바 "숨기기": 대사창을 아래로 슬라이드해 사라지게 하고 기존 위치에 '보이기' 버튼을 띄운다.
+        /// 보이기 버튼 클릭(또는 좌클릭/스페이스)에서 복원하며 그 복원 입력은 진행으로 소비하지 않는다.
+        /// 오토 진행도 복원까지 일시정지(숨긴 채 스토리가 흘러가지 않게).</summary>
         public void HideByUser()
         {
             if (_hiddenByUser || root == null || !root.activeSelf) return; // CSV/CG로 이미 꺼진 상태에선 무동작
+            EnsureSlideRef();
             _hiddenByUser = true;
             HideEndMark();
-            root.SetActive(false);
-            DebugInput.Log("숨기기 → 대사창 숨김(클릭/스페이스로 복원)");
+            if (showButton != null) showButton.SetActive(true); // 대사창 위치에 보이기 버튼 노출
+            StartSlide(toHome: false); // 아래로 슬라이드(사라짐) — root는 active 유지(복원 시 다시 올림)
+            DebugInput.Log("숨기기 → 대사창 슬라이드 다운(보이기 버튼/클릭/스페이스로 복원)");
         }
 
-        void RestoreByUser()
+        /// <summary>'보이기' 버튼/좌클릭/스페이스 복원 진입점(인스펙터 onClick 배선 가능 — public).</summary>
+        public void RestoreByUser()
         {
+            if (!_hiddenByUser) return;
             _hiddenByUser = false;
+            if (showButton != null) showButton.SetActive(false);
             if (root != null && !_cgHidden && !root.activeSelf) root.SetActive(true);
+            StartSlide(toHome: true); // 위로 슬라이드(원위치 복귀)
+        }
+
+        // 슬라이드 시작 — toHome=false면 패널 높이만큼 아래로, true면 홈 y 복귀. duration 0/비활성 시 즉시 스냅.
+        void StartSlide(bool toHome)
+        {
+            EnsureSlideRef();
+            if (_slideRt == null) return;
+            float dist = slideDistance > 0f ? slideDistance : _slideRt.rect.height + 60f;
+            float targetY = toHome ? _panelHomeY : _panelHomeY - dist;
+
+            if (_slideRoutine != null) { StopCoroutine(_slideRoutine); _slideRoutine = null; }
+            if (slideDuration <= 0f || !isActiveAndEnabled)
+            {
+                var p = _slideRt.anchoredPosition; p.y = targetY; _slideRt.anchoredPosition = p;
+                return;
+            }
+            _slideRoutine = StartCoroutine(SlideTo(targetY));
+        }
+
+        IEnumerator SlideTo(float targetY)
+        {
+            float fromY = _slideRt.anchoredPosition.y;
+            float dur = Mathf.Max(0.0001f, slideDuration);
+            for (float t = 0f; t < dur; t += Time.unscaledDeltaTime) // 메뉴 timeScale=0에도 동작
+            {
+                float k = Mathf.SmoothStep(0f, 1f, t / dur);
+                var p = _slideRt.anchoredPosition; p.y = Mathf.Lerp(fromY, targetY, k); _slideRt.anchoredPosition = p;
+                yield return null;
+            }
+            var fp = _slideRt.anchoredPosition; fp.y = targetY; _slideRt.anchoredPosition = fp;
+            _slideRoutine = null;
         }
 
         void OnShow(ShowDialogueCommand e)
