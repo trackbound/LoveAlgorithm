@@ -14,6 +14,7 @@ namespace LoveAlgo.Story
         public string JumpTarget;
         public readonly List<string> Effects = new();
         public string Condition;
+        public string Mark; // 선택 시 choiceHistory에 기록할 태그(조건 Chose:태그가 조회). null=미기록.
     }
 
     /// <summary>
@@ -37,6 +38,8 @@ namespace LoveAlgo.Story
                 string part = parts[i].Trim();
                 if (part.StartsWith("if:", StringComparison.OrdinalIgnoreCase))
                     data.Condition = part.Substring(3);
+                else if (part.StartsWith("mark:", StringComparison.OrdinalIgnoreCase))
+                    data.Mark = part.Substring(5);
                 else if (part.Length > 0)
                     data.Effects.Add(part);
             }

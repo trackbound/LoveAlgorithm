@@ -25,6 +25,26 @@ namespace LoveAlgo.Tests.Editor
         }
 
         [Test]
+        public void Parse_Mark_Token_Into_Mark_OrderIndependent()
+        {
+            // mark:는 if:/효과와 순서 무관하게 3번째+ 토큰 어디에 와도 Mark로 분리.
+            var o = ChoiceParser.ParseOption("로아 선택|met|mark:met_roa|Love:Roa:3|if:Flag:intro");
+
+            Assert.AreEqual("로아 선택", o.ButtonText);
+            Assert.AreEqual("met", o.JumpTarget);
+            Assert.AreEqual("met_roa", o.Mark);
+            Assert.AreEqual("Flag:intro", o.Condition);
+            CollectionAssert.AreEqual(new[] { "Love:Roa:3" }, o.Effects);
+        }
+
+        [Test]
+        public void Parse_NoMark_LeavesMarkNull()
+        {
+            var o = ChoiceParser.ParseOption("선택|target|Stat:Int:2");
+            Assert.IsNull(o.Mark);
+        }
+
+        [Test]
         public void Parse_TextOnly_Has_No_Jump_Or_Effects()
         {
             var o = ChoiceParser.ParseOption("아무 말 없이 지나간다");
