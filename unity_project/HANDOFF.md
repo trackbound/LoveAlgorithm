@@ -1,5 +1,7 @@
 # 🔑 HANDOFF — 재작성 세션 진입점 (LoveAlgorithm)
 
+> 🔔 **자동 점검 최신 결과**: [docs/checks/_latest.md](docs/checks/_latest.md) — 매일 새벽 자동 생성(읽기전용·미커밋). 세팅: [tools/auto-check](tools/auto-check) · [CHECK_SPEC](docs/checks/CHECK_SPEC.md).
+
 > 이 문서를 읽는 Claude에게: LoveAlgorithm 코드베이스를 **EventBus + ScriptableObject 단일 패턴으로 전체 재작성** 중이다.
 > 대화를 재현하려 하지 말고, 아래 결론·금지선·다음 액션만 지켜라.
 > 감독은 CS 전공 + Unity/C# 베테랑. Unity 기초 설명 금지, 동료 개발자처럼 설계 근거 중심으로.

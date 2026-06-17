@@ -1,0 +1,4 @@
+# Generated auto-check reports (regenerate daily; keep local-only).
+# Tracked in this dir: CHECK_SPEC.md, README.md
+_latest.md
+*-check.md
