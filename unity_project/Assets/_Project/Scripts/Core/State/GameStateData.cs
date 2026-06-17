@@ -77,6 +77,18 @@ namespace LoveAlgo.Core
         public string storyBgm = "";
         public List<StoryCharRecord> storyChars = new();
 
+        // ── 연출 지속 상태(스테이지 상태 세이브, 2026-06-17) ──
+        // 로드 시 장면 시각 동일 재현: BG/Char에 더해 화면 색 보정/눈꺼풀 닫힘/SD·Overlay 레이어를 미러.
+        // 발행 직전 해석된 최종값으로 기록 — 별칭/튜닝 변경 면역. 흔들림(순간값)·CG(CG 중 세이브 UI 접근
+        // 구조적 차단)는 비저장. 가산적 확장이라 구버전 세이브는 기본값(0/false/빈)으로 로드 = 마이그레이션 무해.
+        public float storyTintR;
+        public float storyTintG;
+        public float storyTintB;
+        public float storyTintA; // > 0 이면 활성. Clear 발행값 = (0,0,0,0)
+        public bool storyEyeClosed; // Close/CloseImmediate=true, Open=false (Blink는 순간이라 상태 불변)
+        public string storySd = "";      // 현재 SD 레이어 이름(해석된 코드ID). 빈=없음
+        public string storyOverlay = ""; // 현재 Overlay 레이어 이름(해석된 코드ID). 빈=없음
+
         /// <summary>스토리 무대 슬롯 1칸의 캐릭터 기록. slot = CharSlot enum 정수값(L=0/C=1/R=2).</summary>
         [Serializable]
         public class StoryCharRecord

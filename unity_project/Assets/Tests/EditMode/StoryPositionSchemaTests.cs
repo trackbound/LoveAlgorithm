@@ -37,6 +37,26 @@ namespace LoveAlgo.Tests.EditMode
         }
 
         [Test]
+        public void StageStateFields_JsonRoundTrip()
+        {
+            var d = new GameStateData
+            {
+                storyTintR = 0.5f, storyTintG = 0.4f, storyTintB = 0.3f, storyTintA = 0.25f,
+                storyEyeClosed = true,
+                storySd = "sd_x",
+                storyOverlay = "ov_y",
+            };
+
+            var back = JsonUtility.FromJson<GameStateData>(JsonUtility.ToJson(d));
+
+            Assert.AreEqual(0.25f, back.storyTintA, 0.001f, "틴트 알파 왕복");
+            Assert.AreEqual(0.5f, back.storyTintR, 0.001f);
+            Assert.IsTrue(back.storyEyeClosed, "아이마스크 닫힘 왕복");
+            Assert.AreEqual("sd_x", back.storySd);
+            Assert.AreEqual("ov_y", back.storyOverlay);
+        }
+
+        [Test]
         public void OldSave_WithoutStoryFields_LoadsAsDefaults()
         {
             // 구버전 세이브 모사 — 스토리 필드가 없는 JSON. JsonUtility는 부재 필드를 기본값으로 둔다.
@@ -51,6 +71,10 @@ namespace LoveAlgo.Tests.EditMode
             Assert.AreEqual("", d.storyBgm);
             Assert.IsNotNull(d.storyChars);
             Assert.AreEqual(0, d.storyChars.Count);
+            Assert.AreEqual(0f, d.storyTintA, "부재 → 0 = 틴트 비활성");
+            Assert.IsFalse(d.storyEyeClosed, "부재 → false = 눈 뜬 상태");
+            Assert.AreEqual("", d.storySd);
+            Assert.AreEqual("", d.storyOverlay);
         }
 
         [Test]
