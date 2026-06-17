@@ -10,7 +10,7 @@
 
 - **프로젝트**: LoveAlgorithm — Unity 6 + URP 2D 비주얼노벨/연애 시뮬. 5히로인·30일 루프·CSV 스토리 엔진.
 - **지금**: **코드 전체 재작성**(아트/프리팹 유지). 아키텍처를 Service Locator → **EventBus + SO 단일**로 전환.
-- **브랜치**: `rewrite/eventbus-so`(작업) / `wip/pre-rewrite-snapshot` @ 9ac3c9e(재작성 전 WIP 보존) / `main` b40964b.
+- **브랜치**: `main`(유일 작업선) @ `2a03803` — 2026-06-17 `rewrite/eventbus-so`를 main에 fast-forward 통합(충돌 0·194커밋 흡수) 후 eventbus-so 및 나머지 전 브랜치 삭제. 로컬·원격 모두 `main`만. 미병합 실험작업은 `archive/*` 태그로 박제 보존(local+origin): `archive/fixup-merge-conflicts`(구 `I*`/Services 리팩터 — ADR-007 폐기분) · `archive/confident-perlman-7f7e8c`(D2/D3 노티파이어) · `archive/pre-rewrite-snapshot`(재작성 전 wip 스냅샷).
 - **기준 문서**: `docs/REWRITE_FEATURE_INVENTORY.md`(기능·공식·수치) · `REWRITE_CLASS_MANIFEST.csv`(클래스 처리 체크리스트) · `REWRITE_TUNING_VALUES.csv`(연출 수치 동결) · `docs/decisions.md` ADR-007~012.
 - **환경**: Unity 에디터 + MCP(`mcp__UnityMCP__*`)가 작업트리를 본다. recompile/콘솔/테스트(`run_tests`) 가능.
   - ⚠️ **MCP는 세션 시작 시 에디터가 떠 있어야** 붙는다(stdio). 안 붙으면 `/mcp` 재연결 또는 헤드리스 배치(`Unity 6000.4.3f1 -batchmode -runTests -testPlatform EditMode`, 에디터 닫힌 상태에서만). 임시 산출물(log/xml)은 커밋 전 삭제.
