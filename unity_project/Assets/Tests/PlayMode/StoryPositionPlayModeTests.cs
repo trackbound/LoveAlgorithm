@@ -240,6 +240,41 @@ namespace LoveAlgo.Tests.PlayMode
         }
 
         [UnityTest]
+        public IEnumerator Bootstrap_ResumesStageState_RepublishesTintEyeAndLayers()
+        {
+            DestroyResidents<GameManager>();
+            var boot = CreateBootstrap(null);
+            yield return null;
+
+            var d = _gs.Data;
+            d.storyScriptId = "prologue"; // 무대 재발행은 스크립트 분기 전에 일어남(분기는 무관)
+            d.storyLineIndex = 0;
+            d.storyTintR = 0.5f; d.storyTintG = 0.4f; d.storyTintB = 0.3f; d.storyTintA = 0.25f;
+            d.storyEyeClosed = true;
+            d.storySd = "sd_x";
+            d.storyOverlay = "ov_y";
+
+            ColorTintCommand? tint = null;
+            EyeMaskCommand? eye = null;
+            var layers = new List<ShowStageLayerCommand>();
+            _subs.Add(EventBus.Subscribe<ColorTintCommand>(e => { tint = e; e.Handle?.Complete(); }));
+            _subs.Add(EventBus.Subscribe<EyeMaskCommand>(e => { eye = e; e.Handle?.Complete(); }));
+            _subs.Add(EventBus.Subscribe<ShowStageLayerCommand>(e => { layers.Add(e); e.Handle?.Complete(); }));
+
+            boot.TryResumeStory();
+
+            Assert.IsTrue(tint.HasValue, "틴트 재발행");
+            Assert.AreEqual(0.25f, tint.Value.Alpha, 0.001f);
+            Assert.IsFalse(tint.Value.Clear, "활성 틴트(클리어 아님)");
+            Assert.IsTrue(eye.HasValue, "아이마스크 재발행");
+            Assert.AreEqual(EyeMaskAction.CloseImmediate, eye.Value.Action, "닫힘 상태 = 즉시 감김 복원");
+            Assert.AreEqual(2, layers.Count, "SD+Overlay 재발행");
+            Assert.IsTrue(layers.Exists(l => l.Kind == StageLayerKind.SD && l.Name == "sd_x"), "SD 재발행");
+            Assert.IsTrue(layers.Exists(l => l.Kind == StageLayerKind.Overlay && l.Name == "ov_y"), "Overlay 재발행");
+            yield return null;
+        }
+
+        [UnityTest]
         public IEnumerator Bootstrap_UnresolvableId_FailsOpen_ClearsPosition()
         {
             DestroyResidents<GameManager>(); // 위임 대상 부재 → fail-open 경로

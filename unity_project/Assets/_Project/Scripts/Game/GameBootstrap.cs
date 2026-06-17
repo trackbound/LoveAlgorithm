@@ -85,6 +85,16 @@ namespace LoveAlgo.Game
                 EventBus.Publish(new ShowCharacterCommand((CharSlot)c.slot, CharAction.Enter, c.id, c.emote, 0f, new CompletionHandle()));
             }
 
+            // 연출 지속 상태 재현(스테이지 상태 세이브) — 발행 시점 미러라 dur=0 즉시 재발행.
+            if (d.storyTintA > 0f)
+                EventBus.Publish(new ColorTintCommand(d.storyTintR, d.storyTintG, d.storyTintB, d.storyTintA, 0f, false, new CompletionHandle()));
+            if (!string.IsNullOrEmpty(d.storySd))
+                EventBus.Publish(new ShowStageLayerCommand(StageLayerKind.SD, false, d.storySd, LayerTransition.Cut, 0f, new CompletionHandle()));
+            if (!string.IsNullOrEmpty(d.storyOverlay))
+                EventBus.Publish(new ShowStageLayerCommand(StageLayerKind.Overlay, false, d.storyOverlay, LayerTransition.Cut, 0f, new CompletionHandle()));
+            if (d.storyEyeClosed)
+                EventBus.Publish(new EyeMaskCommand(EyeMaskAction.CloseImmediate, 0f, 0f, 0f, new CompletionHandle())); // 최상위 가림 → 마지막
+
             if (id == "prologue")
             {
                 string csv = StoryAssetLoader.Read(prologueCsv);
