@@ -47,6 +47,11 @@ namespace LoveAlgo.Core
         // 이벤트별 선택 히로인(eventTag→heroineId). Event3 재선택 +2 보정 판정용.
         public List<StringEntry> eventChoices = new();
 
+        // 선택 시 기록된 마커 태그(순서 보존). 조건 원자 Chose:태그가 조회 — 작가의 과거-선택 분기.
+        // (인벤토리 §7 SaveData의 ChoiceHistory 이행. eventChoices=Affinity Event3 보정과 별개.)
+        // 가산적 확장이라 구버전 세이브는 빈 목록으로 로드 = 마이그레이션 무해.
+        public List<string> choiceHistory = new();
+
         // 같은 날 중복 구매 페널티 추적(아이템 DuplicateTag→그날 사용 횟수). 2회차부터 효과 반감(Shop §5).
         // 런타임 상태이므로 세이브 직렬화 — 하루 중 세이브/재로드 시에도 페널티가 정확히 유지된다. 날짜 바뀌면 비워진다.
         public List<IntEntry> dailyDuplicateUsage = new();

@@ -136,6 +136,21 @@ namespace LoveAlgo.Core
             list.Add(new GameStateData.BoolEntry { key = name, value = value });
         }
 
+        // ── 선택지 이력 동기 접근 (choiceHistory ↔ set 의미) ──
+        public bool HasChosen(string tag)
+        {
+            var list = _runtime.choiceHistory;
+            for (int i = 0; i < list.Count; i++)
+                if (list[i] == tag) return true;
+            return false;
+        }
+
+        public void RecordChoice(string tag)
+        {
+            if (string.IsNullOrEmpty(tag)) return;
+            if (!HasChosen(tag)) _runtime.choiceHistory.Add(tag); // set 의미 — 조건은 존재 여부라 중복 방지
+        }
+
         // ── 중복 구매 페널티 추적 (Shop §5: 같은 날 같은 DuplicateTag 2회차부터 효과 절반) ──
         // 날짜가 바뀌면 카운트를 비우고(하루 단위 추적), 호출마다 해당 태그 사용 횟수를 1 증가시킨 뒤
         // "이번이 2회차 이상인가"(= 페널티 대상)를 반환한다. 실제 절반 계산은 소비처(ShopService.Penalized).
