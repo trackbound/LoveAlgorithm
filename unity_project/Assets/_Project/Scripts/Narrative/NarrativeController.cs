@@ -377,6 +377,10 @@ namespace LoveAlgo.Story.StoryEngine
 
             ApplyChoiceEffects(chosen.Effects);
 
+            // 마커 기록(과거-선택 분기용) — 효과와 같은 선택 지점 상태 변경. 스토리 위치 앵커는 다음 대기
+            // 라인에서 잡히므로 재개 시 이중 기록 없음(옵션 Flag 효과와 동일 의미).
+            if (state != null && !string.IsNullOrEmpty(chosen.Mark)) state.RecordChoice(chosen.Mark);
+
             if (!string.IsNullOrEmpty(chosen.JumpTarget))
             {
                 if (cursor.TryJump(chosen.JumpTarget))

@@ -144,6 +144,32 @@ namespace LoveAlgo.Tests.PlayMode
             Assert.IsTrue(_finished);
         }
 
+        [UnityTest]
+        public IEnumerator Mark_Recorded_On_Choice_Then_If_Chose_Branches()
+        {
+            var player = SetUp(selectIndex: 0); // 옵션0 = mark:met_roa 선택
+            yield return null;
+
+            const string markCsv =
+                "LineID,Type,Speaker,Value,Next\n" +
+                ",Choice,,,>\n" +
+                ",Option,,로아 선택|met|mark:met_roa,>\n" +
+                ",Option,,다른 선택|met,>\n" +
+                "met,Text,,로아루트,click\n" +
+                ",Flow,,If:Chose:met_roa:gotit,>\n" +
+                ",Text,,놓침,click\n" +
+                ",Flow,,End,>\n" +
+                "gotit,Text,,기억함,click\n" +
+                ",Flow,,End,>\n";
+
+            EventBus.Publish(new PlayScriptCommand(markCsv, "marktest"));
+            yield return WaitUntilDone(player);
+
+            Assert.IsTrue(_gs.HasChosen("met_roa"), "선택 확정 시 마커 기록");
+            CollectionAssert.AreEqual(new[] { "로아루트", "기억함" }, _dialogues,
+                "If:Chose:met_roa 참 → gotit 점프(놓침 미실행)");
+        }
+
         // ── A·B·C 슬라이스: 조건 분기 런타임(If 점프 / 선택지 필터 / Flag 쓰기) ──
 
         [UnityTest]
