@@ -253,6 +253,10 @@ namespace LoveAlgo.Story.StoryEngine
             d.storyBg = "";
             d.storyBgm = "";
             d.storyChars.Clear();
+            d.storyTintR = d.storyTintG = d.storyTintB = d.storyTintA = 0f;
+            d.storyEyeClosed = false;
+            d.storySd = "";
+            d.storyOverlay = "";
         }
 
         void RecordBg(string resolvedName)
@@ -286,6 +290,30 @@ namespace LoveAlgo.Story.StoryEngine
             }
             if (!string.IsNullOrEmpty(id)) chars[found].id = id;
             chars[found].emote = emote ?? "";
+        }
+
+        void RecordTint(float r, float g, float b, float a)
+        {
+            if (state == null) return;
+            var d = state.Data;
+            d.storyTintR = r; d.storyTintG = g; d.storyTintB = b; d.storyTintA = a;
+        }
+
+        void RecordEye(EyeMaskAction action)
+        {
+            if (state == null) return;
+            if (action == EyeMaskAction.Blink) return; // 깜빡임은 순간 — 지속 상태 불변
+            state.Data.storyEyeClosed =
+                action == EyeMaskAction.Close || action == EyeMaskAction.CloseImmediate;
+        }
+
+        void RecordLayer(StageLayerKind kind, bool isClose, string name)
+        {
+            if (state == null) return;
+            if (kind == StageLayerKind.CG) return; // CG 비저장(설계 §2)
+            string value = isClose ? "" : (name ?? "");
+            if (kind == StageLayerKind.SD) state.Data.storySd = value;
+            else if (kind == StageLayerKind.Overlay) state.Data.storyOverlay = value;
         }
 
         IEnumerator PlayText(ScriptLine line)
@@ -847,11 +875,15 @@ namespace LoveAlgo.Story.StoryEngine
                 EventBus.Publish(new ShowCharacterCommand(slot, CharAction.Enter, ch, em, 0f, new CompletionHandle()));
             }
             if (s.Overlay != null)
+            {
+                RecordLayer(StageLayerKind.Overlay, false, s.Overlay);
                 EventBus.Publish(new ShowStageLayerCommand(StageLayerKind.Overlay, false, s.Overlay, LayerTransition.Cut, 0f, new CompletionHandle()));
+            }
             if (s.Eye != null)
             {
                 var action = string.Equals(s.Eye, "Open", StringComparison.OrdinalIgnoreCase)
                     ? EyeMaskAction.Open : EyeMaskAction.CloseImmediate;
+                RecordEye(action);
                 EventBus.Publish(new EyeMaskCommand(action, 0f, 0f, 0f, new CompletionHandle()));
             }
             yield return WaitNext(line, () => true);
@@ -882,6 +914,7 @@ namespace LoveAlgo.Story.StoryEngine
             {
                 float dur = s.Duration >= 0f ? s.Duration : SceneEndCloseDefault;
                 var req = new CompletionHandle();
+                RecordEye(EyeMaskAction.Close);
                 EventBus.Publish(new EyeMaskCommand(EyeMaskAction.Close, dur, dur, 0f, req));
                 yield return WaitNext(line, () => req.IsComplete);
                 yield break;
@@ -898,6 +931,7 @@ namespace LoveAlgo.Story.StoryEngine
             if (s.EyeClose)
             {
                 // 눈 감고 유지(암전 모놀로그) — 즉시.
+                RecordEye(EyeMaskAction.CloseImmediate);
                 EventBus.Publish(new EyeMaskCommand(EyeMaskAction.CloseImmediate, 0f, 0f, 0f, new CompletionHandle()));
                 yield return WaitNext(line, () => true);
                 yield break;
@@ -905,6 +939,7 @@ namespace LoveAlgo.Story.StoryEngine
 
             // 눈 뜨며 리빌 + pause.
             var open = new CompletionHandle();
+            RecordEye(EyeMaskAction.Open);
             EventBus.Publish(new EyeMaskCommand(EyeMaskAction.Open, SceneStartOpenDur, SceneStartOpenDur, 0f, open));
             yield return new WaitUntil(() => open.IsComplete);
             yield return new WaitForSeconds(SceneStartPauseAfter);
@@ -1000,6 +1035,7 @@ namespace LoveAlgo.Story.StoryEngine
             var req = new CompletionHandle();
             if (intent.IsClear)
             {
+                RecordTint(0f, 0f, 0f, 0f);
                 EventBus.Publish(new ColorTintCommand(0f, 0f, 0f, 0f, dur, true, req));
             }
             else
@@ -1008,6 +1044,7 @@ namespace LoveAlgo.Story.StoryEngine
                     ? intent.Alpha
                     : (colorTintTuning != null ? colorTintTuning.DefaultAlpha : 0.25f);
                 Color c = colorTintTuning != null ? colorTintTuning.ColorFor(intent.Preset) : Color.gray;
+                RecordTint(c.r, c.g, c.b, alpha);
                 EventBus.Publish(new ColorTintCommand(c.r, c.g, c.b, alpha, dur, false, req));
             }
             yield return WaitNext(line, () => req.IsComplete);
@@ -1036,6 +1073,7 @@ namespace LoveAlgo.Story.StoryEngine
                 : (eyeMaskTuning != null ? eyeMaskTuning.BlinkHoldDefault : 0.05f);
 
             var req = new CompletionHandle();
+            RecordEye(intent.Action);
             EventBus.Publish(new EyeMaskCommand(intent.Action, closeDur, openDur, holdDur, req));
             yield return WaitNext(line, () => req.IsComplete);
         }
@@ -1055,8 +1093,10 @@ namespace LoveAlgo.Story.StoryEngine
             }
 
             float dur = intent.Duration >= 0f ? intent.Duration : ResolveLayerFade(kind);
+            string resolved = ResolveLayerName(kind, intent.Name);
+            RecordLayer(kind, intent.IsClose, resolved);
             var req = new CompletionHandle();
-            EventBus.Publish(new ShowStageLayerCommand(kind, intent.IsClose, ResolveLayerName(kind, intent.Name), intent.Transition, dur, req));
+            EventBus.Publish(new ShowStageLayerCommand(kind, intent.IsClose, resolved, intent.Transition, dur, req));
             yield return WaitNext(line, () => req.IsComplete);
         }
 

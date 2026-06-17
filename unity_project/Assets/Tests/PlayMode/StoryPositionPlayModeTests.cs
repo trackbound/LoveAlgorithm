@@ -101,6 +101,44 @@ namespace LoveAlgo.Tests.PlayMode
         }
 
         [UnityTest]
+        public IEnumerator Engine_MirrorsStageState_TintEyeLayers_ClearsOnFinish()
+        {
+            var engine = CreateEngine();
+            yield return null;
+
+            // > = Immediate(WaitNext 비대기)라 핸들 미완료여도 통과 → 마지막 Text에서만 대기.
+            const string csv =
+                "LineID,Type,Speaker,Value,Next\n" +
+                ",FX,,ColorTint:Sepia,>\n" +   // index 0 — 틴트 미러
+                ",FX,,EyeClose,>\n" +          // index 1 — 아이마스크 닫힘 미러
+                ",SD,,sd_x,>\n" +              // index 2 — SD 레이어 미러
+                ",Overlay,,ov_y,>\n" +         // index 3 — Overlay 레이어 미러
+                ",Text,로아,anchor,click\n" +   // index 4 ← 대기 앵커
+                ",Flow,,End,>\n";
+
+            CompletionHandle dialogue = null;
+            _subs.Add(EventBus.Subscribe<ShowDialogueCommand>(e => dialogue = e.Handle));
+
+            EventBus.Publish(new PlayScriptCommand(csv, "EvtX.csv"));
+            yield return WaitUntilOrFrames(() => dialogue != null);
+            Assert.IsNotNull(dialogue, "Text 앵커 도달");
+
+            var d = _gs.Data;
+            Assert.Greater(d.storyTintA, 0f, "틴트 미러(활성)");
+            Assert.IsTrue(d.storyEyeClosed, "아이마스크 닫힘 미러");
+            Assert.AreEqual("sd_x", d.storySd, "SD 레이어 미러");
+            Assert.AreEqual("ov_y", d.storyOverlay, "Overlay 레이어 미러");
+
+            dialogue.Complete();
+            yield return WaitUntilOrFrames(() => !engine.IsRunning);
+            Assert.IsFalse(engine.IsRunning, "스크립트 종료");
+            Assert.AreEqual(0f, d.storyTintA, "정상 종료 → 틴트 클리어");
+            Assert.IsFalse(d.storyEyeClosed, "아이마스크 클리어");
+            Assert.AreEqual("", d.storySd, "SD 클리어");
+            Assert.AreEqual("", d.storyOverlay, "Overlay 클리어");
+        }
+
+        [UnityTest]
         public IEnumerator Engine_StartIndex_ResumesAtAnchor_WithoutReplayingEarlierLines()
         {
             var engine = CreateEngine();
