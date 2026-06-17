@@ -81,3 +81,6 @@ crashlytics-build.properties
 
 # Claude Code 로컬 설정/플랜 (공유 설정을 버전관리하려면 !.claude/settings.json 추가)
 .claude/
+
+# 로컬 상태 스토어 (agentmemory 등 도구 산출물 — 커밋 대상 아님)
+state_store.db/
