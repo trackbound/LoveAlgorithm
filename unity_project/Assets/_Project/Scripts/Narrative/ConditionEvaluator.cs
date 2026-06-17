@@ -9,7 +9,7 @@ namespace LoveAlgo.Story
     /// 무관 → EditMode 테스트). Flow <c>If</c>·선택지 조건 등 분기 게이트가 공유한다. 빈/널 조건은 true(무조건 통과).
     ///
     /// 원자 조건(구 <c>GameState.EvaluateCondition</c> 의미 1:1):
-    ///   <c>Flag:이름</c> / <c>!Flag:이름</c> · <c>Love:히로인{op}N</c> · <c>Stat:스탯{op}N</c> · <c>스탯{op}N</c>(베어)
+    ///   <c>Flag:이름</c> / <c>!Flag:이름</c> · <c>Chose:태그</c> / <c>!Chose:태그</c>(선택 이력) · <c>Love:히로인{op}N</c> · <c>Stat:스탯{op}N</c> · <c>스탯{op}N</c>(베어)
     ///   op ∈ { &gt;=  &lt;=  ==  &gt;  &lt; }
     /// 복합: AND = <c>&amp;</c>, OR = <c>|</c>. **AND가 OR보다 우선**(OR항들 중 하나라도 참 + 각 OR항의 AND들이 모두 참).
     ///   예: <c>Flag:a&amp;Stat:Int&gt;=20</c>(둘 다) · <c>Flag:a|Flag:b</c>(하나) · <c>Flag:a&amp;Int&gt;=20|Flag:vip</c>((a∧Int)∨vip)
@@ -42,6 +42,8 @@ namespace LoveAlgo.Story
             if (string.IsNullOrWhiteSpace(atom)) return true; // 빈 원자(후행 &/| 등) = 무조건.
             if (atom.StartsWith("!Flag:", StringComparison.Ordinal)) return !gs.GetFlag(atom.Substring(6));
             if (atom.StartsWith("Flag:",  StringComparison.Ordinal)) return  gs.GetFlag(atom.Substring(5));
+            if (atom.StartsWith("!Chose:", StringComparison.Ordinal)) return !gs.HasChosen(atom.Substring(7));
+            if (atom.StartsWith("Chose:",  StringComparison.Ordinal)) return  gs.HasChosen(atom.Substring(6));
             if (atom.StartsWith("Love:",  StringComparison.Ordinal)) return Compare(atom.Substring(5), gs.GetLove);
             if (atom.StartsWith("Stat:",  StringComparison.Ordinal)) return Compare(atom.Substring(5), gs.GetStat);
             return Compare(atom, gs.GetStat); // 베어 스탯 비교(예: Int>=20)

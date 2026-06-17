@@ -41,6 +41,28 @@ namespace LoveAlgo.Tests.Editor
         }
 
         [Test]
+        public void Chose_And_Negation()
+        {
+            var gs = MakeState();
+            gs.RecordChoice("met_roa");
+            Assert.IsTrue(ConditionEvaluator.Evaluate(gs, "Chose:met_roa"));
+            Assert.IsFalse(ConditionEvaluator.Evaluate(gs, "!Chose:met_roa"));
+            Assert.IsFalse(ConditionEvaluator.Evaluate(gs, "Chose:unknown"), "미선택 = false");
+            Assert.IsTrue(ConditionEvaluator.Evaluate(gs, "!Chose:unknown"));
+        }
+
+        [Test]
+        public void Chose_Combines_With_And_Or()
+        {
+            var gs = MakeState();
+            gs.RecordChoice("a");
+            gs.SetFlag("vip", true);
+            Assert.IsTrue(ConditionEvaluator.Evaluate(gs, "Chose:a&Flag:vip"), "둘 다 참");
+            Assert.IsFalse(ConditionEvaluator.Evaluate(gs, "Chose:b&Flag:vip"), "AND 일부 거짓");
+            Assert.IsTrue(ConditionEvaluator.Evaluate(gs, "Chose:b|Flag:vip"), "OR 하나 참");
+        }
+
+        [Test]
         public void Stat_All_Operators()
         {
             var gs = MakeState();
