@@ -102,6 +102,12 @@
 
 ## ✅ 이번 세션 검증·커밋 완료
 
+- **스테이지 상태 세이브(🔴 세이브 스키마) — 2026-06-17 세션(커밋 `9cb830d`·`a295c05`·`e97b4d4`, 푸시됨. 검증: EditMode 449·PlayMode 156 전부 그린(신규 EditMode +1·PlayMode +2), 컴파일·콘솔 0)**: 스토리 위치 세이브(`481b6fb`)가 BG/BGM/Char까지만 미러해 로드 시 **연출 지속 상태가 어긋나던** 간극 해소 — 로드 시 화면 색 보정/눈꺼풀 닫힘/SD·Overlay 레이어까지 동일 재현. 스펙·플랜 = `docs/superpowers/specs|plans/2026-06-17-stage-state-save*.md`.
+  - **스키마 가산(GameStateData — 구세이브 기본값 로드 = 마이그레이션 무해)**: `storyTintR/G/B/A`(a>0이면 활성, Clear=0,0,0,0) + `storyEyeClosed`(Close/CloseImmediate=true) + `storySd`/`storyOverlay`(해석된 코드ID, 빈=없음). 틴트는 BG처럼 **해석된 최종 RGBA** 저장 → 프리셋 튜닝 변경에 면역.
+  - **저장(NarrativeController)**: 기존 RecordBg/Char 형제로 `RecordTint`/`RecordEye`/`RecordLayer` 추가, 발행 직전 미러. 배선 **5지점**: PlayColorTint·PlayEyeMask·PlayStageLayer + PlaySetup(Overlay/Eye)·PlaySceneFx(Eye 3발행). **CG는 RecordLayer 가드로 미러 스킵**(설계 §2). 정상 종료 시 ClearStoryPosition이 4필드 함께 클리어.
+  - **복원(GameBootstrap.TryResumeStory)**: BG/Char 재현 직후 `dur=0` 즉시 재발행 — 틴트→SD→Overlay→아이마스크(최상위 가림이라 마지막). 무대 재현은 prologue/저녁 분기 전에 일어나 분기와 무관.
+  - **알려진 한계(불변, 설계 의도)**: CG 비저장(CG 중 인포바 숨김으로 수동 세이브 구조적 차단 — 유일 엣지 = 작가가 CG 중 `Flow,,Save`를 거는 비정상 패턴 시 로드에 CG만 누락, 대사는 정확/fail-soft) · Shake 비저장(순간 임팩트) · 인라인 `<emote>` 드리프트(컨트롤러 발행분만 미러, 기존과 동일).
+  - **잔여**: ① 감독 Play: 틴트/암전 모놀로그/SD·Overlay가 떠 있는 장면에서 세이브→타이틀→이어하기 시 화면 동일 복원 ② 후속 후보(🟢): STORY_CSV_GUIDE에 "CG 진행 중 Save 비권장" 한 줄.
 - **스토리 위치 세이브(🔴 세이브 스키마) — 2026-06-13 세션 말미(미커밋. 검증: **EditMode 448·PlayMode 154 전부 그린**(신규 EditMode 3·PlayMode 5 포함), 컴파일·콘솔 에러 0)**:
   - **목적**: 스토리 중 세이브(인포 바 세이브 버튼·Flow Save)가 로드 시 **그 장면에서 재개**되게(현행: 그날 스케줄부터 — 인포 바는 현행 의미로 선배선했고 이 슬라이스가 그 한계를 해소).
   - **스키마 가산(GameStateData — 구세이브 기본값 로드 = 마이그레이션 무해)**: `storyScriptId`(빈=스토리 밖, "prologue" 또는 저녁 이벤트 csvPath — GameManager 씨임 scriptName 규약과 동일) + `storyLineIndex`(재개 앵커) + 무대 스냅샷 `storyBg/storyBgm/storyChars[{slot,id,emote}]`(**해석된 코드ID**로 기록 — 별칭 카탈로그 변경에 면역).
@@ -211,6 +217,8 @@
 
 ## ▶️ 다음 액션
 
+> **현재(2026-06-17)**: **스테이지 상태 세이브(🔴) 완료·푸시**(`9cb830d`·`a295c05`·`e97b4d4` — 틴트/아이마스크/SD·Overlay 저장·복원, EditMode 449·PlayMode 156 그린). 스토리 위치 세이브의 연출-상태 간극을 메워 로드 시 장면 시각 동일 재현. **다음 액션**: ① 감독 Play 검증(틴트/암전/SD·Overlay 장면 세이브→이어하기 동일 복원 — 위 완료 기록 ①) ② 다음 슬라이스 후보: 선택지 이력/조건(choiceHistory 🔴)·점프페이드/스테이지 합성·로그 세이브 영속 ③ 미결: 스케줄 "돌아가기" 확인 팝업의 데이루프 의미(감독 결정 대기). **아래 이전 항목은 참고용.**
+>
 > **현재(2026-06-13)**: 목업 로드맵(빠른메뉴→스케줄→상점→로그) 완주 + **대사 로그+Username+{{Player}}** + **대사창 인포 바** + **스토리 위치 세이브(🔴, 코드·테스트 작성 — 검증 보류)** + 감독 Play 버그 4건 수정(타 세션). **다음 액션**: ① ~~MCP 재연결→전체 테스트~~ **완료(EditMode 448·PlayMode 154 그린)** ② 감독 Play(각 세션 기록의 체크 동선 — 특히 스토리 중간 세이브→이어하기 장면 재개) 후 커밋 분할 ③ 메신저(타 세션 소유 — 중복 금지) ④ 미결: 스케줄 "돌아가기" 확인 팝업의 데이루프 의미(감독 결정 대기) ⑤ 로그 세이브 영속(보류 — 이제 스토리 위치 스키마에 가산하면 자연스러움).
 >
 > **현재(2026-06-08)**: UI StyledButton(`a5f5659`)·히로인 스테이지 배치 카탈로그(`66deb28`)·최초실행 인트로 오버레이→프롤로그(`a6aa9e1`)·감독 병렬 작업 일괄(`0706eec`) 완료. **다음 후보**: ① **ScheduleView 제거 정합** — Game.unity 스케줄 UI 재작업으로 `GameSceneSimulation`·`GameSceneEnding` PlayMode 2건 실패 중 → 재작업 마무리 후 ScheduleView 복원 또는 두 테스트 갱신. ② 감독 Play 확인(첫실행 오버레이 아트 · 히로인 배치 scale/offset · StyledButton 모달 hover/press). ③ StyledButton 이관 — Title 버튼·CategoryTab(+ `ButtonHoverTextColor.cs` 삭제 = 백그라운드 칩). ④ 정리 — `Assets/New Folder` 폴더명 · 루트 `btn_phone*.png` 위치. **아래 2026-06-07 이전 항목은 참고용.**
