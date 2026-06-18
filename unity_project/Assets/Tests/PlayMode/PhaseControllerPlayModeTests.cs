@@ -19,7 +19,7 @@ namespace LoveAlgo.Tests.PlayMode
         public IEnumerator Valid_Request_Updates_Phase_And_Publishes_Changed()
         {
             var so = ScriptableObject.CreateInstance<GameStateSO>();
-            so.ResetRuntime(); // 부팅 기본 = Schedule
+            so.ResetRuntime(); // 부팅 기본 = Story(순수 VN)
             var go = new GameObject("PhaseController_PlayTest");
             var pc = go.AddComponent<PhaseController>(); // OnEnable → 구독
             pc.State = so;
@@ -31,12 +31,12 @@ namespace LoveAlgo.Tests.PlayMode
             {
                 yield return null; // 라이프사이클 활성
 
-                EventBus.Publish(new RequestPhaseCommand(ScreenPhase.Story));
+                EventBus.Publish(new RequestPhaseCommand(ScreenPhase.Ending)); // Story→Ending(유효, *→Ending)
 
                 Assert.IsTrue(fired, "유효 전환 시 ScreenPhaseChangedEvent 발행");
-                Assert.AreEqual(ScreenPhase.Schedule, from, "이전 = 부팅 기본 Schedule");
-                Assert.AreEqual(ScreenPhase.Story, to);
-                Assert.AreEqual(ScreenPhase.Story, so.Phase, "state.phase 갱신");
+                Assert.AreEqual(ScreenPhase.Story, from, "이전 = 부팅 기본 Story");
+                Assert.AreEqual(ScreenPhase.Ending, to);
+                Assert.AreEqual(ScreenPhase.Ending, so.Phase, "state.phase 갱신");
             }
             finally
             {

@@ -44,13 +44,14 @@ namespace LoveAlgo.Tests.PlayMode
         [UnityTest]
         public IEnumerator Visible_Only_In_Story_And_Hidden_During_Cg_Or_Messenger()
         {
+            _gs.Phase = ScreenPhase.Schedule; // 비-Story 페이즈에서 숨김 검증(부팅 기본값은 VN 전환으로 Story가 됨)
             var view = Build(out var go);
-            go.SetActive(true); // 기본 페이즈 = Schedule → 숨김
+            go.SetActive(true); // Schedule → 숨김
             yield return null;
 
             try
             {
-                Assert.IsFalse(view.IsShown, "Schedule 페이즈(스탯/행동창)에선 숨김 — 진입은 빠른 메뉴 담당");
+                Assert.IsFalse(view.IsShown, "비-Story(Schedule) 페이즈에선 숨김 — VN 진입은 폰 버튼 담당");
 
                 _gs.Phase = ScreenPhase.Story;
                 EventBus.Publish(new ScreenPhaseChangedEvent(ScreenPhase.Schedule, ScreenPhase.Story));

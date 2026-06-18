@@ -17,7 +17,7 @@ namespace LoveAlgo.Story.StoryEngine
     ///
     /// 흐름: <see cref="PlayScriptCommand"/> 구독 → 파싱 → <c>RequestPhaseCommand(Story)</c> → 라인 루프
     /// (Text=대사 명령+핸들 대기, Choice=선택지 명령+효과/점프, Flow=Jump/End 직접·Affinity/Day는 Router로 위임)
-    /// → 종료 시 <c>RequestPhaseCommand(Schedule)</c> + <see cref="NarrativeFinishedEvent"/>.
+    /// → 종료 시 <see cref="NarrativeFinishedEvent"/>(순수 VN: 종료 후에도 Story 페이즈 유지 — 다음 스크립트는 Flow 체인).
     ///
     /// 슬라이스 범위 밖(스킵+로그): Char/BG/CG/SD/Overlay/Sound/FX/Place, 인라인 태그, 오토모드,
     /// 점프 페이드/스테이지 합성/로그 복원, 선택지 조건 필터링, Flow의 Save/Schedule/Username/LockScreen 등.
@@ -226,8 +226,9 @@ namespace LoveAlgo.Story.StoryEngine
                 }
             }
 
-            ClearStoryPosition(); // 정상 종료 = 스토리 밖 → 이후 세이브는 스케줄 재개(종전 동작)
-            EventBus.Publish(new RequestPhaseCommand(ScreenPhase.Schedule));
+            ClearStoryPosition(); // 정상 종료 = 스토리 밖 → 이후 세이브는 스토리 진입점에서 재개
+            // 순수 VN: 종료 후에도 Story 페이즈 유지(다음 스크립트는 Flow Jump/체인으로 연결).
+            // (구 시뮬: 여기서 RequestPhaseCommand(Schedule)로 자유행동 복귀 — 제거됨.)
             EventBus.Publish(new NarrativeFinishedEvent(scriptName));
             IsRunning = false;
             _currentRun = null;

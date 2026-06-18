@@ -126,7 +126,8 @@ namespace LoveAlgo.Tests.PlayMode
             Assert.AreEqual("slice1", _finishedName);
 
             Assert.AreEqual(ScreenPhase.Story, _phases[0], "시작 시 Story 페이즈 요청");
-            Assert.AreEqual(ScreenPhase.Schedule, _phases[_phases.Count - 1], "종료 시 Schedule 복귀 요청");
+            Assert.AreEqual(ScreenPhase.Story, _phases[_phases.Count - 1], "순수 VN: 종료 후 Story 유지(Schedule 복귀 없음)");
+            CollectionAssert.DoesNotContain(_phases, ScreenPhase.Schedule, "VN: Schedule 페이즈 요청 없음");
         }
 
         [UnityTest]

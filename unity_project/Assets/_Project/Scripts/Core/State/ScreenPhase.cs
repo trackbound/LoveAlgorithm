@@ -2,7 +2,9 @@ namespace LoveAlgo.Core
 {
     /// <summary>
     /// 화면 페이즈(상호배타 *목적지*) — 현재 활성 화면. State SO 단일 진실원(ADR-013). 값 하나라 "두 화면 동시 활성"이
-    /// 구조적으로 불가. 부팅 리셋값 = <see cref="Schedule"/>(인게임 자유행동). 런타임 전용(부팅 리셋, 세이브 비직렬화).
+    /// 구조적으로 불가. 런타임 전용(부팅 리셋, 세이브 비직렬화).
+    ///
+    /// 부팅 리셋값 = <see cref="Story"/>(순수 선형 VN 진입 — 부팅 즉시 스토리). 구 시뮬에선 Schedule이었다.
     ///
     /// 명칭: ADR-013은 'GamePhase'였으나 구 게임흐름 enum <c>LoveAlgo.Core.GamePhase</c>
     /// (Title/Username/Prologue/DayLoop/Ending, Assembly-CSharp)와 동일 풀네임 충돌(CS0433) 회피 + "화면 페이즈" 의미

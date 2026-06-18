@@ -28,9 +28,9 @@ namespace LoveAlgo.Core
         // (ActionsPerDay는 Data 레이어 GameConstants 소관이라 Core인 이 모델에서 기본값으로 못 박지 않는다).
         public int remainingActions;
 
-        // 현재 화면 페이즈(ADR-013). 런타임 전용 — 부팅 리셋(새 GameStateData 시 기본 Schedule), 세이브 비직렬화
-        // ([NonSerialized]). 화면 상태는 부팅/로드 시 항상 리셋되므로 세이브 스키마 무변.
-        [NonSerialized] public ScreenPhase phase = ScreenPhase.Schedule;
+        // 현재 화면 페이즈(ADR-013). 런타임 전용 — 부팅 리셋(새 GameStateData 시 기본 Story = 순수 선형 VN 진입),
+        // 세이브 비직렬화([NonSerialized]). 화면 상태는 부팅/로드 시 항상 리셋되므로 세이브 스키마 무변.
+        [NonSerialized] public ScreenPhase phase = ScreenPhase.Story;
 
         // 오늘 수행한 '1일 1회 제한' 스케줄 id 집합(ScheduleType.ToString()). 하루 전환 시 비워진다.
         // 도메인 규칙(상하차 등 isLimited 재수행 차단)이므로 상태에 두고 세이브에 직렬화 — 하루 중 세이브/재로드
