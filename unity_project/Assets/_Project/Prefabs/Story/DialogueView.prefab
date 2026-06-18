@@ -1482,6 +1482,14 @@ MonoBehaviour:
   endMarkOffset: {x: 20, y: 0}
   endMarkBobAmplitude: 4
   endMarkBobSpeed: 6
+  monoDot: {fileID: 669312706857029560}
+  monoDotFrames:
+  - {fileID: 21300000, guid: 03a5dc05c07aaa642ab43a4fae649f2d, type: 3}
+  - {fileID: 21300000, guid: 5535a5c202bdbd5478cfc2d87d2f64ee, type: 3}
+  - {fileID: 21300000, guid: 728cde7d74022474bbae1faf9265cd08, type: 3}
+  - {fileID: 21300000, guid: b226c13fab532fa45bc327da35d74bbe, type: 3}
+  - {fileID: 21300000, guid: 5002cc5d84b54a8418781ce071f3e493, type: 3}
+  monoDotInterval: 0.15
 --- !u!114 &5508085510737645871
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2244,13 +2252,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 5002cc5d84b54a8418781ce071f3e493, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 03a5dc05c07aaa642ab43a4fae649f2d, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1

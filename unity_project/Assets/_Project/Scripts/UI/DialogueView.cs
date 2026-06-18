@@ -6,6 +6,7 @@ using LoveAlgo.Core;   // SettingsSO (속도 초기값)
 using LoveAlgo.Events; // ShowDialogueCommand, CompletionHandle
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;           // Image (독백 점 애니메이션)
 using UnityEngine.EventSystems; // IPointerClickHandler
 using UnityEngine.InputSystem;  // Keyboard (스페이스 진행)
 
@@ -59,6 +60,14 @@ namespace LoveAlgo.UI
         [Tooltip("진행 아이콘 바운스 속도(라디안/초).")]
         [SerializeField] float endMarkBobSpeed = 6f;
 
+        [Header("독백 점 애니메이션 (화자 빈 칸 = 주인공 독백)")]
+        [Tooltip("이름 위치에 뜨는 점 Image(MonoDot). 독백 라인에서 화자명 대신 표시·애니메이션. 미바인딩 시 무동작.")]
+        [SerializeField] Image monoDot;
+        [Tooltip("루프 재생할 점 프레임(mono_dot_0~4 순서). 비어 있으면 점 애니메이션 비활성.")]
+        [SerializeField] Sprite[] monoDotFrames;
+        [Tooltip("점 프레임 교체 간격(초).")]
+        [SerializeField] float monoDotInterval = 0.15f;
+
         public GameObject Root { get => root; set => root = value; }
         public RectTransform SlidePanel { get => slidePanel; set => slidePanel = value; }
         public GameObject ShowButton { get => showButton; set => showButton = value; }
@@ -73,6 +82,9 @@ namespace LoveAlgo.UI
         public Vector2 EndMarkOffset { get => endMarkOffset; set => endMarkOffset = value; }
         public float EndMarkBobAmplitude { get => endMarkBobAmplitude; set => endMarkBobAmplitude = value; }
         public float EndMarkBobSpeed { get => endMarkBobSpeed; set => endMarkBobSpeed = value; }
+        public Image MonoDot { get => monoDot; set => monoDot = value; }
+        public Sprite[] MonoDotFrames { get => monoDotFrames; set => monoDotFrames = value; }
+        public float MonoDotInterval { get => monoDotInterval; set => monoDotInterval = value; }
 
         IDisposable _sub, _autoSub, _cgSub, _visSub, _textSpeedSub, _autoSpeedSub;
         Coroutine _typeRoutine;
@@ -91,6 +103,8 @@ namespace LoveAlgo.UI
         Coroutine _slideRoutine;
         IReadOnlyList<InlinePause> _pauses;
         IReadOnlyList<InlineEmote> _emotes;
+        Coroutine _monoRoutine; // 독백 점 루프(타이핑 동안만).
+        bool _isMono;           // 현재 라인이 독백(화자 빈 칸)인가.
         string _speaker;
         string _speakerId; // 별칭 해석된 캐릭터 코드 ID(없으면 null → _speaker 폴백)
 
@@ -114,6 +128,7 @@ namespace LoveAlgo.UI
             _autoSpeedSub = EventBus.Subscribe<SetAutoSpeedCommand>(e => ApplyAutoSpeed(e.Value01));
             ApplyFromSettings(); // 영속 속도 채택(SettingsController 부팅 재발행 전이라도 직접 반영)
             HideEndMark(); // 씬에 authored-active로 둔 아이콘을 플레이 시작 시 숨김(첫 대사 완료 전까지 비표시).
+            StopMonoDots(hide: true); // 점 애니메이션도 부팅 시 숨김(독백 라인 진입 전까지 비표시).
             EnsureSlideRef(); // 슬라이드 홈 y 캡처(패널이 홈 위치일 때 = 부팅 직후).
             if (showButton != null) showButton.SetActive(false); // 보이기 버튼은 숨김 상태에서만 노출.
         }
@@ -238,7 +253,10 @@ namespace LoveAlgo.UI
             if (root != null && !_hiddenByUser) root.SetActive(true); // 사용자 숨김 중엔 강제 표시 금지(복원 입력까지 유지)
             _speaker = e.Speaker;
             _speakerId = e.SpeakerId;
-            if (speakerText != null) speakerText.text = e.Speaker ?? "";
+            // 독백(화자 빈 칸) = NarrativeController가 IsNarration으로 보낸 빈 Speaker. 화자명을 가리고 점 애니메이션으로 대체.
+            _isMono = string.IsNullOrEmpty(e.Speaker);
+            if (speakerText != null) speakerText.text = _isMono ? "" : e.Speaker;
+            if (!_isMono) StopMonoDots(hide: true); // 일반 대사: 점 숨김(독백 시작은 타이핑 시점에).
             _pauses = e.Pauses; // 인라인 <wait> 멈춤 지점(없으면 null).
             _emotes = e.Emotes; // 인라인 <emote> 표정 지점(없으면 null).
             _typeRoutine = StartCoroutine(TypeRoutine(e.Text ?? "", e.RequireClick));
@@ -249,6 +267,7 @@ namespace LoveAlgo.UI
             _typing = true;
             _skipTyping = false;
             _awaitingClick = false;
+            if (_isMono) StartMonoDots(); // 독백: 이름 위치 점 루프 시작(타이핑 동안만).
 
             // 타이핑/멈춤 인덱스는 문자열 길이 기준 — 파서(InlineTagParser)의 CharIndex와 정합하고 TMP 메시 의존 제거.
             int total = text.Length;
@@ -294,6 +313,7 @@ namespace LoveAlgo.UI
             if (_emotes != null && (_skipTyping || charInterval <= 0f || total == 0))
                 FireAllEmotes();
             _typing = false;
+            StopMonoDots(hide: false); // 타이핑 완료 → 점 루프 정지(이름 위치엔 마지막 프레임으로 멈춰 유지).
 
             if (requireClick)
             {
@@ -341,6 +361,34 @@ namespace LoveAlgo.UI
 
         // 슬롯 매칭은 해석된 코드 ID 우선(StageView가 Char 명령의 코드 ID를 추적) — 미해석 시 원문 화자명 폴백.
         string EmoteSpeaker => string.IsNullOrEmpty(_speakerId) ? _speaker : _speakerId;
+
+        // 독백 점 루프 시작 — MonoDot을 켜고 프레임(mono_dot_0~4)을 간격마다 순환. 미바인딩/프레임 없으면 무동작.
+        void StartMonoDots()
+        {
+            if (monoDot == null || monoDotFrames == null || monoDotFrames.Length == 0) return;
+            if (!monoDot.gameObject.activeSelf) monoDot.gameObject.SetActive(true);
+            if (_monoRoutine != null) StopCoroutine(_monoRoutine);
+            _monoRoutine = StartCoroutine(MonoDotLoop());
+        }
+
+        IEnumerator MonoDotLoop()
+        {
+            var wait = new WaitForSeconds(Mathf.Max(0.01f, monoDotInterval));
+            int i = 0;
+            while (true)
+            {
+                monoDot.sprite = monoDotFrames[i % monoDotFrames.Length];
+                i++;
+                yield return wait;
+            }
+        }
+
+        // 점 루프 정지. hide=true면 MonoDot 자체를 숨김(일반 대사·부팅), false면 마지막 프레임으로 멈춰 유지(타이핑 완료).
+        void StopMonoDots(bool hide)
+        {
+            if (_monoRoutine != null) { StopCoroutine(_monoRoutine); _monoRoutine = null; }
+            if (hide && monoDot != null && monoDot.gameObject.activeSelf) monoDot.gameObject.SetActive(false);
+        }
 
         // 스페이스로도 진행(좌클릭과 동일). 신 Input System 직접 읽기 — 뷰가 활성(내러티브 중)일 때만 Update 동작.
         // 단 입력 필드(LockScreen 비번 등) 타이핑 중엔 무시 — 스페이스가 텍스트 입력 대신 대사 진행을 가로채지 않도록.
