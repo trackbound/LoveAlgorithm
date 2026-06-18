@@ -25,7 +25,7 @@
 | [vn_conventions.md](file:///c:/Users/chris/GitHub/LoveAlgorithm/unity_project/docs/vn_conventions.md) | VN 표준 정본 레퍼런스 — 재작성 시 베낄 대상(렌더타깃 분류축·네이밍·CSV vs C# 경계·안티패턴·모범 예시) | v1 | 2026-06-03 |
 | [decisions.md](file:///c:/Users/chris/GitHub/LoveAlgorithm/unity_project/docs/decisions.md) | 결정 이력 (누적 ADR) | v1 | 2026-06-02 |
 | [WORK_PLAN.md](file:///c:/Users/chris/GitHub/LoveAlgorithm/unity_project/docs/WORK_PLAN.md) | 동적 작업 백로그 및 우선순위 리스트 (⚠️구 아키텍처 기준 stale) | v1 | 2026-06-02 |
-| [STORY_CSV_GUIDE.md](file:///c:/Users/chris/GitHub/LoveAlgorithm/unity_project/docs/STORY_CSV_GUIDE.md) | 기획자용 스토리 CSV 연출 및 대사 엔진 구문 가이드 | v1 | 2026-05-31 |
+| [STORY_CSV_GUIDE.md](file:///c:/Users/chris/GitHub/LoveAlgorithm/unity_project/docs/STORY_CSV_GUIDE.md) | 기획자용 스토리 CSV 연출 및 대사 엔진 구문 가이드 | v1 | 2026-06-17 |
 | [STORY_COMMANDS.md](file:///c:/Users/chris/GitHub/LoveAlgorithm/unity_project/docs/STORY_COMMANDS.md) | 대사 엔진 내 사용 가능한 커맨드 목록 | v1 | 2026-06-11 |
 | [ASSET_NAMING.md](file:///c:/Users/chris/GitHub/LoveAlgorithm/unity_project/docs/ASSET_NAMING.md) | 아트 및 오디오 에셋 네이밍 룰북 (UI 버튼 §10 포함) | v1 | 2026-06-08 |
 | [ASSET_REQUESTS.md](file:///c:/Users/chris/GitHub/LoveAlgorithm/unity_project/docs/ASSET_REQUESTS.md) | 리소스 요청 리스트 (아트/사운드) | v1 | 2026-05-31 |

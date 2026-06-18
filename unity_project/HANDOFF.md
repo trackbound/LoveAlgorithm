@@ -102,6 +102,14 @@
 
 ## ✅ 이번 세션 검증·커밋 완료
 
+- **선택지 이력(choiceHistory) + 선택 조건 연산자(🔴 세이브 스키마) — 2026-06-17 세션(커밋 `240732e`·`ff6d9f0`·`f4e7152`·`8d93bb0`, 푸시됨. 검증: EditMode 456·PlayMode 157 전부 그린(신규 EditMode +7·PlayMode +1), 컴파일 0)**: 작가가 **과거 선택으로 분기**할 수 있게. 인벤토리 §6/§7의 choiceHistory를 **소비처 있는 형태**로 이행(저장만 하는 목록=금지선 #7 위반 회피). 스펙·플랜 = `docs/superpowers/specs|plans/2026-06-17-choice-history*.md`.
+  - **명시적 마커 방식(감독 결정)**: 옵션에 `|mark:태그` → 선택 시 `choiceHistory`에 기록 → 조건 `Chose:태그`로 조회. 점프 타깃 자동기록(분기구조 취약)·플래그(작가 부담) 대안 기각.
+  - **스키마(GameStateData)**: `choiceHistory`(List<string>, 가산 — 구세이브 빈 목록). 접근자 `GameStateSO.HasChosen`/`RecordChoice`(set 의미 — 중복 방지, Flag 형제). **eventChoices(Affinity Event3 +2 보정)와 별개**.
+  - **파서(ChoiceParser)**: `ChoiceOption.Mark` + 3번째+ 토큰 `mark:` 분기(`if:`와 동일 패턴, 순서 무관, 효과 접두사 충돌 없음).
+  - **연산자(ConditionEvaluator)**: `Chose:`/`!Chose:` 원자(Flag 미러). **Flow `If:`·선택지 `if:` 공유 평가기**라 양쪽 동작, AND/OR 우선순위 불변.
+  - **기록(NarrativeController.PlayChoice)**: 선택 확정 시 `chosen.Mark`를 `RecordChoice`. 효과와 같은 선택 지점 상태 변경 — 스토리 위치 앵커는 다음 대기 라인에서 잡혀 재개 시 이중 기록 없음(옵션 Flag 효과와 동일 안전성).
+  - **작가 문서**: STORY_CSV_GUIDE 조건 문법에 `Chose:`/`!Chose:` + "선택 마커" 절 추가(STORY_COMMANDS는 자동생성 FX 전용이라 미해당).
+  - **범위 한정**: 마커는 **선택지 옵션 전용**(Flow 라인 마커 X). 잔여: 감독 Play(mark 선택→세이브→로드→`If:Chose` 분기 유지).
 - **스테이지 상태 세이브(🔴 세이브 스키마) — 2026-06-17 세션(커밋 `9cb830d`·`a295c05`·`e97b4d4`, 푸시됨. 검증: EditMode 449·PlayMode 156 전부 그린(신규 EditMode +1·PlayMode +2), 컴파일·콘솔 0)**: 스토리 위치 세이브(`481b6fb`)가 BG/BGM/Char까지만 미러해 로드 시 **연출 지속 상태가 어긋나던** 간극 해소 — 로드 시 화면 색 보정/눈꺼풀 닫힘/SD·Overlay 레이어까지 동일 재현. 스펙·플랜 = `docs/superpowers/specs|plans/2026-06-17-stage-state-save*.md`.
   - **스키마 가산(GameStateData — 구세이브 기본값 로드 = 마이그레이션 무해)**: `storyTintR/G/B/A`(a>0이면 활성, Clear=0,0,0,0) + `storyEyeClosed`(Close/CloseImmediate=true) + `storySd`/`storyOverlay`(해석된 코드ID, 빈=없음). 틴트는 BG처럼 **해석된 최종 RGBA** 저장 → 프리셋 튜닝 변경에 면역.
   - **저장(NarrativeController)**: 기존 RecordBg/Char 형제로 `RecordTint`/`RecordEye`/`RecordLayer` 추가, 발행 직전 미러. 배선 **5지점**: PlayColorTint·PlayEyeMask·PlayStageLayer + PlaySetup(Overlay/Eye)·PlaySceneFx(Eye 3발행). **CG는 RecordLayer 가드로 미러 스킵**(설계 §2). 정상 종료 시 ClearStoryPosition이 4필드 함께 클리어.
@@ -217,7 +225,7 @@
 
 ## ▶️ 다음 액션
 
-> **현재(2026-06-17)**: **스테이지 상태 세이브(🔴) 완료·푸시**(`9cb830d`·`a295c05`·`e97b4d4` — 틴트/아이마스크/SD·Overlay 저장·복원, EditMode 449·PlayMode 156 그린). 스토리 위치 세이브의 연출-상태 간극을 메워 로드 시 장면 시각 동일 재현. **다음 액션**: ① 감독 Play 검증(틴트/암전/SD·Overlay 장면 세이브→이어하기 동일 복원 — 위 완료 기록 ①) ② 다음 슬라이스 후보: 선택지 이력/조건(choiceHistory 🔴)·점프페이드/스테이지 합성·로그 세이브 영속 ③ 미결: 스케줄 "돌아가기" 확인 팝업의 데이루프 의미(감독 결정 대기). **아래 이전 항목은 참고용.**
+> **현재(2026-06-17 b)**: **선택지 이력+선택 조건 연산자(🔴) 완료·푸시**(`240732e`·`ff6d9f0`·`f4e7152`·`8d93bb0` — 옵션 `mark:태그`→`choiceHistory`→조건 `Chose:태그`, EditMode 456·PlayMode 157 그린). 직전 **스테이지 상태 세이브(🔴)**(`9cb830d`·`a295c05`·`e97b4d4`)도 완료·푸시. **다음 액션**: ① 감독 Play 검증(틴트/암전/SD·Overlay 세이브→복원 + mark 선택→세이브→로드→`If:Chose` 분기 유지) ② 다음 슬라이스 후보: 점프페이드/스테이지 합성·로그 세이브 영속 ③ 미결: 스케줄 "돌아가기" 확인 팝업의 데이루프 의미(감독 결정 대기). **아래 이전 항목은 참고용.**
 >
 > **현재(2026-06-13)**: 목업 로드맵(빠른메뉴→스케줄→상점→로그) 완주 + **대사 로그+Username+{{Player}}** + **대사창 인포 바** + **스토리 위치 세이브(🔴, 코드·테스트 작성 — 검증 보류)** + 감독 Play 버그 4건 수정(타 세션). **다음 액션**: ① ~~MCP 재연결→전체 테스트~~ **완료(EditMode 448·PlayMode 154 그린)** ② 감독 Play(각 세션 기록의 체크 동선 — 특히 스토리 중간 세이브→이어하기 장면 재개) 후 커밋 분할 ③ 메신저(타 세션 소유 — 중복 금지) ④ 미결: 스케줄 "돌아가기" 확인 팝업의 데이루프 의미(감독 결정 대기) ⑤ 로그 세이브 영속(보류 — 이제 스토리 위치 스키마에 가산하면 자연스러움).
 >
