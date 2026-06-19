@@ -412,11 +412,17 @@ namespace LoveAlgo.UI
 
         static void SetAlpha(CanvasGroup cg, float a) { if (cg != null) cg.alpha = a; }
 
-        Sprite LoadCharSprite(string character, string emote)
+        /// <summary>캐릭터/표정 → Resources 하위 경로 키(순수). 폴더 구조 Characters/{char}/{emote}.</summary>
+        public static string CharSpriteKey(string character, string emote)
         {
             if (string.IsNullOrEmpty(character)) return null;
-            string key = string.IsNullOrEmpty(emote) ? character : $"{character}_{emote}";
-            return LoadSprite($"{charRoot}/{key}");
+            return string.IsNullOrEmpty(emote) ? character : $"{character}/{emote}";
+        }
+
+        Sprite LoadCharSprite(string character, string emote)
+        {
+            string key = CharSpriteKey(character, emote);
+            return key == null ? null : LoadSprite($"{charRoot}/{key}");
         }
 
         Sprite LoadSprite(string path) => Resources.Load<Sprite>(path);
