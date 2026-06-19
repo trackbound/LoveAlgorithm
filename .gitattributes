@@ -1,2 +1,84 @@
-# Auto detect text files and perform LF normalization
-* text=auto
+# 라인엔딩 고정 — Unity 프로젝트(저장본 LF 기준). autocrlf와 무관하게 작업트리도 LF로 유지해
+# CRLF↔LF churn/경고를 제거한다. 바이너리는 -text(diff/병합 변환 금지).
+
+# 기본: 텍스트 자동 감지 + LF 정규화
+* text=auto eol=lf
+
+# ── 소스/문서/설정 (LF 고정) ──
+*.cs        text eol=lf diff=csharp
+*.cginc     text eol=lf
+*.shader    text eol=lf
+*.hlsl      text eol=lf
+*.compute   text eol=lf
+*.uss       text eol=lf
+*.uxml      text eol=lf
+*.asmdef    text eol=lf
+*.asmref    text eol=lf
+*.json      text eol=lf
+*.csv       text eol=lf
+*.md        text eol=lf
+*.txt       text eol=lf
+*.xml       text eol=lf
+*.yml       text eol=lf
+*.yaml      text eol=lf
+
+# ── Unity YAML 에셋 (LF 고정 + 3-way 병합) ──
+*.unity            merge=unityyamlmerge eol=lf
+*.prefab           merge=unityyamlmerge eol=lf
+*.asset            merge=unityyamlmerge eol=lf
+*.meta             merge=unityyamlmerge eol=lf
+*.mat              merge=unityyamlmerge eol=lf
+*.anim             merge=unityyamlmerge eol=lf
+*.controller       merge=unityyamlmerge eol=lf
+*.overrideController merge=unityyamlmerge eol=lf
+*.physicMaterial   merge=unityyamlmerge eol=lf
+*.physicsMaterial2D merge=unityyamlmerge eol=lf
+*.playable         merge=unityyamlmerge eol=lf
+*.mask             merge=unityyamlmerge eol=lf
+*.brush            merge=unityyamlmerge eol=lf
+*.flare            merge=unityyamlmerge eol=lf
+*.fontsettings     merge=unityyamlmerge eol=lf
+*.guiskin          merge=unityyamlmerge eol=lf
+*.giparams         merge=unityyamlmerge eol=lf
+*.renderTexture    merge=unityyamlmerge eol=lf
+*.spriteatlas      merge=unityyamlmerge eol=lf
+*.terrainlayer     merge=unityyamlmerge eol=lf
+*.mixer            merge=unityyamlmerge eol=lf
+*.shadervariants   merge=unityyamlmerge eol=lf
+*.preset           merge=unityyamlmerge eol=lf
+*.lighting         merge=unityyamlmerge eol=lf
+*.signal           merge=unityyamlmerge eol=lf
+
+# ── 바이너리 (변환/diff 금지) ──
+*.dll    binary
+*.so     binary
+*.a      binary
+*.dylib  binary
+*.pdb    binary
+*.png    binary
+*.jpg    binary
+*.jpeg   binary
+*.gif    binary
+*.bmp    binary
+*.tga    binary
+*.tif    binary
+*.tiff   binary
+*.psd    binary
+*.exr    binary
+*.hdr    binary
+*.ico    binary
+*.fbx    binary
+*.obj    binary
+*.blend  binary
+*.wav    binary
+*.mp3    binary
+*.ogg    binary
+*.aif    binary
+*.aiff   binary
+*.flac   binary
+*.mp4    binary
+*.mov    binary
+*.webm   binary
+*.ttf    binary
+*.otf    binary
+*.unitypackage binary
