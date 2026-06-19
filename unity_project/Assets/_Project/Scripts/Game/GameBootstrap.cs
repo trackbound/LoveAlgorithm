@@ -28,6 +28,8 @@ namespace LoveAlgo.Game
         [SerializeField] string prologueCsv = "Prologue.csv";
         [Tooltip("저녁 이벤트 중 세이브 복원 위임 대상(같은 _Bootstrap의 GameManager). 비우면 씬에서 자동 탐색.")]
         [SerializeField] GameManager gameManager;
+        [Tooltip("부팅(타이틀→게임 진입) 시 로딩 오버레이 표시 시간(초). 세이브 복원·스테이지 스냅 플래시를 덮는다. 0=끔.")]
+        [SerializeField] float bootLoadingSeconds = 1.5f;
 
         public GameStateSO State { get => state; set => state = value; }
         public GameBalanceSO Balance { get => balance; set => balance = value; }
@@ -47,6 +49,12 @@ namespace LoveAlgo.Game
                 Debug.LogError("[GameBootstrap] state(GameStateSO) 미바인딩 — 부팅 불가.");
                 return;
             }
+            // 타이틀→게임 진입 로딩 비트: 아래 복원/프롤로그가 스테이지를 즉시(dur=0) 세팅하며 한 프레임
+            // 깜빡이므로, 그 위를 로딩 오버레이로 덮는다(ADR-007: 발행만, LoadingScreenView가 표시·자동 숨김).
+            // 부팅은 이 핸들을 await하지 않는다 — 콘텐츠는 곧장 발행되고 오버레이가 그 위에서 시간만큼 가린다.
+            if (bootLoadingSeconds > 0f)
+                EventBus.Publish(new ShowLoadingCommand(bootLoadingSeconds, new CompletionHandle()));
+
             int slot = GameEntry.SelectedSlot; // Consume이 리셋하므로 먼저 읽는다
             var mode = GameEntry.Consume();
             if (mode == BootMode.Continue && GameBoot.ContinueGame(state, balance, slot))
