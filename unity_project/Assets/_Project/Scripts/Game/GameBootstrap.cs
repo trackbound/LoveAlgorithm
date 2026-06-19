@@ -123,9 +123,9 @@ namespace LoveAlgo.Game
 
         /// <summary>
         /// 새 게임 첫 진입 프롤로그를 발행한다(저녁이벤트와 같은 StoryAssetLoader→PlayScriptCommand 패턴).
-        /// 부팅 시 state.Phase=Schedule이지만 NarrativeController.Run이 같은 프레임에 Story로 전환하므로
-        /// 스케줄 UI는 깜빡이지 않는다. 종료 시 Run이 Schedule 페이즈로 복귀시킨다. CSV 없으면 fail-open
-        /// (로그 후 스킵 — 시뮬 루프는 정상 진행). 이어하기엔 호출되지 않는다(Boot의 early return).
+        /// 순수 VN 전환 이후 부팅 기본 페이즈가 Story이므로(GameStateData.phase 기본값) NarrativeController.Run의
+        /// 페이즈 요청은 이미-Story면 생략된다 — 스케줄 깜빡임 없음. CSV 없으면 fail-open
+        /// (로그 후 스킵). 이어하기엔 호출되지 않는다(Boot의 early return).
         /// </summary>
         void PlayPrologue()
         {

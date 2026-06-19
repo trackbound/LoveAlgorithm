@@ -117,7 +117,10 @@ namespace LoveAlgo.Story.StoryEngine
         IEnumerator Run(List<ScriptLine> lines, string scriptName, int startIndex = 0)
         {
             IsRunning = true;
-            EventBus.Publish(new RequestPhaseCommand(ScreenPhase.Story));
+            // 순수 VN에선 부팅 기본 페이즈가 이미 Story라 무조건 발행하면 "동일 페이즈 재요청"으로 거부+경고된다.
+            // 다른 페이즈(예: Schedule)에서 스토리 진입할 때만 전환 요청 — 멱등 노이즈 제거(원인: PhaseService.Resolve from==to).
+            if (state != null && state.Phase != ScreenPhase.Story)
+                EventBus.Publish(new RequestPhaseCommand(ScreenPhase.Story));
 
             var cursor = new ScriptCursor(lines);
             // 스토리 위치 복원: 저장된 대기 라인(Text/Choice) 앵커에서 재개. 앵커 이전의 효과 라인(Flag/Affinity 등)은
