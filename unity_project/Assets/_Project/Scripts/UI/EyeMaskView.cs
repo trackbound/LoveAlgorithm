@@ -7,15 +7,15 @@ using UnityEngine;
 namespace LoveAlgo.UI
 {
     /// <summary>
-    /// 아이마스크 뷰(*View, M3 슬라이스2: 눈감김/뜨기). <see cref="EyeMaskCommand"/>를 구독해 상/하 검은 바를 눈꺼풀처럼
-    /// 보간하고 완료 핸들을 푼다(ADR-007: UI는 표시만). DOTween 미사용. 닫히면 두 바가 만나 전체 암전(POV 눈감김).
+    /// 아이마스크 뷰(*View, M3 슬라이스2: 눈감김/뜨기). <see cref="EyeMaskCommand"/>를 구독해 상/하 곡선 눈꺼풀
+    /// 스프라이트(eyelid_top/eyelid_bottom)를 보간하고 완료 핸들을 푼다(ADR-007: UI는 표시만). DOTween 미사용.
     ///
-    /// 셔터(대칭 레터박스)가 아니라 눈꺼풀처럼 보이도록 두 가지를 비대칭으로 둔다:
-    ///  1) 공간: 윗꺼풀이 더 내려와 화면 하단(<see cref="lidSplit"/> 비율) 지점에서 만난다. 같은 시간에 더 먼 거리를
-    ///     이동하므로 윗바가 자연히 더 빨리 움직인다(실제 윗눈꺼풀 우세).
+    /// 직선 셔터가 아니라 진짜 눈처럼 보이도록:
+    ///  1) 모양: 각 바는 화면 높이만큼 풀스크린 눈꺼풀이며, 맞닿는 가장자리가 중앙이 깊게 내려온 부드러운 아치(스프라이트).
+    ///     반쯤 닫히면 가운데가 아몬드형(렌즈)으로 열려 눈처럼 보이고, 좌우 눈꼬리가 가장 늦게 닫힌다.
     ///  2) 시간: 감김은 가속(ease-in, '탁' 닫힘), 뜨기는 감속(ease-out, 스르륵 풀림)으로 방향마다 다른 이징.
-    /// 닫힘 정도 t(0=뜸,1=감김) 단일 보간. 바 지오메트리는 부모(캔버스) 높이에서 자동 설정.
-    /// 내러티브 종료 시 즉시 뜨기(잔여 암전 방지).
+    /// 닫힘 정도 t(0=뜸,1=감김) 단일 보간. 두 눈꺼풀이 화면 높이만큼 풀스크린이라 닫히면 좌우 끝까지 겹쳐 전체 암전.
+    /// 바 지오메트리는 부모(캔버스) 높이에서 자동 설정. 내러티브 종료 시 즉시 뜨기(잔여 암전 방지).
     /// </summary>
     public class EyeMaskView : MonoBehaviour
     {
@@ -24,9 +24,9 @@ namespace LoveAlgo.UI
         [Tooltip("하단 검은 바(전체 너비).")]
         [SerializeField] RectTransform bottomBar;
 
-        [Header("눈꺼풀 비대칭 (셔터 → 눈꺼풀)")]
-        [Tooltip("화면 위에서부터 두 바가 만나는 높이 비율. 0.5=정중앙(대칭 셔터), 높일수록 윗꺼풀이 더 내려와 눈꺼풀다움.")]
-        [SerializeField, Range(0.5f, 0.85f)] float lidSplit = 0.66f;
+        [Header("눈꺼풀 곡선/이징")]
+        [Tooltip("닫힘 시 좌우 눈꼬리(곡선이 얕은 양끝)까지 확실히 겹치도록 바 높이에 더하는 여유 비율(화면 높이 대비).")]
+        [SerializeField, Range(0f, 0.2f)] float lidOverlap = 0.06f;
         [Tooltip("감김 가속도(ease-in 지수). 1=선형, 클수록 천천히 시작해 끝에서 '탁' 닫힘.")]
         [SerializeField, Range(1f, 3f)] float closeEase = 1.4f;
         [Tooltip("뜨기 감속도(ease-out 지수). 1=선형, 클수록 빠르게 열리다 끝에서 스르륵 멈춤.")]
@@ -38,7 +38,7 @@ namespace LoveAlgo.UI
         IDisposable _sub, _finishSub, _resetSub;
         Coroutine _routine;
         CompletionHandle _pending;
-        float _topHeight, _botHeight;
+        float _barHeight;
         bool _geometryReady;
 
         void OnEnable()
@@ -64,26 +64,25 @@ namespace LoveAlgo.UI
             float h = parent != null ? parent.rect.height : 0f;
             if (h <= 0f) h = Screen.height; // 캔버스 레이아웃 전(OnEnable)이면 폴백, 캐시하지 않고 명령 시점에 재계산.
 
-            // 윗바는 lidSplit만큼, 아랫바는 나머지를 덮는다(둘이 만나 전체 암전). 윗바가 더 길어 더 멀리·빨리 내려온다.
-            _topHeight = h * lidSplit;
-            _botHeight = h * (1f - lidSplit);
+            // 두 눈꺼풀 모두 화면 높이(+여유)만큼 풀스크린. 닫히면 화면 전체를 덮어 좌우 끝까지 겹쳐 암전한다.
+            _barHeight = h * (1f + lidOverlap);
 
-            ConfigureBar(topBar, isTop: true, height: _topHeight);
-            ConfigureBar(bottomBar, isTop: false, height: _botHeight);
+            ConfigureBar(topBar, isTop: true, height: _barHeight);
+            ConfigureBar(bottomBar, isTop: false, height: _barHeight);
 
             // 부모(캔버스) 높이가 확정됐을 때만 캐시 — OnEnable 폴백값이 굳지 않도록.
             if (parent != null && parent.rect.height > 0f) _geometryReady = true;
         }
 
-        // 상단 바: 상단 가로 스트레치, pivot 위(0.5,1) — 아래로 height만큼 늘어져 윗부분을 덮는다.
-        // 하단 바: 하단 가로 스트레치, pivot 아래(0.5,0) — 위로 늘어져 아랫부분을 덮는다. 이음새 여백(+2) 포함.
+        // 상단 바: 상단 가로 스트레치, pivot 위(0.5,1) — 아래로 height만큼 늘어진다(곡선 아래 가장자리가 화면을 덮음).
+        // 하단 바: 하단 가로 스트레치, pivot 아래(0.5,0) — 위로 늘어진다. 두 바 모두 화면 높이만큼이라 닫히면 겹쳐 암전.
         void ConfigureBar(RectTransform bar, bool isTop, float height)
         {
             float y = isTop ? 1f : 0f;
             bar.anchorMin = new Vector2(0f, y);
             bar.anchorMax = new Vector2(1f, y);
             bar.pivot = new Vector2(0.5f, y);
-            bar.sizeDelta = new Vector2(0f, height + 2f); // +2 = 중앙 이음새 방지
+            bar.sizeDelta = new Vector2(0f, height);
         }
 
         void OnCommand(EyeMaskCommand e)
@@ -151,12 +150,12 @@ namespace LoveAlgo.UI
             ApplyCloseAmount(amountOf(1f));
         }
 
-        // closeAmount: 0=완전히 뜸(바가 화면 밖), 1=감김(합류). 윗바/아랫바 이동량이 달라 비대칭으로 만난다.
+        // closeAmount: 0=완전히 뜸(두 눈꺼풀이 화면 밖), 1=감김(둘 다 화면을 덮어 곡선 가장자리가 중앙에서 합류).
         void ApplyCloseAmount(float t)
         {
             if (topBar == null || bottomBar == null) return;
-            topBar.anchoredPosition = new Vector2(0f, Mathf.Lerp(_topHeight, 0f, t));
-            bottomBar.anchoredPosition = new Vector2(0f, Mathf.Lerp(-_botHeight, 0f, t));
+            topBar.anchoredPosition = new Vector2(0f, Mathf.Lerp(_barHeight, 0f, t));
+            bottomBar.anchoredPosition = new Vector2(0f, Mathf.Lerp(-_barHeight, 0f, t));
         }
 
         void SetBarsActive(bool active)
