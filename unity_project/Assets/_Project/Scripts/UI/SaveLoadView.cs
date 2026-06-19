@@ -24,6 +24,8 @@ namespace LoveAlgo.UI
     public class SaveLoadView : MonoBehaviour
     {
         [SerializeField] CanvasGroup canvasGroup;
+        [Tooltip("있으면 우→좌 슬라이드 인 / 좌←우 아웃 연출, 없으면 즉시 표시.")]
+        [SerializeField] PopupSlideAnimator slide;
         [Tooltip("슬롯을 스폰할 컨테이너(GridLayoutGroup).")]
         [SerializeField] Transform slotContainer;
         [SerializeField] SaveLoadSlot slotPrefab;
@@ -254,9 +256,6 @@ namespace LoveAlgo.UI
         void SetVisible(bool v)
         {
             if (canvasGroup == null) return;
-            canvasGroup.alpha = v ? 1f : 0f;
-            canvasGroup.interactable = v;
-            canvasGroup.blocksRaycasts = v;
             if (v)
             {
                 // 재표시 포함 항상 시각·논리 최상단 동기화 — 형제 팝업 위로(SetAsLastSibling) +
@@ -265,13 +264,29 @@ namespace LoveAlgo.UI
                 _gate?.Dispose();
                 _gate = OverlayGate.Push(() => SetVisible(false));
                 _visible = true;
+                canvasGroup.interactable = true;
+                canvasGroup.blocksRaycasts = true;
+                if (slide != null) slide.PlayShow(); // 알파는 연출이 구동
+                else canvasGroup.alpha = 1f;
             }
-            else if (_visible)
+            else
             {
-                _gate?.Dispose();
-                _gate = null;
-                _visible = false;
-                ClearThumbnails();
+                // 숨김은 입력을 즉시 차단(슬라이드 아웃 동안 클릭 통과 무해), 시각 퇴장만 연출에 맡긴다.
+                // 썸네일 정리는 슬라이드 아웃이 끝난 뒤(슬롯이 비는 깜빡임 방지) — 즉시 숨김(부팅)은 바로 정리.
+                canvasGroup.interactable = false;
+                canvasGroup.blocksRaycasts = false;
+                bool wasVisible = _visible;
+                if (wasVisible) { _gate?.Dispose(); _gate = null; _visible = false; }
+                if (slide != null)
+                {
+                    if (wasVisible) slide.PlayHide(ClearThumbnails);
+                    else slide.ApplyHiddenInstant();
+                }
+                else
+                {
+                    canvasGroup.alpha = 0f;
+                    if (wasVisible) ClearThumbnails();
+                }
             }
         }
     }

@@ -359,13 +359,15 @@ GameObject:
   m_Component:
   - component: {fileID: 8808689274816735167}
   - component: {fileID: 4332574760510361090}
+  - component: {fileID: 5611222992154429150}
+  - component: {fileID: 6433366985685334876}
   m_Layer: 0
   m_Name: Modal
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &8808689274816735167
 RectTransform:
   m_ObjectHideFlags: 0
@@ -407,7 +409,48 @@ MonoBehaviour:
     prefab: {fileID: 3873221320660520869, guid: 6ffe2cd2323aec648a715962adb6ad3b, type: 3}
   - kind: 1
     prefab: {fileID: 3873221320660520869, guid: ef4d394915d9c8849bc16658ce4936d2, type: 3}
-  defaultButtonPrefab: {fileID: 3873221320660520869, guid: 62eff0fe6c4b9a444957a17cb0a16bfe, type: 3}
+  defaultButtonPrefab: {fileID: 3873221320660520869, guid: ef4d394915d9c8849bc16658ce4936d2, type: 3}
+--- !u!223 &5611222992154429150
+Canvas:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3689206053242449948}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_RenderMode: 2
+  m_Camera: {fileID: 0}
+  m_PlaneDistance: 100
+  m_PixelPerfect: 0
+  m_ReceivesEvents: 1
+  m_OverrideSorting: 1
+  m_OverridePixelPerfect: 0
+  m_SortingBucketNormalizedSize: 0
+  m_VertexColorAlwaysGammaSpace: 0
+  m_UseReflectionProbes: 0
+  m_AdditionalShaderChannelsFlag: 25
+  m_UpdateRectTransformForStandalone: 0
+  m_SortingLayerID: 0
+  m_SortingOrder: 80
+  m_TargetDisplay: 0
+--- !u!114 &6433366985685334876
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3689206053242449948}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dc42784cf147c0c48a680349fa168899, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.GraphicRaycaster
+  m_IgnoreReversedGraphics: 1
+  m_BlockingObjects: 0
+  m_BlockingMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
 --- !u!1 &4555996642348530483
 GameObject:
   m_ObjectHideFlags: 0

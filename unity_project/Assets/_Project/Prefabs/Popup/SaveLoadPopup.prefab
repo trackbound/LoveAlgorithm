@@ -768,13 +768,14 @@ GameObject:
   - component: {fileID: 375104665121751527}
   - component: {fileID: 3843082937897206381}
   - component: {fileID: 7563773667901055937}
+  - component: {fileID: 6969220026300288688}
   m_Layer: 0
   m_Name: SaveLoadPopup
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &375104665121751527
 RectTransform:
   m_ObjectHideFlags: 0
@@ -821,6 +822,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: LoveAlgo.UI::LoveAlgo.UI.SaveLoadView
   canvasGroup: {fileID: 3843082937897206381}
+  slide: {fileID: 6969220026300288688}
   slotContainer: {fileID: 1275626965452037956}
   slotPrefab: {fileID: 549764887863887308, guid: c02b81f1b13b92d468161f79b84391ac, type: 3}
   prevButton: {fileID: 3995808522041966972}
@@ -829,6 +831,33 @@ MonoBehaviour:
   pageNumberText: {fileID: 7668765045060206426}
   slotsPerPage: 6
   pageCount: 3
+  autoSaveModalTitle: "\uC790\uB3D9\uC800\uC7A5 \uC2AC\uB86F"
+  autoSaveModalMessage: "\uC790\uB3D9\uC800\uC7A5 \uC804\uC6A9 \uC2AC\uB86F\uC785\uB2C8\uB2E4.\n\uC218\uB3D9
+    \uC800\uC7A5\uC740 \uB2E4\uB978 \uC2AC\uB86F\uC744 \uC0AC\uC6A9\uD574 \uC8FC\uC138\uC694."
+  autoSaveModalConfirm: "\uD655\uC778"
+  newSaveModalTitle: "\uC800\uC7A5"
+  newSaveModalMessage: "\uC774 \uC2AC\uB86F\uC5D0 \uC800\uC7A5\uD558\uC2DC\uACA0\uC2B5\uB2C8\uAE4C?"
+  overwriteModalTitle: "\uB36E\uC5B4\uC4F0\uAE30"
+  overwriteModalMessage: "\uC774\uBBF8 \uB370\uC774\uD130\uAC00 \uC788\uC2B5\uB2C8\uB2E4.\n\uB36E\uC5B4\uC50C\uC6B0\uC2DC\uACA0\uC2B5\uB2C8\uAE4C?"
+  saveModalConfirm: "\uC608"
+  saveModalCancel: "\uC544\uB2C8\uC624"
+  primeGuardFrames: 10
+--- !u!114 &6969220026300288688
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5831994044175430303}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a8c1975a3bc5dc44a987f1fe8f51d8ca, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: LoveAlgo.UI::LoveAlgo.UI.PopupSlideAnimator
+  slideTarget: {fileID: 8040533907653158816}
+  canvasGroup: {fileID: 0}
+  duration: 0.25
+  offscreenDistance: 0
 --- !u!1 &6007453656995212920
 GameObject:
   m_ObjectHideFlags: 0

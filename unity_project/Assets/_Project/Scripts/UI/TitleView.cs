@@ -81,11 +81,10 @@ namespace LoveAlgo.UI
             },
             new ModalRequest(i => { if (i == 1) EventBus.Publish(new QuitGameCommand()); })));
 
-        // Settings/Load는 Overlay 팝업 커맨드 발행(SettingsView/SaveLoadView가 구독·표시). Extra는 목적지 미존재 — 안내 로그만.
+        // Settings/Load/Extra 모두 Overlay 팝업 커맨드 발행(각 *View가 구독·표시).
         void OnSettings() => EventBus.Publish(new ShowSettingsCommand());
         void OnLoad() => EventBus.Publish(new ShowSaveLoadCommand(SaveLoadMode.Load));
-        void OnExtra() => LogTodo("부가 콘텐츠(Extra)");
-        static void LogTodo(string what) => Log.Info($"[Title] {what} 화면은 준비 중입니다(후속 마일스톤).");
+        void OnExtra() => EventBus.Publish(new ShowExtraCommand());
 
         void OnDestroy()
         {

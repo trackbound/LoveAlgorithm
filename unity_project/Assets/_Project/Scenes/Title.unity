@@ -1848,6 +1848,7 @@ GameObject:
   - component: {fileID: 873993721}
   - component: {fileID: 873993724}
   - component: {fileID: 873993723}
+  - component: {fileID: 873993725}
   m_Layer: 0
   m_Name: Start
   m_TagString: Untagged
@@ -1942,6 +1943,31 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 873993720}
   m_CullTransparentMesh: 1
+--- !u!114 &873993725
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 873993720}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7f632150dc476db4aae21047c87e0b09, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: LoveAlgo.UI::LoveAlgo.UI.ButtonSpriteSwap
+  targetImage: {fileID: 0}
+  normalSprite: {fileID: 0}
+  hoverSprite: {fileID: 0}
+  onSprite: {fileID: 0}
+  disabledSprite: {fileID: 0}
+  pressedTint: {r: 0.7803922, g: 0.7803922, b: 0.7803922, a: 1}
+  textColors:
+    drive: 0
+    normal: {r: 0, g: 0, b: 0, a: 1}
+    hover: {r: 1, g: 1, b: 1, a: 1}
+    on: {r: 1, g: 1, b: 1, a: 1}
+    disabled: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+  label: {fileID: 0}
 --- !u!1 &925746178
 GameObject:
   m_ObjectHideFlags: 0
