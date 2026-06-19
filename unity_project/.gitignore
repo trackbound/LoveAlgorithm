@@ -84,3 +84,7 @@ crashlytics-build.properties
 
 # 로컬 상태 스토어 (agentmemory 등 도구 산출물 — 커밋 대상 아님)
 state_store.db/
+
+# Unity-MCP 디버그 스크린샷 출력(커밋 대상 아님)
+Assets/Screenshots/
+Assets/Screenshots.meta
