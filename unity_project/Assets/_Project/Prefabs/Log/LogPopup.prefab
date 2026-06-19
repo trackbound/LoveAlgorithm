@@ -61,6 +61,7 @@ MonoBehaviour:
   gutterWidth: 150
   headerGap: 24
   lineSpacing: 20
+  runSpacing: 44
   portraits:
   - speakerId: Roa
     sprite: {fileID: -8090621858015408962, guid: 30669ff5ea137b244bbda36eefd41505, type: 3}

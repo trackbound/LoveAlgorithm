@@ -18,6 +18,7 @@ namespace LoveAlgo.DevTools.Editor
         const string ArtDir = "Assets/Art/로그/png";
         const string PrefabDir = "Assets/_Project/Prefabs/Log";
         const string BodyFont = "Assets/Fonts/Pretendard-Medium SDF.asset";
+        const string NarrationGlowMat = "Assets/_Project/Prefabs/Log/Mat/NarrationGlow.mat";
 
         [MenuItem("Tools/Log/Build Log Popup Prefab")]
         public static void Build()
@@ -150,15 +151,49 @@ namespace LoveAlgo.DevTools.Editor
             return root;
         }
 
-        // 독백 버블 = 정의된 박스 대신 글자 뒤 분홍 번짐 배경(깃털 가장자리). 캐릭터/플레이어 textbox와 구분.
+        // 독백 버블 = 정의된 박스 대신 (1) 글자 뒤 옅은 분홍 배경 + (2) 글자 윤곽을 따라가는 분홍 언더레이.
+        // 둘의 합이 "윤곽을 따라가되 배경느낌"의 중간 톤. 농도는 둘 다 인스펙터에서 감독 튜닝(🟢).
         static GameObject BuildNarrationBubble()
         {
             var root = MessengerPrefabBuilder.Rect("LogEntryNarration", null);
             Le(root, flexibleWidth: 1f);
             var slot = root.AddComponent<DialogueLogEntrySlot>();
             ConfigureGlowBubble(root);
-            slot.BodyText = Tmp("Body", root.transform, 28f, Color.white, TextAlignmentOptions.TopLeft);
+            var body = Tmp("Body", root.transform, 28f, Color.white, TextAlignmentOptions.TopLeft);
+            var glowMat = EnsureNarrationGlowMaterial();
+            if (glowMat != null) body.fontSharedMaterial = glowMat; // 글자 윤곽 따라가는 번짐
+            slot.BodyText = body;
             return root;
+        }
+
+        /// <summary>독백 본문용 분홍 언더레이 머티리얼(글자 윤곽을 따라가는 번짐) — 폰트 머티리얼 복제 후 풀 SDF 셰이더로
+        /// 교체(Mobile 셰이더는 언더레이 미지원). offset 0(둘레 균일)·dilate/softness로 번짐, 색 알파로 농도. 폰트 공유
+        /// 기본 머티리얼을 안 건드리도록 전용 인스턴스 에셋. 값은 중간 톤 시작값(감독 튜닝 🟢).</summary>
+        static Material EnsureNarrationGlowMaterial()
+        {
+            var font = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(BodyFont);
+            var fullSdf = Shader.Find("TextMeshPro/Distance Field"); // 언더레이 지원(Mobile 변형은 미지원)
+            if (font == null || font.material == null || fullSdf == null)
+            {
+                Debug.LogWarning($"[DialogueLogPrefabBuilder] 폰트/머티리얼/풀 SDF 셰이더 없음 — 언더레이 생략.");
+                return null;
+            }
+            MessengerPrefabBuilder.EnsureFolder($"{PrefabDir}/Mat");
+            // 기존(모바일 셰이더 잔재)이 있으면 지우고 새로 — persisted 자산 셰이더 전환이 안 먹는 케이스 회피.
+            if (AssetDatabase.LoadAssetAtPath<Material>(NarrationGlowMat) != null)
+                AssetDatabase.DeleteAsset(NarrationGlowMat);
+
+            var mat = new Material(font.material) { name = "NarrationGlow" }; // 아틀라스/face 복제
+            mat.shader = fullSdf;                                             // persist 전에 in-memory 전환
+            mat.EnableKeyword("UNDERLAY_ON");
+            mat.SetColor("_UnderlayColor", new Color(1f, 0.42f, 0.70f, 0.6f)); // 분홍, 중간 농도 시작값
+            mat.SetFloat("_UnderlayOffsetX", 0f);
+            mat.SetFloat("_UnderlayOffsetY", 0f);
+            mat.SetFloat("_UnderlayDilate", 1f);    // 최대 확장(패딩 한도 내) — 윤곽 따라 퍼짐
+            mat.SetFloat("_UnderlaySoftness", 1f);  // 최대 부드러움 → 배경느낌
+            AssetDatabase.CreateAsset(mat, NarrationGlowMat);
+            AssetDatabase.SaveAssets();
+            return mat;
         }
 
         /// <summary>독백 버블에 분홍 번짐 배경(소프트 스프라이트 Image) + 본문 패딩 VLG 설정. 신규/기존 공용.</summary>
@@ -167,7 +202,7 @@ namespace LoveAlgo.DevTools.Editor
             var glow = bubble.GetComponent<Image>() ?? bubble.AddComponent<Image>();
             glow.sprite = EnsureGlowSprite();
             glow.type = Image.Type.Sliced;
-            glow.color = new Color(1f, 0.45f, 0.72f, 0.55f); // 진한 분홍 시작값(농도는 감독 튜닝 🟢)
+            glow.color = new Color(1f, 0.45f, 0.72f, 0.30f); // 옅은 분홍 배경(언더레이와 합쳐 중간 톤 — 농도는 감독 튜닝 🟢)
             glow.raycastTarget = false;
             var vlg = bubble.GetComponent<VerticalLayoutGroup>() ?? bubble.AddComponent<VerticalLayoutGroup>();
             vlg.childControlWidth = true;
