@@ -53,9 +53,14 @@ MonoBehaviour:
   content: {fileID: 7061847820114644924}
   scrollRect: {fileID: 1848683827215635064}
   returnButton: {fileID: 3625168025988220566}
-  characterSlotPrefab: {fileID: 4953453791677564859, guid: 837e941b29fc44d43a8c3b3f56fc26eb, type: 3}
-  playerSlotPrefab: {fileID: 8988786299023410157, guid: 69133d3fbae657a4dab789b0800b5d32, type: 3}
-  narrationSlotPrefab: {fileID: 5030893424008070136, guid: f6c7968b44e972f438e4c5d7622c7c7f, type: 3}
+  speakerHeaderPrefab: {fileID: 1765533679437014384, guid: b58f577a01fe43749850c61e4fb978bf, type: 3}
+  playerHeaderPrefab: {fileID: 1151151922001680352, guid: d0ec8f5ca3ccebf4699b7390c5f739d7, type: 3}
+  characterBubblePrefab: {fileID: 4953453791677564859, guid: 837e941b29fc44d43a8c3b3f56fc26eb, type: 3}
+  playerBubblePrefab: {fileID: 8988786299023410157, guid: 69133d3fbae657a4dab789b0800b5d32, type: 3}
+  narrationBubblePrefab: {fileID: 5030893424008070136, guid: f6c7968b44e972f438e4c5d7622c7c7f, type: 3}
+  gutterWidth: 150
+  headerGap: 24
+  lineSpacing: 20
   portraits:
   - speakerId: Roa
     sprite: {fileID: -8090621858015408962, guid: 30669ff5ea137b244bbda36eefd41505, type: 3}

@@ -25,16 +25,14 @@ namespace LoveAlgo.DevTools.Editor
             EnsureSpriteImports();
             MessengerPrefabBuilder.EnsureFolder(PrefabDir);
 
-            var charSlot = LoadSlot("LogEntryCharacter");
-            var playerSlot = LoadSlot("LogEntryPlayer");
-            var narrationSlot = LoadSlot("LogEntryNarration");
-
-            var popup = BuildPopup(charSlot, playerSlot, narrationSlot);
+            var popup = BuildPopup(
+                LoadSlot("LogSpeakerHeader"), LoadSlot("LogPlayerHeader"),
+                LoadSlot("LogEntryCharacter"), LoadSlot("LogEntryPlayer"), LoadSlot("LogEntryNarration"));
             var prefab = PrefabUtility.SaveAsPrefabAsset(popup, $"{PrefabDir}/LogPopup.prefab");
             Object.DestroyImmediate(popup);
 
             AssetDatabase.SaveAssets();
-            Debug.Log($"[DialogueLogPrefabBuilder] 산출 완료 → {PrefabDir}/LogPopup.prefab (슬롯 3종 바인딩 + 초상 5종). " +
+            Debug.Log($"[DialogueLogPrefabBuilder] 산출 완료 → {PrefabDir}/LogPopup.prefab (헤더 2종+버블 3종 바인딩 + 초상 5종). " +
                       "씬 배선: _UI/Popup 하위 인스턴스(inactive) + UiBootActivator targets 등록.");
             _ = prefab;
         }
@@ -66,13 +64,12 @@ namespace LoveAlgo.DevTools.Editor
             Debug.Log($"[DialogueLogPrefabBuilder] 임시 오브젝트 {removed}건 제거.");
         }
 
-        // ───────────────────────── 슬롯 3종 조립 ─────────────────────────
+        // ───────────────────────── 헤더 2종 + 버블 3종 조립 ─────────────────────────
 
-        /// <summary>로그 박스 슬롯 3종(캐릭터/플레이어/나레이션) 조립 — 목업 동결 규칙: 좌 초상+이름박스 열(고정폭)
-        /// + 우 와이드 대화박스(높이 = 본문 TMP preferred, 초상열보다 낮으면 세로 가운데 정렬), 주인공 = 초상 없이
-        /// 이름박스+전용 박스(흰 본문), 독백 = 박스 없는 흰 텍스트(박스 열과 좌측 정렬 일치). 재실행 = 같은 경로
-        /// 덮어쓰기(GUID 보존). 내부 fileID는 바뀌므로 LogPopup.prefab과 열린 씬의 뷰 슬롯 참조를 함께 재바인딩한다
-        /// (씬 저장은 호출자 몫). 수치는 시작값 — 비주얼 튜닝은 감독 영역(🟢).</summary>
+        /// <summary>로그 요소 프리팹 조립 — run 컨테이너 모델: 좌측 화자 헤더(캐릭터=초상+이름박스 / 플레이어=이름박스)
+        /// 고정폭 + 우측 대사 버블(캐릭터 textbox 검정 / 플레이어 textbox 흰 / 독백 분홍 번짐 배경 흰). 컨테이너와
+        /// 버블 세로 스택은 DialogueLogView가 런타임 조립(개행 균일·이름표 run당 1회). 재실행 = 같은 경로 덮어쓰기
+        /// (GUID 보존), fileID 변경분은 RebindSlotConsumers가 LogPopup/열린 씬 뷰에 재배선. 수치=시작값(감독 튜닝 🟢).</summary>
         [MenuItem("Tools/Log/Build Log Entry Slot Prefabs")]
         public static void BuildSlots()
         {
@@ -80,66 +77,87 @@ namespace LoveAlgo.DevTools.Editor
             EnsureSlicedBorders();
             MessengerPrefabBuilder.EnsureFolder(PrefabDir);
 
-            SaveSlot(BuildCharacterSlot(), "LogEntryCharacter");
-            SaveSlot(BuildPlayerSlot(), "LogEntryPlayer");
-            SaveSlot(BuildNarrationSlot(), "LogEntryNarration");
+            SaveSlot(BuildSpeakerHeader(), "LogSpeakerHeader");
+            SaveSlot(BuildPlayerHeader(), "LogPlayerHeader");
+            SaveSlot(BuildBubble("LogEntryCharacter", "textbox_character", new Color32(26, 26, 26, 255)), "LogEntryCharacter"); // 본문 검정(기획)
+            SaveSlot(BuildBubble("LogEntryPlayer", "textbox_player", Color.white), "LogEntryPlayer");                          // 주인공 흰색(기획)
+            SaveSlot(BuildNarrationBubble(), "LogEntryNarration");
             RebindSlotConsumers();
 
             AssetDatabase.SaveAssets();
-            Debug.Log("[DialogueLogPrefabBuilder] 슬롯 3종 재조립 + LogPopup.prefab/열린 씬 뷰 참조 재바인딩 완료. " +
+            Debug.Log("[DialogueLogPrefabBuilder] 헤더 2종+버블 3종 재조립 + LogPopup.prefab/열린 씬 뷰 참조 재바인딩 완료. " +
                       "씬이 더럽혀졌으면 저장 필요.");
         }
 
         const float LeftColWidth = 150f; // 초상/이름박스 열 폭(목업 비례 시작값)
 
-        static GameObject BuildCharacterSlot()
+        // 캐릭터 헤더: 세로 [초상 | 이름박스]. run 좌측에 1회. 초상은 런타임 주입(뷰의 id→초상 매핑, 엑스트라=숨김).
+        static GameObject BuildSpeakerHeader()
         {
-            var (root, slot) = SlotRoot("LogEntryCharacter");
-            var left = LeftColumn(root.transform, TextAnchor.UpperCenter);
-
-            var portrait = MessengerPrefabBuilder.Rect("Portrait", left.transform);
-            var portraitImg = portrait.AddComponent<Image>(); // 스프라이트는 런타임 주입(뷰의 id→초상 매핑)
+            var (root, slot) = HeaderRoot("LogSpeakerHeader");
+            var portrait = MessengerPrefabBuilder.Rect("Portrait", root.transform);
+            var portraitImg = portrait.AddComponent<Image>();
             portraitImg.preserveAspect = true;
             portraitImg.raycastTarget = false;
             Le(portrait, preferredWidth: LeftColWidth, preferredHeight: LeftColWidth); // 아트 230x229 ≈ 정사각
-
-            var nameLabel = NameBox(left.transform, "namebox_character");
-            var body = TextBoxColumn(root.transform, "textbox_character", new Color32(26, 26, 26, 255)); // 본문 검정(기획)
+            var nameLabel = NameBox(root.transform, "namebox_character");
 
             slot.PortraitRoot = portrait;
             slot.PortraitImage = portraitImg;
-            slot.NameRoot = nameLabel.transform.parent.gameObject; // NameBox GO — 연속 동일 화자 시 끔
             slot.NameText = nameLabel;
-            slot.BodyText = body;
             return root;
         }
 
-        static GameObject BuildPlayerSlot()
+        // 플레이어 헤더: 이름박스만(초상 없음). 전용 이름박스 아트.
+        static GameObject BuildPlayerHeader()
         {
-            var (root, slot) = SlotRoot("LogEntryPlayer");
-            var left = LeftColumn(root.transform, TextAnchor.MiddleCenter);
-            var nameLabel = NameBox(left.transform, "namebox_player");
-            var body = TextBoxColumn(root.transform, "textbox_player", Color.white); // 주인공 전부 흰색(기획)
-
-            slot.NameRoot = nameLabel.transform.parent.gameObject; // NameBox GO — 연속 동일 화자 시 끔
-            slot.NameText = nameLabel;
-            slot.BodyText = body;
+            var (root, slot) = HeaderRoot("LogPlayerHeader");
+            slot.NameText = NameBox(root.transform, "namebox_player");
             return root;
         }
 
-        static GameObject BuildNarrationSlot()
+        // 헤더 공통 루트: 고정폭 세로 열(상단 정렬).
+        static (GameObject root, DialogueLogEntrySlot slot) HeaderRoot(string name)
         {
-            var (root, slot) = SlotRoot("LogEntryNarration");
-            var spacer = MessengerPrefabBuilder.Rect("LeftSpacer", root.transform); // 박스 열과 좌측 정렬 일치용
-            Le(spacer, preferredWidth: LeftColWidth, flexibleWidth: 0f);
+            var root = MessengerPrefabBuilder.Rect(name, null);
+            Le(root, preferredWidth: LeftColWidth, flexibleWidth: 0f);
+            var vlg = root.AddComponent<VerticalLayoutGroup>();
+            vlg.childControlWidth = true;
+            vlg.childControlHeight = true;
+            vlg.childForceExpandWidth = false;
+            vlg.childForceExpandHeight = false;
+            vlg.childAlignment = TextAnchor.UpperCenter;
+            vlg.spacing = 6f;
+            return (root, root.AddComponent<DialogueLogEntrySlot>());
+        }
 
-            // 독백 = 정의된 박스 대신 글자 뒤로 은은히 번진 분홍 배경(부드러운 깃털 가장자리). 캐릭터/플레이어의 textbox와 구분.
-            var bubble = MessengerPrefabBuilder.Rect("Bubble", root.transform);
-            Le(bubble, flexibleWidth: 1f);
-            ConfigureGlowBubble(bubble);
-            var body = Tmp("Body", bubble.transform, 28f, Color.white, TextAlignmentOptions.TopLeft);
+        // 대사 버블(9-슬라이스 박스 + 본문). 루트가 곧 버블 — 폭은 스택이 채운다(flexibleWidth 1).
+        static GameObject BuildBubble(string name, string boxSprite, Color bodyColor)
+        {
+            var root = MessengerPrefabBuilder.Rect(name, null);
+            Le(root, flexibleWidth: 1f);
+            var slot = root.AddComponent<DialogueLogEntrySlot>();
+            var img = Img(root, boxSprite);
+            img.type = Image.Type.Sliced;
+            img.raycastTarget = false;
+            var vlg = root.AddComponent<VerticalLayoutGroup>();
+            vlg.childControlWidth = true;
+            vlg.childControlHeight = true;
+            vlg.childForceExpandWidth = true;
+            vlg.childForceExpandHeight = false;
+            vlg.padding = new RectOffset(36, 36, 16, 16);
+            slot.BodyText = Tmp("Body", root.transform, 28f, bodyColor, TextAlignmentOptions.TopLeft);
+            return root;
+        }
 
-            slot.BodyText = body;
+        // 독백 버블 = 정의된 박스 대신 글자 뒤 분홍 번짐 배경(깃털 가장자리). 캐릭터/플레이어 textbox와 구분.
+        static GameObject BuildNarrationBubble()
+        {
+            var root = MessengerPrefabBuilder.Rect("LogEntryNarration", null);
+            Le(root, flexibleWidth: 1f);
+            var slot = root.AddComponent<DialogueLogEntrySlot>();
+            ConfigureGlowBubble(root);
+            slot.BodyText = Tmp("Body", root.transform, 28f, Color.white, TextAlignmentOptions.TopLeft);
             return root;
         }
 
@@ -157,35 +175,6 @@ namespace LoveAlgo.DevTools.Editor
             vlg.childForceExpandWidth = true;
             vlg.childForceExpandHeight = false;
             vlg.padding = new RectOffset(40, 40, 20, 20); // 번짐이 글자 둘레로 퍼질 여유
-        }
-
-        // 슬롯 공통 루트: 가로 [좌측 열 | 본문]. Content VLG(ctrlH)가 preferred 높이로 행을 쌓는다.
-        static (GameObject root, DialogueLogEntrySlot slot) SlotRoot(string name)
-        {
-            var root = MessengerPrefabBuilder.Rect(name, null);
-            var hlg = root.AddComponent<HorizontalLayoutGroup>();
-            hlg.childControlWidth = true;
-            hlg.childControlHeight = true;
-            hlg.childForceExpandWidth = false;
-            hlg.childForceExpandHeight = false;
-            hlg.childAlignment = TextAnchor.MiddleLeft; // 박스가 초상열보다 낮으면 가운데 정렬(목업 규칙)
-            hlg.spacing = 24f;
-            hlg.padding = new RectOffset(8, 16, 0, 0);
-            return (root, root.AddComponent<DialogueLogEntrySlot>());
-        }
-
-        static GameObject LeftColumn(Transform parent, TextAnchor align)
-        {
-            var col = MessengerPrefabBuilder.Rect("Left", parent);
-            Le(col, preferredWidth: LeftColWidth, flexibleWidth: 0f);
-            var vlg = col.AddComponent<VerticalLayoutGroup>();
-            vlg.childControlWidth = true;
-            vlg.childControlHeight = true;
-            vlg.childForceExpandWidth = false;
-            vlg.childForceExpandHeight = false;
-            vlg.childAlignment = align;
-            vlg.spacing = 6f;
-            return col;
         }
 
         // 이름박스(9-슬라이스) + 중앙 라벨. 라벨 자동 축소(긴 이름 대비).
@@ -206,25 +195,6 @@ namespace LoveAlgo.DevTools.Editor
             lr.offsetMin = new Vector2(10f, 4f);
             lr.offsetMax = new Vector2(-10f, -4f);
             return label;
-        }
-
-        // 대화박스(9-슬라이스, 남은 폭 채움) — 내부 VLG 패딩이 본문 TMP preferred 높이를 박스 높이로 승격.
-        static TMP_Text TextBoxColumn(Transform parent, string spriteName, Color bodyColor)
-        {
-            var box = MessengerPrefabBuilder.Rect("TextBox", parent);
-            var img = Img(box, spriteName);
-            img.type = Image.Type.Sliced;
-            img.raycastTarget = false;
-            Le(box, flexibleWidth: 1f);
-
-            var vlg = box.AddComponent<VerticalLayoutGroup>();
-            vlg.childControlWidth = true;
-            vlg.childControlHeight = true;
-            vlg.childForceExpandWidth = true;
-            vlg.childForceExpandHeight = false;
-            vlg.padding = new RectOffset(36, 36, 16, 16);
-
-            return Tmp("Body", box.transform, 28f, bodyColor, TextAlignmentOptions.TopLeft);
         }
 
         static TextMeshProUGUI Tmp(string name, Transform parent, float size, Color color, TextAlignmentOptions align)
@@ -256,95 +226,7 @@ namespace LoveAlgo.DevTools.Editor
             Object.DestroyImmediate(go);
         }
 
-        /// <summary>기존 캐릭터/플레이어 슬롯 프리팹에 NameRoot(NameBox GO) 참조를 비파괴로 배선 —
-        /// 슬롯 전체 재조립 없이(다른 슬롯 수동 튜닝 보존). 연속 동일 화자 2번째+ 박스에서 이름표를 끄기 위함.
-        /// 나레이션은 이름박스가 없어 대상 아님.</summary>
-        [MenuItem("Tools/Log/Wire Name Roots")]
-        public static void WireNameRoots()
-        {
-            int wired = 0;
-            foreach (var name in new[] { "LogEntryCharacter", "LogEntryPlayer" })
-            {
-                string path = $"{PrefabDir}/{name}.prefab";
-                if (AssetDatabase.LoadAssetAtPath<GameObject>(path) == null)
-                {
-                    Debug.LogError($"[DialogueLogPrefabBuilder] 슬롯 프리팹 없음: {path}");
-                    continue;
-                }
-                var contents = PrefabUtility.LoadPrefabContents(path);
-                try
-                {
-                    var slot = contents.GetComponent<DialogueLogEntrySlot>();
-                    var nameBox = FindDeep(contents.transform, "NameBox");
-                    if (slot == null || nameBox == null)
-                    {
-                        Debug.LogError($"[DialogueLogPrefabBuilder] {name}: slot/NameBox 못 찾음 — 배선 생략.");
-                        continue;
-                    }
-                    slot.NameRoot = nameBox.gameObject;
-                    EditorUtility.SetDirty(slot);
-                    PrefabUtility.SaveAsPrefabAsset(contents, path);
-                    wired++;
-                }
-                finally { PrefabUtility.UnloadPrefabContents(contents); }
-            }
-            AssetDatabase.SaveAssets();
-            Debug.Log($"[DialogueLogPrefabBuilder] NameRoot 배선 {wired}건 완료(연속 동일 화자 이름표 묶음).");
-        }
-
-        static Transform FindDeep(Transform root, string name)
-        {
-            if (root.name == name) return root;
-            for (int i = 0; i < root.childCount; i++)
-            {
-                var found = FindDeep(root.GetChild(i), name);
-                if (found != null) return found;
-            }
-            return null;
-        }
-
         // ───────────────────────── 독백 글로우(분홍 번짐 배경) ─────────────────────────
-
-        /// <summary>기존 LogEntryNarration 프리팹에 분홍 번짐 배경을 비파괴 적용 — 슬롯 전체 재조립(BuildSlots) 없이
-        /// (다른 슬롯 수동 튜닝 보존, fileID 유지로 LogPopup 참조 무손상). Body를 Bubble(소프트 분홍 Image+패딩)
-        /// 아래로 넣는다(이미 있으면 재설정만). 정의된 박스가 아닌 글자 뒤 은은한 배경 효과(목업 독백).</summary>
-        [MenuItem("Tools/Log/Apply Narration Glow")]
-        public static void ApplyNarrationGlow()
-        {
-            string path = $"{PrefabDir}/LogEntryNarration.prefab";
-            if (AssetDatabase.LoadAssetAtPath<GameObject>(path) == null)
-            {
-                Debug.LogError($"[DialogueLogPrefabBuilder] 나레이션 슬롯 프리팹 없음: {path}");
-                return;
-            }
-            var contents = PrefabUtility.LoadPrefabContents(path);
-            try
-            {
-                var slot = contents.GetComponent<DialogueLogEntrySlot>();
-                var body = slot != null ? slot.BodyText : null;
-                if (body == null) { Debug.LogError("[DialogueLogPrefabBuilder] BodyText 미바인딩 — 글로우 적용 실패."); return; }
-
-                var bubble = FindDeep(contents.transform, "Bubble");
-                if (bubble == null)
-                {
-                    var go = MessengerPrefabBuilder.Rect("Bubble", contents.transform);
-                    Le(go, flexibleWidth: 1f);
-                    body.transform.SetParent(go.transform, false); // Body를 Bubble 아래로 이동
-                    bubble = go.transform;
-                }
-                ConfigureGlowBubble(bubble.gameObject);
-                // 직전 시도에서 입힌 Underlay 머티리얼이 있으면 폰트 기본으로 되돌림(이제 배경 스프라이트가 효과 담당).
-                var font = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(BodyFont);
-                if (font != null) body.fontSharedMaterial = font.material;
-
-                EditorUtility.SetDirty(slot);
-                PrefabUtility.SaveAsPrefabAsset(contents, path);
-            }
-            finally { PrefabUtility.UnloadPrefabContents(contents); }
-
-            AssetDatabase.SaveAssets();
-            Debug.Log($"[DialogueLogPrefabBuilder] 독백 분홍 번짐 배경 적용 완료 → {path}. 농도/번짐은 Bubble의 Image 색 알파·스프라이트로 감독 튜닝(🟢).");
-        }
 
         const string GlowSprite = "Assets/_Project/Prefabs/Log/Sprites/narration_glow.png";
 
@@ -404,10 +286,6 @@ namespace LoveAlgo.DevTools.Editor
         /// (슬롯 그래픽 raycast를 꺼서 휠/드래그 스크롤 히트는 뷰포트가 받는다).</summary>
         static void RebindSlotConsumers()
         {
-            var charSlot = LoadSlot("LogEntryCharacter");
-            var playerSlot = LoadSlot("LogEntryPlayer");
-            var narrationSlot = LoadSlot("LogEntryNarration");
-
             string popupPath = $"{PrefabDir}/LogPopup.prefab";
             if (AssetDatabase.LoadAssetAtPath<GameObject>(popupPath) != null)
             {
@@ -417,7 +295,7 @@ namespace LoveAlgo.DevTools.Editor
                     var view = contents.GetComponentInChildren<DialogueLogView>(true);
                     if (view != null)
                     {
-                        Rebind(view, charSlot, playerSlot, narrationSlot);
+                        Rebind(view);
                         EnsureViewportCatcher(view);
                     }
                     PrefabUtility.SaveAsPrefabAsset(contents, popupPath);
@@ -427,18 +305,20 @@ namespace LoveAlgo.DevTools.Editor
 
             foreach (var view in Object.FindObjectsByType<DialogueLogView>(FindObjectsInactive.Include))
             {
-                Rebind(view, charSlot, playerSlot, narrationSlot);
+                Rebind(view);
                 EnsureViewportCatcher(view);
                 PrefabUtility.RecordPrefabInstancePropertyModifications(view);
                 EditorUtility.SetDirty(view);
             }
         }
 
-        static void Rebind(DialogueLogView view, DialogueLogEntrySlot c, DialogueLogEntrySlot p, DialogueLogEntrySlot n)
+        static void Rebind(DialogueLogView view)
         {
-            view.CharacterSlotPrefab = c;
-            view.PlayerSlotPrefab = p;
-            view.NarrationSlotPrefab = n;
+            view.SpeakerHeaderPrefab = LoadSlot("LogSpeakerHeader");
+            view.PlayerHeaderPrefab = LoadSlot("LogPlayerHeader");
+            view.CharacterBubblePrefab = LoadSlot("LogEntryCharacter");
+            view.PlayerBubblePrefab = LoadSlot("LogEntryPlayer");
+            view.NarrationBubblePrefab = LoadSlot("LogEntryNarration");
         }
 
         static void EnsureViewportCatcher(DialogueLogView view)
@@ -452,7 +332,8 @@ namespace LoveAlgo.DevTools.Editor
 
         // ───────────────────────── 조립 ─────────────────────────
 
-        static GameObject BuildPopup(DialogueLogEntrySlot charSlot, DialogueLogEntrySlot playerSlot, DialogueLogEntrySlot narrationSlot)
+        static GameObject BuildPopup(DialogueLogEntrySlot speakerHeader, DialogueLogEntrySlot playerHeader,
+            DialogueLogEntrySlot charBubble, DialogueLogEntrySlot playerBubble, DialogueLogEntrySlot narrationBubble)
         {
             var popup = MessengerPrefabBuilder.Rect("LogPopup", null);
             MessengerPrefabBuilder.Stretch(popup);
@@ -549,9 +430,11 @@ namespace LoveAlgo.DevTools.Editor
             view.Content = content.transform;
             view.Scroll = scroll;
             view.ReturnButton = retBtn;
-            view.CharacterSlotPrefab = charSlot;
-            view.PlayerSlotPrefab = playerSlot;
-            view.NarrationSlotPrefab = narrationSlot;
+            view.SpeakerHeaderPrefab = speakerHeader;
+            view.PlayerHeaderPrefab = playerHeader;
+            view.CharacterBubblePrefab = charBubble;
+            view.PlayerBubblePrefab = playerBubble;
+            view.NarrationBubblePrefab = narrationBubble;
             view.Portraits.Clear();
             AddPortrait(view, "c01", "roa");
             AddPortrait(view, "c02", "daeun");

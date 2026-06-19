@@ -75,20 +75,15 @@ namespace LoveAlgo.Tests.PlayMode
             content.transform.SetParent(_root.transform, false);
             view.Content = content.transform;
 
-            DialogueLogEntrySlot MkSlot(string name, bool withName, bool withPortrait)
+            // 헤더 = 이름(+선택 초상), 버블 = 본문만. 뷰가 run 컨테이너에 조립한다.
+            DialogueLogEntrySlot MkHeader(string name, bool withPortrait)
             {
                 var go = new GameObject(name, typeof(RectTransform));
                 go.transform.SetParent(_root.transform, false);
                 var slot = go.AddComponent<DialogueLogEntrySlot>();
-                var body = new GameObject("Body", typeof(RectTransform)).AddComponent<TMPro.TextMeshProUGUI>();
-                body.transform.SetParent(go.transform, false);
-                slot.BodyText = body;
-                if (withName)
-                {
-                    var nameTxt = new GameObject("Name", typeof(RectTransform)).AddComponent<TMPro.TextMeshProUGUI>();
-                    nameTxt.transform.SetParent(go.transform, false);
-                    slot.NameText = nameTxt;
-                }
+                var nameTxt = new GameObject("Name", typeof(RectTransform)).AddComponent<TMPro.TextMeshProUGUI>();
+                nameTxt.transform.SetParent(go.transform, false);
+                slot.NameText = nameTxt;
                 if (withPortrait)
                 {
                     var pr = new GameObject("Portrait", typeof(RectTransform), typeof(Image));
@@ -98,10 +93,22 @@ namespace LoveAlgo.Tests.PlayMode
                 }
                 return slot;
             }
+            DialogueLogEntrySlot MkBubble(string name)
+            {
+                var go = new GameObject(name, typeof(RectTransform));
+                go.transform.SetParent(_root.transform, false);
+                var slot = go.AddComponent<DialogueLogEntrySlot>();
+                var body = new GameObject("Body", typeof(RectTransform)).AddComponent<TMPro.TextMeshProUGUI>();
+                body.transform.SetParent(go.transform, false);
+                slot.BodyText = body;
+                return slot;
+            }
 
-            view.CharacterSlotPrefab = MkSlot("CharSlot", true, true);
-            view.PlayerSlotPrefab = MkSlot("PlayerSlot", true, false);
-            view.NarrationSlotPrefab = MkSlot("NarrSlot", false, false);
+            view.SpeakerHeaderPrefab = MkHeader("SpeakerHeader", withPortrait: true);
+            view.PlayerHeaderPrefab = MkHeader("PlayerHeader", withPortrait: false);
+            view.CharacterBubblePrefab = MkBubble("CharBubble");
+            view.PlayerBubblePrefab = MkBubble("PlayerBubble");
+            view.NarrationBubblePrefab = MkBubble("NarrBubble");
 
             var portrait = Sprite.Create(Texture2D.whiteTexture, new Rect(0, 0, 4, 4), Vector2.one * 0.5f);
             view.Portraits.Add(new DialogueLogView.PortraitPair { speakerId = "c01", sprite = portrait });
@@ -111,12 +118,12 @@ namespace LoveAlgo.Tests.PlayMode
         }
 
         [UnityTest]
-        public IEnumerator View_SpawnsKindSlots_GateAndBackRoundtrip()
+        public IEnumerator View_GroupsRuns_HeaderOncePerRun_AndRoundtrip()
         {
-            DialogueLogStore.Append("로아", "c01", "히로인 줄");          // 캐릭터(초상 등록)
-            DialogueLogStore.Append("교수님", null, "엑스트라 줄");        // 캐릭터(초상 미등록)
-            DialogueLogStore.Append("철수", PlayerNameFormat.PlayerSpeakerId, "플레이어 줄");
-            DialogueLogStore.Append("", null, "독백 줄");
+            DialogueLogStore.Append("로아", "c01", "줄1");                              // run0: 로아 연속 2줄
+            DialogueLogStore.Append("로아", "c01", "줄2");
+            DialogueLogStore.Append("철수", PlayerNameFormat.PlayerSpeakerId, "플레이어 줄"); // run1
+            DialogueLogStore.Append("", null, "독백 줄");                                // run2: 헤더 없음
 
             var view = CreateView();
             yield return null;
@@ -126,13 +133,28 @@ namespace LoveAlgo.Tests.PlayMode
             Assert.IsTrue(view.IsVisible, "열기 명령 → 표시");
             Assert.IsTrue(OverlayGate.IsBlocked, "표시 중 게임플레이 차단(오토 정지)");
 
-            var slots = view.Content.GetComponentsInChildren<DialogueLogEntrySlot>(true);
-            Assert.AreEqual(4, slots.Length, "박스 4개 스폰");
-            Assert.IsTrue(slots[0].PortraitRoot.activeSelf, "히로인 = 초상 표시");
-            Assert.AreEqual("로아", slots[0].NameText.text);
-            Assert.IsFalse(slots[1].PortraitRoot.activeSelf, "엑스트라 = 초상 숨김(미등록)");
-            Assert.AreEqual("철수", slots[2].NameText.text, "플레이어 = 입력 이름 표시");
-            Assert.AreEqual("독백 줄", slots[3].BodyText.text);
+            var runs = new List<Transform>();
+            foreach (Transform c in view.Content) runs.Add(c);
+            Assert.AreEqual(3, runs.Count, "연속 동일 화자 = 한 run(3개)");
+
+            // run0(로아): 헤더 1개(초상 표시·이름 '로아') + 버블 2개(줄1/줄2).
+            var r0 = runs[0].GetComponentsInChildren<DialogueLogEntrySlot>(true);
+            var header0 = r0.First(s => s.NameText != null);
+            var bubbles0 = r0.Where(s => s.BodyText != null).ToList();
+            Assert.AreEqual(1, r0.Count(s => s.NameText != null), "이름표는 run당 1회");
+            Assert.IsTrue(header0.PortraitRoot.activeSelf, "히로인 = 초상 표시");
+            Assert.AreEqual("로아", header0.NameText.text);
+            Assert.AreEqual(2, bubbles0.Count, "진행마다 버블(2줄)");
+            CollectionAssert.AreEquivalent(new[] { "줄1", "줄2" }, bubbles0.Select(b => b.BodyText.text).ToArray());
+
+            // run1(플레이어): 헤더 이름 '철수'.
+            var header1 = runs[1].GetComponentsInChildren<DialogueLogEntrySlot>(true).First(s => s.NameText != null);
+            Assert.AreEqual("철수", header1.NameText.text, "플레이어 = 입력 이름 표시");
+
+            // run2(독백): 헤더 없음 + 버블 본문.
+            var r2 = runs[2].GetComponentsInChildren<DialogueLogEntrySlot>(true);
+            Assert.IsFalse(r2.Any(s => s.NameText != null), "독백 = 화자 헤더 없음");
+            Assert.AreEqual("독백 줄", r2.First(s => s.BodyText != null).BodyText.text);
 
             Assert.IsTrue(OverlayGate.CloseTop(), "공용 뒤로가기 → 닫기");
             Assert.IsFalse(view.IsVisible);
