@@ -848,6 +848,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 128541214}
+  - component: {fileID: 128541215}
   m_Layer: 0
   m_Name: Highlights
   m_TagString: Untagged
@@ -881,6 +882,21 @@ RectTransform:
   m_AnchoredPosition: {x: 62.5, y: -113.649994}
   m_SizeDelta: {x: 125, y: 781}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &128541215
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 128541213}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bc85c7891fb1ddb44832731047342810, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: LoveAlgo.UI::LoveAlgo.UI.TitleHighlightSwitcher
+  buttonsRoot: {fileID: 200046309}
+  highlightsRoot: {fileID: 0}
+  neutralName: Neutral
 --- !u!1 &135890517
 GameObject:
   m_ObjectHideFlags: 0
@@ -2575,10 +2591,10 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 2088419801}
-  - {fileID: 200046309}
-  - {fileID: 128541214}
-  - {fileID: 192744075}
   - {fileID: 1379951978}
+  - {fileID: 128541214}
+  - {fileID: 200046309}
+  - {fileID: 192744075}
   - {fileID: 6821497780702462026}
   - {fileID: 73610559}
   - {fileID: 2096021492}
