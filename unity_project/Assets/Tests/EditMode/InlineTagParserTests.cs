@@ -131,5 +131,35 @@ namespace LoveAlgo.Tests.Editor
             Assert.IsNull(InlineTagParser.Parse("").Pauses);
             Assert.AreEqual("", InlineTagParser.Parse(null).Text);
         }
+
+        // --- Task 5: 단일토큰 <웃음> → emote ---
+
+        [Test]
+        public void Bare_Token_Is_Emote()
+        {
+            var p = InlineTagParser.Parse("<웃음>안녕");
+            Assert.AreEqual("안녕", p.Text);
+            Assert.IsNotNull(p.Emotes);
+            Assert.AreEqual(1, p.Emotes.Count);
+            Assert.AreEqual(0, p.Emotes[0].CharIndex);
+            Assert.AreEqual("웃음", p.Emotes[0].Emote);
+        }
+
+        [Test]
+        public void Emote_Equals_Form_Still_Works()
+        {
+            var p = InlineTagParser.Parse("<emote=활짝/>야");
+            Assert.AreEqual("야", p.Text);
+            Assert.AreEqual("활짝", p.Emotes[0].Emote);
+        }
+
+        [Test]
+        public void Wait_Tag_Not_Treated_As_Emote()
+        {
+            var p = InlineTagParser.Parse("<wait:1>음");
+            Assert.AreEqual("음", p.Text);
+            Assert.IsNull(p.Emotes);     // wait는 emote 아님
+            Assert.IsNotNull(p.Pauses);
+        }
     }
 }

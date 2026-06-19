@@ -86,8 +86,15 @@ namespace LoveAlgo.Story
                 && sec > 0f)
             {
                 (pauses ??= new List<InlinePause>()).Add(new InlinePause(charIndex, sec));
+                return;
             }
-            // 그 외 태그(<emote:...> 비정규 포함) = 미지원 → 제거(무시).
+
+            // 단일토큰 표정 태그 <웃음>: '=' 도 ':' 도 없는 비어있지 않은 토큰 → 화자 표정.
+            if (t.Length > 0 && t.IndexOf('=') < 0 && t.IndexOf(':') < 0)
+            {
+                (emotes ??= new List<InlineEmote>()).Add(new InlineEmote(charIndex, t));
+            }
+            // 그 외(= 포함 미지원, : 포함 비정규) = 제거(무시).
         }
     }
 }
