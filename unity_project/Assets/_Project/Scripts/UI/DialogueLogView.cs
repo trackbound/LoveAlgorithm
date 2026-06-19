@@ -94,12 +94,17 @@ namespace LoveAlgo.UI
             _visible = false;
         }
 
-        /// <summary>로그 열기 — 저장소 전체를 run 컨테이너로 재구성하고 최신(맨 아래)으로 스크롤.</summary>
+        /// <summary>로그 열기 — 저장소 전체를 run 컨테이너로 재구성하고 최신(맨 아래)으로 스크롤.
+        /// 노출은 한 프레임 뒤(레이아웃 정착 + SDF 언더레이 셰이더 워밍 후) — 첫 오픈 시 파란 1프레임 깜빡임 방지.</summary>
         public void Show()
         {
             Rebuild();
-            SetVisible(true);
-            if (isActiveAndEnabled) StartCoroutine(ScrollToBottomNextFrame());
+            SetVisible(true); // 입력 차단·게이트는 즉시
+            if (isActiveAndEnabled && canvasGroup != null)
+            {
+                canvasGroup.alpha = 0f; // 첫 프레임 투명(렌더는 됨 → 레이아웃/셰이더 워밍)
+                StartCoroutine(RevealNextFrame());
+            }
         }
 
         public void Hide() => SetVisible(false);
@@ -204,11 +209,12 @@ namespace LoveAlgo.UI
             return null;
         }
 
-        // 레이아웃 갱신 뒤(다음 프레임) 최하단 스크롤 — 같은 프레임엔 ContentSizeFitter가 아직 안 돌았다.
-        IEnumerator ScrollToBottomNextFrame()
+        // 다음 프레임: 레이아웃 정착(ContentSizeFitter) 후 최하단 스크롤 + 노출(알파 1). 첫 프레임 깜빡임 차단.
+        IEnumerator RevealNextFrame()
         {
             yield return null;
             if (scrollRect != null) scrollRect.verticalNormalizedPosition = 0f;
+            if (_visible && canvasGroup != null) canvasGroup.alpha = 1f;
         }
 
         void SetVisible(bool v)

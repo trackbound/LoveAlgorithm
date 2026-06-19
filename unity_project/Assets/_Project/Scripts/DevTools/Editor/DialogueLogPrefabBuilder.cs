@@ -152,16 +152,28 @@ namespace LoveAlgo.DevTools.Editor
         }
 
         // 독백 버블 = 정의된 박스 대신 (1) 글자 뒤 옅은 분홍 배경 + (2) 글자 윤곽을 따라가는 분홍 언더레이.
-        // 둘의 합이 "윤곽을 따라가되 배경느낌"의 중간 톤. 농도는 둘 다 인스펙터에서 감독 튜닝(🟢).
+        // 둘의 합이 "윤곽을 따라가되 배경느낌"의 중간 톤. 배경 폭은 대사 길이만큼(좌측 정렬) — 루트 HLG가
+        // 내용 크기 Box를 좌측에 두고 우측은 빈 여백. 농도는 둘 다 인스펙터에서 감독 튜닝(🟢).
         static GameObject BuildNarrationBubble()
         {
             var root = MessengerPrefabBuilder.Rect("LogEntryNarration", null);
             Le(root, flexibleWidth: 1f);
+            var hlg = root.AddComponent<HorizontalLayoutGroup>();
+            hlg.childControlWidth = true;
+            hlg.childControlHeight = true;
+            hlg.childForceExpandWidth = false; // Box를 본문 폭(preferred)으로 — 가로 전체로 늘리지 않음
+            hlg.childForceExpandHeight = false;
+            hlg.childAlignment = TextAnchor.UpperLeft;
             var slot = root.AddComponent<DialogueLogEntrySlot>();
-            ConfigureGlowBubble(root);
-            var body = Tmp("Body", root.transform, 28f, Color.white, TextAlignmentOptions.TopLeft);
+
+            var box = MessengerPrefabBuilder.Rect("Box", root.transform);
+            ConfigureGlowBubble(box); // 분홍 배경 Image + 본문 패딩 VLG
+            var body = Tmp("Body", box.transform, 28f, Color.white, TextAlignmentOptions.TopLeft);
             var glowMat = EnsureNarrationGlowMaterial();
             if (glowMat != null) body.fontSharedMaterial = glowMat; // 글자 윤곽 따라가는 번짐
+            if (body.TryGetComponent<CanvasRenderer>(out var cr))
+                cr.cullTransparentMesh = false; // 첫 노출(알파0) 프레임에도 그려 SDF 언더레이 셰이더 워밍 → 파란 1프레임 방지
+
             slot.BodyText = body;
             return root;
         }
