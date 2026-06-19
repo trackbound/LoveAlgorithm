@@ -32,13 +32,30 @@ namespace LoveAlgo.UI
         [Tooltip("시작 크로스페이드(페이드인) 지속(초). 0이면 즉시 표시. fadeGroup 알파 0→1로 스토리 위에 부드럽게 진입.")]
         [SerializeField] float fadeInDuration = 0.3f;
 
+        [Header("Custom System (선택 — 미바인딩 시 기존 즉시 경로 폴백)")]
+        [Tooltip("진입 연출 오케스트레이터. 바인딩 시 위젯 슬라이드아웃→딤→입력 reveal 후 입력 활성.")]
+        [SerializeField] LockScreenIntroDirector intro;
+        [Tooltip("입력칸 래퍼(마스킹/눈토글/7자/진동).")]
+        [SerializeField] PasswordInputField passwordField;
+        [Tooltip("입력칸 위 안내 텍스트(상태별).")]
+        [SerializeField] LockScreenGuideText guide;
+        [Tooltip("확정 버튼(모드별 라벨).")]
+        [SerializeField] LoginButton loginButton;
+        [SerializeField] string setupButtonLabel = "입력 완료";
+        [SerializeField] string normalButtonLabel = "LOGIN";
+
         public GameObject Overlay { get => overlay; set => overlay = value; }
         public CanvasGroup FadeGroup { get => fadeGroup; set => fadeGroup = value; }
         public TMP_InputField Input { get => input; set => input = value; }
+        public LockScreenIntroDirector Intro { get => intro; set => intro = value; }
+        public PasswordInputField PasswordField { get => passwordField; set => passwordField = value; }
+        public LockScreenGuideText Guide { get => guide; set => guide = value; }
+        public LoginButton LoginButton { get => loginButton; set => loginButton = value; }
 
         IDisposable _sub, _finishSub, _resetSub;
         Coroutine _fadeRoutine;
         bool _fadeOut;
+        LockMode _mode;
 
         void OnEnable()
         {
@@ -66,24 +83,52 @@ namespace LoveAlgo.UI
             if (input != null) input.onSubmit.RemoveListener(OnInputSubmit);
         }
 
-        /// <summary>잠금화면 표시 — 오버레이 켜고 입력 초기화·포커스. 직접 호출도 가능(테스트).</summary>
+        /// <summary>잠금화면 표시 — 오버레이 켜고 모드별 구성. intro 바인딩 시 연출 후 입력 활성, 아니면 즉시.</summary>
         public void OnShow(ShowLockScreenCommand e)
         {
             _fadeOut = e.FadeOut;
+            _mode = e.Mode;
             if (overlay == null) return; // 효과 생략 — Controller가 Submit으로 핸들 완료(여기선 막지 않음).
             if (_fadeRoutine != null) { StopCoroutine(_fadeRoutine); _fadeRoutine = null; }
             overlay.SetActive(true);
-            if (input != null)
+            if (input != null) input.text = "";
+            if (passwordField != null) passwordField.ResetField();
+
+            ConfigureForMode(_mode);
+
+            if (intro != null)
             {
-                input.text = "";
-                input.ActivateInputField(); // 포커스
+                // 연출 경로: 즉시 전체 표시(스토리 위 위젯 present) 후 staged 연출.
+                if (fadeGroup != null) fadeGroup.alpha = 1f;
+                intro.ResetToStart();
+                if (isActiveAndEnabled) intro.Play(ActivateInput);
+                else { ActivateInput(); }
             }
-            // 시작 크로스페이드: fadeGroup 알파 0→1로 짧게 페이드인(스토리 위로 부드럽게 진입).
-            // 미바인딩/비활성/0초면 즉시 표시(폴백).
-            if (fadeGroup != null && isActiveAndEnabled && fadeInDuration > 0f)
-                _fadeRoutine = StartCoroutine(FadeInAndShow());
-            else if (fadeGroup != null)
-                fadeGroup.alpha = 1f;
+            else
+            {
+                // 폴백(기존 동작): 입력 즉시 활성 + 시작 크로스페이드.
+                ActivateInput();
+                if (fadeGroup != null && isActiveAndEnabled && fadeInDuration > 0f)
+                    _fadeRoutine = StartCoroutine(FadeInAndShow());
+                else if (fadeGroup != null)
+                    fadeGroup.alpha = 1f;
+            }
+        }
+
+        /// <summary>모드별 위젯 구성 — 마스킹 기본값/버튼 라벨/가이드 상태. 미바인딩 필드는 건너뜀.</summary>
+        void ConfigureForMode(LockMode mode)
+        {
+            bool normal = mode == LockMode.Normal;
+            if (passwordField != null) passwordField.SetMasked(normal);
+            if (loginButton != null) { loginButton.SetLabel(normal ? normalButtonLabel : setupButtonLabel); loginButton.Refresh(); }
+            if (guide != null) guide.SetState(normal ? LockScreenGuideText.LockGuideState.Normal
+                                                     : LockScreenGuideText.LockGuideState.Setup);
+        }
+
+        /// <summary>입력 활성·포커스. 연출 종료 콜백 또는 폴백 즉시 호출.</summary>
+        void ActivateInput()
+        {
+            if (input != null) input.ActivateInputField();
         }
 
         IEnumerator FadeInAndShow()
@@ -112,6 +157,9 @@ namespace LoveAlgo.UI
                 if (input != null) input.ActivateInputField();
                 return;
             }
+            // FirstSetup/Reset 제출 시 '설정 완료!' 안내로 전환(닫힘 페이드 동안 노출).
+            if (guide != null && _mode != LockMode.Normal)
+                guide.SetState(LockScreenGuideText.LockGuideState.SetupComplete);
             EventBus.Publish(new SubmitPasswordCommand(pwd)); // 저장은 Controller(ADR-007).
             Hide();
         }

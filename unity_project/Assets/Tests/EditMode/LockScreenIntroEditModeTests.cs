@@ -144,5 +144,50 @@ namespace LoveAlgo.Tests.EditMode
             Object.DestroyImmediate(go);
             Object.DestroyImmediate(viewGo);
         }
+
+        [Test]
+        public void View_FirstSetup_Configures_Plaintext_And_SetupGuide()
+        {
+            var viewGo = new GameObject("View");
+            viewGo.SetActive(false);
+            var view = viewGo.AddComponent<LockScreenView>();
+            var overlay = new GameObject("Overlay");
+            overlay.transform.SetParent(viewGo.transform);
+            var vInputGo = new GameObject("VInput");
+            vInputGo.transform.SetParent(viewGo.transform);
+            var vInput = vInputGo.AddComponent<TMP_InputField>();
+            view.Overlay = overlay;
+            view.Input = vInput;
+
+            // 하위 위젯
+            var pf = viewGo.AddComponent<PasswordInputField>();
+            pf.Input = vInput;
+            view.PasswordField = pf;
+            var guideGo = new GameObject("Guide");
+            guideGo.transform.SetParent(viewGo.transform);
+            var labelGo = new GameObject("Label");
+            labelGo.transform.SetParent(guideGo.transform);
+            var label = labelGo.AddComponent<TextMeshProUGUI>();
+            var guide = guideGo.AddComponent<LockScreenGuideText>();
+            guide.Label = label;
+            guide.SetupText = "설정문구";
+            guide.NormalText = "입력문구";
+            view.Guide = guide;
+            viewGo.SetActive(true);
+
+            // EditMode 헤드리스에서는 OnEnable/EventBus 구독이 자동 발화하지 않으므로 OnShow를 직접 호출한다.
+            // OnShow가 ConfigureForMode(→SetMasked/SetState)를 동기로 수행하므로 OnEnable 의존 없음.
+            view.OnShow(new ShowLockScreenCommand(LockMode.FirstSetup, false, null, new CompletionHandle()));
+            Assert.IsFalse(pf.Masked, "FirstSetup=평문(마스킹 off)");
+            Assert.AreEqual("설정문구", label.text, "FirstSetup=설정 가이드");
+
+            // 제출 시 '설정 완료!'로 전환
+            guide.SetupCompleteText = "완료문구";
+            vInput.text = "1234";
+            view.Confirm();
+            Assert.AreEqual("완료문구", label.text, "제출 후 설정 완료 텍스트");
+
+            Object.DestroyImmediate(viewGo);
+        }
     }
 }
