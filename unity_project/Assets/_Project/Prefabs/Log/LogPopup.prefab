@@ -16,7 +16,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &7276477952312875789
 RectTransform:
   m_ObjectHideFlags: 0
@@ -57,15 +57,15 @@ MonoBehaviour:
   playerSlotPrefab: {fileID: 8988786299023410157, guid: 69133d3fbae657a4dab789b0800b5d32, type: 3}
   narrationSlotPrefab: {fileID: 5030893424008070136, guid: f6c7968b44e972f438e4c5d7622c7c7f, type: 3}
   portraits:
-  - speakerId: c01
+  - speakerId: Roa
     sprite: {fileID: -8090621858015408962, guid: 30669ff5ea137b244bbda36eefd41505, type: 3}
-  - speakerId: c02
+  - speakerId: Daeun
     sprite: {fileID: 246838834134642831, guid: 0afc750f06ff53e43b0a7c07a7213f65, type: 3}
-  - speakerId: c03
+  - speakerId: Yeeun
     sprite: {fileID: -6609777809344969611, guid: 658569cce457ddf43b3f341754da4e76, type: 3}
-  - speakerId: c04
+  - speakerId: Heewon
     sprite: {fileID: 3268804850103773848, guid: 57e6f9e7c90260848ae38c1103d96fd8, type: 3}
-  - speakerId: c05
+  - speakerId: Bom
     sprite: {fileID: 8504122074818940300, guid: b6fc29f79ee92e3478033d662c8f76ac, type: 3}
 --- !u!1 &1784017432947871090
 GameObject:
@@ -600,7 +600,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 20}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!114 &7453780986011151318
 MonoBehaviour:
@@ -675,7 +675,7 @@ RectTransform:
   m_Father: {fileID: 5805787519777679650}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}

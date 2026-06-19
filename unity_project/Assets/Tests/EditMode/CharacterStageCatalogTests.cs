@@ -27,6 +27,17 @@ namespace LoveAlgo.Tests.EditMode
         }
 
         [Test]
+        public void Resolve_By_FolderId()
+        {
+            var entries = new List<Entry>
+            {
+                new Entry { characterId = "Roa", scale = 0.5f },
+            };
+            Assert.AreEqual(0.5f, CharacterStageCatalogSO.Resolve(entries, "Roa").Scale, 1e-4f);
+            Assert.AreEqual(1f, CharacterStageCatalogSO.Resolve(entries, "c01").Scale, 1e-4f); // 구 키는 미등록=항등
+        }
+
+        [Test]
         public void Resolve_IsCaseInsensitive()
         {
             Assert.AreEqual(0.5f, CharacterStageCatalogSO.Resolve(Make(), "C01").Scale);
