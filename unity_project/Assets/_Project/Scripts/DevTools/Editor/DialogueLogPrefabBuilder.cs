@@ -18,7 +18,6 @@ namespace LoveAlgo.DevTools.Editor
         const string ArtDir = "Assets/Art/로그/png";
         const string PrefabDir = "Assets/_Project/Prefabs/Log";
         const string BodyFont = "Assets/Fonts/Pretendard-Medium SDF.asset";
-        const string NarrationGlowMat = "Assets/_Project/Prefabs/Log/Mat/NarrationGlow.mat";
 
         [MenuItem("Tools/Log/Build Log Popup Prefab")]
         public static void Build()
@@ -133,14 +132,31 @@ namespace LoveAlgo.DevTools.Editor
             var (root, slot) = SlotRoot("LogEntryNarration");
             var spacer = MessengerPrefabBuilder.Rect("LeftSpacer", root.transform); // 박스 열과 좌측 정렬 일치용
             Le(spacer, preferredWidth: LeftColWidth, flexibleWidth: 0f);
-            var body = Tmp("Body", root.transform, 28f, Color.white, TextAlignmentOptions.TopLeft);
-            Le(body.gameObject, flexibleWidth: 1f);
-            // 독백 = 박스 없이 글자에만 분홍 번짐(목업: "텍스트 그림자효과"). 캐릭터/플레이어 박스와 달리 배경 없음.
-            var glow = EnsureNarrationGlowMaterial();
-            if (glow != null) body.fontSharedMaterial = glow;
+
+            // 독백 = 정의된 박스 대신 글자 뒤로 은은히 번진 분홍 배경(부드러운 깃털 가장자리). 캐릭터/플레이어의 textbox와 구분.
+            var bubble = MessengerPrefabBuilder.Rect("Bubble", root.transform);
+            Le(bubble, flexibleWidth: 1f);
+            ConfigureGlowBubble(bubble);
+            var body = Tmp("Body", bubble.transform, 28f, Color.white, TextAlignmentOptions.TopLeft);
 
             slot.BodyText = body;
             return root;
+        }
+
+        /// <summary>독백 버블에 분홍 번짐 배경(소프트 스프라이트 Image) + 본문 패딩 VLG 설정. 신규/기존 공용.</summary>
+        static void ConfigureGlowBubble(GameObject bubble)
+        {
+            var glow = bubble.GetComponent<Image>() ?? bubble.AddComponent<Image>();
+            glow.sprite = EnsureGlowSprite();
+            glow.type = Image.Type.Sliced;
+            glow.color = new Color(1f, 0.45f, 0.72f, 0.55f); // 진한 분홍 시작값(농도는 감독 튜닝 🟢)
+            glow.raycastTarget = false;
+            var vlg = bubble.GetComponent<VerticalLayoutGroup>() ?? bubble.AddComponent<VerticalLayoutGroup>();
+            vlg.childControlWidth = true;
+            vlg.childControlHeight = true;
+            vlg.childForceExpandWidth = true;
+            vlg.childForceExpandHeight = false;
+            vlg.padding = new RectOffset(40, 40, 20, 20); // 번짐이 글자 둘레로 퍼질 여유
         }
 
         // 슬롯 공통 루트: 가로 [좌측 열 | 본문]. Content VLG(ctrlH)가 preferred 높이로 행을 쌓는다.
@@ -287,17 +303,14 @@ namespace LoveAlgo.DevTools.Editor
             return null;
         }
 
-        // ───────────────────────── 독백 글로우 ─────────────────────────
+        // ───────────────────────── 독백 글로우(분홍 번짐 배경) ─────────────────────────
 
-        /// <summary>기존 LogEntryNarration 프리팹의 본문 TMP에만 분홍 번짐(글로우) 머티리얼을 입힌다 —
-        /// 슬롯 3종 전체 재조립(BuildSlots) 없이 비파괴 적용(다른 슬롯의 감독 수동 튜닝 보존). 머티리얼 미존재면
-        /// 생성, 있으면 갱신. 목업 동결: 독백은 배경 박스 없이 글자에만 효과(캐릭터/플레이어 박스와 구분).</summary>
+        /// <summary>기존 LogEntryNarration 프리팹에 분홍 번짐 배경을 비파괴 적용 — 슬롯 전체 재조립(BuildSlots) 없이
+        /// (다른 슬롯 수동 튜닝 보존, fileID 유지로 LogPopup 참조 무손상). Body를 Bubble(소프트 분홍 Image+패딩)
+        /// 아래로 넣는다(이미 있으면 재설정만). 정의된 박스가 아닌 글자 뒤 은은한 배경 효과(목업 독백).</summary>
         [MenuItem("Tools/Log/Apply Narration Glow")]
         public static void ApplyNarrationGlow()
         {
-            var glow = EnsureNarrationGlowMaterial();
-            if (glow == null) return;
-
             string path = $"{PrefabDir}/LogEntryNarration.prefab";
             if (AssetDatabase.LoadAssetAtPath<GameObject>(path) == null)
             {
@@ -310,42 +323,64 @@ namespace LoveAlgo.DevTools.Editor
                 var slot = contents.GetComponent<DialogueLogEntrySlot>();
                 var body = slot != null ? slot.BodyText : null;
                 if (body == null) { Debug.LogError("[DialogueLogPrefabBuilder] BodyText 미바인딩 — 글로우 적용 실패."); return; }
-                body.fontSharedMaterial = glow;
-                EditorUtility.SetDirty(body);
+
+                var bubble = FindDeep(contents.transform, "Bubble");
+                if (bubble == null)
+                {
+                    var go = MessengerPrefabBuilder.Rect("Bubble", contents.transform);
+                    Le(go, flexibleWidth: 1f);
+                    body.transform.SetParent(go.transform, false); // Body를 Bubble 아래로 이동
+                    bubble = go.transform;
+                }
+                ConfigureGlowBubble(bubble.gameObject);
+                // 직전 시도에서 입힌 Underlay 머티리얼이 있으면 폰트 기본으로 되돌림(이제 배경 스프라이트가 효과 담당).
+                var font = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(BodyFont);
+                if (font != null) body.fontSharedMaterial = font.material;
+
+                EditorUtility.SetDirty(slot);
                 PrefabUtility.SaveAsPrefabAsset(contents, path);
             }
             finally { PrefabUtility.UnloadPrefabContents(contents); }
 
             AssetDatabase.SaveAssets();
-            Debug.Log($"[DialogueLogPrefabBuilder] 독백 글로우 적용 완료 → {path} (머티리얼 {NarrationGlowMat}). 농도/번짐은 머티리얼 인스펙터에서 감독 튜닝(🟢).");
+            Debug.Log($"[DialogueLogPrefabBuilder] 독백 분홍 번짐 배경 적용 완료 → {path}. 농도/번짐은 Bubble의 Image 색 알파·스프라이트로 감독 튜닝(🟢).");
         }
 
-        /// <summary>독백 본문용 분홍 번짐(Underlay) 머티리얼 보장 — 본문 폰트 머티리얼 복제 + UNDERLAY_ON.
-        /// offset 0(글자 둘레 균일 글로우), dilate/softness/alpha는 은은함 시작값(감독 튜닝 영역). 다른 텍스트가 공유하는
-        /// 폰트 기본 머티리얼을 건드리지 않도록 전용 인스턴스를 에셋으로 둔다.</summary>
-        static Material EnsureNarrationGlowMaterial()
+        const string GlowSprite = "Assets/_Project/Prefabs/Log/Sprites/narration_glow.png";
+
+        /// <summary>독백 배경용 소프트(깃털 가장자리) 분홍 스프라이트 보장 — 가장자리 알파 0→안쪽 1 스무스스텝.
+        /// 9-슬라이스 보더로 늘려도 모서리 번짐 유지. 색/농도는 사용처 Image에서 조절(흰색 텍스처 → 틴트).</summary>
+        static Sprite EnsureGlowSprite()
         {
-            var font = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(BodyFont);
-            if (font == null || font.material == null)
+            MessengerPrefabBuilder.EnsureFolder($"{PrefabDir}/Sprites");
+            if (!File.Exists(GlowSprite))
             {
-                Debug.LogWarning($"[DialogueLogPrefabBuilder] 본문 폰트/머티리얼 없음: {BodyFont} — 글로우 생략.");
-                return null;
+                const int S = 128, feather = 56; // 가장자리 깃털 폭(px)
+                var tex = new Texture2D(S, S, TextureFormat.RGBA32, false);
+                var px = new Color[S * S];
+                for (int y = 0; y < S; y++)
+                    for (int x = 0; x < S; x++)
+                    {
+                        float d = Mathf.Min(Mathf.Min(x, S - 1 - x), Mathf.Min(y, S - 1 - y)); // 가장자리까지 거리
+                        float a = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(d / feather));         // 가장자리 0 → 안쪽 1
+                        px[y * S + x] = new Color(1f, 1f, 1f, a);
+                    }
+                tex.SetPixels(px);
+                tex.Apply();
+                File.WriteAllBytes(GlowSprite, tex.EncodeToPNG());
+                Object.DestroyImmediate(tex);
+                AssetDatabase.ImportAsset(GlowSprite);
             }
-            MessengerPrefabBuilder.EnsureFolder($"{PrefabDir}/Mat");
-            var mat = AssetDatabase.LoadAssetAtPath<Material>(NarrationGlowMat);
-            if (mat == null)
+            if (AssetImporter.GetAtPath(GlowSprite) is TextureImporter importer)
             {
-                mat = new Material(font.material) { name = "NarrationGlow" };
-                AssetDatabase.CreateAsset(mat, NarrationGlowMat);
+                bool dirty = false;
+                if (importer.textureType != TextureImporterType.Sprite) { importer.textureType = TextureImporterType.Sprite; dirty = true; }
+                if (!importer.alphaIsTransparency) { importer.alphaIsTransparency = true; dirty = true; }
+                var b = new Vector4(60, 60, 60, 60); // 9-슬라이스(가운데만 채움, 깃털 보더 보존)
+                if (importer.spriteBorder != b) { importer.spriteBorder = b; dirty = true; }
+                if (dirty) importer.SaveAndReimport();
             }
-            mat.EnableKeyword("UNDERLAY_ON");
-            mat.SetColor("_UnderlayColor", new Color(1f, 0.45f, 0.7f, 0.5f)); // 은은한 분홍(α 0.5 시작값)
-            mat.SetFloat("_UnderlayOffsetX", 0f);
-            mat.SetFloat("_UnderlayOffsetY", 0f);
-            mat.SetFloat("_UnderlayDilate", 0.3f);   // 번짐 확장(0~1)
-            mat.SetFloat("_UnderlaySoftness", 0.5f); // 가장자리 부드러움(0~1)
-            EditorUtility.SetDirty(mat);
-            return mat;
+            return AssetDatabase.LoadAssetAtPath<Sprite>(GlowSprite);
         }
 
         /// <summary>박스 아트 4종에 9-슬라이스 보더 보장(미설정일 때만 — 감독 수동 튜닝 보존).</summary>
