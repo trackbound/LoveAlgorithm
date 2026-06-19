@@ -173,6 +173,13 @@ namespace LoveAlgo.Story.StoryEngine
                             yield return PlayMessenger(line);
                             cursor.MoveNext();
                         }
+                        else if (IsAutosave(line.Value))
+                        {
+                            // 자동저장 체크포인트(대기형 Flow) — 캡처가 끝날 때까지 대기해 "체크포인트 프레임"을
+                            // 썸네일로 확정한 뒤 진행. 동기 처리면 다음 라인이 같은 프레임에 스테이지를 바꿔 캡처가 어긋남.
+                            yield return PlayAutosave();
+                            cursor.MoveNext();
+                        }
                         else
                         {
                             bool flowJumped = HandleFlow(line, cursor, ref end);
@@ -483,14 +490,7 @@ namespace LoveAlgo.Story.StoryEngine
                 return false;
             }
 
-            if (string.Equals(head, "Save", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(head, "Autosave", StringComparison.OrdinalIgnoreCase))
-            {
-                // 스토리 체크포인트(작가가 prologue.csv 등에 Flow,,Autosave로 명시) → 자동저장 슬롯 갱신.
-                // SaveManager가 SaveRequestedEvent 구독. 0=자동저장 슬롯 계약. 수동 아님 → 썸네일 라이브 캡처.
-                EventBus.Publish(new SaveRequestedEvent(JsonSaveStore.AutoSaveSlot, "story-save"));
-                return false;
-            }
+            // Save/Autosave는 대기형 Flow(PlayAutosave)에서 선처리 — 캡처 프레임 보장 위해 Run 루프가 먼저 분기.
 
             if (string.Equals(head, "Value", StringComparison.OrdinalIgnoreCase))
             {
@@ -738,6 +738,25 @@ namespace LoveAlgo.Story.StoryEngine
 
         static bool IsUsername(string value)
             => string.Equals(HeadOf(value), "Username", StringComparison.OrdinalIgnoreCase);
+
+        static bool IsAutosave(string value)
+        {
+            string h = HeadOf(value);
+            return string.Equals(h, "Autosave", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(h, "Save", StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>자동저장 체크포인트(대기형 Flow). 현재 스테이지를 캐시에 캡처(PrimeThumbnailCacheCommand)한 뒤
+        /// 슬롯0 저장 — SaveManager가 그 캐시를 썸네일로 기록(story-save=useCache). 캡처 완료까지 대기해 이후
+        /// 라인이 스테이지를 바꿔도 썸네일은 체크포인트 그대로. 컨트롤러 미배선 시 가드 프레임 후 진행(hang 방지).</summary>
+        IEnumerator PlayAutosave()
+        {
+            var handle = new CompletionHandle();
+            EventBus.Publish(new PrimeThumbnailCacheCommand(handle));
+            int guard = 0;
+            while (!handle.IsComplete && guard++ < 10) yield return null;
+            EventBus.Publish(new SaveRequestedEvent(JsonSaveStore.AutoSaveSlot, "story-save"));
+        }
 
         /// <summary>이름 입력 Flow(<c>Username</c>) — 확인(저장)까지 핸들 대기(LockScreen 미러, 뷰 미배선=hang 주의).</summary>
         IEnumerator PlayUsername(ScriptLine line)

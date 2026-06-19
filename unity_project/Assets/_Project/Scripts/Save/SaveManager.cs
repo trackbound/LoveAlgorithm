@@ -46,9 +46,10 @@ namespace LoveAlgo.Save
             }
 
             bool ok = SaveService.Save(e.Slot, state, BuildChapterLabel());
-            // 썸네일 기록(인게임 컨트롤러 구독, 없으면 no-op). 수동 저장은 팝업이 예열한 캐시 재사용(무깜빡임),
-            // 자동/스토리 저장은 현재 화면 라이브 캡처(팝업 없음).
-            if (ok) EventBus.Publish(new CaptureThumbnailCommand(e.Slot, useCache: e.Reason == "manual"));
+            // 썸네일 기록(인게임 컨트롤러 구독, 없으면 no-op). manual(팝업)·story-save(내러티브 체크포인트)는
+            // 발행 직전 캐시를 예열하므로 캐시 재사용(체크포인트 프레임 확정 + 무깜빡임). day-end 등은 라이브 캡처.
+            if (ok) EventBus.Publish(new CaptureThumbnailCommand(
+                e.Slot, useCache: e.Reason == "manual" || e.Reason == "story-save"));
             EventBus.Publish(new SaveCompletedEvent(e.Slot, ok));
         }
 
