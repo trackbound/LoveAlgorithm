@@ -62,9 +62,11 @@ namespace LoveAlgo.Events
         public readonly string Emote;
         public readonly float Duration;
         public readonly EmoteTarget Target;
+        /// <summary>로아 등장(Enter)의 디바이스 토큰(pc/모바일). 토큰 없으면 ""(엔진이 기본/직전 디바이스 유지).</summary>
+        public readonly string Device;
         public bool IsValid => Action != CharAction.Enter || !string.IsNullOrEmpty(Character);
 
-        public CharIntent(CharSlot slot, CharAction action, string character, string emote, float duration, EmoteTarget target = EmoteTarget.Slot)
+        public CharIntent(CharSlot slot, CharAction action, string character, string emote, float duration, EmoteTarget target = EmoteTarget.Slot, string device = "")
         {
             Slot = slot;
             Action = action;
@@ -72,6 +74,7 @@ namespace LoveAlgo.Events
             Emote = emote;
             Duration = duration;
             Target = target;
+            Device = device ?? "";
         }
     }
 

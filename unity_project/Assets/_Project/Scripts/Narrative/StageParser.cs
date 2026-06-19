@@ -70,11 +70,13 @@ namespace LoveAlgo.Story
 
             string character = null;
             string emote = "";
+            string device = "";
             switch (action)
             {
                 case CharAction.Enter:
                     if (i < parts.Length) character = parts[i++].Trim();
-                    if (i < parts.Length) emote = parts[i].Trim();
+                    if (i < parts.Length) emote = parts[i++].Trim();
+                    if (i < parts.Length) device = parts[i].Trim();
                     break;
                 case CharAction.Emote:
                     if (i < parts.Length) emote = parts[i].Trim();
@@ -82,7 +84,7 @@ namespace LoveAlgo.Story
                 // Exit/Clear: 추가 인자 없음.
             }
 
-            return new CharIntent(slot, action, character, emote, -1f);
+            return new CharIntent(slot, action, character, emote, -1f, device: device);
         }
 
         static BgTransition ParseTransition(string s)

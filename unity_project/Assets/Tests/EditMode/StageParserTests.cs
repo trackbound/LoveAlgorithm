@@ -144,5 +144,43 @@ namespace LoveAlgo.Tests.Editor
             Assert.AreEqual(CharAction.Emote, c.Action);
             Assert.AreEqual(EmoteTarget.Slot, c.Target);
         }
+
+        // ── Char Enter 디바이스 토큰(Task 3) ──
+
+        [Test]
+        public void ParseCharacter_Enter_WithDevice()
+        {
+            var c = StageParser.ParseCharacter("Enter:로아:기본:pc");
+            Assert.AreEqual(CharAction.Enter, c.Action);
+            Assert.AreEqual("로아", c.Character);
+            Assert.AreEqual("기본", c.Emote);
+            Assert.AreEqual("pc", c.Device);
+        }
+
+        [Test]
+        public void ParseCharacter_Enter_NoDevice_EmptyDevice()
+        {
+            var c = StageParser.ParseCharacter("Enter:로아:기본");
+            Assert.AreEqual("기본", c.Emote);
+            Assert.AreEqual("", c.Device);
+        }
+
+        [Test]
+        public void ParseCharacter_Exit_NoDevice()
+        {
+            var c = StageParser.ParseCharacter("Exit");
+            Assert.AreEqual(CharAction.Exit, c.Action);
+            Assert.AreEqual("", c.Device);
+        }
+
+        [Test]
+        public void ParseCharacter_EmoteShortcut_Unaffected()
+        {
+            var c = StageParser.ParseCharacter("로아:웃음");
+            Assert.AreEqual(CharAction.Emote, c.Action);
+            Assert.AreEqual("로아", c.Character);
+            Assert.AreEqual("웃음", c.Emote);
+            Assert.AreEqual("", c.Device);
+        }
     }
 }
