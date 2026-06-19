@@ -51,8 +51,10 @@ namespace LoveAlgo.UI
         [SerializeField] float gutterWidth = 150f;
         [Tooltip("헤더와 버블 스택 사이 가로 간격.")]
         [SerializeField] float headerGap = 24f;
-        [Tooltip("세로 간격(버블 사이 = run 사이 동일 — 개행 균일).")]
+        [Tooltip("같은 화자 버블 사이 세로 간격(run 내부).")]
         [SerializeField] float lineSpacing = 20f;
+        [Tooltip("화자가 바뀌는 run 사이 세로 간격 — 구분이 나게 lineSpacing보다 크게.")]
+        [SerializeField] float runSpacing = 44f;
 
         [Tooltip("히로인 초상(SpeakerId c01~c05 → 스프라이트). 미등록 화자 = 초상 없음(엑스트라).")]
         [SerializeField] List<PortraitPair> portraits = new();
@@ -108,6 +110,10 @@ namespace LoveAlgo.UI
                 if (r != null) Destroy(r);
             _runs.Clear();
             if (content == null) return;
+
+            // run 사이 간격(화자 변경)은 run 내부 줄 간격보다 크게 — Content VLG가 컨테이너를 쌓는 간격.
+            if (content.TryGetComponent<VerticalLayoutGroup>(out var contentVlg))
+                contentVlg.spacing = runSpacing;
 
             var entries = DialogueLogStore.Entries;
             int i = 0;
