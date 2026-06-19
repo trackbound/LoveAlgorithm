@@ -3,6 +3,7 @@
     "rootNamespace": "",
     "references": [
         "LoveAlgo.Core",
+        "LoveAlgo.MessageStack",
         "Unity.TextMeshPro",
         "UnityEngine.UI",
         "Unity.InputSystem"

@@ -116,5 +116,25 @@ namespace LoveAlgo.Tests.PlayMode
             }
             finally { sub.Dispose(); if (go != null) Object.DestroyImmediate(go); }
         }
+
+        [UnityTest]
+        public IEnumerator Director_NoMessages_NoBridge_PublishesStartNewGame_Once()
+        {
+            var go = new GameObject("Director");
+            var dir = go.AddComponent<LoveAlgo.UI.FirstLaunchDirector>();
+            // messages=null, bridgePrefab=null → Completed 즉시 + 폴백 발행 경로
+            SetPrivate(dir, "fadeIn", 0f);
+            SetPrivate(dir, "postSequenceHold", 0.05f);
+
+            int count = 0;
+            var sub = LoveAlgo.Common.EventBus.Subscribe<LoveAlgo.Events.StartNewGameCommand>(_ => count++);
+            try
+            {
+                yield return null; // Start → Run → 메시지 없음 → 즉시 완료 → 핸드오프
+                yield return new WaitForSeconds(0.3f);
+                Assert.AreEqual(1, count, "메시지 없을 때 폴백으로 StartNewGameCommand 1회.");
+            }
+            finally { sub.Dispose(); Object.DestroyImmediate(go); }
+        }
     }
 }
