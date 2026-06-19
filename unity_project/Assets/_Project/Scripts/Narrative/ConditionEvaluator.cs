@@ -44,7 +44,7 @@ namespace LoveAlgo.Story
             if (atom.StartsWith("Flag:",  StringComparison.Ordinal)) return  gs.GetFlag(atom.Substring(5));
             if (atom.StartsWith("!Chose:", StringComparison.Ordinal)) return !gs.HasChosen(atom.Substring(7));
             if (atom.StartsWith("Chose:",  StringComparison.Ordinal)) return  gs.HasChosen(atom.Substring(6));
-            if (atom.StartsWith("Love:",  StringComparison.Ordinal)) return Compare(atom.Substring(5), gs.GetLove);
+            if (atom.StartsWith("Love:",  StringComparison.Ordinal)) return Compare(atom.Substring(5), id => gs.GetLove(LoveAlgo.Affinity.AffinityFormula.NormalizeId(id)));
             if (atom.StartsWith("Stat:",  StringComparison.Ordinal)) return Compare(atom.Substring(5), gs.GetStat);
             return Compare(atom, gs.GetStat); // 베어 스탯 비교(예: Int>=20)
         }

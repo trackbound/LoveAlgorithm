@@ -296,5 +296,50 @@ namespace LoveAlgo.Tests.Editor
             Assert.AreEqual(43, AffinityFormula.ThresholdOf("DoHeewon"));
             Assert.AreEqual("Roa", AffinityFormula.HeroineIdAt(0)); // 인덱스 0 = 로아(히든 루트) 유지
         }
+
+        // ── 히로인 id 경계 정규화 (3-스킴 혼동 → silent-0 방지) ──
+
+        [Test]
+        public void NormalizeId_AllForms_ResolveToCanonical()
+        {
+            Assert.AreEqual("SeoDaEun", AffinityFormula.NormalizeId("서다은"));   // 한글
+            Assert.AreEqual("SeoDaEun", AffinityFormula.NormalizeId("Daeun"));    // 짧은 로마자(에셋 폴더 id)
+            Assert.AreEqual("SeoDaEun", AffinityFormula.NormalizeId("c02"));      // 친구 코드 id
+            Assert.AreEqual("HaYeEun",  AffinityFormula.NormalizeId("hayeeun"));  // 대소문자
+            Assert.AreEqual("Roa",      AffinityFormula.NormalizeId("roa"));      // 정본 케이스 보정
+            Assert.AreEqual("DoHeewon", AffinityFormula.NormalizeId("DoHeewon")); // 이미 정본
+        }
+
+        [Test]
+        public void NormalizeId_Unknown_PassesThroughTrimmed_NoLog()
+        {
+            // 미등록 오타는 그대로 통과(로그 없음 — loud 거부는 FlowCommandInterpreter.Fail의 몫).
+            Assert.AreEqual("Yeun", AffinityFormula.NormalizeId(" Yeun "));
+            Assert.IsNull(AffinityFormula.NormalizeId(null));
+        }
+
+        [Test]
+        public void IndexOf_IsCaseAndAliasInsensitive()
+        {
+            Assert.AreEqual(AffinityFormula.IndexOf("Roa"),     AffinityFormula.IndexOf("roa"));
+            Assert.AreEqual(AffinityFormula.IndexOf("HaYeEun"), AffinityFormula.IndexOf("Yeeun")); // 짧은형 별칭
+            Assert.AreEqual(AffinityFormula.IndexOf("HaYeEun"), AffinityFormula.IndexOf("하예은")); // 한글
+        }
+
+        [Test]
+        public void Love_WrittenAndReadViaDifferentForms_StayConsistent()
+        {
+            var gs = MakeState();
+            AffinityFormula.AddPoint(gs, "Daeun", PointCategory.Dialogue, 12); // 짧은형으로 적립
+
+            // 어떤 형태로 읽어도 동일 — 키 분열 없음
+            Assert.AreEqual(12, AffinityFormula.BasePoints(gs, "SeoDaEun"));
+            Assert.AreEqual(12, AffinityFormula.BasePoints(gs, "서다은"));
+            Assert.AreEqual(12, AffinityFormula.BasePoints(gs, "c02"));
+
+            // 저장 키는 정본(B)로 단일화. GameStateSO 자체는 정규화 안 함(정규화는 호감도 API 경계에서만).
+            Assert.AreEqual(12, gs.GetLove("SeoDaEun"));
+            Assert.AreEqual(0,  gs.GetLove("Daeun"));
+        }
     }
 }

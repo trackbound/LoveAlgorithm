@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using LoveAlgo.Core;
 
 namespace LoveAlgo.Affinity
@@ -88,6 +90,7 @@ namespace LoveAlgo.Affinity
 
         public static int IndexOf(string heroineId)
         {
+            heroineId = NormalizeId(heroineId);
             for (int i = 0; i < Heroines.Length; i++)
                 if (Heroines[i].Id == heroineId) return i;
             return -1;
@@ -95,12 +98,44 @@ namespace LoveAlgo.Affinity
 
         public static int ThresholdOf(string heroineId)
         {
+            heroineId = NormalizeId(heroineId);
             int idx = IndexOf(heroineId);
             return idx < 0 ? 0 : Heroines[idx].Threshold;
         }
 
         public static string HeroineIdAt(int index) =>
             index >= 0 && index < Heroines.Length ? Heroines[index].Id : null;
+
+        // ── 히로인 id 경계 정규화 ──────────────────────────────
+        // 호감도/스토리 도메인 정본 id = 긴 로마자(Roa/HaYeEun/SeoDaEun/LeeBom/DoHeewon).
+        // 작가/타 도메인이 한글·짧은 로마자(에셋 폴더 id)·c0X(친구 id)·대소문자 변형으로 줘도 여기서 정본으로
+        // 흡수해 lovePoints/heroinePoints 키 분열(silent 0)을 막는다. 별칭표는 표준 정본 id를 가정한다
+        // (GameBalance가 이 5명을 유지) — 드리프트 방지 정합성 테스트는 후속.
+        static readonly Dictionary<string, string> AliasToCanonical = new(StringComparer.OrdinalIgnoreCase)
+        {
+            { "로아",   "Roa" },      { "c01", "Roa" },
+            { "서다은", "SeoDaEun" }, { "Daeun",  "SeoDaEun" }, { "c02", "SeoDaEun" },
+            { "하예은", "HaYeEun" },  { "Yeeun",  "HaYeEun" },  { "c03", "HaYeEun" },
+            { "도희원", "DoHeewon" }, { "Heewon", "DoHeewon" }, { "c04", "DoHeewon" },
+            { "이봄",   "LeeBom" },   { "Bom",    "LeeBom" },   { "c05", "LeeBom" },
+        };
+
+        /// <summary>
+        /// 입력 히로인 id를 호감도 정본(긴 로마자)으로 정규화하는 순수 리졸버. ① 현재 정의표 id와 대소문자 무시
+        /// 일치 → 정본 케이스 ② 별칭(한글/짧은 로마자=에셋 폴더 id/c0X=친구 id) → 정본 ③ 미등록 → trim 원문 그대로
+        /// (passthrough). null/공백도 그대로. 미등록의 시끄러운 거부는 적용 경계의 몫(FlowCommandInterpreter가
+        /// 알 수 없는 히로인을 Fail로 반환) — 여기선 로그하지 않아 검증 프로브(IndexOf)와 충돌하지 않는다.
+        /// </summary>
+        public static string NormalizeId(string id)
+        {
+            if (string.IsNullOrWhiteSpace(id)) return id;
+            string key = id.Trim();
+
+            for (int i = 0; i < Heroines.Length; i++)
+                if (string.Equals(Heroines[i].Id, key, StringComparison.OrdinalIgnoreCase)) return Heroines[i].Id;
+
+            return AliasToCanonical.TryGetValue(key, out string canon) ? canon : key;
+        }
 
         // ── 보너스 계산 ────────────────────────────────────────
 
@@ -141,6 +176,7 @@ namespace LoveAlgo.Affinity
         /// <summary>카테고리 합계(보너스 제외).</summary>
         public static int BasePoints(GameStateSO gs, string heroineId)
         {
+            heroineId = NormalizeId(heroineId);
             var p = FindPoints(gs, heroineId);
             return p?.Total ?? 0;
         }
@@ -148,6 +184,7 @@ namespace LoveAlgo.Affinity
         /// <summary>최종 총점 = 기본점수 + 보너스(로아=피로, 그 외=스탯).</summary>
         public static int TotalScore(GameStateSO gs, string heroineId)
         {
+            heroineId = NormalizeId(heroineId);
             int idx = IndexOf(heroineId);
             if (idx < 0 || gs == null) return 0;
             int bonus = heroineId == RoaId ? RoaFatigueBonus(gs) : StatBonus(gs, idx);
@@ -156,6 +193,7 @@ namespace LoveAlgo.Affinity
 
         public static int EventSelections(GameStateSO gs, string heroineId)
         {
+            heroineId = NormalizeId(heroineId);
             var p = FindPoints(gs, heroineId);
             return p?.eventSelections ?? 0;
         }
@@ -172,6 +210,7 @@ namespace LoveAlgo.Affinity
         /// <summary>엔딩 자격: 총점 ≥ 임계치 AND 이벤트 선택 ≥ 1회.</summary>
         public static bool IsEndingEligible(GameStateSO gs, string heroineId)
         {
+            heroineId = NormalizeId(heroineId);
             int idx = IndexOf(heroineId);
             if (idx < 0) return false;
             return TotalScore(gs, heroineId) >= Heroines[idx].Threshold
@@ -216,6 +255,7 @@ namespace LoveAlgo.Affinity
         public static bool IsHappyEnding(GameStateSO gs, string heroineId)
         {
             if (string.IsNullOrEmpty(heroineId)) return false;
+            heroineId = NormalizeId(heroineId);
             int idx = IndexOf(heroineId);
             if (idx < 0) return false;
             return TotalScore(gs, heroineId) >= Heroines[idx].Threshold;
@@ -226,6 +266,7 @@ namespace LoveAlgo.Affinity
         /// <summary>카테고리 포인트 가산 + lovePoints 동기화(CSV 조건 Love:Id&gt;=N 대비).</summary>
         public static void AddPoint(GameStateSO gs, string heroineId, PointCategory category, int value)
         {
+            heroineId = NormalizeId(heroineId);
             if (gs == null || IndexOf(heroineId) < 0) return;
             var p = GetOrCreate(gs, heroineId);
             switch (category)
@@ -244,6 +285,7 @@ namespace LoveAlgo.Affinity
         /// </summary>
         public static void RecordEventChoice(GameStateSO gs, string heroineId, string eventTag, int basePoints)
         {
+            heroineId = NormalizeId(heroineId);
             if (gs == null || IndexOf(heroineId) < 0) return;
 
             AddPoint(gs, heroineId, PointCategory.Event, basePoints);
@@ -263,6 +305,7 @@ namespace LoveAlgo.Affinity
         public static void SyncLove(GameStateSO gs, string heroineId)
         {
             if (gs == null) return;
+            heroineId = NormalizeId(heroineId);
             gs.SetLove(heroineId, TotalScore(gs, heroineId));
         }
 
