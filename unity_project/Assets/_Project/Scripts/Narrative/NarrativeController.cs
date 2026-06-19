@@ -870,6 +870,16 @@ namespace LoveAlgo.Story.StoryEngine
                 yield break;
             }
 
+            // 투명 오버레이 FX(StageFx) — Resources/Animation/{이름} 투명 클립을 캐릭터 위·대사 아래에 재생.
+            // 논블로킹: 명령만 발행하고 곧장 다음 줄로(효과 도는 동안 Char Emote 인터리브). 풀스크린 Video와 별개 경로.
+            var stageFx = StageFxOverlayParser.Parse(line.Value);
+            if (stageFx.IsValid)
+            {
+                EventBus.Publish(new PlayStageFxCommand(stageFx.Name, stageFx.Loop));
+                yield return WaitNext(line, () => true);
+                yield break;
+            }
+
             // 영상(Video) — Resources/Animation/{파일명} 풀스크린 재생. VideoView가 Prepare→Play→loopPointReached로
             // 안정 재생, 비-Loop는 종료까지 핸들 보류(await 대기) · Loop는 비블로킹. 클립 없으면 즉시 완료(hang 0).
             var video = VideoParser.Parse(line.Value);
