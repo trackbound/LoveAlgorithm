@@ -1,5 +1,6 @@
 using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.UI;
 using TMPro;
 using LoveAlgo.UI;
 
@@ -33,6 +34,42 @@ namespace LoveAlgo.Tests.EditMode
             Assert.AreEqual("입력문구", label.text);
             guide.SetState(LockScreenGuideText.LockGuideState.Lost);
             Assert.AreEqual("분실문구", label.text);
+
+            Object.DestroyImmediate(go);
+        }
+
+        [Test]
+        public void PasswordField_Sets_Limit_And_Toggles_Masking()
+        {
+            var go = new GameObject("PwField");
+            go.SetActive(false);
+            var inputGo = new GameObject("Input");
+            inputGo.transform.SetParent(go.transform);
+            var input = inputGo.AddComponent<TMP_InputField>();
+            var iconGo = new GameObject("Eye");
+            iconGo.transform.SetParent(go.transform);
+            var icon = iconGo.AddComponent<Image>();
+            var field = go.AddComponent<PasswordInputField>();
+            field.Input = input;
+            field.EyeIcon = icon;
+            var closed = Sprite.Create(Texture2D.whiteTexture, new Rect(0, 0, 1, 1), Vector2.zero);
+            var open = Sprite.Create(Texture2D.whiteTexture, new Rect(0, 0, 1, 1), Vector2.zero);
+            field.EyeClosedSprite = closed;
+            field.EyeOpenSprite = open;
+            field.MaxLength = 7;
+            go.SetActive(true); // OnEnable → characterLimit 적용
+
+            Assert.AreEqual(7, input.characterLimit, "7자 제한 적용");
+
+            field.SetMasked(true);
+            Assert.IsTrue(field.Masked);
+            Assert.AreEqual(TMP_InputField.ContentType.Password, input.contentType, "마스킹 시 Password");
+            Assert.AreSame(closed, icon.sprite, "마스킹=감은눈");
+
+            field.ToggleEye();
+            Assert.IsFalse(field.Masked);
+            Assert.AreEqual(TMP_InputField.ContentType.Standard, input.contentType, "노출 시 Standard");
+            Assert.AreSame(open, icon.sprite, "노출=뜬눈");
 
             Object.DestroyImmediate(go);
         }
