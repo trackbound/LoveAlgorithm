@@ -273,6 +273,16 @@ namespace LoveAlgo.Story.StoryEngine
             if (state != null) state.Data.storyBgm = resolvedName ?? "";
         }
 
+        /// <summary>storyChars에서 id(대소문자 무시) 일치 레코드의 슬롯 인덱스. 없으면 -1(순수).</summary>
+        public static int FindSlotForCharId(IReadOnlyList<GameStateData.StoryCharRecord> chars, string id)
+        {
+            if (chars == null || string.IsNullOrEmpty(id)) return -1;
+            for (int i = 0; i < chars.Count; i++)
+                if (chars[i] != null && string.Equals(chars[i].id, id, System.StringComparison.OrdinalIgnoreCase))
+                    return chars[i].slot;
+            return -1;
+        }
+
         void RecordChar(CharSlot slot, CharAction action, string id, string emote)
         {
             if (state == null) return;
@@ -332,6 +342,8 @@ namespace LoveAlgo.Story.StoryEngine
             string playerName = state != null ? state.Data.playerName : null;
             bool isPlayer = PlayerNameFormat.IsPlayerSpeaker(line.Speaker);
             string speaker = PlayerNameFormat.Apply(line.Speaker, playerName);
+            _lastSpeakerId = isPlayer ? null : ResolveSpeakerId(line.Speaker); // 직전화자 단축 Emote 라우팅 대상
+
             var parsed = InlineTagParser.Parse(PlayerNameFormat.Apply(line.Value, playerName)); // 인라인 태그(<wait:sec>·<emote=표정/>) 분해 → 표시텍스트+멈춤/표정 지점.
             var req = new CompletionHandle();
             // 화자/표정 별칭 해석: 표시는 원문(Speaker), 슬롯 매칭은 코드 ID(SpeakerId)·표정 코드 — 뷰는 카탈로그를 모른다.
@@ -350,6 +362,7 @@ namespace LoveAlgo.Story.StoryEngine
         }
 
         bool _lastChoiceJumped;
+        string _lastSpeakerId; // 직전 Text 라인 화자의 코드 id(미등록 화자/내레이션이면 null)
 
         IEnumerator PlayChoice(ScriptCursor cursor)
         {
@@ -519,6 +532,27 @@ namespace LoveAlgo.Story.StoryEngine
             if (!intent.IsValid)
             {
                 Log.Warn($"[NarrativeController] 잘못된 Char 라인 — 건너뜀: \"{line.Value}\"");
+                yield break;
+            }
+
+            // 표정 단축(식별자/직전화자): 대상 캐릭터의 현재 슬롯을 찾아 Emote 발행.
+            if (intent.Action == CharAction.Emote && intent.Target != EmoteTarget.Slot)
+            {
+                string targetId = intent.Target == EmoteTarget.Character
+                    ? (aliasCatalog != null ? aliasCatalog.ResolveCharacter(intent.Character) : intent.Character)
+                    : _lastSpeakerId;
+                int slotIdx = state != null ? FindSlotForCharId(state.Data.storyChars, targetId) : -1;
+                if (slotIdx < 0)
+                {
+                    Log.Info($"[NarrativeController] 표정 대상 캐릭터가 무대에 없음: target='{intent.Character ?? "(직전화자)"}'");
+                    yield break;
+                }
+                var slotE = (CharSlot)slotIdx;
+                string emFile = string.IsNullOrEmpty(intent.Emote) ? "" : (aliasCatalog != null ? aliasCatalog.ResolveEmote(intent.Emote) : intent.Emote);
+                RecordChar(slotE, CharAction.Emote, targetId, emFile);
+                var reqE = new CompletionHandle();
+                EventBus.Publish(new ShowCharacterCommand(slotE, CharAction.Emote, targetId, emFile, ResolveCharDuration(CharAction.Emote), reqE));
+                yield return WaitNext(line, () => reqE.IsComplete);
                 yield break;
             }
 
