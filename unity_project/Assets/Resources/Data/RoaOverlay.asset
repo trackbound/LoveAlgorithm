@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 22569febacee82c40b67a98ba9ae7216, type: 3}
+  m_Name: RoaOverlay
+  m_EditorClassIdentifier: LoveAlgo.UI::LoveAlgo.UI.RoaOverlaySO
+  roaCharId: roa
+  positiveEmotes: []
+  negativeEmotes: []
+  pcPrefix: pc
+  mobilePrefix: "\uBAA8\uBC14\uC77C"
+  defaultSuffix: "\uAE30\uBCF8"
+  positiveSuffix: "\uAE0D\uC815"
+  negativeSuffix: "\uBD80\uC815"
+  defaultDevice: 0
