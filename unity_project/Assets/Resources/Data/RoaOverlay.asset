@@ -12,9 +12,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 22569febacee82c40b67a98ba9ae7216, type: 3}
   m_Name: RoaOverlay
   m_EditorClassIdentifier: LoveAlgo.UI::LoveAlgo.UI.RoaOverlaySO
-  roaCharId: roa
-  positiveEmotes: []
-  negativeEmotes: []
+  roaCharId: Roa
+  positiveEmotes:
+  - "\uB208\uC6C3\uC74C"
+  - "\uBC1D\uAC8C\uC6C3\uC74C"
+  - "\uD65C\uC9DD"
+  negativeEmotes:
+  - "\uCC0C\uB9BF"
+  - "\uC6B8\uBA39"
   pcPrefix: pc
   mobilePrefix: "\uBAA8\uBC14\uC77C"
   defaultSuffix: "\uAE30\uBCF8"
