@@ -18,7 +18,8 @@ namespace LoveAlgo.Story
         Flow,       // 흐름 제어
         Choice,     // 선택지 시작
         Option,     // 선택지 항목
-        Place       // 장소/이벤트 표시 (좌상단 배너)
+        Place,      // 장소/이벤트 표시 (좌상단 배너)
+        RoaDevice   // 로아 디바이스(pc/모바일) 전환 — 오버레이만 교체
     }
 
     /// <summary>

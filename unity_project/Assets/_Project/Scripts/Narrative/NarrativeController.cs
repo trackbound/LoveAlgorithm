@@ -228,6 +228,11 @@ namespace LoveAlgo.Story.StoryEngine
                         cursor.MoveNext();
                         break;
 
+                    case LineType.RoaDevice:
+                        yield return PlayRoaDevice(line);
+                        cursor.MoveNext();
+                        break;
+
                     default:
                         // Option(미아) 등 — 이번 슬라이스 미지원, 건너뜀.
                         Log.Info($"[NarrativeController] 슬라이스 범위 밖 라인 스킵: {line}");
@@ -268,6 +273,7 @@ namespace LoveAlgo.Story.StoryEngine
             d.storyEyeClosed = false;
             d.storySd = "";
             d.storyOverlay = "";
+            d.storyRoaDevice = "";
         }
 
         void RecordBg(string resolvedName)
@@ -558,12 +564,38 @@ namespace LoveAlgo.Story.StoryEngine
                 yield break;
             }
 
+            // 로아 등장 디바이스 토큰(Enter:캐릭터:표정:디바이스) — SetRoaDeviceCommand를 Char 발행보다 먼저
+            // 쏴서 컨트롤러가 올바른 디바이스로 오버레이를 띄우게 한다. 토큰 없으면 컨트롤러가 기본/직전 유지.
+            if (intent.Action == CharAction.Enter && !string.IsNullOrEmpty(intent.Device)
+                && RoaDeviceParse.TryParse(intent.Device, out var roaDev))
+            {
+                if (state != null) state.Data.storyRoaDevice = RoaDeviceParse.ToToken(roaDev);
+                EventBus.Publish(new SetRoaDeviceCommand(roaDev));
+            }
+
             float dur = ResolveCharDuration(intent.Action);
             var (ch, em) = ResolveCharEmote(intent.Character, intent.Emote, intent.Action);
             RecordChar(intent.Slot, intent.Action, ch, em);
             var req = new CompletionHandle();
             EventBus.Publish(new ShowCharacterCommand(intent.Slot, intent.Action, ch, em, dur, req));
             yield return WaitNext(line, () => req.IsComplete);
+        }
+
+        // ── 로아 디바이스 전환(LineType.RoaDevice) ──
+        // pc/모바일을 해석해 미러 기록 + SetRoaDeviceCommand 발행. 오버레이 자체는 RoaOverlayController가
+        // 현재 카테고리를 유지한 채 디바이스만 교체한다(ADR-007: 엔진은 뷰를 모름). 즉시 라인(대기 없음).
+        IEnumerator PlayRoaDevice(ScriptLine line)
+        {
+            if (RoaDeviceParse.TryParse(line.Value, out var device))
+            {
+                if (state != null) state.Data.storyRoaDevice = RoaDeviceParse.ToToken(device);
+                EventBus.Publish(new SetRoaDeviceCommand(device));
+            }
+            else
+            {
+                Log.Warn($"[NarrativeController] 알 수 없는 RoaDevice 값 — 건너뜀: \"{line.Value}\"");
+            }
+            yield break;
         }
 
         // ── 별칭 해석(작가 한글명→코드ID) ──

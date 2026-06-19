@@ -93,6 +93,7 @@ namespace LoveAlgo.Core
         public bool storyEyeClosed; // Close/CloseImmediate=true, Open=false (Blink는 순간이라 상태 불변)
         public string storySd = "";      // 현재 SD 레이어 이름(해석된 코드ID). 빈=없음
         public string storyOverlay = ""; // 현재 Overlay 레이어 이름(해석된 코드ID). 빈=없음
+        public string storyRoaDevice = ""; // 로아 디바이스(pc/모바일). 빈=미설정(컨트롤러 기본). 가산 확장
 
         /// <summary>스토리 무대 슬롯 1칸의 캐릭터 기록. slot = CharSlot enum 정수값(L=0/C=1/R=2).</summary>
         [Serializable]
