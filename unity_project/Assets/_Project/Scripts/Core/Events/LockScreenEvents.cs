@@ -50,4 +50,7 @@ namespace LoveAlgo.Events
 
     /// <summary>비밀번호 수락(Normal 일치) 통지 — Controller→View(잠금화면 닫기). 저장/핸들 완료는 Controller가 함께 수행한다.</summary>
     public readonly struct PasswordAcceptedEvent { }
+
+    /// <summary>비밀번호 재설정 요청(분실 모달 '예') — KeyResetButton→Controller(_mode=Reset)·View(Reset UI 재구성). 핸들은 유지(현 잠금 세션 그대로).</summary>
+    public readonly struct RequestPasswordResetCommand { }
 }

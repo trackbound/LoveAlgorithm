@@ -214,5 +214,51 @@ namespace LoveAlgo.Tests.EditMode
 
             Object.DestroyImmediate(viewGo);
         }
+
+        [Test]
+        public void KeyResetButton_SetVisible_Toggles_Root()
+        {
+            var go = new GameObject("KeyReset");
+            var rootVis = new GameObject("KeyVisual");
+            rootVis.transform.SetParent(go.transform);
+            var kr = go.AddComponent<KeyResetButton>();
+            kr.Root = rootVis;
+
+            kr.SetVisible(false);
+            Assert.IsFalse(rootVis.activeSelf, "숨김");
+            kr.SetVisible(true);
+            Assert.IsTrue(rootVis.activeSelf, "노출");
+
+            Object.DestroyImmediate(go);
+        }
+
+        [Test]
+        public void KeyResetButton_Yes_Publishes_ResetCommand()
+        {
+            var go = new GameObject("KeyReset");
+            var kr = go.AddComponent<KeyResetButton>();
+
+            LoveAlgo.Events.ShowModalCommand captured = default;
+            bool gotModal = false;
+            var sub1 = EventBus.Subscribe<LoveAlgo.Events.ShowModalCommand>(e => { captured = e; gotModal = true; });
+            int resetCount = 0;
+            var sub2 = EventBus.Subscribe<LoveAlgo.Events.RequestPasswordResetCommand>(_ => resetCount++);
+
+            kr.RequestReset();
+            Assert.IsTrue(gotModal, "재설정 확인 모달 발행");
+            Assert.AreEqual(2, captured.Buttons.Count, "예/아니오 2버튼");
+
+            captured.Handle.Select(1); // 아니오 → 재설정 안 함
+            Assert.AreEqual(0, resetCount, "아니오는 재설정 발행 안 함");
+
+            // 새 모달에서 예 선택
+            gotModal = false;
+            kr.RequestReset();
+            captured.Handle.Select(0); // 예 → 재설정
+            Assert.AreEqual(1, resetCount, "예 → RequestPasswordResetCommand 1회");
+
+            sub1.Dispose(); sub2.Dispose();
+            Object.DestroyImmediate(go);
+        }
     }
 }
