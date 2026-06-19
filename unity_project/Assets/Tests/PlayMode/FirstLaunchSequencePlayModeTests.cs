@@ -93,5 +93,28 @@ namespace LoveAlgo.Tests.PlayMode
             }
             finally { Object.DestroyImmediate(go); }
         }
+
+        [UnityTest]
+        public IEnumerator Bridge_PublishesStartNewGame_Once_AndSelfDestructs()
+        {
+            var go = new GameObject("Bridge", typeof(RectTransform), typeof(Canvas), typeof(CanvasGroup));
+            var bridge = go.AddComponent<LoveAlgo.UI.FirstLaunchTransitionBridge>();
+            SetPrivate(bridge, "group", go.GetComponent<CanvasGroup>());
+            SetPrivate(bridge, "blackIn", 0.05f);
+            SetPrivate(bridge, "postLoadHold", 0.05f);
+            SetPrivate(bridge, "blackOut", 0.05f);
+
+            int count = 0;
+            var sub = LoveAlgo.Common.EventBus.Subscribe<LoveAlgo.Events.StartNewGameCommand>(_ => count++);
+            try
+            {
+                bridge.Begin();
+                bridge.Begin(); // 중복 호출 무시돼야 한다
+                yield return new WaitForSeconds(0.5f);
+                Assert.AreEqual(1, count, "StartNewGameCommand 정확히 1회 발행.");
+                Assert.IsTrue(go == null, "페이드아웃 후 자기 파괴.");
+            }
+            finally { sub.Dispose(); if (go != null) Object.DestroyImmediate(go); }
+        }
     }
 }
