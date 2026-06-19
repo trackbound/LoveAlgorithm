@@ -39,10 +39,21 @@ namespace LoveAlgo.UI
         [Tooltip("총 페이지 수. 슬롯 = 0 ~ slotsPerPage*pageCount-1 (0=자동저장).")]
         [SerializeField] int pageCount = 3;
 
+        // ── 확인 모달 문구(자주 조정 → Inspector에서 바로 수정) ──
         [Header("자동저장 슬롯 안내 모달(Save 모드 클릭 시)")]
         [SerializeField] string autoSaveModalTitle = "자동저장 슬롯";
         [TextArea] [SerializeField] string autoSaveModalMessage = "자동저장 전용 슬롯입니다.\n수동 저장은 다른 슬롯을 사용해 주세요.";
         [SerializeField] string autoSaveModalConfirm = "확인";
+
+        [Header("저장 확인 모달(Save 모드, 일반 슬롯)")]
+        [Tooltip("빈 슬롯 클릭 시.")]
+        [SerializeField] string newSaveModalTitle = "저장";
+        [TextArea] [SerializeField] string newSaveModalMessage = "이 슬롯에 저장하시겠습니까?";
+        [Tooltip("데이터가 있는 슬롯 클릭 시.")]
+        [SerializeField] string overwriteModalTitle = "덮어쓰기";
+        [TextArea] [SerializeField] string overwriteModalMessage = "이미 데이터가 있습니다.\n덮어씌우시겠습니까?";
+        [SerializeField] string saveModalConfirm = "예";
+        [SerializeField] string saveModalCancel = "아니오";
 
         [Tooltip("Save 팝업 표시 전 썸네일 캐시 예열을 기다릴 최대 프레임(컨트롤러 없으면 이만큼 후 그냥 표시).")]
         [SerializeField] int primeGuardFrames = 10;
@@ -171,10 +182,25 @@ namespace LoveAlgo.UI
                         new ModalRequest()));
                     return;
                 }
-                // 현재 상태를 슬롯에 저장(SaveManager 구독). 썸네일은 비동기 — ThumbnailSavedEvent 수신 시 반영.
-                EventBus.Publish(new SaveRequestedEvent(slot, "manual"));
-                RefreshPage();
+                // 빈 슬롯=저장 확인 / 데이터 있음=덮어쓰기 확인 → "예"(index 1)일 때만 저장.
+                bool hasData = JsonSaveStore.Exists(slot);
+                EventBus.Publish(new ShowModalCommand(
+                    hasData ? overwriteModalTitle : newSaveModalTitle,
+                    hasData ? overwriteModalMessage : newSaveModalMessage,
+                    new[]
+                    {
+                        new ModalButton(saveModalCancel, ModalButtonKind.No),
+                        new ModalButton(saveModalConfirm, ModalButtonKind.Yes),
+                    },
+                    new ModalRequest(i => { if (i == 1) ConfirmSave(slot); })));
             }
+        }
+
+        // 확인 모달에서 "예" 선택 시 실제 저장(SaveManager 구독). 썸네일은 비동기 — ThumbnailSavedEvent 수신 시 반영.
+        void ConfirmSave(int slot)
+        {
+            EventBus.Publish(new SaveRequestedEvent(slot, "manual"));
+            RefreshPage();
         }
 
         // 저장 직후 비동기 캡처(프레임 종료) 완료 통지 — 표시 중이고 그 슬롯이 현재 페이지면 갱신해 썸네일 즉시 표시.

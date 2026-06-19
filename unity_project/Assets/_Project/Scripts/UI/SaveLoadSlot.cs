@@ -22,6 +22,8 @@ namespace LoveAlgo.UI
         [SerializeField] TMP_Text titleText;
         [SerializeField] TMP_Text dateText;
         [SerializeField] Image thumbnailImage;
+        [Tooltip("자동저장 슬롯(슬롯0)에 고정 표시할 이름(빈 슬롯/Day 라벨로 바뀌지 않음).")]
+        [SerializeField] string autoSaveSlotName = "자동저장";
 
         int _slot;
         Action<int> _onSelected;
@@ -38,24 +40,25 @@ namespace LoveAlgo.UI
             if (button != null) button.onClick.AddListener(HandleClick);
         }
 
-        /// <summary>슬롯을 바인딩한다. data null=빈 슬롯 표시, 있으면 제목/날짜/썸네일 표시.</summary>
+        /// <summary>슬롯을 바인딩한다. 일반 슬롯: data null=빈 슬롯 외형. 자동저장 슬롯(슬롯0): 비어 있어도
+        /// 'has data' 외형으로 항상 노출하고 이름을 <see cref="autoSaveSlotName"/>으로 고정(빈/Day 라벨 안 씀).</summary>
         public void Bind(int slot, SaveData data, Sprite thumbnail, Action<int> onSelected)
         {
             _slot = slot;
             _onSelected = onSelected;
             bool has = data != null;
-            if (emptyRoot != null) emptyRoot.SetActive(!has);
-            if (hasDataRoot != null) hasDataRoot.SetActive(has);
-            if (!has) return;
+            bool isAuto = slot == JsonSaveStore.AutoSaveSlot;
+
+            if (emptyRoot != null) emptyRoot.SetActive(!has && !isAuto);
+            if (hasDataRoot != null) hasDataRoot.SetActive(has || isAuto);
 
             if (titleText != null)
-            {
-                string label = string.IsNullOrEmpty(data.chapterLabel) ? $"Slot {slot}" : data.chapterLabel;
-                // 슬롯0=자동저장: 첫 칸임을 한눈에 알도록 라벨 앞에 표식(빈 슬롯 표식은 프리팹 영역 — 🟢 후속).
-                titleText.text = slot == JsonSaveStore.AutoSaveSlot ? $"자동저장 · {label}" : label;
-            }
-            if (dateText != null) dateText.text = FormatDate(data.savedAtUtc);
-            // 썸네일 PNG가 있을 때만 교체(없으면 프리팹 기본 플레이스홀더 유지).
+                titleText.text = isAuto
+                    ? autoSaveSlotName // 자동저장 슬롯 이름 고정
+                    : (has ? (string.IsNullOrEmpty(data.chapterLabel) ? $"Slot {slot}" : data.chapterLabel) : "");
+
+            // 날짜/썸네일은 데이터가 있을 때만(자동저장이라도 비어 있으면 빈 칸 + 프리팹 기본 썸네일).
+            if (dateText != null) dateText.text = has ? FormatDate(data.savedAtUtc) : "";
             if (thumbnailImage != null && thumbnail != null) thumbnailImage.sprite = thumbnail;
         }
 
