@@ -14,12 +14,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   bg: []
   cg:
-  - id: cg_c01_01
+  - id: "\uB85C\uC544_\uCCAB\uB9CC\uB0A8"
     aliases:
     - "\uB85C\uC544 \uCCAB\uB9CC\uB0A8"
-  - id: cg_c03_01
+    - cg_c01_01
+  - id: "\uC608\uC740_\uCCAB\uB9CC\uB0A8"
     aliases:
     - "\uC608\uC740 \uC785\uBD80\uC2E0\uCCAD\uC11C \uC791\uC131"
+    - cg_c03_01
   sd:
   - id: sd_c02_01
     aliases:
