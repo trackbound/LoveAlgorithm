@@ -32,100 +32,110 @@ MonoBehaviour:
     - "\uBD04 \uAE00\uC379"
     - "\uBD04 \uAE00\uC37D"
   characters:
-  - id: c01
+  - id: Roa
     aliases:
     - "\uB85C\uC544"
     - Roa
-  - id: c02
+    - c01
+  - id: Daeun
     aliases:
     - "\uC11C\uB2E4\uC740"
     - SeoDaEun
-  - id: c03
+    - Daeun
+    - c02
+  - id: Yeeun
     aliases:
     - "\uD558\uC608\uC740"
     - HaYeEun
-  - id: c04
+    - Yeeun
+    - c03
+  - id: Heewon
     aliases:
     - "\uB3C4\uD76C\uC6D0"
     - DoHeewon
-  - id: c05
+    - Heewon
+    - c04
+  - id: Bom
     aliases:
     - "\uC774\uBD04"
     - LeeBom
+    - Bom
+    - c05
   emotes:
-  - id: 00
+  - id: "\uAE30\uBCF8"
     aliases:
-    - "\uAE30\uBCF8"
     - Default
-  - id: 11
+    - "00"
+  - id: "\uB208\uC6C3\uC74C"
     aliases:
-    - "\uB208\uC6C3\uC74C"
-  - id: 12
+    - "11"
+  - id: "\uBC1D\uAC8C\uC6C3\uC74C"
     aliases:
-    - "\uBC1D\uAC8C\uC6C3\uC74C"
     - BrightSmile
-  - id: 13
+    - "12"
+  - id: "\uD65C\uC9DD"
     aliases:
     - "\uD65C\uC9DD\uC6C3\uC74C"
-  - id: 14
+    - "13"
+  - id: "\uD589\uBCF5"
     aliases:
-    - "\uD589\uBCF5"
     - Happy
-  - id: 21
+    - "14"
+  - id: "\uCC0C\uB9BF"
     aliases:
-    - "\uCC0C\uB9BF"
-  - id: 22
+    - "21"
+  - id: "\uC090\uC9D0"
     aliases:
-    - "\uC090\uC9D0"
-  - id: 23
+    - "22"
+  - id: "\uBA38\uC4F1"
     aliases:
-    - "\uBA38\uC4F1"
-  - id: 24
+    - "23"
+  - id: "\uC5B4\uC9C8\uC5B4\uC9C8"
     aliases:
-    - "\uC5B4\uC9C8\uC5B4\uC9C8"
-  - id: 31
+    - "24"
+  - id: "\uC6B8\uBA39"
     aliases:
-    - "\uC6B8\uBA39"
-  - id: 32
+    - "31"
+  - id: "\uC8FC\uB974\uB975"
     aliases:
-    - "\uC8FC\uB974\uB975"
-  - id: 33
+    - "32"
+  - id: "\uC640\uC544\uC559"
     aliases:
-    - "\uC640\uC544\uC559"
-  - id: 34
+    - "33"
+  - id: "\uBD80\uB044"
     aliases:
-    - "\uBD80\uB044"
-  - id: 35
+    - "34"
+  - id: "\uC878\uB824"
     aliases:
-    - "\uC878\uB824"
-  - id: 41
+    - "35"
+  - id: "\uAE5C\uC9DD"
     aliases:
-    - "\uAE5C\uC9DD"
-  - id: 42
+    - "41"
+  - id: "\uBC18\uC9DD\uBE48\uC9DD"
     aliases:
-    - "\uBC18\uC9DD\uBE48\uC9DD"
-  - id: 43
+    - "42"
+  - id: "\uAD81\uAE08"
     aliases:
-    - "\uAD81\uAE08"
-  - id: 44
+    - "43"
+  - id: "\uC719\uD06C"
     aliases:
-    - "\uC719\uD06C"
-  - id: 45
+    - "44"
+  - id: "\uC790\uC2E0\uB9CC\uB9CC"
     aliases:
-    - "\uC790\uC2E0\uB9CC\uB9CC"
-  - id: 55
+    - "45"
+  - id: "\uC74C\uC8FC"
     aliases:
-    - "\uC74C\uC8FC"
-  - id: 56
+    - "55"
+  - id: "\uB9CC\uCDE8"
     aliases:
-    - "\uB9CC\uCDE8"
-  - id: 57
+    - "56"
+  - id: "\uC9D1\uC911"
     aliases:
-    - "\uC9D1\uC911"
-  - id: 58
+    - "57"
+  - id: "\uACE0\uBBFC"
     aliases:
-    - "\uACE0\uBBFC"
-  defaultEmote: 00
+    - "58"
+  defaultEmote: "\uAE30\uBCF8"
   bgm:
   - id: whitenoise
     aliases:

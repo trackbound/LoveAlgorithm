@@ -37,8 +37,9 @@ namespace LoveAlgo.Tests.PlayMode
             _catalog = ScriptableObject.CreateInstance<ResourceAliasCatalogSO>();
             // 테스트 카탈로그(런타임 구성 — 인스펙터 편집과 동치). 실 에셋과 무관하게 결정적.
             SetList(_catalog, "bg", E("bg_20_05", "공대 강의실 낮"));
-            SetList(_catalog, "characters", E("c01", "로아"));
-            SetList(_catalog, "emotes", E("41", "깜짝"));
+            SetList(_catalog, "characters", E("Roa", "로아", "c01"));
+            SetList(_catalog, "emotes", E("기본", "Default", "00"), E("깜짝", "41"));
+            SetField(_catalog, "defaultEmote", "기본"); // 실 에셋 동치(폴더/파일명 체계)
             SetList(_catalog, "bgm", E("daily1", "일상1"));
 
             _playerGo = new GameObject("Player");
@@ -57,6 +58,14 @@ namespace LoveAlgo.Tests.PlayMode
             var f = typeof(ResourceAliasCatalogSO).GetField(field,
                 System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
             f.SetValue(so, new List<ResourceAliasCatalogSO.Entry>(entries));
+        }
+
+        // 직렬화 string 필드 주입(예: defaultEmote).
+        static void SetField(ResourceAliasCatalogSO so, string field, string value)
+        {
+            var f = typeof(ResourceAliasCatalogSO).GetField(field,
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            f.SetValue(so, value);
         }
 
         [TearDown]
@@ -101,10 +110,10 @@ namespace LoveAlgo.Tests.PlayMode
 
             Assert.AreEqual("bg_20_05", bg, "BG 한글명 → 코드ID");
             Assert.AreEqual("daily1", bgm, "BGM 한글명 → 코드ID");
-            Assert.AreEqual("c01", ch, "Char 한글명 → 코드ID");
-            Assert.AreEqual("00", em, "Enter 표정 생략 → 기본표정 보정");
+            Assert.AreEqual("Roa", ch, "Char 한글명 → 폴더명");
+            Assert.AreEqual("기본", em, "Enter 표정 생략 → 기본표정 보정");
             Assert.AreEqual("로아", speaker, "표시 화자는 원문 유지");
-            Assert.AreEqual("c01", speakerId, "SpeakerId = 해석된 코드ID");
+            Assert.AreEqual("Roa", speakerId, "SpeakerId = 해석된 폴더명");
         }
 
         [UnityTest]

@@ -82,5 +82,29 @@ namespace LoveAlgo.Tests.EditMode
             Assert.IsTrue(ResourceAliasCatalogSO.IsRegistered(Bg, "BG_20_05")); // 케이스 무시
             Assert.IsFalse(ResourceAliasCatalogSO.IsRegistered(Bg, "미등록"));
         }
+
+        [Test]
+        public void Character_Alias_And_LegacyCode_Resolve_To_Folder()
+        {
+            var entries = new System.Collections.Generic.List<ResourceAliasCatalogSO.Entry>
+            {
+                new ResourceAliasCatalogSO.Entry { id = "Roa", aliases = new[] { "로아", "Roa", "c01" } },
+            };
+            Assert.AreEqual("Roa", ResourceAliasCatalogSO.Resolve(entries, "로아"));
+            Assert.AreEqual("Roa", ResourceAliasCatalogSO.Resolve(entries, "c01")); // 구 세이브 코드
+            Assert.AreEqual("Roa", ResourceAliasCatalogSO.Resolve(entries, "Roa"));
+        }
+
+        [Test]
+        public void Emote_Alias_And_LegacyCode_Resolve_To_Filename()
+        {
+            var entries = new System.Collections.Generic.List<ResourceAliasCatalogSO.Entry>
+            {
+                new ResourceAliasCatalogSO.Entry { id = "기본", aliases = new[] { "Default", "00" } },
+                new ResourceAliasCatalogSO.Entry { id = "활짝", aliases = new[] { "활짝웃음", "13" } },
+            };
+            Assert.AreEqual("기본", ResourceAliasCatalogSO.Resolve(entries, "00"));   // 구 코드
+            Assert.AreEqual("활짝", ResourceAliasCatalogSO.Resolve(entries, "활짝웃음")); // 콘텐츠 별칭
+        }
     }
 }
