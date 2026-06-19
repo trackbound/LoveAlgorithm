@@ -21,6 +21,23 @@
 - 경로 구분자는 슬래시(/). Unity 경로는 `Assets/` 기준.
 - 커밋 범위에 무관한 기존 미커밋 변경(폰트/씬/프리팹 등)이 섞여 있으니, **각 태스크는 자신이 생성/수정한 파일만 `git add`** 한다.
 
+## ⚠️ 테스트 배치 개정 (2026-06-19, 이 항목이 각 태스크의 테스트 파일 지정을 **override**)
+
+이 환경은 **PlayMode 테스트가 에디터 포커스 교착**으로 MCP 자동 실행이 막힌다(감독이 터미널로 대화 → 에디터 unfocus → PlayMode 진입 데드락). 따라서:
+
+- **코루틴이 없는 로직 테스트는 EditMode로 배치** — 포커스 없이 MCP가 헤드리스로 실행 가능.
+  - 파일: `Assets/Tests/EditMode/LockScreenIntroEditModeTests.cs`, 클래스 `LockScreenIntroEditModeTests`, 네임스페이스 `LoveAlgo.Tests.EditMode`.
+  - 해당: GuideText(완료), PasswordInputField **마스킹/7자**(Task 2), LoginButton(Task 3), View 모드 구성(Task 5).
+  - asmdef `Assets/Tests/EditMode/LoveAlgo.Tests.EditMode.asmdef`에 `Unity.TextMeshPro`,`UnityEngine.UI` 참조 추가됨(완료).
+  - 순수 로직은 `[Test]`(IEnumerator/`yield` 불필요)로 작성. `OnEnable`은 활성 GameObject에 `AddComponent` 시 동기 호출되므로 EditMode에서도 발화.
+- **진짜 런타임(StartCoroutine/Time.deltaTime)이 필요한 테스트만 PlayMode로 남긴다.**
+  - 파일: `Assets/Tests/PlayMode/LockScreenIntroPlayModeTests.cs`, 클래스 `LockScreenIntroPlayModeTests`.
+  - 해당: PasswordInputField **Shake**(Task 2), IntroDirector **타임라인**(Task 4).
+  - **MCP 헤드리스 실행 불가** — 작성만 하고, 감독이 Unity Test Runner에서 직접 실행하거나(포커스 유지) 슬라이스 말미에 일괄 수동 검증한다. 서브에이전트는 이 두 PlayMode 테스트의 PASS를 기다리지 말 것(작성+컴파일 0에러까지가 게이트).
+- **run_tests 필터는 정규화 전체 이름**을 쓴다(짧은 메서드명은 0개 매칭). 예:
+  `test_names=["LoveAlgo.Tests.EditMode.LockScreenIntroEditModeTests.<MethodName>"]`, `mode=EditMode`.
+- 기존 `LockScreenPlayModeTests`(회귀 가드)도 PlayMode라 MCP 헤드리스로는 못 돌린다 → **컴파일 0에러로 비파괴 확인** + 감독 수동 실행 대상에 포함.
+
 ---
 
 ## 파일 구조 (생성/수정 맵)
