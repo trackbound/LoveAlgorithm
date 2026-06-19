@@ -52,7 +52,7 @@ namespace LoveAlgo.UI
         public LockScreenGuideText Guide { get => guide; set => guide = value; }
         public LoginButton LoginButton { get => loginButton; set => loginButton = value; }
 
-        IDisposable _sub, _finishSub, _resetSub;
+        IDisposable _sub, _finishSub, _resetSub, _failSub, _acceptSub;
         Coroutine _fadeRoutine;
         bool _fadeOut;
         LockMode _mode;
@@ -62,6 +62,8 @@ namespace LoveAlgo.UI
             _sub       = EventBus.Subscribe<ShowLockScreenCommand>(OnShow);
             _finishSub = EventBus.Subscribe<NarrativeFinishedEvent>(_ => HideImmediate());
             _resetSub  = EventBus.Subscribe<ResetNarrativeViewsCommand>(_ => HideImmediate());
+            _failSub   = EventBus.Subscribe<PasswordVerifyFailedEvent>(OnVerifyFailed);
+            _acceptSub = EventBus.Subscribe<PasswordAcceptedEvent>(_ => Hide());
             if (input != null)
             {
                 // 수동 구성 InputField 안전망: textComponent 미연결 시 자식 TMP_Text를 런타임 연결(없으면 입력 표시 불가).
@@ -79,7 +81,8 @@ namespace LoveAlgo.UI
         void OnDisable()
         {
             _sub?.Dispose(); _finishSub?.Dispose(); _resetSub?.Dispose();
-            _sub = _finishSub = _resetSub = null;
+            _failSub?.Dispose(); _acceptSub?.Dispose();
+            _sub = _finishSub = _resetSub = _failSub = _acceptSub = null;
             if (input != null) input.onSubmit.RemoveListener(OnInputSubmit);
         }
 
@@ -160,8 +163,18 @@ namespace LoveAlgo.UI
             // FirstSetup/Reset 제출 시 '설정 완료!' 안내로 전환(닫힘 페이드 동안 노출).
             if (guide != null && _mode != LockMode.Normal)
                 guide.SetState(LockScreenGuideText.LockGuideState.SetupComplete);
-            EventBus.Publish(new SubmitPasswordCommand(pwd)); // 저장은 Controller(ADR-007).
-            Hide();
+            EventBus.Publish(new SubmitPasswordCommand(pwd)); // 저장/검증은 Controller(ADR-007).
+            // Normal은 검증 결과를 기다린다(불일치 재입력). 닫기는 PasswordAcceptedEvent 수신 시.
+            if (_mode != LockMode.Normal) Hide();
+        }
+
+        /// <summary>검증 실패 — 입력칸 진동 + 입력 초기화·재포커스(가이드는 S3에서 ≥3 분실 처리).</summary>
+        void OnVerifyFailed(PasswordVerifyFailedEvent e)
+        {
+            if (overlay == null || !overlay.activeSelf) return;
+            if (passwordField != null) passwordField.Shake();
+            if (input != null) { input.text = ""; input.ActivateInputField(); }
+            else if (passwordField != null) passwordField.ResetField();
         }
 
         void Hide()

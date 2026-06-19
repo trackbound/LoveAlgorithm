@@ -189,5 +189,30 @@ namespace LoveAlgo.Tests.EditMode
 
             Object.DestroyImmediate(viewGo);
         }
+
+        [Test]
+        public void View_Normal_Confirm_Defers_Close()
+        {
+            var viewGo = new GameObject("View");
+            viewGo.SetActive(false);
+            var view = viewGo.AddComponent<LockScreenView>();
+            var overlay = new GameObject("Overlay");
+            overlay.transform.SetParent(viewGo.transform);
+            var vInputGo = new GameObject("VInput");
+            vInputGo.transform.SetParent(viewGo.transform);
+            var vInput = vInputGo.AddComponent<TMP_InputField>();
+            view.Overlay = overlay;
+            view.Input = vInput;
+            viewGo.SetActive(true);
+
+            view.OnShow(new ShowLockScreenCommand(LockMode.Normal, false, null, new CompletionHandle()));
+            Assert.IsTrue(overlay.activeSelf, "Normal Show → 오버레이 활성");
+
+            vInput.text = "1234";
+            view.Confirm(); // Normal: 제출하되 닫지 않음(검증 대기)
+            Assert.IsTrue(overlay.activeSelf, "Normal 제출 후에도 유지(재입력/검증 대기)");
+
+            Object.DestroyImmediate(viewGo);
+        }
     }
 }

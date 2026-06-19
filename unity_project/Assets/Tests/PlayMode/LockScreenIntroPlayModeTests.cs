@@ -5,6 +5,8 @@ using UnityEngine.UI;
 using UnityEngine.TestTools;
 using TMPro;
 using LoveAlgo.UI;
+using LoveAlgo.Common;   // EventBus
+using LoveAlgo.Events;   // ShowLockScreenCommand, LockMode, CompletionHandle, PasswordAcceptedEvent, PasswordVerifyFailedEvent
 
 namespace LoveAlgo.Tests.PlayMode
 {
@@ -81,6 +83,67 @@ namespace LoveAlgo.Tests.PlayMode
             Assert.That(wRt.anchoredPosition.x, Is.EqualTo(-190f).Within(1f), "위젯 슬라이드아웃(10 + -200)");
 
             Object.DestroyImmediate(go);
+        }
+
+        [UnityTest]
+        public IEnumerator View_Accepted_Event_Hides_Overlay()
+        {
+            var viewGo = new GameObject("View");
+            viewGo.SetActive(false);
+            var view = viewGo.AddComponent<LockScreenView>();
+            var overlay = new GameObject("Overlay");
+            overlay.transform.SetParent(viewGo.transform);
+            view.Overlay = overlay;
+            viewGo.SetActive(true);
+            yield return null; // OnEnable 구독
+
+            view.OnShow(new ShowLockScreenCommand(LockMode.Normal, false, null, new CompletionHandle()));
+            Assert.IsTrue(overlay.activeSelf, "Normal Show → 활성");
+
+            EventBus.Publish(new PasswordAcceptedEvent());
+            Assert.IsFalse(overlay.activeSelf, "Accepted → 닫힘");
+
+            Object.DestroyImmediate(viewGo);
+        }
+
+        [UnityTest]
+        public IEnumerator View_Failed_Event_Shakes_And_Clears_Input()
+        {
+            var viewGo = new GameObject("View");
+            viewGo.SetActive(false);
+            var view = viewGo.AddComponent<LockScreenView>();
+            var overlay = new GameObject("Overlay");
+            overlay.transform.SetParent(viewGo.transform);
+            var inputGo = new GameObject("Input", typeof(RectTransform));
+            inputGo.transform.SetParent(viewGo.transform);
+            var input = inputGo.AddComponent<TMP_InputField>();
+            var pf = viewGo.AddComponent<PasswordInputField>();
+            pf.Input = input;
+            pf.ShakeDuration = 0.1f;
+            view.Overlay = overlay;
+            view.Input = input;
+            view.PasswordField = pf;
+            viewGo.SetActive(true);
+            yield return null; // OnEnable 구독
+
+            view.OnShow(new ShowLockScreenCommand(LockMode.Normal, false, null, new CompletionHandle()));
+            input.text = "9999";
+            var rt = (RectTransform)input.transform;
+            Vector2 basePos = rt.anchoredPosition;
+
+            EventBus.Publish(new PasswordVerifyFailedEvent(1));
+            Assert.AreEqual("", input.text, "실패 → 입력 초기화");
+
+            // 진동 중 한 프레임은 기준 위치에서 벗어난다
+            yield return null;
+            bool moved = (rt.anchoredPosition - basePos).sqrMagnitude > 0.0001f;
+            // 진동 종료까지 대기 후 복원 확인
+            float t = 0f;
+            while (t < 0.3f) { t += Time.deltaTime; yield return null; }
+            Assert.That(rt.anchoredPosition.x, Is.EqualTo(basePos.x).Within(0.01f), "진동 후 복원");
+            Assert.IsTrue(moved, "실패 → 진동 발생");
+
+            Object.DestroyImmediate(viewGo);
         }
     }
 }
