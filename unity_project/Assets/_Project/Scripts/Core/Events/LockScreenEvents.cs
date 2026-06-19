@@ -40,4 +40,14 @@ namespace LoveAlgo.Events
         public readonly string Password;
         public SubmitPasswordCommand(string password) { Password = password; }
     }
+
+    /// <summary>비밀번호 검증 실패(Normal 불일치) 통지 — Controller→View(진동 + 누적 오류 횟수). ErrorCount는 1부터.</summary>
+    public readonly struct PasswordVerifyFailedEvent
+    {
+        public readonly int ErrorCount;
+        public PasswordVerifyFailedEvent(int errorCount) { ErrorCount = errorCount; }
+    }
+
+    /// <summary>비밀번호 수락(Normal 일치) 통지 — Controller→View(잠금화면 닫기). 저장/핸들 완료는 Controller가 함께 수행한다.</summary>
+    public readonly struct PasswordAcceptedEvent { }
 }

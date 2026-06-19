@@ -25,6 +25,7 @@ namespace LoveAlgo.Story.StoryEngine.Flow
         IDisposable _showSub, _submitSub, _finishSub, _resetSub;
         CompletionHandle _pending;
         LockMode _mode;
+        int _errorCount; // Normal 누적 입력 실패(세션 런타임, 세이브 비저장). 새 Show 시 0.
 
         void OnEnable()
         {
@@ -47,6 +48,7 @@ namespace LoveAlgo.Story.StoryEngine.Flow
             _pending?.Complete(); // 이전 미완료 핸들(비정상)이 엔진을 막지 않도록 먼저 정리.
             _pending = e.Handle;
             _mode = e.Mode;
+            _errorCount = 0; // 새 잠금화면 세션 — 오류 횟수 리셋.
         }
 
         /// <summary>비번 확정 수신 — 모드별 처리 후 핸들 완료. 직접 호출도 가능(테스트/부팅).</summary>
@@ -54,19 +56,38 @@ namespace LoveAlgo.Story.StoryEngine.Flow
         {
             if (_pending == null) return; // 활성 잠금화면 없음 — 무시.
 
-            if (_mode == LockMode.FirstSetup)
+            switch (_mode)
             {
-                if (state == null)
-                    Debug.LogError("[LockScreenController] state(GameStateSO) 미바인딩 — 비번 저장 불가.");
-                else
-                {
-                    state.Password = e.Password; // 평문 저장(이번 슬라이스). 해싱은 후속.
-                    Log.Info($"[LockScreenController] FirstSetup 비번 설정 완료(len={e.Password?.Length ?? 0}).");
-                }
-            }
-            // Normal(검증)/Reset 등은 이번 슬라이스 미구현 — 핸들만 풀어 진행.
+                case LockMode.Normal:
+                    if (state != null && state.Password == e.Password)
+                    {
+                        EventBus.Publish(new PasswordAcceptedEvent()); // View 닫기 신호.
+                        ReleasePending(); // 로그인 성공 → 엔진 진행.
+                    }
+                    else
+                    {
+                        _errorCount++;
+                        EventBus.Publish(new PasswordVerifyFailedEvent(_errorCount)); // 진동 + 횟수.
+                        // 핸들 유지 — 잠금화면 유지(재입력).
+                    }
+                    break;
 
-            ReleasePending();
+                case LockMode.FirstSetup:
+                case LockMode.Reset:
+                    if (state == null)
+                        Debug.LogError("[LockScreenController] state(GameStateSO) 미바인딩 — 비번 저장 불가.");
+                    else
+                    {
+                        state.Password = e.Password; // 평문 저장(해싱은 후속).
+                        Log.Info($"[LockScreenController] {_mode} 비번 설정 완료(len={e.Password?.Length ?? 0}).");
+                    }
+                    ReleasePending();
+                    break;
+
+                default: // Auto/GameStart 등 — 핸들만 풀어 진행(후속 구현).
+                    ReleasePending();
+                    break;
+            }
         }
 
         void ReleasePending()
