@@ -73,6 +73,7 @@ pro_062,Text,{{Player}},...죽 먹기가 아니라 떡 먹기야.,click
 pro_063,Text,로아,알아! 식은 떡 먹기!,click
 pro_064,Text,{{Player}},"정리 안 해봐도 알 것 같은데... 뭔가 잘못된 것 같다, 로아... 그만해.",click
 pro_065,Text,로아,"아니야, 기다려 봐!",click
+,FX,,StageFx:서류정리,>
 pro_066,Text,로아,<emote=기본/>자...,click
 pro_067,Text,로아,<emote=머쓱/>어?,click
 pro_068,Text,로아,"<emote=깜짝/>어, 우와앗...!",click
@@ -100,6 +101,7 @@ pro_088,Flow,,Jump:roa_정리테스트,>
 pro_089,Text,로아,"우와, {{Player}} 어릴 때 사진도 있어! 이거 소중한 사진을 모아둔 폴더야?",click
 pro_090,Text,{{Player}},"뭐, 꼭 그런 건 아니야. 1학년 때 교양 과제 때문에 넣어둔 예전 사진이 몇 개 있긴 했던 것 같은데.",click
 pro_091,Text,로아,그럼 열심히 정리할게!,click
+,FX,,StageFx:서류정리,>
 pro_092,Text,로아,<emote=기본/>자...,click
 pro_093,Text,로아,으으으음...!,click
 pro_094,Text,로아,<emote=활짝>완료! 한 번 확인해봐!,click
