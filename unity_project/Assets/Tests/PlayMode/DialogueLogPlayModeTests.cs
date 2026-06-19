@@ -39,7 +39,7 @@ namespace LoveAlgo.Tests.PlayMode
             => new ShowDialogueCommand(speaker, text, false, new CompletionHandle(), null, null, speakerId);
 
         [UnityTest]
-        public IEnumerator Recorder_Collects_WithScriptBoundaryGrouping()
+        public IEnumerator Recorder_Collects_OneBoxPerAdvance()
         {
             // 상주 Game 씬의 Recorder와 이중 적재 방지 — 테스트 전용 인스턴스만 남긴다.
             foreach (var r in UnityEngine.Object.FindObjectsByType<DialogueLogRecorder>(FindObjectsInactive.Include, FindObjectsSortMode.None))
@@ -50,17 +50,15 @@ namespace LoveAlgo.Tests.PlayMode
             _root.AddComponent<DialogueLogRecorder>();
             yield return null;
 
-            EventBus.Publish(new PlayScriptCommand("inline", "pro"));
-            EventBus.Publish(Line("로아", "이야기는 내일이야!", "c01"));
-            EventBus.Publish(Line("로아", "같은 박스에 들어갑니다.", "c01"));
+            // 같은 화자 연속이라도 진행마다 새 박스(목업 박스2). 한 박스 안 여러 줄은 본문 \n으로(목업 박스1).
+            EventBus.Publish(Line("로아", "이야기는 내일이야!\n같은 신이면 같은 박스에 들어갑니다.", "c01"));
+            EventBus.Publish(Line("로아", "다음 진행이면 새 박스.", "c01"));
             EventBus.Publish(Line("", "독백 줄."));
-            EventBus.Publish(new PlayScriptCommand("inline", "event1"));
-            EventBus.Publish(Line("로아", "새 스크립트 = 새 박스.", "c01"));
 
-            Assert.AreEqual(3, DialogueLogStore.Count, "로아 병합 + 독백 + 스크립트 경계 새 박스");
-            Assert.AreEqual(2, DialogueLogStore.Entries[0].Lines.Count);
-            Assert.AreEqual(DialogueLogKind.Narration, DialogueLogStore.Entries[1].Kind);
-            Assert.AreEqual("event1", DialogueLogStore.Entries[2].ScriptId);
+            Assert.AreEqual(3, DialogueLogStore.Count, "진행 단위 분리(연속 로아도 새 박스)");
+            Assert.AreEqual(2, DialogueLogStore.Entries[0].Text.Split('\n').Length, "한 행의 \\n = 같은 박스 여러 줄");
+            Assert.AreEqual(DialogueLogKind.Character, DialogueLogStore.Entries[1].Kind);
+            Assert.AreEqual(DialogueLogKind.Narration, DialogueLogStore.Entries[2].Kind);
         }
 
         DialogueLogView CreateView()
@@ -115,10 +113,10 @@ namespace LoveAlgo.Tests.PlayMode
         [UnityTest]
         public IEnumerator View_SpawnsKindSlots_GateAndBackRoundtrip()
         {
-            DialogueLogStore.Append("pro", "로아", "c01", "히로인 줄");          // 캐릭터(초상 등록)
-            DialogueLogStore.Append("pro", "교수님", null, "엑스트라 줄");        // 캐릭터(초상 미등록)
-            DialogueLogStore.Append("pro", "철수", PlayerNameFormat.PlayerSpeakerId, "플레이어 줄");
-            DialogueLogStore.Append("pro", "", null, "독백 줄");
+            DialogueLogStore.Append("로아", "c01", "히로인 줄");          // 캐릭터(초상 등록)
+            DialogueLogStore.Append("교수님", null, "엑스트라 줄");        // 캐릭터(초상 미등록)
+            DialogueLogStore.Append("철수", PlayerNameFormat.PlayerSpeakerId, "플레이어 줄");
+            DialogueLogStore.Append("", null, "독백 줄");
 
             var view = CreateView();
             yield return null;

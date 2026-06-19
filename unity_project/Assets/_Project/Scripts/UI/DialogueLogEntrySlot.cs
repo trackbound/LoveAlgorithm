@@ -24,11 +24,11 @@ namespace LoveAlgo.UI
         public TMP_Text NameText { get => nameText; set => nameText = value; }
         public TMP_Text BodyText { get => bodyText; set => bodyText = value; }
 
-        /// <summary>박스 바인딩 — 줄들은 개행으로 누적 표시(목업: 같은 박스에 여러 줄).</summary>
+        /// <summary>박스 바인딩 — 본문은 진행 한 줄(내부 \n은 같은 박스 안 여러 줄).</summary>
         public void Bind(DialogueLogEntry entry, Sprite portrait)
         {
             if (nameText != null) nameText.text = entry.Speaker;
-            if (bodyText != null) bodyText.text = string.Join("\n", entry.Lines);
+            if (bodyText != null) bodyText.text = entry.Text;
             if (portraitImage != null && portrait != null) portraitImage.sprite = portrait;
             if (portraitRoot != null) portraitRoot.SetActive(portrait != null); // 엑스트라 = 초상 없음
         }

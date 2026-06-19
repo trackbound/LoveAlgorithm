@@ -11,21 +11,22 @@ namespace LoveAlgo.UI
         Narration  // 독백(화자 빈 칸): 박스 없는 흰 텍스트
     }
 
-    /// <summary>로그 한 박스 — 같은 스크립트 내 연속 동일 화자의 줄들이 누적된다(목업 그룹핑 규칙).</summary>
+    /// <summary>로그 한 박스 — 대사 한 줄(= 한 번의 진행 <c>ShowDialogueCommand</c>)에 1:1 대응한다.
+    /// 한 박스 안의 여러 시각 줄은 <see cref="Text"/> 본문의 <c>\n</c>(한 CSV 행이 담은 줄바꿈)으로 표현된다.</summary>
     public sealed class DialogueLogEntry
     {
         public DialogueLogKind Kind;
         public string Speaker;   // 표시명(치환 후 — 플레이어는 입력 이름)
         public string SpeakerId; // 캐릭터 코드(c01~) | "player" | null
-        public string ScriptId;  // 그룹핑 경계(같은 스크립트)
-        public readonly List<string> Lines = new();
+        public string Text;      // 본문(한 진행 = 한 박스 — \n은 같은 박스 안 여러 줄)
     }
 
     /// <summary>
     /// 대사 로그 저장소(정적 — OverlayGate 형제). 세이브 비영속·런타임 누적(감독 승인: 영속은 후속 슬라이스),
-    /// 부팅 시 <see cref="DialogueLogRecorder"/>가 리셋. 그룹핑 규칙(목업 주석 동결):
-    /// 같은 스크립트 + 연속 동일 화자(독백은 화자 무관 연속) = 한 박스에 줄 누적, 그 외 = 새 박스.
-    /// 순수 자료구조라 EditMode 테스트 대상.
+    /// 부팅 시 <see cref="DialogueLogRecorder"/>가 리셋. 그룹핑 규칙(목업 동결): 진행(대사 한 줄) 단위로 박스가
+    /// 나뉜다 — 같은 화자가 연속으로 말해도 다음 진행이면 새 박스(목업 박스2: "다음 스크립트에서 한 인물이
+    /// 계속해서 얘기하면 새로운 박스가 생깁니다"). 한 박스에 여러 줄이 보이는 경우(목업 박스1)는 한 CSV 행의
+    /// 본문이 <c>\n</c>로 줄을 담은 것 — 행 병합이 아니다. 순수 자료구조라 EditMode 테스트 대상.
     /// </summary>
     public static class DialogueLogStore
     {
@@ -36,28 +37,16 @@ namespace LoveAlgo.UI
 
         public static void Reset() => _entries.Clear();
 
-        /// <summary>대사 1줄 적재 — 그룹핑 규칙에 따라 마지막 박스에 병합하거나 새 박스를 연다.</summary>
-        public static void Append(string scriptId, string speaker, string speakerId, string text)
+        /// <summary>대사 한 줄(한 진행) 적재 — 항상 새 박스를 연다(진행 단위 분리).</summary>
+        public static void Append(string speaker, string speakerId, string text)
         {
-            var kind = KindOf(speaker, speakerId);
-            var last = _entries.Count > 0 ? _entries[_entries.Count - 1] : null;
-            bool merge = last != null
-                && last.Kind == kind
-                && last.ScriptId == scriptId
-                && (kind == DialogueLogKind.Narration || last.Speaker == speaker);
-
-            if (!merge)
+            _entries.Add(new DialogueLogEntry
             {
-                last = new DialogueLogEntry
-                {
-                    Kind = kind,
-                    Speaker = speaker ?? "",
-                    SpeakerId = speakerId,
-                    ScriptId = scriptId,
-                };
-                _entries.Add(last);
-            }
-            last.Lines.Add(text ?? "");
+                Kind = KindOf(speaker, speakerId),
+                Speaker = speaker ?? "",
+                SpeakerId = speakerId,
+                Text = text ?? "",
+            });
         }
 
         static DialogueLogKind KindOf(string speaker, string speakerId)
