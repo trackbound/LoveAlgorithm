@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using LoveAlgo.Common; // EventBus
 using LoveAlgo.Core;   // GameStateSO
@@ -25,6 +26,9 @@ namespace LoveAlgo.UI
         [SerializeField] TMP_InputField input;
         [SerializeField] Button confirmButton;
 
+        [Tooltip("시작 크로스페이드(페이드인) 지속(초). 0이면 즉시 표시. overlay의 CanvasGroup 알파 0→1로 부드럽게 진입(없으면 런타임 추가).")]
+        [SerializeField] float fadeInDuration = 0.3f;
+
         public GameStateSO State { get => state; set => state = value; }
         public GameObject Overlay { get => overlay; set => overlay = value; }
         public TMP_InputField Input { get => input; set => input = value; }
@@ -33,6 +37,8 @@ namespace LoveAlgo.UI
 
         readonly List<IDisposable> _subs = new();
         CompletionHandle _pending;
+        CanvasGroup _cg;          // 페이드 대상(overlay의 CanvasGroup — get-or-add)
+        Coroutine _fadeRoutine;
 
         void Awake()
         {
@@ -63,12 +69,44 @@ namespace LoveAlgo.UI
         {
             _pending?.Complete(); // 중복 표시 안전망 — 앞선 핸들 hang 방지(fail-open)
             _pending = e.Handle;
-            if (overlay != null) overlay.SetActive(true);
+            if (overlay != null)
+            {
+                overlay.SetActive(true);
+                StartFadeIn(); // 시작 크로스페이드(페이드인)
+            }
             if (input != null)
             {
                 input.text = "";
                 input.ActivateInputField();
             }
+        }
+
+        // overlay의 CanvasGroup 알파 0→1로 짧게 페이드인(없으면 런타임 추가). 0초/비활성이면 즉시 표시(폴백).
+        void StartFadeIn()
+        {
+            if (overlay == null) return;
+            if (_cg == null)
+            {
+                var cg = overlay.GetComponent<CanvasGroup>();
+                _cg = cg != null ? cg : overlay.AddComponent<CanvasGroup>();
+            }
+            if (_fadeRoutine != null) { StopCoroutine(_fadeRoutine); _fadeRoutine = null; }
+            if (!isActiveAndEnabled || fadeInDuration <= 0f) { _cg.alpha = 1f; return; }
+            _fadeRoutine = StartCoroutine(FadeIn());
+        }
+
+        IEnumerator FadeIn()
+        {
+            float t = 0f;
+            _cg.alpha = 0f;
+            while (t < fadeInDuration)
+            {
+                t += Time.deltaTime;
+                _cg.alpha = Mathf.Clamp01(t / fadeInDuration);
+                yield return null;
+            }
+            _cg.alpha = 1f;
+            _fadeRoutine = null;
         }
 
         /// <summary>확인 — 빈 입력(공백뿐)은 무시(입력 강제), 유효하면 저장+핸들 완료+숨김.</summary>
@@ -86,6 +124,8 @@ namespace LoveAlgo.UI
 
         void HideImmediate()
         {
+            if (_fadeRoutine != null) { StopCoroutine(_fadeRoutine); _fadeRoutine = null; }
+            if (_cg != null) _cg.alpha = 1f; // 다음 표시가 0에서 다시 페이드인하도록 리셋(끊긴 페이드 잔여 알파 방지)
             if (overlay != null) overlay.SetActive(false);
             _pending?.Complete();
             _pending = null;

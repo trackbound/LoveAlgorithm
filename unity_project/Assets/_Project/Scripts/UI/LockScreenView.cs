@@ -29,6 +29,9 @@ namespace LoveAlgo.UI
         [Tooltip("FadeOut 지속(초).")]
         [SerializeField] float fadeOutDuration = 0.5f;
 
+        [Tooltip("시작 크로스페이드(페이드인) 지속(초). 0이면 즉시 표시. fadeGroup 알파 0→1로 스토리 위에 부드럽게 진입.")]
+        [SerializeField] float fadeInDuration = 0.3f;
+
         public GameObject Overlay { get => overlay; set => overlay = value; }
         public CanvasGroup FadeGroup { get => fadeGroup; set => fadeGroup = value; }
         public TMP_InputField Input { get => input; set => input = value; }
@@ -70,12 +73,31 @@ namespace LoveAlgo.UI
             if (overlay == null) return; // 효과 생략 — Controller가 Submit으로 핸들 완료(여기선 막지 않음).
             if (_fadeRoutine != null) { StopCoroutine(_fadeRoutine); _fadeRoutine = null; }
             overlay.SetActive(true);
-            if (fadeGroup != null) fadeGroup.alpha = 1f;
             if (input != null)
             {
                 input.text = "";
                 input.ActivateInputField(); // 포커스
             }
+            // 시작 크로스페이드: fadeGroup 알파 0→1로 짧게 페이드인(스토리 위로 부드럽게 진입).
+            // 미바인딩/비활성/0초면 즉시 표시(폴백).
+            if (fadeGroup != null && isActiveAndEnabled && fadeInDuration > 0f)
+                _fadeRoutine = StartCoroutine(FadeInAndShow());
+            else if (fadeGroup != null)
+                fadeGroup.alpha = 1f;
+        }
+
+        IEnumerator FadeInAndShow()
+        {
+            float t = 0f;
+            fadeGroup.alpha = 0f;
+            while (t < fadeInDuration)
+            {
+                t += Time.deltaTime;
+                fadeGroup.alpha = Mathf.Clamp01(t / fadeInDuration);
+                yield return null;
+            }
+            fadeGroup.alpha = 1f;
+            _fadeRoutine = null;
         }
 
         void OnInputSubmit(string _) => Confirm();
