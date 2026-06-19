@@ -11,13 +11,13 @@ namespace LoveAlgo.Tests.PlayMode
 {
     /// <summary>
     /// 스테이지 슬라이스2 PlayMode 검증: StageView가 OnEnable에서 BG/Char 명령을 구독해 코루틴 전환을
-    /// 수행하고 완료 핸들을 풀어주는지(실 Resources <c>BG/bg_00_00</c>·<c>Characters/c01_00</c>로 로드).
+    /// 수행하고 완료 핸들을 풀어주는지(실 Resources <c>BG/bg_00_00</c>·<c>Characters/Roa/기본</c>로 로드).
     /// 슬라이스1과 동일하게 명령 이벤트 + 완료 핸들로만 검증(뷰 직접 참조 없음).
     /// </summary>
     public class StageViewPlayModeTests
     {
-        const string CharId = "c01";           // Resources/Characters/c01_00
-        const string Emote = "00";
+        const string CharId = "Roa";           // Resources/Characters/Roa/기본 (캐릭터=폴더, 표정=한글 파일명)
+        const string Emote = "기본";
 
         // BG 에셋은 감독의 명명 재작업(코드명↔한글명)과 무관하게 "Resources/BG/{name} 로딩 컨벤션"만
         // 검증하도록 실존하는 첫 스프라이트를 사용한다(특정 파일명 고정 시 리네임마다 적색).
