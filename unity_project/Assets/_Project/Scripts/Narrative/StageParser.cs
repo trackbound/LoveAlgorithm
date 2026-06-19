@@ -50,9 +50,22 @@ namespace LoveAlgo.Story
                 i = 1;
             }
 
-            // 액션 토큰 없거나 미지원 → 무효(Enter+캐릭터null).
+            // 액션 토큰이 아니면 → 단축 문법 분기.
             if (i >= parts.Length || !TryParseAction(parts[i], out CharAction action))
-                return new CharIntent(slot, CharAction.Enter, null, "", -1f);
+            {
+                // 슬롯만 있고 더 없음 → 무효(기존 "L" 케이스 보존).
+                int remaining = parts.Length - i;
+                if (remaining <= 0) return new CharIntent(slot, CharAction.Enter, null, "", -1f);
+                if (remaining >= 2)
+                {
+                    // 캐릭터:표정 → 식별자 Emote.
+                    string ch = parts[i].Trim();
+                    string em = parts[i + 1].Trim();
+                    return new CharIntent(slot, CharAction.Emote, ch, em, -1f, EmoteTarget.Character);
+                }
+                // 단일 토큰 표정 → 직전 화자 Emote.
+                return new CharIntent(slot, CharAction.Emote, null, parts[i].Trim(), -1f, EmoteTarget.LastSpeaker);
+            }
             i++;
 
             string character = null;

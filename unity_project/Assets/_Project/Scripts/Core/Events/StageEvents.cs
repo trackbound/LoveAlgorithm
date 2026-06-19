@@ -29,6 +29,9 @@ namespace LoveAlgo.Events
         Clear   // 즉시 숨김
     }
 
+    /// <summary>Emote 액션의 대상 결정 방식(슬라이스: 단축 문법). Slot=명시/기존, Character=식별자, LastSpeaker=직전 화자.</summary>
+    public enum EmoteTarget { Slot, Character, LastSpeaker }
+
     /// <summary>
     /// BG 명령 파싱 결과(순수). <see cref="Duration"/>가 음수면 "CSV 미지정" — 엔진이 <c>StageTuningSO</c> 기본값으로 해석.
     /// </summary>
@@ -58,15 +61,17 @@ namespace LoveAlgo.Events
         public readonly string Character;
         public readonly string Emote;
         public readonly float Duration;
+        public readonly EmoteTarget Target;
         public bool IsValid => Action != CharAction.Enter || !string.IsNullOrEmpty(Character);
 
-        public CharIntent(CharSlot slot, CharAction action, string character, string emote, float duration)
+        public CharIntent(CharSlot slot, CharAction action, string character, string emote, float duration, EmoteTarget target = EmoteTarget.Slot)
         {
             Slot = slot;
             Action = action;
             Character = character;
             Emote = emote;
             Duration = duration;
+            Target = target;
         }
     }
 

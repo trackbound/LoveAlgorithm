@@ -112,5 +112,37 @@ namespace LoveAlgo.Tests.Editor
             Assert.IsFalse(StageParser.ParseCharacter("L").IsValid);        // 슬롯만, 액션 없음
             Assert.IsFalse(StageParser.ParseCharacter("Enter").IsValid);    // Enter인데 캐릭터 없음
         }
+
+        // ── Char 단축 문법(Task 3) ──
+
+        [Test]
+        public void Char_Shorthand_CharColonEmote_Is_Identity_Emote()
+        {
+            var c = StageParser.ParseCharacter("Roa:웃음");
+            Assert.IsTrue(c.IsValid);
+            Assert.AreEqual(CharAction.Emote, c.Action);
+            Assert.AreEqual("Roa", c.Character);
+            Assert.AreEqual("웃음", c.Emote);
+            Assert.AreEqual(EmoteTarget.Character, c.Target);
+        }
+
+        [Test]
+        public void Char_Shorthand_BareEmote_Targets_LastSpeaker()
+        {
+            var c = StageParser.ParseCharacter("웃음");
+            Assert.IsTrue(c.IsValid);
+            Assert.AreEqual(CharAction.Emote, c.Action);
+            Assert.IsNull(c.Character);
+            Assert.AreEqual("웃음", c.Emote);
+            Assert.AreEqual(EmoteTarget.LastSpeaker, c.Target);
+        }
+
+        [Test]
+        public void Char_Explicit_Emote_Keeps_Slot_Target()
+        {
+            var c = StageParser.ParseCharacter("C:Emote:21");
+            Assert.AreEqual(CharAction.Emote, c.Action);
+            Assert.AreEqual(EmoteTarget.Slot, c.Target);
+        }
     }
 }
