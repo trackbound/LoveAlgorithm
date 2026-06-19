@@ -221,7 +221,7 @@ namespace LoveAlgo.DevTools.Editor
             vlg.childControlHeight = true;
             vlg.childForceExpandWidth = true;
             vlg.childForceExpandHeight = false;
-            vlg.padding = new RectOffset(40, 40, 20, 20); // 번짐이 글자 둘레로 퍼질 여유
+            vlg.padding = new RectOffset(40, 40, 8, 8); // 가로=번짐 여유, 세로=타이트(독백 줄 간격을 다른 버블과 맞춤)
         }
 
         // 이름박스(9-슬라이스) + 중앙 라벨. 라벨 자동 축소(긴 이름 대비).
