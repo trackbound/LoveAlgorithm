@@ -91,5 +91,21 @@ namespace LoveAlgo.Tests.EditMode
             _ctrl.OnSubmit(new SubmitPasswordCommand("z"));
             Assert.AreEqual(1, lastErr, "새 Show 후 누적 1로 리셋");
         }
+
+        [Test]
+        public void ResetRequest_Switches_To_Reset_And_Saves_New_Password()
+        {
+            _gs.Password = "1234";
+            var handle = new CompletionHandle();
+            _ctrl.OnShow(new ShowLockScreenCommand(LockMode.Normal, false, null, handle));
+            _ctrl.OnSubmit(new SubmitPasswordCommand("9999")); // 불일치 — 유지
+            Assert.IsFalse(handle.IsComplete, "불일치 후 유지");
+
+            _ctrl.OnResetRequested(); // 재설정 진입(핸들 유지, 모드 Reset)
+
+            _ctrl.OnSubmit(new SubmitPasswordCommand("5555")); // Reset 저장
+            Assert.AreEqual("5555", _gs.Password, "Reset → 새 비번 저장");
+            Assert.IsTrue(handle.IsComplete, "Reset 저장 후 핸들 완료(진행)");
+        }
     }
 }

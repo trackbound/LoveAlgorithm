@@ -22,7 +22,7 @@ namespace LoveAlgo.Story.StoryEngine.Flow
         /// <summary>상태 SO 바인딩. 인스펙터 또는 부팅 시퀀스가 주입.</summary>
         public GameStateSO State { get => state; set => state = value; }
 
-        IDisposable _showSub, _submitSub, _finishSub, _resetSub;
+        IDisposable _showSub, _submitSub, _finishSub, _resetSub, _resetReqSub;
         CompletionHandle _pending;
         LockMode _mode;
         int _errorCount; // Normal 누적 입력 실패(세션 런타임, 세이브 비저장). 새 Show 시 0.
@@ -34,12 +34,13 @@ namespace LoveAlgo.Story.StoryEngine.Flow
             // 잠금화면 도중 내러티브가 끊기거나(재시작) 도구 화면정리 시 미완료 핸들이 엔진을 막지 않도록 정리.
             _finishSub = EventBus.Subscribe<NarrativeFinishedEvent>(_ => ReleasePending());
             _resetSub  = EventBus.Subscribe<ResetNarrativeViewsCommand>(_ => ReleasePending());
+            _resetReqSub = EventBus.Subscribe<RequestPasswordResetCommand>(_ => OnResetRequested());
         }
 
         void OnDisable()
         {
-            _showSub?.Dispose(); _submitSub?.Dispose(); _finishSub?.Dispose(); _resetSub?.Dispose();
-            _showSub = _submitSub = _finishSub = _resetSub = null;
+            _showSub?.Dispose(); _submitSub?.Dispose(); _finishSub?.Dispose(); _resetSub?.Dispose(); _resetReqSub?.Dispose();
+            _showSub = _submitSub = _finishSub = _resetSub = _resetReqSub = null;
         }
 
         /// <summary>잠금화면 표시 명령 수신 — 활성 핸들·모드 보관. 직접 호출도 가능(테스트/부팅).</summary>
@@ -49,6 +50,14 @@ namespace LoveAlgo.Story.StoryEngine.Flow
             _pending = e.Handle;
             _mode = e.Mode;
             _errorCount = 0; // 새 잠금화면 세션 — 오류 횟수 리셋.
+        }
+
+        /// <summary>재설정 요청 — 현 잠금 세션을 Reset 모드로 전환(핸들 유지, 오류 0). 이후 Submit은 저장 경로. 직접 호출도 가능(테스트).</summary>
+        public void OnResetRequested()
+        {
+            if (_pending == null) return; // 활성 잠금 없음 — 무시.
+            _mode = LockMode.Reset;
+            _errorCount = 0;
         }
 
         /// <summary>비번 확정 수신 — 모드별 처리 후 핸들 완료. 직접 호출도 가능(테스트/부팅).</summary>
