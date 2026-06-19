@@ -48,5 +48,27 @@ namespace LoveAlgo.Tests.EditMode
             // 비활성이면 눌림이어도 base 유지(비활성 색은 스프라이트가 담당)
             Assert.AreEqual(baseColor, ButtonSpriteSwap.ResolveTint(false, true, baseColor, tint));
         }
+
+        [Test]
+        public void ResolveTextColor_Priority_DisabledOverOnOverHoverOverNormal()
+        {
+            var c = new ButtonSpriteSwap.TextColorBlock
+            {
+                drive = true,
+                normal = Color.black,   // OFF/기본
+                hover = Color.white,
+                on = Color.red,         // 토글 ON
+                disabled = Color.gray,
+            };
+
+            // 비활성 최우선(ON·호버 무관)
+            Assert.AreEqual(c.disabled, ButtonSpriteSwap.ResolveTextColor(false, true, true, c));
+            // ON > 호버 (AUTO 버튼: ON 상태가 호버를 이김)
+            Assert.AreEqual(c.on, ButtonSpriteSwap.ResolveTextColor(true, true, true, c));
+            // 호버 (호버만 바꾸는 케이스)
+            Assert.AreEqual(c.hover, ButtonSpriteSwap.ResolveTextColor(true, false, true, c));
+            // OFF/기본
+            Assert.AreEqual(c.normal, ButtonSpriteSwap.ResolveTextColor(true, false, false, c));
+        }
     }
 }

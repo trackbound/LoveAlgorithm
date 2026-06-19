@@ -1,3 +1,5 @@
+using System;
+using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -6,8 +8,8 @@ namespace LoveAlgo.UI
 {
     /// <summary>
     /// 네이티브 <see cref="Button"/> 옆에 붙는 얇은 스프라이트 스왑 컴포넌트. hover / on(토글) / disabled 시
-    /// 대상 Image의 <b>스프라이트</b>를 코드로 갈아끼우고, <b>눌림 틴트</b>(<see cref="pressedTint"/>≈C7C7C7)도
-    /// 코드로 직접 곱한다.
+    /// 대상 Image의 <b>스프라이트</b>를 코드로 갈아끼우고, <b>눌림 틴트</b>(<see cref="pressedTint"/>≈C7C7C7)와
+    /// (옵션) <b>상태별 라벨(TMP) 색</b>(<see cref="textColors"/> — 호버만 바꾸거나 AUTO식 ON/OFF/HOVER)도 코드로 구동한다.
     ///
     /// <para><b>왜 눌림 틴트를 코드로</b>: 이 컴포넌트가 스프라이트를 구동하는 버튼은 네이티브 Button의 transition을
     /// (SpriteSwap이면 스프라이트가 충돌하므로) None으로 두는 경우가 많아, 네이티브 ColorTint의 pressed 틴트에
@@ -26,6 +28,32 @@ namespace LoveAlgo.UI
     public class ButtonSpriteSwap : MonoBehaviour,
         IPointerEnterHandler, IPointerExitHandler, IPointerDownHandler, IPointerUpHandler
     {
+        /// <summary>
+        /// 상태별 라벨(TMP) 글씨색. 스프라이트와 동일 우선순위(<b>비활성</b> > <b>ON</b> > <b>호버</b> > <b>OFF/기본</b>)로
+        /// 구동한다. <see cref="drive"/>=false면 라벨 색을 건드리지 않는다. 호버만 바꾸는 버튼은 normal/hover만,
+        /// AUTO 같은 토글은 normal(OFF)·on(ON)·hover 셋을 채운다.
+        /// </summary>
+        [Serializable]
+        public struct TextColorBlock
+        {
+            [Tooltip("켜면 상태별로 라벨 색을 구동. 끄면 라벨 색 미관여.")]
+            public bool drive;
+            public Color normal;   // OFF/기본
+            public Color hover;
+            public Color on;       // 토글 ON
+            public Color disabled;
+
+            /// <summary>합리적 기본값(검정 평상 → 흰 강조). 신규 컴포넌트의 인스펙터 초기값.</summary>
+            public static TextColorBlock Default => new TextColorBlock
+            {
+                drive = false,
+                normal = Color.black,
+                hover = Color.white,
+                on = Color.white,
+                disabled = new Color(0.5f, 0.5f, 0.5f, 1f),
+            };
+        }
+
         [Tooltip("스왑 대상 Image. 미바인딩 시 Button.targetGraphic → 자식 Image 자동 탐색.")]
         [SerializeField] Image targetImage;
         [Tooltip("기본(비우면 OnEnable 시 현재 Image 스프라이트를 기준으로 캡처).")]
@@ -36,6 +64,11 @@ namespace LoveAlgo.UI
 
         [Tooltip("눌림 시 base 컬러에 곱하는 틴트(네이티브 ColorBlock pressed와 동일한 ≈C7C7C7).")]
         [SerializeField] Color pressedTint = new Color(0.7803922f, 0.7803922f, 0.7803922f, 1f); // C7C7C7
+
+        [Header("상태별 라벨 색 (호버/AUTO ON·OFF 등)")]
+        [SerializeField] TextColorBlock textColors = TextColorBlock.Default;
+        [Tooltip("색을 바꿀 라벨(TMP). 미바인딩 시 자식에서 자동 탐색.")]
+        [SerializeField] TMP_Text label;
 
         Button _button;
         bool _pointerInside;
@@ -50,6 +83,8 @@ namespace LoveAlgo.UI
         public Sprite OnSprite { get => onSprite; set => onSprite = value; }
         public Sprite DisabledSprite { get => disabledSprite; set => disabledSprite = value; }
         public Color PressedTint { get => pressedTint; set => pressedTint = value; }
+        public TextColorBlock TextColors { get => textColors; set => textColors = value; }
+        public TMP_Text Label { get => label; set => label = value; }
         public bool IsOn => _isOn;
 
         // ── 순수 결정층 (GameObject 불필요 — EditMode 테스트 대상) ────────────────────────
@@ -72,6 +107,19 @@ namespace LoveAlgo.UI
         /// </summary>
         public static Color ResolveTint(bool interactable, bool pressed, Color baseColor, Color pressedTint)
             => (interactable && pressed) ? baseColor * pressedTint : baseColor;
+
+        /// <summary>
+        /// 상태별 라벨 색(순수). 스프라이트와 동일 우선순위: <b>비활성</b> > <b>ON</b> > <b>호버</b> > <b>OFF/기본</b>.
+        /// (<see cref="TextColorBlock.drive"/> 판단은 호출 측 책임.) 호버만 바꾸는 케이스는 normal/hover만 의미를 갖고,
+        /// AUTO 같은 토글은 on(ON)/normal(OFF)/hover 셋이 각 상태에 매핑된다.
+        /// </summary>
+        public static Color ResolveTextColor(bool interactable, bool isOn, bool pointerInside, in TextColorBlock c)
+        {
+            if (!interactable) return c.disabled;
+            if (isOn) return c.on;
+            if (pointerInside) return c.hover;
+            return c.normal;
+        }
 
         // ── 얇은 어댑터 ───────────────────────────────────────────────────────────────
         void Reset() => targetImage = GetComponent<Image>();
@@ -138,6 +186,12 @@ namespace LoveAlgo.UI
             targetImage.sprite = ResolveSprite(interactable, _isOn, _pointerInside,
                 normalSprite, hoverSprite, onSprite, disabledSprite);
             targetImage.color = ResolveTint(interactable, _pressed, _baseColor, pressedTint);
+
+            if (textColors.drive)
+            {
+                if (label == null) label = GetComponentInChildren<TMP_Text>(true);
+                if (label != null) label.color = ResolveTextColor(interactable, _isOn, _pointerInside, textColors);
+            }
         }
     }
 }
