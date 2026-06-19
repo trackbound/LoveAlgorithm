@@ -8,9 +8,11 @@ namespace LoveAlgo.UI
 {
     /// <summary>
     /// 첫실행 인트로 연출 오케스트레이터(*첫실행). Start에서 ① 콘텐츠 페이드인 ② warn 흔들림 시작
-    /// ③ 메시지 스택 자동 재생 ④ 시퀀스 종료(Completed) 후 짧은 hold ⑤ TransitionBridge로 프롤로그 핸드오프.
-    /// 버블 도착마다 선택적 SFX(messageSfx, null=무음). 무입력 자동 — 표시·발행만(ADR-007). 수치 인스펙터 노출.
-    /// messages/bridgePrefab 미바인딩은 fail-open(즉시 핸드오프 / 직접 StartNewGameCommand 발행).
+    /// ③ 메시지 스택 자동 재생 ④ 시퀀스 종료(Completed) 후 clickEnableDelay(기본 1초) 뒤 클릭 캐처 무장
+    /// ⑤ 클릭/탭 시 TransitionBridge로 프롤로그 핸드오프. 메시지 재생까지는 무입력 자동, 마지막 진행만 클릭.
+    /// 버블 도착마다 선택적 SFX(messageSfx, null=무음). 표시·발행만(ADR-007). 수치 인스펙터 노출.
+    /// messages 미바인딩은 즉시 완료, clickCatcher 미바인딩은 대기 후 자동 진행, bridgePrefab 미바인딩은
+    /// StartNewGameCommand 직접 발행(모두 fail-open — 소프트락 방지).
     /// </summary>
     public class FirstLaunchDirector : MonoBehaviour
     {
@@ -23,6 +25,8 @@ namespace LoveAlgo.UI
         [SerializeField] WarnWidgetShake warnShake;
         [Tooltip("핸드오프용 블랙 브리지 프리팹. 비우면 StartNewGameCommand 직접 발행(폴백).")]
         [SerializeField] FirstLaunchTransitionBridge bridgePrefab;
+        [Tooltip("진행용 클릭 캐처(풀스크린). 비우면 대기 후 자동 진행(폴백).")]
+        [SerializeField] ClickAdvanceCatcher clickCatcher;
 
         [Header("SFX (optional)")]
         [Tooltip("메시지 도착 효과음 재생 소스.")]
@@ -33,9 +37,10 @@ namespace LoveAlgo.UI
         [Header("Timing")]
         [Tooltip("콘텐츠 페이드인 시간(초).")]
         [SerializeField] float fadeIn = 0.6f;
-        [Tooltip("마지막 버블 후 핸드오프 전 대기(초).")]
-        [SerializeField] float postSequenceHold = 1.5f;
+        [Tooltip("마지막 버블이 다 쌓인 뒤 클릭으로 진행 가능해지기까지 대기(초).")]
+        [SerializeField] float clickEnableDelay = 1f;
 
+        bool _completed;
         bool _handedOff;
 
         void OnEnable()
@@ -45,6 +50,7 @@ namespace LoveAlgo.UI
                 messages.MessageSpawned += OnMessageSpawned;
                 messages.Completed += OnSequenceCompleted;
             }
+            if (clickCatcher != null) clickCatcher.Clicked += OnAdvanceClicked;
         }
 
         void OnDisable()
@@ -54,6 +60,7 @@ namespace LoveAlgo.UI
                 messages.MessageSpawned -= OnMessageSpawned;
                 messages.Completed -= OnSequenceCompleted;
             }
+            if (clickCatcher != null) clickCatcher.Clicked -= OnAdvanceClicked;
         }
 
         void Start() => StartCoroutine(Run());
@@ -87,14 +94,26 @@ namespace LoveAlgo.UI
 
         void OnSequenceCompleted()
         {
-            if (_handedOff) return;
-            _handedOff = true;
-            StartCoroutine(HandOff());
+            if (_completed) return;
+            _completed = true;
+            StartCoroutine(EnableClickAfterDelay());
         }
 
-        IEnumerator HandOff()
+        IEnumerator EnableClickAfterDelay()
         {
-            if (postSequenceHold > 0f) yield return new WaitForSeconds(postSequenceHold);
+            if (clickEnableDelay > 0f) yield return new WaitForSeconds(clickEnableDelay);
+            if (clickCatcher != null) clickCatcher.Arm(); // 이제부터 클릭하면 진행
+            else Advance(); // 캐처 없음 → 소프트락 방지로 자동 진행
+        }
+
+        void OnAdvanceClicked() => Advance();
+
+        /// <summary>프롤로그로 핸드오프(1회만). 클릭 또는 폴백 경로에서 호출.</summary>
+        void Advance()
+        {
+            if (_handedOff) return;
+            _handedOff = true;
+            if (clickCatcher != null) clickCatcher.Disarm(); // 이후 클릭 무시
             if (bridgePrefab != null)
             {
                 var bridge = Instantiate(bridgePrefab);

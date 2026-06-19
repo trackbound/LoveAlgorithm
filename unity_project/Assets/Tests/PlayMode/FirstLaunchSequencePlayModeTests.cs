@@ -118,23 +118,83 @@ namespace LoveAlgo.Tests.PlayMode
         }
 
         [UnityTest]
-        public IEnumerator Director_NoMessages_NoBridge_PublishesStartNewGame_Once()
+        public IEnumerator Director_NoMessages_NoCatcher_AutoAdvances_Once()
         {
             var go = new GameObject("Director");
             var dir = go.AddComponent<LoveAlgo.UI.FirstLaunchDirector>();
-            // messages=null, bridgePrefab=null → Completed 즉시 + 폴백 발행 경로
+            // messages=null, clickCatcher=null, bridgePrefab=null → 완료 후 대기 → 캐처 없으면 자동 진행(폴백)
             SetPrivate(dir, "fadeIn", 0f);
-            SetPrivate(dir, "postSequenceHold", 0.05f);
+            SetPrivate(dir, "clickEnableDelay", 0.05f);
 
             int count = 0;
             var sub = LoveAlgo.Common.EventBus.Subscribe<LoveAlgo.Events.StartNewGameCommand>(_ => count++);
             try
             {
-                yield return null; // Start → Run → 메시지 없음 → 즉시 완료 → 핸드오프
+                yield return null; // Start → Run → 메시지 없음 → 즉시 완료 → 대기 → 자동 진행
                 yield return new WaitForSeconds(0.3f);
-                Assert.AreEqual(1, count, "메시지 없을 때 폴백으로 StartNewGameCommand 1회.");
+                Assert.AreEqual(1, count, "캐처 없을 때 폴백으로 StartNewGameCommand 1회.");
             }
             finally { sub.Dispose(); Object.DestroyImmediate(go); }
+        }
+
+        [Test]
+        public void ClickCatcher_FiresClicked_OnlyWhenArmed()
+        {
+            var go = new GameObject("Catcher");
+            var catcher = go.AddComponent<LoveAlgo.UI.ClickAdvanceCatcher>();
+            int clicks = 0;
+            catcher.Clicked += () => clicks++;
+            try
+            {
+                catcher.OnPointerClick(new UnityEngine.EventSystems.PointerEventData(null));
+                Assert.AreEqual(0, clicks, "무장 전 클릭은 무시.");
+
+                catcher.Arm();
+                catcher.OnPointerClick(new UnityEngine.EventSystems.PointerEventData(null));
+                Assert.AreEqual(1, clicks, "무장 후 클릭은 Clicked 발화.");
+
+                catcher.Disarm();
+                catcher.OnPointerClick(new UnityEngine.EventSystems.PointerEventData(null));
+                Assert.AreEqual(1, clicks, "해제 후 클릭은 다시 무시.");
+            }
+            finally { Object.DestroyImmediate(go); }
+        }
+
+        [UnityTest]
+        public IEnumerator Director_WaitsForClick_AfterDelay_ThenPublishesOnce()
+        {
+            var catcherGo = new GameObject("Catcher");
+            var catcher = catcherGo.AddComponent<LoveAlgo.UI.ClickAdvanceCatcher>();
+            // GO를 비활성으로 만든 뒤 필드 주입 → 활성화: OnEnable이 clickCatcher 구독을 보장(직렬화 프리팹과 동일 순서).
+            var go = new GameObject("Director");
+            go.SetActive(false);
+            var dir = go.AddComponent<LoveAlgo.UI.FirstLaunchDirector>();
+            // messages=null → 즉시 완료. clickCatcher 바인딩, bridgePrefab=null → 클릭 시 폴백 발행.
+            SetPrivate(dir, "fadeIn", 0f);
+            SetPrivate(dir, "clickEnableDelay", 0.2f);
+            SetPrivate(dir, "clickCatcher", catcher);
+            go.SetActive(true);
+
+            int count = 0;
+            var sub = LoveAlgo.Common.EventBus.Subscribe<LoveAlgo.Events.StartNewGameCommand>(_ => count++);
+            try
+            {
+                yield return null; // Start → 완료 → 대기 시작(아직 무장 전)
+                Assert.IsFalse(catcher.Armed, "대기 동안엔 무장 전.");
+                catcher.OnPointerClick(new UnityEngine.EventSystems.PointerEventData(null));
+                Assert.AreEqual(0, count, "무장 전 클릭은 진행시키지 않음.");
+
+                yield return new WaitForSeconds(0.3f); // clickEnableDelay 경과 → 무장
+                Assert.IsTrue(catcher.Armed, "대기 후 무장됨.");
+                Assert.AreEqual(0, count, "클릭 전엔 자동 진행하지 않음(자동 넘어감 제거).");
+
+                catcher.OnPointerClick(new UnityEngine.EventSystems.PointerEventData(null));
+                catcher.OnPointerClick(new UnityEngine.EventSystems.PointerEventData(null)); // 중복
+                yield return null;
+                Assert.AreEqual(1, count, "무장 후 클릭 → StartNewGameCommand 1회만.");
+                Assert.IsFalse(catcher.Armed, "진행 후 해제(이후 클릭 무시).");
+            }
+            finally { sub.Dispose(); Object.DestroyImmediate(go); Object.DestroyImmediate(catcherGo); }
         }
     }
 }
