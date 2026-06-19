@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using LoveAlgo.Common; // EventBus
@@ -15,7 +16,10 @@ namespace LoveAlgo.UI
     /// 세이브/로드 팝업 뷰(*View, ADR-013 Overlay). <see cref="ShowSaveLoadCommand"/>로 표시,
     /// Grid에 슬롯을 런타임 스폰(ScheduleView 패턴)하고 페이지 단위로 <see cref="JsonSaveStore"/>를 읽어 바인딩.
     /// Load 모드: 데이터 슬롯 클릭→<see cref="LoadGameCommand"/>+닫기. Save 모드: 클릭→<see cref="SaveRequestedEvent"/>+갱신.
-    /// SetVisible/OverlayGate/누수가드 = SettingsView 1:1(게임플레이 입력 차단). 슬롯0(자동저장)은 Continue로 분리 — 1+만 노출.
+    /// SetVisible/OverlayGate/누수가드 = SettingsView 1:1(게임플레이 입력 차단).
+    /// 슬롯0(자동저장)은 양 모드 첫 칸으로 노출(<see cref="SlotForCell"/> 0-base): Load=해당 시점 로드,
+    /// Save=덮어쓰기 금지(안내 모달만). Save 모드는 팝업 표시 전 <see cref="PrimeThumbnailCacheCommand"/>로
+    /// 썸네일을 예열해 슬롯 클릭 깜빡임을 없앤다.
     /// </summary>
     public class SaveLoadView : MonoBehaviour
     {
@@ -32,8 +36,16 @@ namespace LoveAlgo.UI
 
         [Tooltip("페이지당 슬롯 수(Grid 셀 수와 일치).")]
         [SerializeField] int slotsPerPage = 6;
-        [Tooltip("총 페이지 수. 슬롯 = 1 ~ slotsPerPage*pageCount.")]
+        [Tooltip("총 페이지 수. 슬롯 = 0 ~ slotsPerPage*pageCount-1 (0=자동저장).")]
         [SerializeField] int pageCount = 3;
+
+        [Header("자동저장 슬롯 안내 모달(Save 모드 클릭 시)")]
+        [SerializeField] string autoSaveModalTitle = "자동저장 슬롯";
+        [TextArea] [SerializeField] string autoSaveModalMessage = "자동저장 전용 슬롯입니다.\n수동 저장은 다른 슬롯을 사용해 주세요.";
+        [SerializeField] string autoSaveModalConfirm = "확인";
+
+        [Tooltip("Save 팝업 표시 전 썸네일 캐시 예열을 기다릴 최대 프레임(컨트롤러 없으면 이만큼 후 그냥 표시).")]
+        [SerializeField] int primeGuardFrames = 10;
 
         readonly List<SaveLoadSlot> _slots = new();
         readonly List<UnityEngine.Object> _thumbnails = new(); // 페이지별 생성 텍스처/스프라이트(누수 방지)
@@ -86,13 +98,26 @@ namespace LoveAlgo.UI
                 _slots.Add(Instantiate(slotPrefab, slotContainer));
         }
 
-        /// <summary>모드로 팝업을 열고 첫 페이지를 표시한다.</summary>
+        /// <summary>모드로 팝업을 열고 첫 페이지를 표시한다. Save 모드는 썸네일 캐시를 예열한 뒤(깜빡임 제거) 표시.</summary>
         public void Show(SaveLoadMode mode)
         {
             _mode = mode;
             _page = 0;
             EnsureSlots();
             RefreshPage();
+            if (mode == SaveLoadMode.Save && isActiveAndEnabled) StartCoroutine(PrimeThenShow());
+            else SetVisible(true); // Load(타이틀 포함) 또는 비활성 폴백 — 예열 불필요/불가
+        }
+
+        // 팝업이 아직 안 보이는 동안(alpha 0) 스테이지를 1회 캡처해 캐시 → 완료 후 표시. 캡처 중엔 팝업이
+        // 안 보이고, 이후 슬롯 클릭은 캐시를 재사용하므로 클릭마다 깜빡이던 현상이 사라진다. 컨트롤러(구독자)가
+        // 없으면 핸들이 안 풀리므로 primeGuardFrames만큼만 기다렸다 그냥 표시(hang 방지).
+        IEnumerator PrimeThenShow()
+        {
+            var handle = new CompletionHandle();
+            EventBus.Publish(new PrimeThumbnailCacheCommand(handle));
+            int guard = 0;
+            while (!handle.IsComplete && guard++ < primeGuardFrames) yield return null;
             SetVisible(true);
         }
 
@@ -102,8 +127,8 @@ namespace LoveAlgo.UI
             RefreshPage();
         }
 
-        /// <summary>페이지·셀 인덱스 → 글로벌 슬롯 번호(1-base, 슬롯0=자동저장 분리). 순수 — 테스트 가능.</summary>
-        public static int SlotForCell(int page, int cellIndex, int slotsPerPage) => page * slotsPerPage + cellIndex + 1;
+        /// <summary>페이지·셀 인덱스 → 글로벌 슬롯 번호(0-base, 1페이지 첫 칸=슬롯0=자동저장). 순수 — 테스트 가능.</summary>
+        public static int SlotForCell(int page, int cellIndex, int slotsPerPage) => page * slotsPerPage + cellIndex;
 
         void RefreshPage()
         {
@@ -135,8 +160,18 @@ namespace LoveAlgo.UI
                 EventBus.Publish(new LoadGameCommand(slot));
                 SetVisible(false);
             }
-            else // Save: 현재 상태를 슬롯에 저장(SaveManager 구독). 썸네일은 비동기 — ThumbnailSavedEvent 수신 시 반영.
+            else // Save
             {
+                if (slot == JsonSaveStore.AutoSaveSlot)
+                {
+                    // 자동저장 슬롯은 수동 덮어쓰기 금지 — 안내 모달만(ModalView가 표시, 닫기 외 동작 없음).
+                    EventBus.Publish(new ShowModalCommand(
+                        autoSaveModalTitle, autoSaveModalMessage,
+                        new[] { new ModalButton(autoSaveModalConfirm, ModalButtonKind.Close) },
+                        new ModalRequest()));
+                    return;
+                }
+                // 현재 상태를 슬롯에 저장(SaveManager 구독). 썸네일은 비동기 — ThumbnailSavedEvent 수신 시 반영.
                 EventBus.Publish(new SaveRequestedEvent(slot, "manual"));
                 RefreshPage();
             }

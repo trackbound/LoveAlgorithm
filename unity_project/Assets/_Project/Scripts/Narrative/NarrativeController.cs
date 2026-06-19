@@ -483,10 +483,12 @@ namespace LoveAlgo.Story.StoryEngine
                 return false;
             }
 
-            if (string.Equals(head, "Save", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(head, "Save", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(head, "Autosave", StringComparison.OrdinalIgnoreCase))
             {
-                // 스토리 체크포인트 → 자동저장 슬롯에 세이브(SaveManager가 SaveRequestedEvent 구독). 0=자동저장 슬롯 계약.
-                EventBus.Publish(new SaveRequestedEvent(0, "story-save"));
+                // 스토리 체크포인트(작가가 prologue.csv 등에 Flow,,Autosave로 명시) → 자동저장 슬롯 갱신.
+                // SaveManager가 SaveRequestedEvent 구독. 0=자동저장 슬롯 계약. 수동 아님 → 썸네일 라이브 캡처.
+                EventBus.Publish(new SaveRequestedEvent(JsonSaveStore.AutoSaveSlot, "story-save"));
                 return false;
             }
 

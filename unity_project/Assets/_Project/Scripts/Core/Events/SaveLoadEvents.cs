@@ -22,12 +22,24 @@ namespace LoveAlgo.Events
         public LoadGameCommand(int slot) { Slot = slot; }
     }
 
-    /// <summary>저장 시 썸네일 캡처 요청. 인게임 ThumbnailCaptureController가 구독해 UI 배제 캡처 후 슬롯 PNG를 기록.
-    /// (SaveData.thumbnailFile은 저장 시 세팅, PNG는 이 명령으로 비동기 기록 — Load UI는 파일 있으면 표시.)</summary>
+    /// <summary>저장 시 썸네일 캡처 요청. 인게임 ThumbnailCaptureController가 구독해 슬롯 PNG를 기록.
+    /// <see cref="UseCache"/>=true(수동 저장)면 라이브 캡처 대신 <see cref="PrimeThumbnailCacheCommand"/>로
+    /// 미리 떠둔 캐시 PNG를 그대로 기록 → 슬롯 클릭마다 UI를 끄는 깜빡임 제거. false(자동저장 등)면 라이브 캡처.</summary>
     public readonly struct CaptureThumbnailCommand
     {
         public readonly int Slot;
-        public CaptureThumbnailCommand(int slot) { Slot = slot; }
+        public readonly bool UseCache;
+        public CaptureThumbnailCommand(int slot, bool useCache = false) { Slot = slot; UseCache = useCache; }
+    }
+
+    /// <summary>썸네일 캐시 예열 요청(세이브 팝업이 열리기 직전 1회). ThumbnailCaptureController가 스테이지-only
+    /// 화면을 캡처해 메모리에 캐싱하고 <see cref="Handle"/>을 완료한다. 팝업은 완료를 기다렸다 표시 →
+    /// 캡처 중엔 팝업이 아직 안 보여 깜빡임이 팝업 등장에 묻힌다. 이후 수동 저장 슬롯 클릭은 캐시를 재사용(무깜빡임).
+    /// 구독자(인게임 컨트롤러)가 없으면 핸들이 안 풀리므로, 호출부는 짧은 프레임 가드 후 그냥 표시한다.</summary>
+    public readonly struct PrimeThumbnailCacheCommand
+    {
+        public readonly CompletionHandle Handle;
+        public PrimeThumbnailCacheCommand(CompletionHandle handle) { Handle = handle; }
     }
 
     /// <summary>슬롯 썸네일 PNG 기록 완료 통지(ThumbnailCaptureController 발행). 캡처가 프레임 종료 비동기라

@@ -17,12 +17,25 @@ namespace LoveAlgo.UI
         public const int Width = 400;
         public const int Height = 128;
 
-        /// <summary>캔버스 배제 후 화면을 캡처해 PNG 파일로 저장한다(코루틴: WaitForEndOfFrame 필요).</summary>
-        public static IEnumerator CaptureToFile(string filePath, int width = Width, int height = Height)
+        /// <summary>캔버스 배제 후 화면을 캡처해 PNG 바이트로 돌려준다(코루틴: WaitForEndOfFrame 필요).
+        /// 결과는 콜백으로 전달(코루틴이라 반환 불가) — 호출부가 파일 기록/캐싱을 선택한다. 실패 시 null.</summary>
+        public static IEnumerator CaptureToBytes(Action<byte[]> onResult, int width = Width, int height = Height)
         {
             var disabled = DisableForegroundCanvases();
             yield return new WaitForEndOfFrame(); // 렌더 종료 후라야 백버퍼 ReadPixels 가능
-            CaptureAndWrite(filePath, width, height, disabled);
+            onResult?.Invoke(CaptureBytes(width, height, disabled));
+        }
+
+        /// <summary>이미 떠둔 PNG 바이트를 슬롯 파일로 기록한다(캐시 재사용 경로 — 캡처/캔버스 토글 없음 = 무깜빡임).</summary>
+        public static void WriteBytes(string filePath, byte[] png)
+        {
+            if (png == null) return;
+            try
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(filePath));
+                File.WriteAllBytes(filePath, png);
+            }
+            catch (Exception e) { Debug.LogError($"[ThumbnailCapture] 캐시 기록 실패 {filePath}: {e}"); }
         }
 
         static List<Canvas> DisableForegroundCanvases()
@@ -33,7 +46,7 @@ namespace LoveAlgo.UI
             return disabled;
         }
 
-        static void CaptureAndWrite(string filePath, int width, int height, List<Canvas> toRestore)
+        static byte[] CaptureBytes(int width, int height, List<Canvas> toRestore)
         {
             Texture2D full = null, scaled = null;
             try
@@ -43,11 +56,9 @@ namespace LoveAlgo.UI
                 full.ReadPixels(new Rect(0, 0, sw, sh), 0, 0);
                 full.Apply();
                 scaled = Downscale(full, width, height);
-                byte[] png = scaled.EncodeToPNG();
-                Directory.CreateDirectory(Path.GetDirectoryName(filePath));
-                File.WriteAllBytes(filePath, png);
+                return scaled.EncodeToPNG();
             }
-            catch (Exception e) { Debug.LogError($"[ThumbnailCapture] 캡처/저장 실패 {filePath}: {e}"); }
+            catch (Exception e) { Debug.LogError($"[ThumbnailCapture] 캡처 실패: {e}"); return null; }
             finally
             {
                 foreach (var c in toRestore) if (c != null) c.enabled = true; // 예외에도 복원

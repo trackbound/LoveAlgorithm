@@ -46,7 +46,9 @@ namespace LoveAlgo.Save
             }
 
             bool ok = SaveService.Save(e.Slot, state, BuildChapterLabel());
-            if (ok) EventBus.Publish(new CaptureThumbnailCommand(e.Slot)); // 썸네일 PNG 비동기 기록(인게임 컨트롤러 구독, 없으면 no-op)
+            // 썸네일 기록(인게임 컨트롤러 구독, 없으면 no-op). 수동 저장은 팝업이 예열한 캐시 재사용(무깜빡임),
+            // 자동/스토리 저장은 현재 화면 라이브 캡처(팝업 없음).
+            if (ok) EventBus.Publish(new CaptureThumbnailCommand(e.Slot, useCache: e.Reason == "manual"));
             EventBus.Publish(new SaveCompletedEvent(e.Slot, ok));
         }
 

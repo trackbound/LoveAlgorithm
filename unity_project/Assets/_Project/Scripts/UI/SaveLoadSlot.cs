@@ -49,7 +49,11 @@ namespace LoveAlgo.UI
             if (!has) return;
 
             if (titleText != null)
-                titleText.text = string.IsNullOrEmpty(data.chapterLabel) ? $"Slot {slot}" : data.chapterLabel;
+            {
+                string label = string.IsNullOrEmpty(data.chapterLabel) ? $"Slot {slot}" : data.chapterLabel;
+                // 슬롯0=자동저장: 첫 칸임을 한눈에 알도록 라벨 앞에 표식(빈 슬롯 표식은 프리팹 영역 — 🟢 후속).
+                titleText.text = slot == JsonSaveStore.AutoSaveSlot ? $"자동저장 · {label}" : label;
+            }
             if (dateText != null) dateText.text = FormatDate(data.savedAtUtc);
             // 썸네일 PNG가 있을 때만 교체(없으면 프리팹 기본 플레이스홀더 유지).
             if (thumbnailImage != null && thumbnail != null) thumbnailImage.sprite = thumbnail;

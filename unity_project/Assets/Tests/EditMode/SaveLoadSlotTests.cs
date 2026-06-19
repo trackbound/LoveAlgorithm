@@ -35,10 +35,11 @@ namespace LoveAlgo.Tests.EditMode
         [Test]
         public void SlotForCell_Maps_Page_And_Cell()
         {
-            Assert.AreEqual(1, SaveLoadView.SlotForCell(0, 0, 6), "1페이지 첫 칸 = 슬롯1");
-            Assert.AreEqual(6, SaveLoadView.SlotForCell(0, 5, 6), "1페이지 끝 칸 = 슬롯6");
-            Assert.AreEqual(7, SaveLoadView.SlotForCell(1, 0, 6), "2페이지 첫 칸 = 슬롯7");
-            Assert.AreEqual(18, SaveLoadView.SlotForCell(2, 5, 6), "3페이지 끝 칸 = 슬롯18");
+            // 0-base: 1페이지 첫 칸 = 슬롯0(자동저장), 이후 연속.
+            Assert.AreEqual(0, SaveLoadView.SlotForCell(0, 0, 6), "1페이지 첫 칸 = 슬롯0(자동저장)");
+            Assert.AreEqual(5, SaveLoadView.SlotForCell(0, 5, 6), "1페이지 끝 칸 = 슬롯5");
+            Assert.AreEqual(6, SaveLoadView.SlotForCell(1, 0, 6), "2페이지 첫 칸 = 슬롯6");
+            Assert.AreEqual(17, SaveLoadView.SlotForCell(2, 5, 6), "3페이지 끝 칸 = 슬롯17");
         }
     }
 }
