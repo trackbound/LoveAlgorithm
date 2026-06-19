@@ -714,14 +714,20 @@ namespace LoveAlgo.Story.StoryEngine
 
         IEnumerator PlayLoading(ScriptLine line)
         {
+            // LoadingScene[:time][:key] — 헤드 뒤 토큰을 순회: 숫자면 표시시간, 그 외 첫 토큰은 스플래시 키(캐릭터 id).
             float secs = LoadingDefaultSeconds;
-            int ci = (line.Value ?? "").IndexOf(':');
-            if (ci >= 0 &&
-                float.TryParse(line.Value.Substring(ci + 1).Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out float s) && s >= 0f)
-                secs = s;
+            string key = null;
+            string[] toks = (line.Value ?? "").Split(':');
+            for (int i = 1; i < toks.Length; i++)
+            {
+                string t = toks[i].Trim();
+                if (t.Length == 0) continue;
+                if (float.TryParse(t, NumberStyles.Float, CultureInfo.InvariantCulture, out float s) && s >= 0f) secs = s;
+                else if (key == null) key = t;
+            }
 
             var req = new CompletionHandle();
-            EventBus.Publish(new ShowLoadingCommand(secs, req));
+            EventBus.Publish(new ShowLoadingCommand(secs, req, key));
             yield return WaitNext(line, () => req.IsComplete);
         }
 

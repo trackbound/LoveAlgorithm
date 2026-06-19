@@ -61,7 +61,7 @@ namespace LoveAlgo.UI
 
         IEnumerator Run(ShowLoadingCommand e)
         {
-            ApplySplash();
+            ApplySplash(e.Key);
             overlay.SetActive(true);
             if (e.Seconds > 0f) yield return new WaitForSeconds(e.Seconds);
             overlay.SetActive(false);
@@ -69,8 +69,11 @@ namespace LoveAlgo.UI
             var h = _pending; _pending = null; _routine = null; h?.Complete();
         }
 
-        /// <summary>표시 직전 스플래시 일러스트를 직전과 다른 무작위 한 장으로 교체. 에셋/이미지 없으면 무동작.</summary>
-        void ApplySplash()
+        /// <summary>
+        /// 표시 직전 스플래시 일러스트를 교체. <paramref name="key"/>(캐릭터 폴더 id)가 있으면 이름에 그 키를
+        /// 포함한 스플래시 중 무작위로, 없거나 매칭 0이면 전체에서 직전과 다른 무작위로 고른다. 에셋/이미지 없으면 무동작.
+        /// </summary>
+        void ApplySplash(string key)
         {
             if (string.IsNullOrEmpty(splashFolder)) return;
             var img = splashImage != null ? splashImage : overlay.GetComponent<Image>();
@@ -78,6 +81,18 @@ namespace LoveAlgo.UI
 
             if (_splashes == null) _splashes = Resources.LoadAll<Sprite>(splashFolder);
             if (_splashes == null || _splashes.Length == 0) return;
+
+            // 컨텍스트 키: 이름 부분일치(대소문자 무시). 매칭이 있으면 그 안에서 무작위(연속회피는 전체 풀에만 적용).
+            if (!string.IsNullOrEmpty(key))
+            {
+                var matches = Array.FindAll(_splashes, s => s != null && s.name.IndexOf(key, StringComparison.OrdinalIgnoreCase) >= 0);
+                if (matches.Length > 0)
+                {
+                    img.sprite = matches[UnityEngine.Random.Range(0, matches.Length)];
+                    return;
+                }
+                // 매칭 0 → 전체 무작위 폴백(아래로).
+            }
 
             int idx = UnityEngine.Random.Range(0, _splashes.Length);
             if (idx == _lastSplash && _splashes.Length > 1) idx = (idx + 1) % _splashes.Length;

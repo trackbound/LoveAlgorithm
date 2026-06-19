@@ -62,7 +62,7 @@ namespace LoveAlgo.Story.StoryEngine
             { "DialogueHide", new Sig(0, 0, "(인자 없음)") },
             { "DialogueShow", new Sig(0, 0, "(인자 없음)") },
             { "Video",        new Sig(1, 3, "파일명[:Loop|:NoSkip]") },
-            { "LoadingScene", new Sig(0, 1, "[displayTime]") },
+            { "LoadingScene", new Sig(0, 2, "[displayTime][:characterKey]") },
         };
 
         /// <summary>주어진 canonical 명령과 인자 개수가 시그니처에 부합하는지.</summary>

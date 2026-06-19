@@ -27,6 +27,7 @@ namespace LoveAlgo.Tests.PlayMode
         bool _finished;
         bool _loadSeen;
         float _loadSeconds;
+        string _loadKey;
 
         NarrativeController SetUp()
         {
@@ -36,14 +37,14 @@ namespace LoveAlgo.Tests.PlayMode
                 UnityEngine.Object.DestroyImmediate(pc.gameObject);
 
             _dialogues.Clear();
-            _finished = false; _loadSeen = false; _loadSeconds = -1f;
+            _finished = false; _loadSeen = false; _loadSeconds = -1f; _loadKey = "<unset>";
 
             _gs = ScriptableObject.CreateInstance<GameStateSO>();
             _gs.ResetRuntime();
 
             _subs.Add(EventBus.Subscribe<ShowDialogueCommand>(e => { _dialogues.Add(e.Text); e.Handle.Complete(); }));
             _subs.Add(EventBus.Subscribe<NarrativeFinishedEvent>(_ => _finished = true));
-            _subs.Add(EventBus.Subscribe<ShowLoadingCommand>(e => { _loadSeen = true; _loadSeconds = e.Seconds; e.Handle?.Complete(); }));
+            _subs.Add(EventBus.Subscribe<ShowLoadingCommand>(e => { _loadSeen = true; _loadSeconds = e.Seconds; _loadKey = e.Key; e.Handle?.Complete(); }));
 
             _playerGo = new GameObject("Player");
             var player = _playerGo.AddComponent<NarrativeController>();
@@ -84,7 +85,50 @@ namespace LoveAlgo.Tests.PlayMode
 
             Assert.IsTrue(_loadSeen, "LoadingScene → ShowLoadingCommand 발행");
             Assert.AreEqual(2.0f, _loadSeconds, 1e-4f, "displayTime 생략 시 동결 2.0s");
+            Assert.IsNull(_loadKey, "키 생략 시 Key=null(전체 무작위)");
             CollectionAssert.AreEqual(new[] { "로딩후" }, _dialogues, "로딩 완료(await) 후 다음 대사 진행");
+            Assert.IsTrue(_finished);
+        }
+
+        [UnityTest]
+        public IEnumerator LoadingScene_KeyOnly_Parses_Key_With_Default_Time()
+        {
+            const string csv =
+                "LineID,Type,Speaker,Value,Next\n" +
+                ",Flow,,LoadingScene:Roa,await\n" + // 시간 생략 + 캐릭터 키만
+                ",Text,,로딩후,click\n" +
+                ",Flow,,End,>\n";
+
+            var player = SetUp();
+            yield return null;
+
+            EventBus.Publish(new PlayScriptCommand(csv, "loading-key"));
+            yield return WaitUntilDone(player);
+
+            Assert.IsTrue(_loadSeen);
+            Assert.AreEqual(2.0f, _loadSeconds, 1e-4f, "키만 줘도 시간은 동결 기본 2.0s");
+            Assert.AreEqual("Roa", _loadKey, "비숫자 토큰 → 스플래시 키");
+            Assert.IsTrue(_finished);
+        }
+
+        [UnityTest]
+        public IEnumerator LoadingScene_Time_And_Key_Both_Parsed()
+        {
+            const string csv =
+                "LineID,Type,Speaker,Value,Next\n" +
+                ",Flow,,Loading:0.05:DoHeewon,await\n" + // 별칭 + 시간 + 키
+                ",Text,,로딩후,click\n" +
+                ",Flow,,End,>\n";
+
+            var player = SetUp();
+            yield return null;
+
+            EventBus.Publish(new PlayScriptCommand(csv, "loading-time-key"));
+            yield return WaitUntilDone(player);
+
+            Assert.IsTrue(_loadSeen);
+            Assert.AreEqual(0.05f, _loadSeconds, 1e-4f, "명시 displayTime");
+            Assert.AreEqual("DoHeewon", _loadKey, "시간+키 동시 파싱");
             Assert.IsTrue(_finished);
         }
 
@@ -105,6 +149,7 @@ namespace LoveAlgo.Tests.PlayMode
 
             Assert.IsTrue(_loadSeen, "Loading 별칭도 인식");
             Assert.AreEqual(0.05f, _loadSeconds, 1e-4f, "명시 displayTime");
+            Assert.IsNull(_loadKey, "시간만 줄 땐 Key=null");
             Assert.IsTrue(_finished);
         }
     }
