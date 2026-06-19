@@ -29,6 +29,7 @@ namespace LoveAlgo.UI
         RoaDevice _device;
         RoaOverlaySO.Category _category;
         bool _present;
+        CharSlot _slot; // 로아가 등장한 슬롯 — Exit/Clear는 캐릭터 id를 싣지 않으므로 슬롯으로 퇴장을 판별한다.
 
         void OnEnable()
         {
@@ -64,21 +65,26 @@ namespace LoveAlgo.UI
 
         void OnChar(ShowCharacterCommand e)
         {
-            if (config == null || !IsRoa(e.Character)) return;
+            if (config == null) return;
             switch (e.Action)
             {
                 case CharAction.Enter:
+                    if (!IsRoa(e.Character)) return;
+                    _slot = e.Slot;
                     _category = config.ResolveCategory(e.Emote);
                     _present = true;
                     ShowOverlay();
                     break;
                 case CharAction.Emote:
+                    if (!IsRoa(e.Character)) return;
                     ApplyCategory(config.ResolveCategory(e.Emote));
                     break;
                 case CharAction.Exit:
                 case CharAction.Clear:
-                    _present = false;
-                    HideOverlay();
+                    // 엔진은 바 `C:Exit`/`Clear`를 캐릭터 id 없이 발행한다(StageParser). id로 판별하면
+                    // 로아 퇴장을 놓쳐 오버레이가 다음 씬까지 잔존하므로(학교에서 다은 등장 시 잔존 버그),
+                    // 로아가 등장해 있던 슬롯이 비워질 때 내린다.
+                    if (_present && e.Slot == _slot) { _present = false; HideOverlay(); }
                     break;
             }
         }

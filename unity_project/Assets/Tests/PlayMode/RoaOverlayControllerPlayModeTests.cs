@@ -46,6 +46,9 @@ namespace LoveAlgo.Tests.PlayMode
         static ShowCharacterCommand Char(CharAction a, string id, string emote) =>
             new ShowCharacterCommand(CharSlot.C, a, id, emote, 0f, new CompletionHandle());
 
+        static ShowCharacterCommand CharAt(CharSlot slot, CharAction a, string id, string emote) =>
+            new ShowCharacterCommand(slot, a, id, emote, 0f, new CompletionHandle());
+
         [UnityTest]
         public IEnumerator Enter_Shows_Overlay_DeviceCategory()
         {
@@ -97,9 +100,23 @@ namespace LoveAlgo.Tests.PlayMode
             Make();
             yield return null;
             EventBus.Publish(Char(CharAction.Enter, "roa", "00"));
-            EventBus.Publish(Char(CharAction.Exit, "roa", ""));
+            // 엔진은 바 `C:Exit`를 캐릭터 id 없이 발행한다 — id에 의존하면 퇴장을 놓친다(잔존 버그 회귀).
+            EventBus.Publish(Char(CharAction.Exit, null, ""));
             yield return null;
             Assert.IsTrue(_cmds[_cmds.Count - 1].IsClose);
+        }
+
+        [UnityTest]
+        public IEnumerator Exit_OnOtherSlot_DoesNotClose()
+        {
+            Make();
+            yield return null;
+            EventBus.Publish(CharAt(CharSlot.C, CharAction.Enter, "roa", "00"));
+            int after = _cmds.Count;
+            // 다른 슬롯의 퇴장은 로아 오버레이를 내리지 않는다.
+            EventBus.Publish(CharAt(CharSlot.L, CharAction.Exit, null, ""));
+            yield return null;
+            Assert.AreEqual(after, _cmds.Count);
         }
 
         [UnityTest]
