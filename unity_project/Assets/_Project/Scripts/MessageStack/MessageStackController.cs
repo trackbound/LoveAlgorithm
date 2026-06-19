@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using LoveAlgo.Common; // Log
@@ -45,6 +46,12 @@ namespace LoveAlgo.MessageStack
         [SerializeField] bool playOnStart = true;
 
         readonly List<MessageCardView> _active = new(); // index0 = 최신/최전면 = 슬롯0
+
+        /// <summary>카드 1장이 스폰될 때마다 발화(메시지 도착 신호 — SFX 후크 등).</summary>
+        public event Action MessageSpawned;
+        /// <summary>시퀀스 전체가 끝났을 때 1회 발화(연출 종료 핸드오프 신호).</summary>
+        public event Action Completed;
+
         Coroutine _play;
 
         void Start()
@@ -79,6 +86,7 @@ namespace LoveAlgo.MessageStack
                 Spawn(line.text);
             }
             _play = null;
+            Completed?.Invoke();
         }
 
         void Spawn(string text)
@@ -107,6 +115,7 @@ namespace LoveAlgo.MessageStack
             }
 
             Log.Info($"[MsgStack] spawn '{text}' active={_active.Count}");
+            MessageSpawned?.Invoke();
         }
 
         IEnumerator DestroyAfter(MessageCardView card, float delay)
