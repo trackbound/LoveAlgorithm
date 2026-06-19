@@ -145,5 +145,73 @@ namespace LoveAlgo.Tests.PlayMode
 
             Object.DestroyImmediate(viewGo);
         }
+
+        [UnityTest]
+        public IEnumerator View_ThreeFails_Reveals_Key_And_Lost_Guide()
+        {
+            var viewGo = new GameObject("View");
+            viewGo.SetActive(false);
+            var view = viewGo.AddComponent<LockScreenView>();
+            var overlay = new GameObject("Overlay");
+            overlay.transform.SetParent(viewGo.transform);
+            var labelGo = new GameObject("Label");
+            labelGo.transform.SetParent(viewGo.transform);
+            var label = labelGo.AddComponent<TextMeshProUGUI>();
+            var guide = viewGo.AddComponent<LockScreenGuideText>();
+            guide.Label = label; guide.LostText = "분실";
+            var keyVis = new GameObject("KeyVisual");
+            keyVis.transform.SetParent(viewGo.transform);
+            var kr = viewGo.AddComponent<KeyResetButton>();
+            kr.Root = keyVis;
+            view.Overlay = overlay; view.Guide = guide; view.KeyButton = kr; view.LostThreshold = 3;
+            viewGo.SetActive(true);
+            yield return null; // OnEnable 구독
+
+            view.OnShow(new ShowLockScreenCommand(LockMode.Normal, false, null, new CompletionHandle()));
+            Assert.IsFalse(keyVis.activeSelf, "초기엔 열쇠 숨김");
+
+            EventBus.Publish(new PasswordVerifyFailedEvent(1));
+            Assert.IsFalse(keyVis.activeSelf, "1회는 미노출");
+            EventBus.Publish(new PasswordVerifyFailedEvent(3));
+            Assert.IsTrue(keyVis.activeSelf, "3회+ → 열쇠 노출");
+            Assert.AreEqual("분실", label.text, "3회+ → 분실 가이드");
+
+            Object.DestroyImmediate(viewGo);
+        }
+
+        [UnityTest]
+        public IEnumerator View_ResetRequest_Reconfigures_To_Setup_And_Hides_Key()
+        {
+            var viewGo = new GameObject("View");
+            viewGo.SetActive(false);
+            var view = viewGo.AddComponent<LockScreenView>();
+            var overlay = new GameObject("Overlay");
+            overlay.transform.SetParent(viewGo.transform);
+            var inputGo = new GameObject("Input", typeof(RectTransform));
+            inputGo.transform.SetParent(viewGo.transform);
+            var input = inputGo.AddComponent<TMP_InputField>();
+            var labelGo = new GameObject("Label");
+            labelGo.transform.SetParent(viewGo.transform);
+            var label = labelGo.AddComponent<TextMeshProUGUI>();
+            var guide = viewGo.AddComponent<LockScreenGuideText>();
+            guide.Label = label; guide.SetupText = "설정"; guide.NormalText = "입력"; guide.LostText = "분실";
+            var keyVis = new GameObject("KeyVisual");
+            keyVis.transform.SetParent(viewGo.transform);
+            var kr = viewGo.AddComponent<KeyResetButton>();
+            kr.Root = keyVis;
+            view.Overlay = overlay; view.Input = input; view.Guide = guide; view.KeyButton = kr; view.LostThreshold = 3;
+            viewGo.SetActive(true);
+            yield return null;
+
+            view.OnShow(new ShowLockScreenCommand(LockMode.Normal, false, null, new CompletionHandle()));
+            EventBus.Publish(new PasswordVerifyFailedEvent(3)); // 열쇠+분실
+            Assert.IsTrue(keyVis.activeSelf);
+
+            EventBus.Publish(new RequestPasswordResetCommand());
+            Assert.IsFalse(keyVis.activeSelf, "재설정 → 열쇠 숨김");
+            Assert.AreEqual("설정", label.text, "재설정 → 설정 가이드(Reset=FirstSetup UI)");
+
+            Object.DestroyImmediate(viewGo);
+        }
     }
 }

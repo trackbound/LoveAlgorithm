@@ -41,6 +41,10 @@ namespace LoveAlgo.UI
         [SerializeField] LockScreenGuideText guide;
         [Tooltip("확정 버튼(모드별 라벨).")]
         [SerializeField] LoginButton loginButton;
+        [Tooltip("분실 시 우하단 열쇠 버튼(3회+ 오류 노출).")]
+        [SerializeField] KeyResetButton keyButton;
+        [Tooltip("분실 안내·열쇠 노출 임계 오류 횟수.")]
+        [SerializeField] int lostThreshold = 3;
         [SerializeField] string setupButtonLabel = "입력 완료";
         [SerializeField] string normalButtonLabel = "LOGIN";
 
@@ -51,8 +55,10 @@ namespace LoveAlgo.UI
         public PasswordInputField PasswordField { get => passwordField; set => passwordField = value; }
         public LockScreenGuideText Guide { get => guide; set => guide = value; }
         public LoginButton LoginButton { get => loginButton; set => loginButton = value; }
+        public KeyResetButton KeyButton { get => keyButton; set => keyButton = value; }
+        public int LostThreshold { get => lostThreshold; set => lostThreshold = value; }
 
-        IDisposable _sub, _finishSub, _resetSub, _failSub, _acceptSub;
+        IDisposable _sub, _finishSub, _resetSub, _failSub, _acceptSub, _resetReqSub;
         Coroutine _fadeRoutine;
         bool _fadeOut;
         LockMode _mode;
@@ -64,6 +70,7 @@ namespace LoveAlgo.UI
             _resetSub  = EventBus.Subscribe<ResetNarrativeViewsCommand>(_ => HideImmediate());
             _failSub   = EventBus.Subscribe<PasswordVerifyFailedEvent>(OnVerifyFailed);
             _acceptSub = EventBus.Subscribe<PasswordAcceptedEvent>(_ => Hide());
+            _resetReqSub = EventBus.Subscribe<RequestPasswordResetCommand>(_ => OnResetRequested());
             if (input != null)
             {
                 // 수동 구성 InputField 안전망: textComponent 미연결 시 자식 TMP_Text를 런타임 연결(없으면 입력 표시 불가).
@@ -81,8 +88,8 @@ namespace LoveAlgo.UI
         void OnDisable()
         {
             _sub?.Dispose(); _finishSub?.Dispose(); _resetSub?.Dispose();
-            _failSub?.Dispose(); _acceptSub?.Dispose();
-            _sub = _finishSub = _resetSub = _failSub = _acceptSub = null;
+            _failSub?.Dispose(); _acceptSub?.Dispose(); _resetReqSub?.Dispose();
+            _sub = _finishSub = _resetSub = _failSub = _acceptSub = _resetReqSub = null;
             if (input != null) input.onSubmit.RemoveListener(OnInputSubmit);
         }
 
@@ -97,6 +104,7 @@ namespace LoveAlgo.UI
             if (input != null) input.text = "";
             if (passwordField != null) passwordField.ResetField();
 
+            if (keyButton != null) keyButton.SetVisible(false); // 새 세션 — 열쇠 숨김
             ConfigureForMode(_mode);
 
             if (intro != null)
@@ -173,6 +181,23 @@ namespace LoveAlgo.UI
         {
             if (overlay == null || !overlay.activeSelf) return;
             if (passwordField != null) passwordField.Shake();
+            if (input != null) { input.text = ""; input.ActivateInputField(); }
+            else if (passwordField != null) passwordField.ResetField();
+
+            if (e.ErrorCount >= lostThreshold)
+            {
+                if (guide != null) guide.SetState(LockScreenGuideText.LockGuideState.Lost);
+                if (keyButton != null) keyButton.SetVisible(true);
+            }
+        }
+
+        /// <summary>재설정 요청 — Reset 모드로 UI 재구성(평문·설정 가이드·"입력 완료"), 열쇠 숨김, 입력 초기화.</summary>
+        void OnResetRequested()
+        {
+            if (overlay == null || !overlay.activeSelf) return;
+            _mode = LockMode.Reset;
+            ConfigureForMode(_mode);
+            if (keyButton != null) keyButton.SetVisible(false);
             if (input != null) { input.text = ""; input.ActivateInputField(); }
             else if (passwordField != null) passwordField.ResetField();
         }
