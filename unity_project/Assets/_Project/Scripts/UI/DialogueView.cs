@@ -86,7 +86,7 @@ namespace LoveAlgo.UI
         public Sprite[] MonoDotFrames { get => monoDotFrames; set => monoDotFrames = value; }
         public float MonoDotInterval { get => monoDotInterval; set => monoDotInterval = value; }
 
-        IDisposable _sub, _autoSub, _cgSub, _visSub, _textSpeedSub, _autoSpeedSub;
+        IDisposable _sub, _autoSub, _cgSub, _visSub, _textSpeedSub, _autoSpeedSub, _finishSub, _resetSub;
         Coroutine _typeRoutine;
         CompletionHandle _active;
         bool _typing;
@@ -123,14 +123,54 @@ namespace LoveAlgo.UI
                     StartSlide(toHome: true);
                 }
                 if (root != null) root.SetActive(e.Visible);
+                if (!e.Visible) ClearContent(); // 연출 숨김 → 비워서 다시 떴을 때 잔상 없게.
             });
             _textSpeedSub = EventBus.Subscribe<SetTextSpeedCommand>(e => ApplyTextSpeed(e.Value01));
             _autoSpeedSub = EventBus.Subscribe<SetAutoSpeedCommand>(e => ApplyAutoSpeed(e.Value01));
+            // 내러티브 종료/도구 화면정리 → 대사창 비우고 숨김(VideoView 등 다른 뷰와 동일 규약). 다음 스크립트가
+            // 깨끗한 상태에서 시작하도록 — 새 게임/재진입 시 직전 대사·에디터 플레이스홀더 잔상 방지.
+            _finishSub = EventBus.Subscribe<NarrativeFinishedEvent>(_ => ResetView());
+            _resetSub = EventBus.Subscribe<ResetNarrativeViewsCommand>(_ => ResetView());
             ApplyFromSettings(); // 영속 속도 채택(SettingsController 부팅 재발행 전이라도 직접 반영)
             HideEndMark(); // 씬에 authored-active로 둔 아이콘을 플레이 시작 시 숨김(첫 대사 완료 전까지 비표시).
             StopMonoDots(hide: true); // 점 애니메이션도 부팅 시 숨김(독백 라인 진입 전까지 비표시).
             EnsureSlideRef(); // 슬라이드 홈 y 캡처(패널이 홈 위치일 때 = 부팅 직후).
             if (showButton != null) showButton.SetActive(false); // 보이기 버튼은 숨김 상태에서만 노출.
+            // 첫 ShowDialogueCommand 전까지 대사창 박스를 비우고 숨김 — 씬에 authored-active로 둔 박스가
+            // (에디터 플레이스홀더 텍스트와 함께) 비디오 재생 전 노출되는 문제 차단. OnShow가 다시 켠다.
+            ClearContent();
+            HideBox();
+        }
+
+        // 대사창 박스(root)를 숨김. root가 이 컴포넌트 자신의 GO면(자기참조 배선) 끄지 않는다 —
+        // 자신을 비활성화하면 구독이 끊겨 다음 ShowDialogueCommand를 못 받기 때문. 프로덕션 프리팹의 root는
+        // 자식 박스라 정상적으로 숨겨진다. 사용자 숨김(슬라이드) 중에는 그 상태를 존중해 건드리지 않는다.
+        void HideBox()
+        {
+            if (root != null && root != gameObject && !_hiddenByUser) root.SetActive(false);
+        }
+
+        /// <summary>대사창 내용 비우기 — 화자/본문 텍스트·진행 아이콘·독백 점을 초기 상태로. 박스 active는 건드리지 않음.
+        /// 타이핑 코루틴을 끊는 경우 보류 완료 핸들을 풀어준다(엔진 hang 방지, Complete는 멱등).</summary>
+        void ClearContent()
+        {
+            if (_typeRoutine != null) { StopCoroutine(_typeRoutine); _typeRoutine = null; }
+            _typing = false;
+            _awaitingClick = false;
+            _skipTyping = false;
+            _active?.Complete();
+            _active = null;
+            if (speakerText != null) speakerText.text = "";
+            if (bodyText != null) { bodyText.text = ""; bodyText.maxVisibleCharacters = 0; }
+            HideEndMark();
+            StopMonoDots(hide: true);
+        }
+
+        /// <summary>내러티브 종료/화면정리 — 내용을 비우고(보류 핸들 해제 포함) 박스를 숨긴다.</summary>
+        void ResetView()
+        {
+            ClearContent();
+            HideBox();
         }
 
         // 슬라이드 대상/홈 위치 확보(지연 캡처 — 패널이 홈에 있을 때 1회).
@@ -153,7 +193,9 @@ namespace LoveAlgo.UI
             _visSub?.Dispose();
             _textSpeedSub?.Dispose();
             _autoSpeedSub?.Dispose();
-            _sub = _autoSub = _cgSub = _visSub = _textSpeedSub = _autoSpeedSub = null;
+            _finishSub?.Dispose();
+            _resetSub?.Dispose();
+            _sub = _autoSub = _cgSub = _visSub = _textSpeedSub = _autoSpeedSub = _finishSub = _resetSub = null;
         }
 
         // ── 설정 속도(정규화 0=느림~1=빠름 → 초) ──
@@ -177,8 +219,8 @@ namespace LoveAlgo.UI
             if (root == null) return;
             if (e.Active)
             {
-                HideEndMark();
                 if (root.activeSelf) { root.SetActive(false); _cgHidden = true; }
+                ClearContent(); // 다시 떴을 때(다음 대사 전) 직전 대사 잔상이 비치지 않도록 비움.
             }
             else if (_cgHidden)
             {
