@@ -18,6 +18,7 @@ namespace LoveAlgo.DevTools.Editor
         const string ArtDir = "Assets/Art/로그/png";
         const string PrefabDir = "Assets/_Project/Prefabs/Log";
         const string BodyFont = "Assets/Fonts/Pretendard-Medium SDF.asset";
+        const string NarrationGlowMat = "Assets/_Project/Prefabs/Log/Mat/NarrationGlow.mat";
 
         [MenuItem("Tools/Log/Build Log Popup Prefab")]
         public static void Build()
@@ -132,6 +133,9 @@ namespace LoveAlgo.DevTools.Editor
             Le(spacer, preferredWidth: LeftColWidth, flexibleWidth: 0f);
             var body = Tmp("Body", root.transform, 28f, Color.white, TextAlignmentOptions.TopLeft);
             Le(body.gameObject, flexibleWidth: 1f);
+            // 독백 = 박스 없이 글자에만 분홍 번짐(목업: "텍스트 그림자효과"). 캐릭터/플레이어 박스와 달리 배경 없음.
+            var glow = EnsureNarrationGlowMaterial();
+            if (glow != null) body.fontSharedMaterial = glow;
 
             slot.BodyText = body;
             return root;
@@ -232,6 +236,67 @@ namespace LoveAlgo.DevTools.Editor
         {
             PrefabUtility.SaveAsPrefabAsset(go, $"{PrefabDir}/{name}.prefab");
             Object.DestroyImmediate(go);
+        }
+
+        // ───────────────────────── 독백 글로우 ─────────────────────────
+
+        /// <summary>기존 LogEntryNarration 프리팹의 본문 TMP에만 분홍 번짐(글로우) 머티리얼을 입힌다 —
+        /// 슬롯 3종 전체 재조립(BuildSlots) 없이 비파괴 적용(다른 슬롯의 감독 수동 튜닝 보존). 머티리얼 미존재면
+        /// 생성, 있으면 갱신. 목업 동결: 독백은 배경 박스 없이 글자에만 효과(캐릭터/플레이어 박스와 구분).</summary>
+        [MenuItem("Tools/Log/Apply Narration Glow")]
+        public static void ApplyNarrationGlow()
+        {
+            var glow = EnsureNarrationGlowMaterial();
+            if (glow == null) return;
+
+            string path = $"{PrefabDir}/LogEntryNarration.prefab";
+            if (AssetDatabase.LoadAssetAtPath<GameObject>(path) == null)
+            {
+                Debug.LogError($"[DialogueLogPrefabBuilder] 나레이션 슬롯 프리팹 없음: {path}");
+                return;
+            }
+            var contents = PrefabUtility.LoadPrefabContents(path);
+            try
+            {
+                var slot = contents.GetComponent<DialogueLogEntrySlot>();
+                var body = slot != null ? slot.BodyText : null;
+                if (body == null) { Debug.LogError("[DialogueLogPrefabBuilder] BodyText 미바인딩 — 글로우 적용 실패."); return; }
+                body.fontSharedMaterial = glow;
+                EditorUtility.SetDirty(body);
+                PrefabUtility.SaveAsPrefabAsset(contents, path);
+            }
+            finally { PrefabUtility.UnloadPrefabContents(contents); }
+
+            AssetDatabase.SaveAssets();
+            Debug.Log($"[DialogueLogPrefabBuilder] 독백 글로우 적용 완료 → {path} (머티리얼 {NarrationGlowMat}). 농도/번짐은 머티리얼 인스펙터에서 감독 튜닝(🟢).");
+        }
+
+        /// <summary>독백 본문용 분홍 번짐(Underlay) 머티리얼 보장 — 본문 폰트 머티리얼 복제 + UNDERLAY_ON.
+        /// offset 0(글자 둘레 균일 글로우), dilate/softness/alpha는 은은함 시작값(감독 튜닝 영역). 다른 텍스트가 공유하는
+        /// 폰트 기본 머티리얼을 건드리지 않도록 전용 인스턴스를 에셋으로 둔다.</summary>
+        static Material EnsureNarrationGlowMaterial()
+        {
+            var font = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(BodyFont);
+            if (font == null || font.material == null)
+            {
+                Debug.LogWarning($"[DialogueLogPrefabBuilder] 본문 폰트/머티리얼 없음: {BodyFont} — 글로우 생략.");
+                return null;
+            }
+            MessengerPrefabBuilder.EnsureFolder($"{PrefabDir}/Mat");
+            var mat = AssetDatabase.LoadAssetAtPath<Material>(NarrationGlowMat);
+            if (mat == null)
+            {
+                mat = new Material(font.material) { name = "NarrationGlow" };
+                AssetDatabase.CreateAsset(mat, NarrationGlowMat);
+            }
+            mat.EnableKeyword("UNDERLAY_ON");
+            mat.SetColor("_UnderlayColor", new Color(1f, 0.45f, 0.7f, 0.5f)); // 은은한 분홍(α 0.5 시작값)
+            mat.SetFloat("_UnderlayOffsetX", 0f);
+            mat.SetFloat("_UnderlayOffsetY", 0f);
+            mat.SetFloat("_UnderlayDilate", 0.3f);   // 번짐 확장(0~1)
+            mat.SetFloat("_UnderlaySoftness", 0.5f); // 가장자리 부드러움(0~1)
+            EditorUtility.SetDirty(mat);
+            return mat;
         }
 
         /// <summary>박스 아트 4종에 9-슬라이스 보더 보장(미설정일 때만 — 감독 수동 튜닝 보존).</summary>
