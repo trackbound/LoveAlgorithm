@@ -64,5 +64,34 @@ namespace LoveAlgo.Tests.PlayMode
             }
             finally { Object.DestroyImmediate(root); }
         }
+
+        [UnityTest]
+        public IEnumerator WarnShake_Moves_WithinAmplitude_AndRestoresOnDisable()
+        {
+            const float Amp = 6f;
+            var go = new GameObject("Warn", typeof(RectTransform));
+            var rt = (RectTransform)go.transform;
+            rt.anchoredPosition = new Vector2(10f, 20f);
+            var shake = go.AddComponent<LoveAlgo.UI.WarnWidgetShake>();
+            SetPrivate(shake, "amplitude", Amp);
+            // target은 Awake에서 self로 자동 바인딩, _base=(10,20) 캡처됨
+            try
+            {
+                float maxDev = 0f;
+                for (int i = 0; i < 20; i++)
+                {
+                    yield return null;
+                    float dev = (rt.anchoredPosition - new Vector2(10f, 20f)).magnitude;
+                    maxDev = Mathf.Max(maxDev, dev);
+                    Assert.LessOrEqual(dev, Amp * 1.5f + 1e-3f, "흔들림은 진폭 범위 내.");
+                }
+                Assert.Greater(maxDev, 1e-2f, "흔들려서 위치가 변해야 한다.");
+
+                shake.enabled = false;
+                yield return null;
+                Assert.AreEqual(new Vector2(10f, 20f), rt.anchoredPosition, "OnDisable에 기준 위치 복원.");
+            }
+            finally { Object.DestroyImmediate(go); }
+        }
     }
 }
