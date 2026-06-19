@@ -68,6 +68,11 @@ namespace LoveAlgo.UI
         [Tooltip("점 프레임 교체 간격(초).")]
         [SerializeField] float monoDotInterval = 0.15f;
 
+        [Header("눈감김(아이마스크) 동안 정렬 상승")]
+        [Tooltip("눈꺼풀 차폐 중에만 대사창 Canvas를 이 정렬값으로 올려 암전 위에 대사가 보이게 한다. " +
+                 "눈꺼풀 바(95)보다 크고 ScreenFade(100)보다 작아야 함. 차폐 해제 시 overrideSorting=off로 복원(평상시 모달/팝업 아래).")]
+        [SerializeField] int eyeMaskShroudSortingOrder = 96;
+
         public GameObject Root { get => root; set => root = value; }
         public RectTransform SlidePanel { get => slidePanel; set => slidePanel = value; }
         public GameObject ShowButton { get => showButton; set => showButton = value; }
@@ -86,7 +91,8 @@ namespace LoveAlgo.UI
         public Sprite[] MonoDotFrames { get => monoDotFrames; set => monoDotFrames = value; }
         public float MonoDotInterval { get => monoDotInterval; set => monoDotInterval = value; }
 
-        IDisposable _sub, _autoSub, _cgSub, _visSub, _textSpeedSub, _autoSpeedSub, _finishSub, _resetSub;
+        IDisposable _sub, _autoSub, _cgSub, _visSub, _textSpeedSub, _autoSpeedSub, _finishSub, _resetSub, _eyeShroudSub;
+        Canvas _canvas; // 대사창 루트 Canvas(눈감김 차폐 동안만 overrideSorting으로 정렬 상승).
         Coroutine _typeRoutine;
         CompletionHandle _active;
         bool _typing;
@@ -131,6 +137,9 @@ namespace LoveAlgo.UI
             // 깨끗한 상태에서 시작하도록 — 새 게임/재진입 시 직전 대사·에디터 플레이스홀더 잔상 방지.
             _finishSub = EventBus.Subscribe<NarrativeFinishedEvent>(_ => ResetView());
             _resetSub = EventBus.Subscribe<ResetNarrativeViewsCommand>(_ => ResetView());
+            // 눈감김(아이마스크) 차폐 동안에만 대사창을 눈꺼풀 위로 올린다(평상시엔 overrideSorting=off → 모달/팝업 아래 유지).
+            if (_canvas == null) _canvas = GetComponent<Canvas>();
+            _eyeShroudSub = EventBus.Subscribe<EyeMaskShroudChanged>(OnEyeMaskShroud);
             ApplyFromSettings(); // 영속 속도 채택(SettingsController 부팅 재발행 전이라도 직접 반영)
             HideEndMark(); // 씬에 authored-active로 둔 아이콘을 플레이 시작 시 숨김(첫 대사 완료 전까지 비표시).
             StopMonoDots(hide: true); // 점 애니메이션도 부팅 시 숨김(독백 라인 진입 전까지 비표시).
@@ -195,7 +204,10 @@ namespace LoveAlgo.UI
             _autoSpeedSub?.Dispose();
             _finishSub?.Dispose();
             _resetSub?.Dispose();
-            _sub = _autoSub = _cgSub = _visSub = _textSpeedSub = _autoSpeedSub = _finishSub = _resetSub = null;
+            _eyeShroudSub?.Dispose();
+            _sub = _autoSub = _cgSub = _visSub = _textSpeedSub = _autoSpeedSub = _finishSub = _resetSub = _eyeShroudSub = null;
+            // 차폐 정렬 상승이 남지 않도록 원복(다음 진입/도구화면에서 기본 정렬로 시작).
+            if (_canvas != null) _canvas.overrideSorting = false;
         }
 
         // ── 설정 속도(정규화 0=느림~1=빠름 → 초) ──
@@ -227,6 +239,16 @@ namespace LoveAlgo.UI
                 root.SetActive(true);
                 _cgHidden = false;
             }
+        }
+
+        // 눈감김(아이마스크) 차폐 동안만 대사창 Canvas를 눈꺼풀 위로 올린다. 차폐 해제 시 overrideSorting을 꺼서
+        // 평상시 정렬(모달/팝업 아래)로 복원 — 정적 상승이 아니라 차폐 구간에만 한정(차폐 중엔 팝업이 안 뜨므로 충돌 없음).
+        void OnEyeMaskShroud(EyeMaskShroudChanged e)
+        {
+            if (_canvas == null) _canvas = GetComponent<Canvas>();
+            if (_canvas == null) return;
+            if (e.Active) _canvas.sortingOrder = eyeMaskShroudSortingOrder;
+            _canvas.overrideSorting = e.Active;
         }
 
         /// <summary>사용자 숨김 상태(인포 바 "숨기기"). CSV 연출 숨김(<see cref="SetDialogueVisibleCommand"/>)과 별개.</summary>

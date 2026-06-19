@@ -40,6 +40,7 @@ namespace LoveAlgo.UI
         CompletionHandle _pending;
         float _barHeight;
         bool _geometryReady;
+        bool _shroudActive; // 눈꺼풀 바가 화면을 덮는 중인가(차폐 상태 이벤트 중복 발행 방지).
 
         void OnEnable()
         {
@@ -162,6 +163,12 @@ namespace LoveAlgo.UI
         {
             if (topBar != null) topBar.gameObject.SetActive(active);
             if (bottomBar != null) bottomBar.gameObject.SetActive(active);
+            // 차폐 상태 변화만 1회 발행 — 대사창이 이 동안만 정렬을 눈꺼풀 위로 올린다(평상시 모달/팝업 아래 유지).
+            if (active != _shroudActive)
+            {
+                _shroudActive = active;
+                EventBus.Publish(new EyeMaskShroudChanged(active));
+            }
         }
 
         void Finish()

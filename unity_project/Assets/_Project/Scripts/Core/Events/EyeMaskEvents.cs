@@ -35,4 +35,15 @@ namespace LoveAlgo.Events
             Handle = handle;
         }
     }
+
+    /// <summary>
+    /// 아이마스크 차폐(눈꺼풀 바) 표시 상태 변화. <c>Active=true</c>=바가 화면을 덮는 중(감김/유지/뜨는 중),
+    /// <c>false</c>=완전히 열려 바 비표시. 대사창(DialogueView)이 구독해 차폐 동안에만 정렬을 눈꺼풀 위로 올려
+    /// 암전 위에 대사가 보이게 한다(ADR-007: 뷰 간 직접참조 없이 이벤트로). 평상시엔 모달/팝업 아래 유지.
+    /// </summary>
+    public readonly struct EyeMaskShroudChanged
+    {
+        public readonly bool Active;
+        public EyeMaskShroudChanged(bool active) { Active = active; }
+    }
 }

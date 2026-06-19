@@ -1006,6 +1006,8 @@ GameObject:
   - component: {fileID: 1498431290299952968}
   - component: {fileID: 1215799035120233874}
   - component: {fileID: 2701978002689746779}
+  - component: {fileID: 6768820885499272111}
+  - component: {fileID: 2431913450675328201}
   m_Layer: 0
   m_Name: DialogueView
   m_TagString: Untagged
@@ -1072,6 +1074,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: b226c13fab532fa45bc327da35d74bbe, type: 3}
   - {fileID: 21300000, guid: 5002cc5d84b54a8418781ce071f3e493, type: 3}
   monoDotInterval: 0.15
+  eyeMaskShroudSortingOrder: 96
 --- !u!114 &5508085510737645871
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1139,6 +1142,47 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!223 &6768820885499272111
+Canvas:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6836183595358605811}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_RenderMode: 2
+  m_Camera: {fileID: 0}
+  m_PlaneDistance: 100
+  m_PixelPerfect: 0
+  m_ReceivesEvents: 1
+  m_OverrideSorting: 0
+  m_OverridePixelPerfect: 0
+  m_SortingBucketNormalizedSize: 0
+  m_VertexColorAlwaysGammaSpace: 0
+  m_UseReflectionProbes: 0
+  m_AdditionalShaderChannelsFlag: 0
+  m_UpdateRectTransformForStandalone: 0
+  m_SortingLayerID: 0
+  m_SortingOrder: 96
+  m_TargetDisplay: 0
+--- !u!114 &2431913450675328201
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6836183595358605811}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dc42784cf147c0c48a680349fa168899, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.GraphicRaycaster
+  m_IgnoreReversedGraphics: 1
+  m_BlockingObjects: 0
+  m_BlockingMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
 --- !u!1 &6982491491063777172
 GameObject:
   m_ObjectHideFlags: 0
