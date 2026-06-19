@@ -755,5 +755,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: LoveAlgo.UI::LoveAlgo.UI.DialogueLogEntrySlot
   portraitRoot: {fileID: 8787237041333212763}
   portraitImage: {fileID: 2960805495901205350}
+  nameRoot: {fileID: 6915010785783424309}
   nameText: {fileID: 6750442218063907553}
   bodyText: {fileID: 5744430834398402816}

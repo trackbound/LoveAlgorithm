@@ -109,6 +109,7 @@ namespace LoveAlgo.DevTools.Editor
 
             slot.PortraitRoot = portrait;
             slot.PortraitImage = portraitImg;
+            slot.NameRoot = nameLabel.transform.parent.gameObject; // NameBox GO — 연속 동일 화자 시 끔
             slot.NameText = nameLabel;
             slot.BodyText = body;
             return root;
@@ -121,6 +122,7 @@ namespace LoveAlgo.DevTools.Editor
             var nameLabel = NameBox(left.transform, "namebox_player");
             var body = TextBoxColumn(root.transform, "textbox_player", Color.white); // 주인공 전부 흰색(기획)
 
+            slot.NameRoot = nameLabel.transform.parent.gameObject; // NameBox GO — 연속 동일 화자 시 끔
             slot.NameText = nameLabel;
             slot.BodyText = body;
             return root;
@@ -236,6 +238,53 @@ namespace LoveAlgo.DevTools.Editor
         {
             PrefabUtility.SaveAsPrefabAsset(go, $"{PrefabDir}/{name}.prefab");
             Object.DestroyImmediate(go);
+        }
+
+        /// <summary>기존 캐릭터/플레이어 슬롯 프리팹에 NameRoot(NameBox GO) 참조를 비파괴로 배선 —
+        /// 슬롯 전체 재조립 없이(다른 슬롯 수동 튜닝 보존). 연속 동일 화자 2번째+ 박스에서 이름표를 끄기 위함.
+        /// 나레이션은 이름박스가 없어 대상 아님.</summary>
+        [MenuItem("Tools/Log/Wire Name Roots")]
+        public static void WireNameRoots()
+        {
+            int wired = 0;
+            foreach (var name in new[] { "LogEntryCharacter", "LogEntryPlayer" })
+            {
+                string path = $"{PrefabDir}/{name}.prefab";
+                if (AssetDatabase.LoadAssetAtPath<GameObject>(path) == null)
+                {
+                    Debug.LogError($"[DialogueLogPrefabBuilder] 슬롯 프리팹 없음: {path}");
+                    continue;
+                }
+                var contents = PrefabUtility.LoadPrefabContents(path);
+                try
+                {
+                    var slot = contents.GetComponent<DialogueLogEntrySlot>();
+                    var nameBox = FindDeep(contents.transform, "NameBox");
+                    if (slot == null || nameBox == null)
+                    {
+                        Debug.LogError($"[DialogueLogPrefabBuilder] {name}: slot/NameBox 못 찾음 — 배선 생략.");
+                        continue;
+                    }
+                    slot.NameRoot = nameBox.gameObject;
+                    EditorUtility.SetDirty(slot);
+                    PrefabUtility.SaveAsPrefabAsset(contents, path);
+                    wired++;
+                }
+                finally { PrefabUtility.UnloadPrefabContents(contents); }
+            }
+            AssetDatabase.SaveAssets();
+            Debug.Log($"[DialogueLogPrefabBuilder] NameRoot 배선 {wired}건 완료(연속 동일 화자 이름표 묶음).");
+        }
+
+        static Transform FindDeep(Transform root, string name)
+        {
+            if (root.name == name) return root;
+            for (int i = 0; i < root.childCount; i++)
+            {
+                var found = FindDeep(root.GetChild(i), name);
+                if (found != null) return found;
+            }
+            return null;
         }
 
         // ───────────────────────── 독백 글로우 ─────────────────────────

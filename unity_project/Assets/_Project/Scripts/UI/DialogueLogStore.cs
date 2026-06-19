@@ -55,5 +55,15 @@ namespace LoveAlgo.UI
             if (string.IsNullOrEmpty(speaker)) return DialogueLogKind.Narration;
             return DialogueLogKind.Character;
         }
+
+        /// <summary>두 박스가 같은 화자인지 — 연속 동일 화자 구간(run)에서 이름표/초상을 첫 박스에만 표시하기 위한 판정.
+        /// 종류가 같고 화자 키(SpeakerId 우선, 없으면 표시명)가 같으면 동일 화자(엑스트라는 이름으로 구분).</summary>
+        public static bool IsSameSpeaker(DialogueLogEntry a, DialogueLogEntry b)
+        {
+            if (a == null || b == null || a.Kind != b.Kind) return false;
+            string ka = string.IsNullOrEmpty(a.SpeakerId) ? a.Speaker : a.SpeakerId;
+            string kb = string.IsNullOrEmpty(b.SpeakerId) ? b.Speaker : b.SpeakerId;
+            return ka == kb;
+        }
     }
 }

@@ -65,5 +65,21 @@ namespace LoveAlgo.Tests.EditMode
             DialogueLogStore.Reset();
             Assert.AreEqual(0, DialogueLogStore.Count);
         }
+
+        [Test]
+        public void IsSameSpeaker_RunDetection()
+        {
+            // 연속 동일 화자 구간(run): 첫 박스에만 이름표/초상 표시 판정용.
+            DialogueLogStore.Append("로아", "c01", "1");      // 0
+            DialogueLogStore.Append("로아", "c01", "2");      // 1 = 연속(이름표 숨김)
+            DialogueLogStore.Append("교수님", null, "3");      // 2 = 화자 변경
+            DialogueLogStore.Append("조교", null, "4");        // 3 = 엑스트라 다른 이름 → 변경
+            var e = DialogueLogStore.Entries;
+
+            Assert.IsTrue(DialogueLogStore.IsSameSpeaker(e[0], e[1]), "같은 히로인 연속 = 동일 화자");
+            Assert.IsFalse(DialogueLogStore.IsSameSpeaker(e[1], e[2]), "히로인→엑스트라 = 변경");
+            Assert.IsFalse(DialogueLogStore.IsSameSpeaker(e[2], e[3]), "엑스트라 이름 다르면 변경");
+            Assert.IsFalse(DialogueLogStore.IsSameSpeaker(null, e[0]), "직전 없음 = 비동일(첫 박스)");
+        }
     }
 }

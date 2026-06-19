@@ -92,12 +92,16 @@ namespace LoveAlgo.UI
             _spawned.Clear();
             if (content == null) return;
 
-            foreach (var entry in DialogueLogStore.Entries)
+            var entries = DialogueLogStore.Entries;
+            for (int i = 0; i < entries.Count; i++)
             {
+                var entry = entries[i];
                 var prefab = PrefabFor(entry.Kind);
                 if (prefab == null) continue; // 변형 미배선 = 해당 종류 생략(부분 바인딩 안전)
+                // 연속 동일 화자 구간(run)의 첫 박스에만 이름표/초상 — 화자가 바뀌면 다시 표시.
+                bool showSpeaker = i == 0 || !DialogueLogStore.IsSameSpeaker(entries[i - 1], entry);
                 var slot = Instantiate(prefab, content);
-                slot.Bind(entry, PortraitFor(entry.SpeakerId));
+                slot.Bind(entry, PortraitFor(entry.SpeakerId), showSpeaker);
                 _spawned.Add(slot);
             }
         }
