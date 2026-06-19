@@ -87,6 +87,11 @@ namespace LoveAlgo.Game
                 EventBus.Publish(new ShowBackgroundCommand(d.storyBg, BgTransition.Cut, 0f, new CompletionHandle()));
             if (!string.IsNullOrEmpty(d.storyBgm))
                 EventBus.Publish(new PlayBgmCommand(d.storyBgm));
+            // 로아 디바이스 복원 — 로아 Char Enter 재발행 전에 쏴서 컨트롤러가 올바른 디바이스로 오버레이를
+            // 재구성하게 한다(오버레이 이름은 별도 저장하지 않고 디바이스+표정으로 파생).
+            if (!string.IsNullOrEmpty(d.storyRoaDevice) && RoaDeviceParse.TryParse(d.storyRoaDevice, out var roaDev))
+                EventBus.Publish(new SetRoaDeviceCommand(roaDev));
+
             foreach (var c in d.storyChars)
             {
                 if (c == null || string.IsNullOrEmpty(c.id)) continue;
