@@ -34,5 +34,19 @@ namespace LoveAlgo.Tests.EditMode
             Assert.AreSame(n, ButtonSpriteSwap.ResolveSprite(true, true, false, n, null, null, null));  // on 없음
             Assert.AreSame(n, ButtonSpriteSwap.ResolveSprite(false, false, false, n, null, null, null)); // disabled 없음
         }
+
+        [Test]
+        public void ResolveTint_PressedMultipliesBase_OnlyWhenInteractable()
+        {
+            var baseColor = Color.white;
+            var tint = new Color(0.7803922f, 0.7803922f, 0.7803922f, 1f); // C7C7C7
+
+            // 눌림 + 상호작용 가능 → base * tint (어두워짐)
+            Assert.AreEqual(baseColor * tint, ButtonSpriteSwap.ResolveTint(true, true, baseColor, tint));
+            // 안 눌림 → base 유지
+            Assert.AreEqual(baseColor, ButtonSpriteSwap.ResolveTint(true, false, baseColor, tint));
+            // 비활성이면 눌림이어도 base 유지(비활성 색은 스프라이트가 담당)
+            Assert.AreEqual(baseColor, ButtonSpriteSwap.ResolveTint(false, true, baseColor, tint));
+        }
     }
 }
