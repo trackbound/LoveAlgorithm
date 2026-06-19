@@ -8,16 +8,16 @@ using UnityEngine.UI;
 using LoveAlgo.Common; // EventBus
 using LoveAlgo.Core;   // OverlayGate
 using LoveAlgo.Events; // ShowSaveLoadCommand, OpenDialogueLogCommand, SetAutoModeCommand, ShowStageLayerCommand, ShowDialogueCommand, CompletionHandle
-using LoveAlgo.UI;     // DialogueInfoBarView, DialogueView, StageLayerView, SaveLoadView, DialogueLogView
+using LoveAlgo.UI;     // DialogueButtonBarView, DialogueView, StageLayerView, SaveLoadView, DialogueLogView
 
 namespace LoveAlgo.Tests.PlayMode
 {
     /// <summary>
-    /// 대사창 인포 바 계약: ① 버튼 7종(타이틀/불러오기/설정/저장/로그/오토/숨기기)이 명령만 발행(ADR-007)하고
+    /// 대사창 버튼 바 계약: ① 버튼 7종(타이틀/불러오기/설정/저장/로그/오토/숨기기)이 명령만 발행(ADR-007)하고
     /// 오토 토글이 아이콘을 스왑 ② 숨기기 → 슬라이드 다운+보이기 버튼 노출+오토 일시정지, 복원 입력은 진행으로
     /// 소비되지 않음 ③ CG 진입 시 오토모드 정지(인벤토리 §CG).
     /// </summary>
-    public class DialogueInfoBarPlayModeTests
+    public class DialogueButtonBarPlayModeTests
     {
         readonly List<GameObject> _roots = new();
         readonly List<IDisposable> _subs = new();
@@ -40,13 +40,13 @@ namespace LoveAlgo.Tests.PlayMode
                 UnityEngine.Object.DestroyImmediate(v.gameObject);
         }
 
-        DialogueInfoBarView CreateBar(Sprite on, Sprite off)
+        DialogueButtonBarView CreateBar(Sprite on, Sprite off)
         {
-            var go = new GameObject("InfoBar_Test", typeof(RectTransform));
+            var go = new GameObject("ButtonBar_Test", typeof(RectTransform));
             _roots.Add(go);
             go.SetActive(false); // Awake 전 주입
 
-            var bar = go.AddComponent<DialogueInfoBarView>();
+            var bar = go.AddComponent<DialogueButtonBarView>();
             Button Mk(string name)
             {
                 var b = new GameObject(name, typeof(RectTransform), typeof(Image), typeof(Button));

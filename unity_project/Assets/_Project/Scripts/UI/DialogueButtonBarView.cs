@@ -8,10 +8,11 @@ using UnityEngine.UI;
 namespace LoveAlgo.UI
 {
     /// <summary>
-    /// 대사창 인포 바(*View): 스토리 중 타이틀/불러오기/설정/로그/오토/저장/숨기기 버튼 — 표시·발행만(ADR-007).
+    /// 대사창 버튼 바(*View): 스토리 중 타이틀/불러오기/설정/로그/오토/저장/숨기기 버튼 — 표시·발행만(ADR-007).
     /// Story 페이즈엔 빠른메뉴가 숨으므로(기획 분담: Schedule=빠른메뉴 / Story=대사창 바) 이 바가 스토리 쪽 진입점.
     /// 타이틀/불러오기/설정/저장은 QuickMenuView와 동일 명령을 발행(정본 단일 — ReturnToTitle/SaveLoad/Settings).
-    /// DialogueView root 자식으로 배선 — CG/DialogueHide/페이즈 토글에 자동 연동되므로 자체 숨김·게이트 로직 없음.
+    /// DialogueView.Root(슬라이드 패널) 자식 버튼들을 묶어 배선 — 숨기기 슬라이드/CG/페이즈 토글에 자동 연동되므로
+    /// (버튼이 Root와 함께 사라짐) 자체 숨김·게이트 로직 없음.
     ///
     /// 오토 상태는 <see cref="SetAutoModeCommand"/> 스트림이 정본 — 자기 발행 포함 구독으로만 아이콘을 미러해
     /// 다른 발행처(CG 진입 오토 정지 등)와 자동 동기. root 토글로 구독이 끊긴 동안 놓친 명령은 OnEnable에서
@@ -19,7 +20,7 @@ namespace LoveAlgo.UI
     ///
     /// 세이브는 현행 의미(감독 결정 2026-06-13): 스토리 위치(스크립트 진행·무대)는 저장되지 않음 — 위치 영속은 후속 🔴 슬라이스.
     /// </summary>
-    public class DialogueInfoBarView : MonoBehaviour
+    public class DialogueButtonBarView : MonoBehaviour
     {
         [SerializeField] Button titleButton;
         [SerializeField] Button loadButton;
