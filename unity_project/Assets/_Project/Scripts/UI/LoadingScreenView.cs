@@ -3,24 +3,34 @@ using System.Collections;
 using LoveAlgo.Common; // EventBus
 using LoveAlgo.Events; // ShowLoadingCommand, CompletionHandle, NarrativeFinishedEvent, ResetNarrativeViewsCommand
 using UnityEngine;
+using UnityEngine.UI; // Image
 
 namespace LoveAlgo.UI
 {
     /// <summary>
     /// 로딩 화면 뷰(*View: LoadingScene). <see cref="ShowLoadingCommand"/>를 구독해 풀스크린 오버레이를
     /// <see cref="ShowLoadingCommand.Seconds"/> 동안 표시 후 숨기고 핸들을 푼다(ADR-007: UI는 표시만).
-    /// 내러티브 종료/도구 화면정리 시 즉시 숨김. 스타일(스피너/문구)은 오버레이 자식으로 감독 튜닝.
+    /// 내러티브 종료/도구 화면정리 시 즉시 숨김. 표시할 때마다 <see cref="splashFolder"/>(Resources)의
+    /// 풀스크린 스플래시(1920×1080, 캔버스와 동일 비율)를 직전과 다른 것으로 무작위 교체한다 — 로딩 비트마다
+    /// 캐릭터 일러스트가 바뀌어 보이도록(가챠/비주얼노벨 관용). 에셋 없으면 효과만 생략하고 동작 동일.
     /// </summary>
     public class LoadingScreenView : MonoBehaviour
     {
         [Tooltip("풀스크린 로딩 오버레이. 미바인딩 시 효과 생략·핸들만 완료.")]
         [SerializeField] GameObject overlay;
+        [Tooltip("스플래시를 표시할 Image. 미바인딩 시 overlay의 Image를 자동 사용.")]
+        [SerializeField] Image splashImage;
+        [Tooltip("Resources 하위 스플래시 폴더(LoadAll<Sprite>). 비우면 일러스트 교체 생략.")]
+        [SerializeField] string splashFolder = "UI/Loading";
 
         public GameObject Overlay { get => overlay; set => overlay = value; }
 
         IDisposable _sub, _finishSub, _resetSub;
         Coroutine _routine;
         CompletionHandle _pending;
+
+        Sprite[] _splashes;   // 지연 로드 + 캐시(LoadAll은 1회만).
+        int _lastSplash = -1; // 직전 인덱스(연속 중복 회피용).
 
         void OnEnable()
         {
@@ -51,11 +61,28 @@ namespace LoveAlgo.UI
 
         IEnumerator Run(ShowLoadingCommand e)
         {
+            ApplySplash();
             overlay.SetActive(true);
             if (e.Seconds > 0f) yield return new WaitForSeconds(e.Seconds);
             overlay.SetActive(false);
 
             var h = _pending; _pending = null; _routine = null; h?.Complete();
+        }
+
+        /// <summary>표시 직전 스플래시 일러스트를 직전과 다른 무작위 한 장으로 교체. 에셋/이미지 없으면 무동작.</summary>
+        void ApplySplash()
+        {
+            if (string.IsNullOrEmpty(splashFolder)) return;
+            var img = splashImage != null ? splashImage : overlay.GetComponent<Image>();
+            if (img == null) return;
+
+            if (_splashes == null) _splashes = Resources.LoadAll<Sprite>(splashFolder);
+            if (_splashes == null || _splashes.Length == 0) return;
+
+            int idx = UnityEngine.Random.Range(0, _splashes.Length);
+            if (idx == _lastSplash && _splashes.Length > 1) idx = (idx + 1) % _splashes.Length;
+            _lastSplash = idx;
+            img.sprite = _splashes[idx];
         }
 
         void ResetView()
