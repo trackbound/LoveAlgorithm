@@ -18,6 +18,8 @@
         "LoveAlgo.Gacha",
         "LoveAlgo.Tutorial",
         "LoveAlgo.DevTools.Editor",
+        "Unity.TextMeshPro",
+        "UnityEngine.UI",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"
     ],
