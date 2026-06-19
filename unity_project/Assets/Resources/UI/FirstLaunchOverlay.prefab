@@ -402,9 +402,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: LoveAlgo.UI::LoveAlgo.UI.WarnWidgetShake
   target: {fileID: 6213027726038424465}
-  amplitude: 6
-  frequencyX: 5.3
-  frequencyY: 4.1
+  amplitude: 2.5
+  frequencyX: 40
+  frequencyY: 46
 --- !u!1 &3111619789336566615
 GameObject:
   m_ObjectHideFlags: 0
