@@ -148,7 +148,7 @@ namespace LoveAlgo.UI
             {
                 int slot = SlotForCell(_page, i, slotsPerPage);
                 var data = JsonSaveStore.Load(slot);
-                _slots[i].Bind(slot, data, data != null ? LoadThumbnail(data, slot) : null, OnSlotSelected);
+                _slots[i].Bind(slot, data, data != null ? LoadThumbnail(data, slot) : null, OnSlotSelected, OnSlotRenamed);
             }
             if (pageNumberText != null) pageNumberText.text = $"{_page + 1} / {pageCount}";
 
@@ -194,6 +194,18 @@ namespace LoveAlgo.UI
                     },
                     new ModalRequest(i => { if (i == 1) ConfirmSave(slot); })));
             }
+        }
+
+        // 제목 인라인 편집 확정 → 슬롯 파일의 표시 이름(chapterLabel)만 교체해 재저장(게임 상태/썸네일 불변).
+        // 자동저장 슬롯·빈 슬롯은 대상 아님(슬롯 쪽에서도 차단하지만 이중 가드).
+        void OnSlotRenamed(int slot, string newName)
+        {
+            if (slot == JsonSaveStore.AutoSaveSlot) return;
+            var data = JsonSaveStore.Load(slot);
+            if (data == null) return;
+            data.chapterLabel = newName;
+            JsonSaveStore.Save(slot, data);
+            RefreshPage();
         }
 
         // 확인 모달에서 "예" 선택 시 실제 저장(SaveManager 구독). 썸네일은 비동기 — ThumbnailSavedEvent 수신 시 반영.
