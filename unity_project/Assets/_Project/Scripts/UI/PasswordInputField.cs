@@ -87,30 +87,12 @@ namespace LoveAlgo.UI
             if (input != null) input.text = "";
         }
 
-        /// <summary>오류 시 빠른 진동 1버스트(감쇠). 종료 시 기준 위치 복원.</summary>
+        /// <summary>오류 시 빠른 진동 1버스트(감쇠). 종료 시 기준 위치 복원. 공용 <see cref="UiNudge"/> 위임.</summary>
         public void Shake()
         {
-            if (input == null || !isActiveAndEnabled) return;
-            var rt = input.transform as RectTransform;
+            var rt = input != null ? input.transform as RectTransform : null;
             if (rt == null) return;
-            if (_shakeCo != null) StopCoroutine(_shakeCo);
-            _shakeCo = StartCoroutine(ShakeRoutine(rt));
-        }
-
-        IEnumerator ShakeRoutine(RectTransform rt)
-        {
-            Vector2 basePos = rt.anchoredPosition;
-            float t = 0f;
-            while (t < shakeDuration)
-            {
-                t += Time.deltaTime;
-                float env = Mathf.Clamp01(1f - t / shakeDuration);
-                float ox = Mathf.Sin(t * shakeFrequency) * shakeAmplitude * env;
-                rt.anchoredPosition = basePos + new Vector2(ox, 0f);
-                yield return null;
-            }
-            rt.anchoredPosition = basePos;
-            _shakeCo = null;
+            UiNudge.Shake(this, rt, ref _shakeCo, shakeAmplitude, shakeFrequency, shakeDuration);
         }
     }
 }
