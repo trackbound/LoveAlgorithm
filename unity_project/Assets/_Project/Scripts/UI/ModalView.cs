@@ -89,7 +89,11 @@ namespace LoveAlgo.UI
 
             _activeTemplate = Instantiate(templatePrefabs[idx], templateContainer);
             if (_activeTemplate.Title != null) _activeTemplate.Title.text = e.Title ?? "";
-            if (_activeTemplate.Message != null) _activeTemplate.Message.text = e.Message ?? "";
+            if (_activeTemplate.Message != null)
+            {
+                _activeTemplate.Message.text = e.Message ?? "";
+                _activeTemplate.Message.color = Color.white; // 모달 본문은 항상 깔끔한 하얀색(템플릿 프리팹별 색 편차 제거).
+            }
 
             if (e.Buttons == null) return;
             if (_activeTemplate.IsStatic) BindStatic(_activeTemplate, e.Buttons);
@@ -105,7 +109,7 @@ namespace LoveAlgo.UI
             for (int i = 0; i < n; i++)
             {
                 if (tpl.Slots[i] == null) continue;
-                tpl.Slots[i].Bind(i, buttons[i].Label, OnSelected);
+                tpl.Slots[i].Bind(i, CanonicalLabel(buttons[i].Kind, buttons.Count, buttons[i].Label), OnSelected);
                 _boundSlots.Add(tpl.Slots[i]);
             }
         }
@@ -127,8 +131,22 @@ namespace LoveAlgo.UI
                     continue;
                 }
                 var slot = Instantiate(prefab, tpl.DynamicContainer);
-                slot.Bind(i, buttons[i].Label, OnSelected);
+                slot.Bind(i, CanonicalLabel(buttons[i].Kind, buttons.Count, buttons[i].Label), OnSelected);
                 _boundSlots.Add(slot);
+            }
+        }
+
+        // 모달 버튼 라벨 통일(caller/인스펙터 라벨 무시) — 어느 화면에서 띄워도 동일 문구를 강제한다.
+        // No=아니오 · Yes=예(YesNo 2버튼) 또는 확인(단일 버튼=YesOnly 확인 모달) · Close=확인.
+        // Default(종류 미지정)만 caller 라벨을 유지(특수/테스트). 문구를 한 곳에 고정해 인스펙터 드리프트를 차단.
+        static string CanonicalLabel(ModalButtonKind kind, int buttonCount, string fallback)
+        {
+            switch (kind)
+            {
+                case ModalButtonKind.No:    return "아니오";
+                case ModalButtonKind.Close: return "확인";
+                case ModalButtonKind.Yes:   return buttonCount <= 1 ? "확인" : "예";
+                default:                    return fallback ?? "";
             }
         }
 
