@@ -167,8 +167,8 @@ go_campus,Text,로아,"자, 이제 출발! 첫 수업이니까 같이 힘내자,
 pro_146,Char,,C:Exit,await
 pro_147,Place,,첫 전공수업 | 공대 강의실,>
 ,Flow,,Mark:scene:공대 강의실 — 다은,>
-,FX,,Setup:BG=공대_강의실|BGM=서다은,>
-pro_148,BG,,공대_강의실:Cut,await
+,FX,,Setup:BGM=서다은,>
+pro_148,BG,,공대_강의실:Fade,await
 pro_149,Sound,,BGM:일상2,>
 pro_150,Text,,새학기라고는 하지만 학교는 늘 똑같다.,click
 pro_151,Text,,"익숙한 공대 건물, 변한 게 하나도 없는 강의실.",click
