@@ -8,15 +8,17 @@ using UnityEngine;
 namespace LoveAlgo.DevTools.Editor
 {
     /// <summary>
-    /// 프롤로그 CSV의 배경 전환(<c>Type=BG</c> 라인)을 한눈에 보고, 전환할 배경과 전환 종류
-    /// (Cut/Fade/Cross)를 드롭다운·토글로 편하게 바꾸는 편의 에디터 창 (Tools/Story/배경 전환 헬퍼).
+    /// 프롤로그 CSV의 배경 변경을 한눈에 보고 편집하는 편의 에디터 창 (Tools/Story/배경 전환 헬퍼).
+    /// 문서 순서대로 두 종류를 함께 나열한다:
+    ///   · <c>Type=BG</c> 전환 라인 — 전환할 배경 + 전환 종류(Cut/Fade/Cross) 편집.
+    ///   · <c>Type=FX</c>의 <c>Setup:BG=…</c> 초기 배경(씬 시작, 즉시) — 배경키만 편집.
     ///
-    /// 배경 전환 라인 Value 문법은 런타임 파서(<c>StageParser.ParseBackground</c>)와 동일:
-    /// <c>배경키[:Cut|Fade|Cross[:duration]]</c> — 전환 생략 시 Cross가 기본이다.
-    /// 카탈로그는 <c>Resources/BG/*.png</c>(컨벤션 로딩 경로)에서 수집해 드롭다운으로 제시하며,
-    /// 카탈로그에 없는 키(직접 입력값)도 보존한다. 변경된 라인만 Value를 다시 써 저장하므로
-    /// 손대지 않은 라인(전환 토큰 생략=암시적 Cross 등)은 원본 그대로 남아 diff 노이즈가 없다.
-    /// 저장 전 .backups에 타임스탬프 백업을 남긴다. 에디터 전용(빌드 런타임 무관).
+    /// BG Value 문법은 런타임 파서(<c>StageParser.ParseBackground</c>)와 동일: <c>배경키[:Cut|Fade|Cross
+    /// [:duration]]</c>(전환 생략 시 Cross). Setup은 <c>SetupMacroParser</c> 규칙(파이프 구분 BG=값)을 따른다.
+    /// 카탈로그는 <c>Resources/BG/*.png</c>(컨벤션 로딩 경로)에서 수집해 드롭다운으로 제시하며, 카탈로그에
+    /// 없는 키(직접 입력값)도 보존한다. 변경된 라인만 다시 써 저장하므로 — BG는 Value 재구성(암시적 Cross·
+    /// duration 보존), Setup은 BG=토큰 값만 교체(BGM·Char 등 나머지 토큰 보존) — 손대지 않은 라인은 원본
+    /// 그대로 남아 diff 노이즈가 없다. 저장 전 .backups에 타임스탬프 백업을 남긴다. 에디터 전용(빌드 무관).
     /// </summary>
     public class BgTransitionWindow : EditorWindow
     {
@@ -26,23 +28,30 @@ namespace LoveAlgo.DevTools.Editor
         // 전환 종류(런타임 BgTransition 1:1 미러 — 이 도구는 런타임 asmdef 비의존으로 자립).
         enum Transition { Cut, Fade, Cross }
 
-        // 배경 전환 한 건(BG 라인).
+        // 라인 종류: BG=명시적 배경 전환 / Setup=FX 매크로의 초기 배경(즉시, 전환 없음).
+        enum RowKind { Bg, Setup }
+
+        // 배경 변경 한 건(BG 전환 라인 또는 FX Setup 초기 배경).
         class BgRow
         {
+            public RowKind kind;          // BG 전환인가, Setup 초기 배경인가
             public int rawIndex;          // _rawLines 내 인덱스(편집 대상)
             public string lineId;         // LineID 컬럼(빈 문자열 가능)
             public string scene;          // 직전 Mark:scene 이름(맥락)
             public string nextLine;       // 다음 Text 라인 미리보기(맥락)
+            public string origValue;      // 원본 Value 필드(Setup 재기록 시 나머지 토큰 보존용)
 
             public string origName;       // 파일에 적힌 원본 배경키
-            public Transition origTransition; // 파일 기준 전환(토큰 없으면 Cross)
-            public bool hadTransitionToken;   // 원본에 전환 토큰이 명시돼 있었나
-            public string durationToken;  // 보존할 duration 토큰("" = 없음)
+            public Transition origTransition; // 파일 기준 전환(토큰 없으면 Cross; Setup은 무의미)
+            public bool hadTransitionToken;   // 원본에 전환 토큰이 명시돼 있었나(BG 전용)
+            public string durationToken;  // 보존할 duration 토큰("" = 없음; BG 전용)
 
             public string name;           // 현재 선택 배경키
-            public Transition transition; // 현재 선택 전환
+            public Transition transition; // 현재 선택 전환(BG 전용)
 
-            public bool Changed => name != origName || transition != origTransition;
+            // Setup은 전환이 없으므로 배경키 변경만 dirty로 본다.
+            public bool Changed => name != origName
+                || (kind == RowKind.Bg && transition != origTransition);
         }
 
         List<string> _rawLines = new();
@@ -106,27 +115,51 @@ namespace LoveAlgo.DevTools.Editor
                     if (scene != null) currentScene = scene;
                     continue;
                 }
-                if (!type.Equals("BG", StringComparison.OrdinalIgnoreCase)) continue;
 
-                ParseBg(value, out string name, out Transition tr, out bool hadToken, out string durTok);
-                if (string.IsNullOrEmpty(name)) continue; // 빈 배경키는 건너뜀
-
-                _items.Add(new BgRow
+                if (type.Equals("BG", StringComparison.OrdinalIgnoreCase))
                 {
-                    rawIndex = i,
-                    lineId = lineId,
-                    scene = currentScene,
-                    nextLine = FindNextDialogue(i),
-                    origName = name,
-                    origTransition = tr,
-                    hadTransitionToken = hadToken,
-                    durationToken = durTok,
-                    name = name,
-                    transition = tr,
-                });
+                    ParseBg(value, out string name, out Transition tr, out bool hadToken, out string durTok);
+                    if (string.IsNullOrEmpty(name)) continue; // 빈 배경키는 건너뜀
+                    _items.Add(new BgRow
+                    {
+                        kind = RowKind.Bg,
+                        rawIndex = i,
+                        lineId = lineId,
+                        scene = currentScene,
+                        nextLine = FindNextDialogue(i),
+                        origValue = value,
+                        origName = name,
+                        origTransition = tr,
+                        hadTransitionToken = hadToken,
+                        durationToken = durTok,
+                        name = name,
+                        transition = tr,
+                    });
+                }
+                else if (type.Equals("FX", StringComparison.OrdinalIgnoreCase)
+                         && TryParseSetupBg(value, out string setupBg))
+                {
+                    _items.Add(new BgRow
+                    {
+                        kind = RowKind.Setup,
+                        rawIndex = i,
+                        lineId = lineId,
+                        scene = currentScene,
+                        nextLine = FindNextDialogue(i),
+                        origValue = value,
+                        origName = setupBg,
+                        origTransition = Transition.Cut, // 즉시 — 표시상 의미만
+                        hadTransitionToken = false,
+                        durationToken = "",
+                        name = setupBg,
+                        transition = Transition.Cut,
+                    });
+                }
             }
 
-            _status = $"배경 전환 {_items.Count}건 로드됨.";
+            int bgN = 0, setupN = 0;
+            foreach (var r in _items) { if (r.kind == RowKind.Setup) setupN++; else bgN++; }
+            _status = $"배경 전환 {bgN}건 · 초기 배경 {setupN}건 로드됨.";
         }
 
         // Resources/BG/*.png → 배경키 카탈로그(확장자 제거, 정렬).
@@ -153,6 +186,46 @@ namespace LoveAlgo.DevTools.Editor
                 tr = ParseTransition(parts[1]);
             }
             if (parts.Length >= 3) durationToken = parts[2].Trim();
+        }
+
+        // FX Value가 Setup이고 BG=토큰을 가지면 그 배경키 반환(SetupMacroParser 규칙 미러).
+        static bool TryParseSetupBg(string value, out string name)
+        {
+            name = "";
+            if (string.IsNullOrEmpty(value)) return false;
+            int ci = value.IndexOf(':');
+            string head = (ci >= 0 ? value.Substring(0, ci) : value).Trim();
+            if (!head.Equals("Setup", StringComparison.OrdinalIgnoreCase)) return false;
+            string body = ci >= 0 ? value.Substring(ci + 1) : "";
+            foreach (var seg in body.Split('|'))
+            {
+                int eq = seg.IndexOf('=');
+                if (eq < 0) continue;
+                if (!seg.Substring(0, eq).Trim().Equals("BG", StringComparison.OrdinalIgnoreCase)) continue;
+                string val = seg.Substring(eq + 1).Trim();
+                if (val.Length == 0) return false; // 빈 BG는 편집 대상 아님
+                name = val;
+                return true;
+            }
+            return false;
+        }
+
+        // Setup Value의 BG=토큰 값만 newName으로 교체(나머지 토큰·순서·헤더 보존).
+        static string RewriteSetupBg(string value, string newName)
+        {
+            int ci = value.IndexOf(':');
+            if (ci < 0) return value;
+            string head = value.Substring(0, ci);
+            var segs = new List<string>(value.Substring(ci + 1).Split('|'));
+            for (int i = 0; i < segs.Count; i++)
+            {
+                int eq = segs[i].IndexOf('=');
+                if (eq < 0) continue;
+                if (!segs[i].Substring(0, eq).Trim().Equals("BG", StringComparison.OrdinalIgnoreCase)) continue;
+                segs[i] = segs[i].Substring(0, eq + 1) + newName; // 키 텍스트("BG=") 보존, 값만 교체
+                break;
+            }
+            return head + ":" + string.Join("|", segs);
         }
 
         static Transition ParseTransition(string s)
@@ -291,14 +364,17 @@ namespace LoveAlgo.DevTools.Editor
                 if (GUILayout.Button("새로고침", GUILayout.Width(70))) Reload();
             }
 
-            int cut = 0, fade = 0, cross = 0;
+            int cut = 0, fade = 0, cross = 0, setup = 0;
             foreach (var r in _items)
             {
+                if (r.kind == RowKind.Setup) { setup++; continue; }
                 if (r.transition == Transition.Cut) cut++;
                 else if (r.transition == Transition.Fade) fade++;
                 else cross++;
             }
-            EditorGUILayout.LabelField($"총 {_items.Count}건  ·  ✂ Cut {cut}  ·  🌑 Fade {fade}  ·  🔀 Cross {cross}", EditorStyles.miniLabel);
+            EditorGUILayout.LabelField(
+                $"전환 ✂ Cut {cut} · 🌑 Fade {fade} · 🔀 Cross {cross}   |   ⚡ 초기 {setup}",
+                EditorStyles.miniLabel);
 
             using (new EditorGUILayout.HorizontalScope())
             {
@@ -317,7 +393,9 @@ namespace LoveAlgo.DevTools.Editor
         void DrawRow(int index)
         {
             var r = _items[index];
-            var bg = TransitionTint(r.transition, r.Changed);
+            var bg = r.kind == RowKind.Setup
+                ? new Color(0.85f, 0.70f, 0.30f, r.Changed ? 0.26f : 0.12f)
+                : TransitionTint(r.transition, r.Changed);
             var rect = EditorGUILayout.BeginVertical();
             EditorGUI.DrawRect(rect, bg);
 
@@ -334,7 +412,8 @@ namespace LoveAlgo.DevTools.Editor
                 {
                     string id = string.IsNullOrEmpty(r.lineId) ? "(무번호)" : r.lineId;
                     string mark = r.Changed ? "  *" : "";
-                    EditorGUILayout.LabelField($"#{index + 1}  [{id}]  ⟪{r.scene}⟫{mark}", EditorStyles.boldLabel);
+                    string tag = r.kind == RowKind.Setup ? "⚡초기 " : "";
+                    EditorGUILayout.LabelField($"#{index + 1}  {tag}[{id}]  ⟪{r.scene}⟫{mark}", EditorStyles.boldLabel);
                     if (!string.IsNullOrEmpty(r.nextLine))
                         EditorGUILayout.LabelField("   ↳ " + r.nextLine, EditorStyles.miniLabel);
                     DrawBgDropdown(r);
@@ -342,14 +421,21 @@ namespace LoveAlgo.DevTools.Editor
 
                 GUILayout.FlexibleSpace();
 
-                // 전환 토글 버튼
+                // 전환 토글 버튼 (Setup 초기 배경은 전환이 없음)
                 using (new EditorGUILayout.VerticalScope(GUILayout.Width(204)))
                 {
-                    using (new EditorGUILayout.HorizontalScope())
+                    if (r.kind == RowKind.Setup)
                     {
-                        TransitionButton(r, Transition.Cut, "✂ Cut");
-                        TransitionButton(r, Transition.Fade, "🌑 Fade");
-                        TransitionButton(r, Transition.Cross, "🔀 Cross");
+                        EditorGUILayout.LabelField("⚡ 초기 배경 (즉시)", EditorStyles.miniBoldLabel);
+                    }
+                    else
+                    {
+                        using (new EditorGUILayout.HorizontalScope())
+                        {
+                            TransitionButton(r, Transition.Cut, "✂ Cut");
+                            TransitionButton(r, Transition.Fade, "🌑 Fade");
+                            TransitionButton(r, Transition.Cross, "🔀 Cross");
+                        }
                     }
                 }
             }
@@ -449,7 +535,10 @@ namespace LoveAlgo.DevTools.Editor
                 foreach (var r in _items)
                 {
                     if (!r.Changed) continue;
-                    _rawLines[r.rawIndex] = RewriteValue(_rawLines[r.rawIndex], BuildValue(r));
+                    string newValue = r.kind == RowKind.Setup
+                        ? RewriteSetupBg(r.origValue, r.name)
+                        : BuildValue(r);
+                    _rawLines[r.rawIndex] = RewriteValue(_rawLines[r.rawIndex], newValue);
                     changed++;
                 }
 
