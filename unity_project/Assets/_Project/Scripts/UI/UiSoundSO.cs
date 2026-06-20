@@ -33,6 +33,10 @@ namespace LoveAlgo.UI
         [Tooltip("타이핑 한 글자 블립 SFX 이름. 비우면 무음.")]
         [SerializeField] string dialogueType = "";
 
+        [Header("설정")]
+        [Tooltip("설정 슬라이더(볼륨/속도) 드래그를 놓을 때 1회 재생할 알림음 SFX 이름. 비우면 무음.")]
+        [SerializeField] string settingsSliderChange = "009_Notification";
+
         [Header("타이핑 스로틀")]
         [Tooltip("타이핑 블립을 N글자마다 1회만 재생(per-char 기관총 방지). 최소 1.")]
         [SerializeField] int typeStride = 2;
@@ -43,6 +47,9 @@ namespace LoveAlgo.UI
         public string ChoiceClick => choiceClick;
         public string DialogueAdvance => dialogueAdvance;
         public string DialogueType => dialogueType;
+
+        /// <summary>설정 슬라이더 드래그 종료 시 1회 알림음 SFX 이름. 비우면 무음.</summary>
+        public string SettingsSliderChange => settingsSliderChange;
 
         /// <summary>타이핑 블립 재생 간격(글자 수). 0/음수 방어로 최소 1.</summary>
         public int TypeStride => Mathf.Max(1, typeStride);

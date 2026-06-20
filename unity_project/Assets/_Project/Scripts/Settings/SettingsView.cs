@@ -48,8 +48,8 @@ namespace LoveAlgo.Settings
         [Header("문구 (토스트/확인 모달)")]
         [SerializeField] string applyToastTitle = "적용";
         [SerializeField] string applyToastMessage = "설정이 저장되었습니다";
-        [SerializeField] string resetConfirmTitle = "초기화";
-        [SerializeField] string resetConfirmMessage = "설정을 기본값으로 되돌릴까요?";
+        [SerializeField] string resetToastTitle = "초기화";
+        [SerializeField] string resetToastMessage = "기본값으로 초기화되었습니다";
         [SerializeField] string closeConfirmTitle = "알림";
         [SerializeField] string closeConfirmMessage = "변경사항을 적용하지 않고 닫을까요?";
         [SerializeField] string confirmYes = "예";
@@ -95,13 +95,17 @@ namespace LoveAlgo.Settings
             BindSlider(sfxSlider, v => Publish(new SetVolumeCommand(AudioChannel.Sfx, v)));
             BindSlider(textSpeedSlider, v => Publish(new SetTextSpeedCommand(v)));
             BindSlider(autoSpeedSlider, v => Publish(new SetAutoSpeedCommand(v)));
+            HookReleaseSfx(bgmSlider);
+            HookReleaseSfx(sfxSlider);
+            HookReleaseSfx(textSpeedSlider);
+            HookReleaseSfx(autoSpeedSlider);
             Click(fullscreenButton, () => StageFullscreen(true));
             Click(windowButton, () => StageFullscreen(false));
             Click(leftArrow, () => StageResolution(_pendingResIndex - 1));
             Click(rightArrow, () => StageResolution(_pendingResIndex + 1));
             Click(applyButton, ApplyDisplayAndNotify);
             Click(confirmButton, OnConfirm);
-            Click(resetButton, ConfirmReset);
+            Click(resetButton, ResetAndNotify);
             Click(closeButton, RequestClose);
         }
 
@@ -109,6 +113,22 @@ namespace LoveAlgo.Settings
         void BindSlider(Slider s, Action<float> onChange)
         {
             if (s != null) s.onValueChanged.AddListener(v => { if (!_wiring) { onChange(v); _dirty = true; } });
+        }
+
+        // 슬라이더 드래그 종료(값 변동 시) 1회 알림음 — 드래그 중 매 프레임 연타와 분리(SliderReleaseNotifier).
+        // SFX 이름은 UiSoundSO 중앙화(ADR-012), 빈값=무음. 미바인딩 시 런타임 부착(프리팹 수정 불필요).
+        void HookReleaseSfx(Slider s)
+        {
+            if (s == null) return;
+            var n = s.GetComponent<SliderReleaseNotifier>();
+            if (n == null) n = s.gameObject.AddComponent<SliderReleaseNotifier>();
+            n.onRelease.AddListener(PlaySliderChangeSfx);
+        }
+
+        void PlaySliderChangeSfx()
+        {
+            var name = UiSoundSO.Shared != null ? UiSoundSO.Shared.SettingsSliderChange : null;
+            if (!string.IsNullOrEmpty(name)) Publish(new PlaySfxCommand(name));
         }
 
         static void Publish<T>(T cmd) where T : struct => EventBus.Publish(cmd);
@@ -175,11 +195,12 @@ namespace LoveAlgo.Settings
             _dirty = false;
         }
 
-        // 초기화: 되돌리기 전 확인 모달 — "예"(index 1)일 때만 실제 리셋(아니오·Esc는 무시).
-        void ConfirmReset() => Publish(new ShowModalCommand(
-            resetConfirmTitle, resetConfirmMessage,
-            new[] { new ModalButton(confirmNo, ModalButtonKind.No), new ModalButton(confirmYes, ModalButtonKind.Yes) },
-            new ModalRequest(i => { if (i == 1) ResetAll(); })));
+        // 초기화: 모달 없이 즉시 기본값 리셋 + 저장(컨트롤러) + 토스트. 저장되므로 그냥 닫아도 유지된다.
+        void ResetAndNotify()
+        {
+            ResetAll();
+            Publish(new ShowToastCommand(resetToastMessage, resetToastTitle));
+        }
 
         // 닫기 요청(닫기 버튼·뒤로가기 공용): 변경 후 확인(Confirm) 미수행이면 확인 모달, 아니면 즉시 닫는다.
         // 기준은 확인 버튼 — 변경했어도 Confirm을 누르면 _dirty=false라 바로 닫힌다(재표시 시 RefreshFromSettings가 재동기화).
