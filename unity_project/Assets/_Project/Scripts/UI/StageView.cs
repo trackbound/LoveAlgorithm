@@ -61,6 +61,10 @@ namespace LoveAlgo.UI
         [Tooltip("외곽 글리치 등장 연출 시간(초). Enter duration과 무관하게 이 값으로 구동.")]
         [SerializeField] float characterGlitchSeconds = 0.6f;
 
+        [Header("표정 전환 크로스페이드(깜빡임 제거)")]
+        [Tooltip("Emote/<emote> 표정 교체 시 이전 표정을 위에 겹쳐 페이드아웃하는 디졸브 시간(초). 0이면 즉시 하드 스왑(구 동작).")]
+        [SerializeField] float emoteCrossfadeSeconds = 0.12f;
+
         public Image Backdrop { get => backdrop; set => backdrop = value; }
         public Image BgFront { get => bgFront; set => bgFront = value; }
         public CanvasGroup BgFrontGroup { get => bgFrontGroup; set => bgFrontGroup = value; }
@@ -96,6 +100,10 @@ namespace LoveAlgo.UI
         readonly Material[] _charGlitchInst = new Material[3];
         readonly Material[] _charBaseMat = new Material[3];
 
+        // 표정 크로스페이드: 슬롯별 이전 표정 오버레이 이미지(슬롯 이미지 자식, 지연 생성·재사용) + 진행 중 페이드 코루틴.
+        readonly Image[] _emoteFadeImg = new Image[3];
+        readonly Coroutine[] _emoteFadeRoutine = new Coroutine[3];
+
         void OnEnable()
         {
             _bgSub = EventBus.Subscribe<ShowBackgroundCommand>(OnShowBackground);
@@ -123,6 +131,11 @@ namespace LoveAlgo.UI
             for (int i = 0; i < _charGlitchInst.Length; i++)
             {
                 if (_charGlitchInst[i] != null) { Destroy(_charGlitchInst[i]); _charGlitchInst[i] = null; }
+            }
+            for (int i = 0; i < _emoteFadeImg.Length; i++)
+            {
+                if (_emoteFadeImg[i] != null) { Destroy(_emoteFadeImg[i].gameObject); _emoteFadeImg[i] = null; }
+                _emoteFadeRoutine[i] = null;
             }
         }
 
@@ -264,6 +277,7 @@ namespace LoveAlgo.UI
                         Log.Warn($"[StageView] 캐릭터 스프라이트 없음: {e.Character}/{e.Emote}");
                         break;
                     }
+                    CancelEmoteFade(idx); // 새 등장 위에 이전 표정 오버레이가 남지 않도록.
                     slot.image.sprite = sprite;
                     slot.image.enabled = true;
                     ApplyPlacement(idx, slot, e.Character);
@@ -281,18 +295,20 @@ namespace LoveAlgo.UI
                         break;
                     }
                     var sprite = LoadCharSprite(e.Character, e.Emote);
-                    if (sprite != null) slot.image.sprite = sprite;
-                    // 슬라이스2: 표정은 즉시 교체(슬롯 내 크로스페이드는 후속). duration은 미사용.
+                    if (sprite != null) CrossfadeEmote(idx, slot, sprite); // 깜빡임 없이 디졸브 교체.
+                    // duration은 미사용(크로스페이드 시간은 emoteCrossfadeSeconds).
                     break;
                 }
                 case CharAction.Exit:
                 {
+                    CancelEmoteFade(idx);
                     yield return FadeGroup(slot.group, slot.group != null ? slot.group.alpha : 1f, 0f, e.Duration);
                     ClearSlotVisual(slot);
                     break;
                 }
                 case CharAction.Clear:
                 {
+                    CancelEmoteFade(idx);
                     ClearSlotVisual(slot);
                     SetAlpha(slot.group, 0f);
                     break;
@@ -321,7 +337,7 @@ namespace LoveAlgo.UI
             var slot = GetSlot((CharSlot)idx);
             if (slot?.image == null || !slot.image.enabled) return;
             var sprite = LoadCharSprite(_slotChar[idx], e.Emote);
-            if (sprite != null) slot.image.sprite = sprite;
+            if (sprite != null) CrossfadeEmote(idx, slot, sprite); // 타이핑 중 인라인 표정도 디졸브.
             else Log.Warn($"[StageView] <emote> 스프라이트 없음: {_slotChar[idx]}/{e.Emote}");
         }
 
@@ -357,10 +373,89 @@ namespace LoveAlgo.UI
             if (slot?.image == null) return;
             // 글리치 머티리얼이 걸린 채 비워지지 않도록 원본 머티리얼로 복원.
             int idx = slot == slotL ? 0 : slot == slotR ? 2 : slot == slotC ? 1 : -1;
+            if (idx >= 0) CancelEmoteFade(idx); // 비워지는 슬롯에 표정 오버레이가 남지 않도록.
             if (idx >= 0 && _charGlitchInst[idx] != null && slot.image.material == _charGlitchInst[idx])
                 slot.image.material = _charBaseMat[idx];
             slot.image.sprite = null;
             slot.image.enabled = false;
+        }
+
+        // ── 표정 크로스페이드(깜빡임 제거) ──
+        // 표정 교체는 본래 슬롯 이미지 스프라이트를 즉시 바꿔 한 프레임 하드 컷(깜빡임)이 보였다. 대신 슬롯 이미지에
+        // 새 표정을 즉시 깔고, 이전 표정을 똑같은 위치/스케일의 오버레이(슬롯 이미지 자식)로 위에 얹어 페이드아웃 →
+        // 부드러운 디졸브. 오버레이는 슬롯별 1개를 지연 생성·재사용. emoteCrossfadeSeconds<=0이면 구 하드 스왑.
+
+        void CrossfadeEmote(int idx, SlotBinding slot, Sprite newSprite)
+        {
+            var img = slot?.image;
+            if (img == null || newSprite == null) return;
+            var oldSprite = img.sprite;
+
+            // 즉시 모드·변화 없음·이전 표정/슬롯 없음 → 하드 스왑(구 동작 보존).
+            if (emoteCrossfadeSeconds <= 0f || !img.enabled || oldSprite == null || oldSprite == newSprite)
+            {
+                img.sprite = newSprite;
+                return;
+            }
+
+            // 진행 중인 이전 디졸브는 즉시 마무리(겹침 방지).
+            if (_emoteFadeRoutine[idx] != null) { StopCoroutine(_emoteFadeRoutine[idx]); _emoteFadeRoutine[idx] = null; }
+
+            var ov = GetEmoteFadeOverlay(idx, img);
+            var brt = img.rectTransform;
+            var ort = ov.rectTransform;
+            // 슬롯 이미지와 동일한 표시 영역(자식이므로 위치는 0, 스케일은 부모 상속=1).
+            ort.anchorMin = brt.anchorMin; ort.anchorMax = brt.anchorMax; ort.pivot = brt.pivot;
+            ort.sizeDelta = brt.sizeDelta; ort.anchoredPosition = Vector2.zero; ort.localScale = Vector3.one;
+            ov.sprite = oldSprite;
+            ov.type = img.type;
+            ov.preserveAspect = img.preserveAspect;
+            ov.color = Color.white; // 알파 1 → 이전 표정이 위를 덮은 상태에서 시작.
+            ov.enabled = true;
+            ov.transform.SetAsLastSibling(); // 슬롯 이미지(부모) 위에 렌더.
+
+            img.sprite = newSprite; // 새 표정은 아래에 즉시 노출.
+            _emoteFadeRoutine[idx] = StartCoroutine(EmoteFadeOut(idx, ov));
+        }
+
+        IEnumerator EmoteFadeOut(int idx, Image ov)
+        {
+            float dur = emoteCrossfadeSeconds;
+            float t = 0f;
+            while (t < dur)
+            {
+                t += Time.deltaTime;
+                var c = ov.color; c.a = 1f - Mathf.Clamp01(t / dur); ov.color = c;
+                yield return null;
+            }
+            ov.enabled = false;
+            ov.sprite = null;
+            _emoteFadeRoutine[idx] = null;
+        }
+
+        // 슬롯 이미지의 자식으로 오버레이 Image를 지연 생성·재사용(클릭 비차단).
+        Image GetEmoteFadeOverlay(int idx, Image baseImg)
+        {
+            var ov = _emoteFadeImg[idx];
+            if (ov == null)
+            {
+                var go = new GameObject("EmoteFade", typeof(RectTransform), typeof(Image));
+                go.transform.SetParent(baseImg.rectTransform, false);
+                ov = go.GetComponent<Image>();
+                ov.raycastTarget = false;
+                ov.enabled = false;
+                _emoteFadeImg[idx] = ov;
+            }
+            return ov;
+        }
+
+        // 진행 중 디졸브 중단 + 오버레이 숨김(슬롯이 비거나 새로 등장할 때).
+        void CancelEmoteFade(int idx)
+        {
+            if (idx < 0 || idx >= _emoteFadeRoutine.Length) return;
+            if (_emoteFadeRoutine[idx] != null) { StopCoroutine(_emoteFadeRoutine[idx]); _emoteFadeRoutine[idx] = null; }
+            var ov = _emoteFadeImg[idx];
+            if (ov != null) { ov.enabled = false; ov.sprite = null; }
         }
 
         // ── 히로인별 배치(크기·오프셋) ──
