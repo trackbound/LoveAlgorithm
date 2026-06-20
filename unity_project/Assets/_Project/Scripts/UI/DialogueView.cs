@@ -102,6 +102,7 @@ namespace LoveAlgo.UI
         bool _cgHidden;
         bool _hiddenByUser; // 인포 바 "숨기기" — CSV SetDialogueVisibleCommand(연출 채널)와 분리된 로컬 상태.
         bool _endMarkShown;
+        bool _fastForward; // 시프트 홀드 빠른 진행 중 — 진행음/디버그 로그 억제용.
         float _endMarkBaseY;
         RectTransform _slideRt;     // 슬라이드 대상(slidePanel 또는 root)
         float _panelHomeY;          // 슬라이드 홈 y(첫 숨김 전 캡처)
@@ -480,6 +481,18 @@ namespace LoveAlgo.UI
             }
 
             var kb = Keyboard.current;
+
+            // 시프트 홀드 = 빠른 진행(테스트 편의). 누르고 있는 동안 매 프레임 Advance를 호출해
+            // 타이핑은 즉시 완성·완료 줄은 자동으로 다음으로 넘긴다(오토 대기 포함). 진행음/디버그 로그는 억제.
+            bool shiftHeld = kb != null && (kb.leftShiftKey.isPressed || kb.rightShiftKey.isPressed);
+            if (shiftHeld && !IsTextInputFocused() && !OverlayGate.IsBlocked)
+            {
+                _fastForward = true;
+                Advance("시프트");
+                return;
+            }
+            _fastForward = false;
+
             if (kb == null || !kb.spaceKey.wasPressedThisFrame) return;
             if (IsTextInputFocused()) return;
             Advance("스페이스");
@@ -501,17 +514,20 @@ namespace LoveAlgo.UI
             if (OverlayGate.IsBlocked) return; // 오버레이(설정/세이브로드) 열림 중 진행/스킵 차단 — 키보드 직접 읽기 보호
             string s = source ?? "?";
             if (_hiddenByUser) { RestoreByUser(); DebugInput.Log($"{s} → 대사창 복원(숨김 해제)"); return; } // 복원 입력은 진행 미소비
-            if (_typing) { _skipTyping = true; DebugInput.Log($"{s} → 대사 타이핑 스킵"); } // 스킵(완성 가속)은 무음
+            if (_typing) { _skipTyping = true; if (!_fastForward) DebugInput.Log($"{s} → 대사 타이핑 스킵"); } // 스킵(완성 가속)은 무음
             else if (_awaitingClick)
             {
                 _awaitingClick = false;
-                // 다음 줄로 넘어갈 때만 진행음(요구사항: 타이핑 완성/스킵 시에는 재생 안 함).
-                var snd = UiSoundSO.Shared;
-                if (snd != null && !string.IsNullOrEmpty(snd.DialogueAdvance))
-                    EventBus.Publish(new PlaySfxCommand(snd.DialogueAdvance));
-                DebugInput.Log($"{s} → 대사 진행(다음)");
+                // 다음 줄로 넘어갈 때만 진행음(요구사항: 타이핑 완성/스킵 시에는 재생 안 함). 빠른 진행 중엔 진행음 스팸 방지.
+                if (!_fastForward)
+                {
+                    var snd = UiSoundSO.Shared;
+                    if (snd != null && !string.IsNullOrEmpty(snd.DialogueAdvance))
+                        EventBus.Publish(new PlaySfxCommand(snd.DialogueAdvance));
+                    DebugInput.Log($"{s} → 대사 진행(다음)");
+                }
             }
-            else DebugInput.Log($"{s} → 입력됐으나 진행할 대사 없음");
+            else if (!_fastForward) DebugInput.Log($"{s} → 입력됐으나 진행할 대사 없음");
         }
 
         public void OnPointerClick(PointerEventData eventData) => Advance("좌클릭");
