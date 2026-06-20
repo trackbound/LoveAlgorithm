@@ -167,6 +167,8 @@ namespace LoveAlgo.UI
         // 확정 후보 이름으로 yes/no 모달 발행. Yes(index 1)면 저장+숨김, No면 입력칸 재활성(화면 유지).
         void ShowConfirm(string name)
         {
+            // 모달 표시 중 입력칸 포커스를 풀어 Enter가 onSubmit(재확정)과 모달 확정에 이중으로 먹는 것을 막는다.
+            if (input != null) input.DeactivateInputField();
             string msg = (confirmMessage ?? "").Replace("{name}", name);
             EventBus.Publish(new ShowModalCommand(
                 confirmTitle, msg,

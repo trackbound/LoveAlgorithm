@@ -6,6 +6,7 @@ using UnityEngine;
 using UnityEngine.TestTools;
 using UnityEngine.UI;
 using LoveAlgo.Common; // EventBus
+using LoveAlgo.Core;   // OverlayGate
 using LoveAlgo.Events; // ShowModalCommand, ModalRequest, ModalButton, ModalButtonKind
 using LoveAlgo.UI;     // ModalView, ModalTemplate, ButtonSlot
 
@@ -13,10 +14,14 @@ namespace LoveAlgo.Tests.PlayMode
 {
     /// <summary>
     /// 범용 모달 뷰 PlayMode: 버튼 종류 시그니처로 템플릿 선택 → 정적 틀은 슬롯 Bind, 폴백 틀은 동적 스폰.
+    /// 키 입력은 OverlayGate 경유(ESC=CloseTop=아니오, Enter=ConfirmTop=예) — 라우터 대신 게이트 API를 직접 구동해 검증.
     /// ModalView가 OnEnable에서 구독하므로 inactive GO에 바인딩 후 활성화해 타이밍을 맞춘다.
     /// </summary>
     public class ModalViewPlayModeTests
     {
+        [SetUp] public void SetUp() => OverlayGate.Reset();
+        [TearDown] public void TearDown() => OverlayGate.Reset();
+
         // ButtonSlot 슬롯 1개(Button + 라벨)를 가진 GameObject 생성.
         static ButtonSlot MakeSlot(Transform parent)
         {
@@ -128,6 +133,66 @@ namespace LoveAlgo.Tests.PlayMode
                 Assert.AreEqual(2, spawned.Length, "폴백 동적 스폰 2개");
                 spawned[0].Button.onClick.Invoke();
                 Assert.AreEqual(0, picked, "index 0 클릭 → 핸들 회수");
+            }
+            finally { Object.DestroyImmediate(viewGo); }
+        }
+
+        [UnityTest]
+        public IEnumerator YesNo_EnterConfirmsYes_EscConfirmsNo_ViaGate()
+        {
+            var yesNo = MakeStaticTemplate("YesNo", new[] { ModalButtonKind.No, ModalButtonKind.Yes }, 2);
+            var view = BuildView(out var viewGo, new List<ModalTemplate> { yesNo, MakeDynamicTemplate() }, MakeSlot(null));
+            viewGo.SetActive(true);
+            yield return null;
+
+            try
+            {
+                // Enter(ConfirmTop) → 예(index 1)
+                int picked = -1;
+                EventBus.Publish(new ShowModalCommand("종료", "정말?",
+                    new[] { new ModalButton("아니오", ModalButtonKind.No), new ModalButton("예", ModalButtonKind.Yes) },
+                    new ModalRequest(i => picked = i)));
+                yield return null;
+                Assert.AreEqual(1, OverlayGate.Count, "모달 표시 중 게이트 1개(최상단)");
+
+                Assert.IsTrue(OverlayGate.ConfirmTop(), "Enter → 최상단 모달 확정");
+                Assert.AreEqual(1, picked, "Enter = 예(index 1)");
+                Assert.IsFalse(view.Root.activeSelf, "확정 후 숨김");
+                Assert.AreEqual(0, OverlayGate.Count, "닫히며 게이트 해제");
+
+                // ESC(CloseTop) → 아니오(index 0)
+                picked = -1;
+                EventBus.Publish(new ShowModalCommand("종료", "정말?",
+                    new[] { new ModalButton("아니오", ModalButtonKind.No), new ModalButton("예", ModalButtonKind.Yes) },
+                    new ModalRequest(i => picked = i)));
+                yield return null;
+
+                Assert.IsTrue(OverlayGate.CloseTop(), "ESC → 최상단 모달 닫기");
+                Assert.AreEqual(0, picked, "ESC = 아니오(index 0)");
+                Assert.AreEqual(0, OverlayGate.Count, "닫히며 게이트 해제");
+            }
+            finally { Object.DestroyImmediate(viewGo); }
+        }
+
+        [UnityTest]
+        public IEnumerator SingleButton_EnterAndEsc_BothConfirmThatButton()
+        {
+            // 단일 확인(Close) 버튼 모달: Enter·ESC 모두 그 버튼을 선택해야 한다.
+            var ok = MakeStaticTemplate("OK", new[] { ModalButtonKind.Close }, 1);
+            var view = BuildView(out var viewGo, new List<ModalTemplate> { ok, MakeDynamicTemplate() }, MakeSlot(null));
+            viewGo.SetActive(true);
+            yield return null;
+
+            try
+            {
+                int picked = -1;
+                EventBus.Publish(new ShowModalCommand("알림", "완료",
+                    new[] { new ModalButton("확인", ModalButtonKind.Close) },
+                    new ModalRequest(i => picked = i)));
+                yield return null;
+
+                Assert.IsTrue(OverlayGate.ConfirmTop(), "단일 버튼 모달 Enter 확정");
+                Assert.AreEqual(0, picked, "Enter = 그 버튼(index 0)");
             }
             finally { Object.DestroyImmediate(viewGo); }
         }

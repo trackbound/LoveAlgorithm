@@ -23,13 +23,26 @@ namespace LoveAlgo.Core
         sealed class Entry : IDisposable
         {
             readonly Action _requestClose;
-            public Entry(Action requestClose) { _requestClose = requestClose; }
+            readonly Action _requestConfirm;
+            public Entry(Action requestClose, Action requestConfirm)
+            {
+                _requestClose = requestClose;
+                _requestConfirm = requestConfirm;
+            }
 
-            /// <summary>닫기 요청 — 액션이 없으면(뒤로가기로 닫을 수 없는 오버레이) false.</summary>
+            /// <summary>닫기 요청(ESC/뒤로가기) — 액션이 없으면(닫을 수 없는 오버레이) false.</summary>
             public bool TryRequestClose()
             {
                 if (_requestClose == null) return false;
                 _requestClose();
+                return true;
+            }
+
+            /// <summary>확인 요청(Enter) — 확인 액션이 없는 오버레이(설정/세이브로드 등)면 false(무동작).</summary>
+            public bool TryRequestConfirm()
+            {
+                if (_requestConfirm == null) return false;
+                _requestConfirm();
                 return true;
             }
 
@@ -46,12 +59,14 @@ namespace LoveAlgo.Core
 
         /// <summary>
         /// 오버레이 표시 등록. 반환 토큰을 숨김 시 Dispose(중복 무해).
-        /// <paramref name="requestClose"/> = 뒤로가기(<see cref="CloseTop"/>)가 이 오버레이를 닫을 때 호출할
+        /// <paramref name="requestClose"/> = 뒤로가기/ESC(<see cref="CloseTop"/>)가 이 오버레이를 닫을 때 호출할
         /// 액션(보통 자기 SetVisible(false)). null이면 뒤로가기로 닫히지 않는 오버레이(차단만).
+        /// <paramref name="requestConfirm"/> = Enter(<see cref="ConfirmTop"/>)로 긍정 확정할 액션(yes/no 모달의 "예").
+        /// null이면 Enter 무동작(설정/세이브로드 등 확인 개념 없는 오버레이) — 기본값이라 기존 호출부는 무영향.
         /// </summary>
-        public static IDisposable Push(Action requestClose = null)
+        public static IDisposable Push(Action requestClose = null, Action requestConfirm = null)
         {
-            var e = new Entry(requestClose);
+            var e = new Entry(requestClose, requestConfirm);
             _stack.Add(e);
             return e;
         }
@@ -66,6 +81,17 @@ namespace LoveAlgo.Core
         {
             if (_stack.Count == 0) return false;
             return _stack[^1].TryRequestClose();
+        }
+
+        /// <summary>
+        /// 가장 마지막에 출력된(최상단) 오버레이에 긍정 확정(Enter)을 요청한다. <see cref="CloseTop"/>과 동형 —
+        /// 엄격히 최상단만, 최상단이 확인 불가(확인 액션 null)면 아래로 내려가지 않는다(가려진 팝업 오확정 방지).
+        /// </summary>
+        /// <returns>확인을 요청했으면 true, 최상단이 없거나 확인 액션이 없으면 false(무동작).</returns>
+        public static bool ConfirmTop()
+        {
+            if (_stack.Count == 0) return false;
+            return _stack[^1].TryRequestConfirm();
         }
 
         /// <summary>강제 전체 해제(씬 전환/비정상 안전망 — 일반 흐름은 Push/Dispose 짝).</summary>

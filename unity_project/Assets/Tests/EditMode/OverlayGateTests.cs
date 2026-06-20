@@ -4,7 +4,7 @@ using LoveAlgo.Core;
 
 namespace LoveAlgo.Tests.EditMode
 {
-    /// <summary>OverlayGate 스택(토큰 발급/해제·차단·뒤로가기 CloseTop·비-LIFO 해제·리셋) 단위테스트.</summary>
+    /// <summary>OverlayGate 스택(토큰 발급/해제·차단·뒤로가기 CloseTop·Enter ConfirmTop·비-LIFO 해제·리셋) 단위테스트.</summary>
     public class OverlayGateTests
     {
         [SetUp] public void SetUp() => OverlayGate.Reset();
@@ -83,6 +83,47 @@ namespace LoveAlgo.Tests.EditMode
         public void CloseTop_Empty_ReturnsFalse()
         {
             Assert.IsFalse(OverlayGate.CloseTop());
+        }
+
+        [Test]
+        public void ConfirmTop_InvokesTopConfirmAction()
+        {
+            int confirmedA = 0, confirmedB = 0;
+            OverlayGate.Push(() => { }, () => confirmedA++);
+            OverlayGate.Push(() => { }, () => confirmedB++);
+
+            Assert.IsTrue(OverlayGate.ConfirmTop(), "최상단 B 확정");
+            Assert.AreEqual(0, confirmedA, "아래(가려진) 팝업은 확정 안 됨");
+            Assert.AreEqual(1, confirmedB, "최상단만 확정");
+        }
+
+        [Test]
+        public void ConfirmTop_TopWithoutConfirmAction_ReturnsFalse_NoSkip()
+        {
+            int confirmedA = 0;
+            OverlayGate.Push(() => { }, () => confirmedA++);
+            OverlayGate.Push(() => { }); // 확인 액션 없는 오버레이(설정/세이브로드)가 최상단
+
+            Assert.IsFalse(OverlayGate.ConfirmTop(), "최상단이 확인 불가면 false(Enter 무동작)");
+            Assert.AreEqual(0, confirmedA, "아래 팝업을 건너 확정하지 않는다");
+        }
+
+        [Test]
+        public void ConfirmTop_Empty_ReturnsFalse()
+        {
+            Assert.IsFalse(OverlayGate.ConfirmTop());
+        }
+
+        [Test]
+        public void Push_LegacySingleArg_StillWorks_NoConfirm()
+        {
+            // 기존 호출부(Push(닫기)만)는 그대로 — Enter는 무동작이어야 한다.
+            int closed = 0;
+            IDisposable t = null;
+            t = OverlayGate.Push(() => { closed++; t.Dispose(); });
+            Assert.IsFalse(OverlayGate.ConfirmTop(), "확인 액션 없음 → Enter 무동작");
+            Assert.IsTrue(OverlayGate.CloseTop(), "ESC는 정상 닫힘");
+            Assert.AreEqual(1, closed);
         }
 
         [Test]

@@ -2,16 +2,19 @@ using System;
 using System.Collections.Generic;
 using LoveAlgo.Common; // EventBus, DebugInput
 using LoveAlgo.Events; // ShowModalCommand, ModalRequest, ModalButton, ModalButtonKind
+using LoveAlgo.Core;   // OverlayGate
 using UnityEngine;
-using UnityEngine.InputSystem; // Keyboard (Esc 모달 취소)
 
 namespace LoveAlgo.UI
 {
     /// <summary>
     /// 범용 모달 표시 뷰(*View). <see cref="ShowModalCommand"/>를 구독해 버튼 종류 시그니처로 템플릿을 고르고
     /// 인스턴스화한다(<see cref="ModalTemplate"/>). 정적 틀은 미리 배치된 슬롯에 라벨·콜백만 Bind, 매칭 없으면
-    /// 빈 시그니처(폴백) 틀에 종류별 버튼을 동적 스폰(<see cref="ButtonSlot"/> 재사용). 클릭/Esc 시 완료 핸들
+    /// 빈 시그니처(폴백) 틀에 종류별 버튼을 동적 스폰(<see cref="ButtonSlot"/> 재사용). 클릭/키 시 완료 핸들
     /// (<see cref="ModalRequest"/>)에 인덱스를 채운다(ADR-007: 표시만, 의미·아트 분리). 단일 모달 — 새 명령 시 재생성.
+    /// <para>키 입력은 <see cref="OverlayGate"/>에 등록해 공용 라우터(<c>OverlayHotkeyRouter</c>)를 경유한다 —
+    /// ESC=취소(아니오/닫기 버튼), Enter=확정(예 버튼, 단일 버튼 모달은 그 버튼). 게이트 최상단으로만 라우팅되어
+    /// 설정·세이브로드 위에 모달이 떠도 키는 모달만 받는다(중복 차단). 자체 키 폴링은 두지 않는다.</para>
     /// </summary>
     public class ModalView : MonoBehaviour
     {
@@ -46,6 +49,7 @@ namespace LoveAlgo.UI
         public ButtonSlot DefaultButtonPrefab { get => defaultButtonPrefab; set => defaultButtonPrefab = value; }
 
         IDisposable _sub, _eyeShroudSub;
+        IDisposable _gate;       // OverlayGate 토큰(표시 중에만 non-null — ESC=취소·Enter=확정 라우팅 대상)
         Canvas _canvas;          // 모달 루트 Canvas(차폐 동안만 정렬 상승 — overrideSorting은 항상 ON@80 유지).
         int _baseSortingOrder;   // authored 정렬(80) — 차폐 해제 시 복원.
         bool _baseCaptured;
@@ -79,6 +83,7 @@ namespace LoveAlgo.UI
             _sub?.Dispose();
             _eyeShroudSub?.Dispose();
             _sub = _eyeShroudSub = null;
+            _gate?.Dispose(); _gate = null; // 표시 중 비활성 시 게이트 누수 방지(중복 무해)
             // 차폐 정렬 상승이 남지 않도록 authored 정렬로 복원(다음 표시가 기본 80에서 시작).
             if (_canvas != null && _baseCaptured) _canvas.sortingOrder = _baseSortingOrder;
             Clear();
@@ -102,6 +107,15 @@ namespace LoveAlgo.UI
             _active = e.Handle;
             _buttons = e.Buttons;
             if (root != null) root.SetActive(true);
+
+            // ESC=취소·Enter=확정을 공용 라우터가 최상단으로만 전달하도록 게이트에 등록(자체 키 폴링 없음).
+            // 취소=아니오/닫기 버튼(없으면 마지막 = 기존 Esc 관례), 확정=예 버튼(없고 단일 버튼이면 그 버튼).
+            _gate?.Dispose();
+            int cancelIdx = CancelIndex(e.Buttons);
+            int confirmIdx = ConfirmIndex(e.Buttons);
+            _gate = OverlayGate.Push(
+                () => Close(cancelIdx),
+                confirmIdx >= 0 ? (Action)(() => Close(confirmIdx)) : null);
 
             if (templateContainer == null)
             {
@@ -179,6 +193,31 @@ namespace LoveAlgo.UI
             }
         }
 
+        // ESC(취소) 대상 인덱스: 아니오 > 닫기 > 마지막 버튼(기존 Esc 관례 폴백). 버튼 없으면 -1(닫기만).
+        static int CancelIndex(IReadOnlyList<ModalButton> buttons)
+        {
+            if (buttons == null || buttons.Count == 0) return -1;
+            int i = IndexOfKind(buttons, ModalButtonKind.No);
+            if (i < 0) i = IndexOfKind(buttons, ModalButtonKind.Close);
+            if (i < 0) i = buttons.Count - 1;
+            return i;
+        }
+
+        // Enter(확정) 대상 인덱스: 예 버튼, 없고 단일 버튼이면 그 버튼(확인 모달). 그 외 -1(Enter 무동작).
+        static int ConfirmIndex(IReadOnlyList<ModalButton> buttons)
+        {
+            if (buttons == null || buttons.Count == 0) return -1;
+            int i = IndexOfKind(buttons, ModalButtonKind.Yes);
+            if (i < 0 && buttons.Count == 1) i = 0;
+            return i;
+        }
+
+        static int IndexOfKind(IReadOnlyList<ModalButton> buttons, ModalButtonKind kind)
+        {
+            for (int i = 0; i < buttons.Count; i++) if (buttons[i].Kind == kind) return i;
+            return -1;
+        }
+
         static IReadOnlyList<ModalButtonKind> KindsOf(IReadOnlyList<ModalButton> buttons)
         {
             var kinds = new ModalButtonKind[buttons?.Count ?? 0];
@@ -208,18 +247,9 @@ namespace LoveAlgo.UI
             Close(index);
         }
 
-        void Update()
-        {
-            var kb = Keyboard.current;
-            if (kb == null || _active == null || !kb.escapeKey.wasPressedThisFrame) return;
-            int cancel = _boundSlots.Count - 1;
-            if (cancel < 0) return;
-            DebugInput.Log($"Esc → 모달 취소: index={cancel}{LabelSuffix(cancel)}");
-            Close(cancel);
-        }
-
         void Close(int index)
         {
+            _gate?.Dispose(); _gate = null;
             var handle = _active;
             _active = null;
             _buttons = null;
