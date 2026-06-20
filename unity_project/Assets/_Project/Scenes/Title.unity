@@ -1056,6 +1056,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 192744075}
+  - component: {fileID: 192744076}
   m_Layer: 0
   m_Name: PetalFX
   m_TagString: Untagged
@@ -1082,6 +1083,48 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &192744076
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 192744074}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2bf61abefed950c42879e7edf648b5b4, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  petalSprite: {fileID: 21300000, guid: 1c5849883347bf540bebd85c1640cf25, type: 3}
+  maxPetals: 55
+  spawnInterval: 0.3
+  minSize: 6
+  maxSize: 30
+  gravity: 5
+  terminalSpeed: 12
+  airDrag: 2.2
+  windDriftX: 5
+  windNoiseStrength: 4
+  windNoiseSpeed: 0.12
+  windVertStrength: 3
+  windVertNoiseSpeed: 0.08
+  swayStrength: 18
+  swaySpeed: 0.2
+  hoverStrength: 8
+  hoverNoiseSpeed: 0.06
+  flipMinScale: 0.35
+  flipNoiseSpeed: 0.18
+  tiltNoiseSpeed: 0.15
+  minZRotSpeed: 3
+  maxZRotSpeed: 10
+  zRotNoiseSpeed: 0.12
+  startAlpha: 0
+  peakAlpha: 0.85
+  fadeInRatio: 0.12
+  fadeOutRatio: 0.35
+  spawnMarginTop: 60
+  spawnMarginSide: 160
+  warmUpFill: 0.7
 --- !u!1 &194900149
 GameObject:
   m_ObjectHideFlags: 0
