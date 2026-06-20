@@ -34,13 +34,21 @@ namespace LoveAlgo.UI
         [Tooltip("폴백 동적 스폰: 종류 매칭 없을 때 버튼 프리팹.")]
         [SerializeField] ButtonSlot defaultButtonPrefab;
 
+        [Header("눈감김(아이마스크) 동안 정렬 상승")]
+        [Tooltip("눈꺼풀 차폐 중에만 모달 Canvas를 이 정렬값으로 올려 암전 위에 모달이 보이고 클릭되게 한다. " +
+                 "눈꺼풀 바(95)·대사창 상승(96)보다 크고 ScreenFade(100)보다 작아야 함. 차폐 해제 시 authored 정렬(80)로 복원.")]
+        [SerializeField] int eyeMaskShroudSortingOrder = 98;
+
         public GameObject Root { get => root; set => root = value; }
         public Transform TemplateContainer { get => templateContainer; set => templateContainer = value; }
         public List<ModalTemplate> TemplatePrefabs { get => templatePrefabs; set => templatePrefabs = value; }
         public List<KindPrefab> ButtonPrefabs => buttonPrefabs;
         public ButtonSlot DefaultButtonPrefab { get => defaultButtonPrefab; set => defaultButtonPrefab = value; }
 
-        IDisposable _sub;
+        IDisposable _sub, _eyeShroudSub;
+        Canvas _canvas;          // 모달 루트 Canvas(차폐 동안만 정렬 상승 — overrideSorting은 항상 ON@80 유지).
+        int _baseSortingOrder;   // authored 정렬(80) — 차폐 해제 시 복원.
+        bool _baseCaptured;
         ModalRequest _active;
         IReadOnlyList<ModalButton> _buttons;
         ModalTemplate _activeTemplate;                  // 인스턴스화된 템플릿(닫을 때 Destroy)
@@ -56,14 +64,35 @@ namespace LoveAlgo.UI
             if (root != null) root.SetActive(false); // authored-active 비주얼을 플레이 시작 시 숨김
         }
 
-        void OnEnable() => _sub = EventBus.Subscribe<ShowModalCommand>(OnShow);
+        void OnEnable()
+        {
+            _sub = EventBus.Subscribe<ShowModalCommand>(OnShow);
+            // 눈감김(아이마스크) 차폐 동안에만 모달을 눈꺼풀 위로 올린다(엔딩 EyeClose→ReturnToTitle 모달이
+            // 눈꺼풀 95 아래 80에 깔려 안 보이고 클릭 안 되던 영구 멈춤 방지). 대사창의 조건부 상승 패턴 미러.
+            if (_canvas == null) _canvas = GetComponent<Canvas>();
+            if (_canvas != null && !_baseCaptured) { _baseSortingOrder = _canvas.sortingOrder; _baseCaptured = true; }
+            _eyeShroudSub = EventBus.Subscribe<EyeMaskShroudChanged>(OnEyeMaskShroud);
+        }
 
         void OnDisable()
         {
             _sub?.Dispose();
-            _sub = null;
+            _eyeShroudSub?.Dispose();
+            _sub = _eyeShroudSub = null;
+            // 차폐 정렬 상승이 남지 않도록 authored 정렬로 복원(다음 표시가 기본 80에서 시작).
+            if (_canvas != null && _baseCaptured) _canvas.sortingOrder = _baseSortingOrder;
             Clear();
             if (root != null) root.SetActive(false);
+        }
+
+        // 눈꺼풀 차폐 동안만 모달 Canvas 정렬을 눈꺼풀 위로 올린다(차폐 해제 시 authored 80 복원). overrideSorting은
+        // 항상 ON(평상시 80 nested)이라 건드리지 않고 sortingOrder만 스왑한다 — 정렬값 상승만으로 raycast도 눈꺼풀보다 우선.
+        void OnEyeMaskShroud(EyeMaskShroudChanged e)
+        {
+            if (_canvas == null) _canvas = GetComponent<Canvas>();
+            if (_canvas == null) return;
+            if (!_baseCaptured) { _baseSortingOrder = _canvas.sortingOrder; _baseCaptured = true; }
+            _canvas.sortingOrder = e.Active ? eyeMaskShroudSortingOrder : _baseSortingOrder;
         }
 
         /// <summary>모달 표시 — 시그니처로 템플릿 선택 → 인스턴스화 → 제목/본문 + 슬롯 바인딩/동적 스폰. 직접 호출도 가능(테스트).</summary>
