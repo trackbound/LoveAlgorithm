@@ -180,6 +180,13 @@ namespace LoveAlgo.Story.StoryEngine
                             yield return PlayAutosave();
                             cursor.MoveNext();
                         }
+                        else if (IsReturnToTitle(line.Value))
+                        {
+                            // 대기형 Flow(타이틀 복귀) — YesOnly 모달 확인까지 대기 후 ReturnToTitleCommand 발행.
+                            // 확인 시 씬이 타이틀로 교체되므로 다음 라인으로 진행하지 않는다(end=true → 루프 종료).
+                            yield return PlayReturnToTitle(line);
+                            end = true;
+                        }
                         else
                         {
                             bool flowJumped = HandleFlow(line, cursor, ref end);
@@ -464,6 +471,24 @@ namespace LoveAlgo.Story.StoryEngine
             if (string.Equals(head, "End", StringComparison.OrdinalIgnoreCase))
             {
                 end = true;
+                return false;
+            }
+
+            if (string.Equals(head, "MetaInc", StringComparison.OrdinalIgnoreCase))
+            {
+                // MetaInc:키[:증분] — 메타 진행도(PlayerPrefs) 누적 증가(기본 +1). 회차 카운터 등 세이브와 분리된
+                // 영속(새 게임에도 생존). 동기 mutation이라 여기서 직접 처리(GameStateSO 대상 FlowCommandInterpreter와 별개).
+                string rest = ci >= 0 ? value.Substring(ci + 1).Trim() : "";
+                string key = rest;
+                int delta = 1;
+                int dc = rest.IndexOf(':');
+                if (dc >= 0)
+                {
+                    key = rest.Substring(0, dc).Trim();
+                    if (!int.TryParse(rest.Substring(dc + 1).Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out delta) || delta == 0)
+                        delta = 1;
+                }
+                if (!string.IsNullOrEmpty(key)) MetaProgressStore.Increment(key, delta);
                 return false;
             }
 
@@ -780,6 +805,30 @@ namespace LoveAlgo.Story.StoryEngine
             var req = new CompletionHandle();
             EventBus.Publish(new ShowLoadingCommand(secs, req, key));
             yield return WaitNext(line, () => req.IsComplete);
+        }
+
+        // ── 타이틀 복귀(ReturnToTitle) — 대기형 Flow ──
+        // ReturnToTitle[:메시지] — YesOnly 모달(메시지 + 확인 버튼 1개)을 띄우고 확인 시 ReturnToTitleCommand를 발행해
+        // 타이틀 씬으로 전환한다(SceneFlowController가 로드). 메시지의 리터럴 \n은 줄바꿈으로 해석(Text 라인과 동일).
+        // 프롤로그 회차별 엔딩 마무리용 — 확인까지 대기해야 하므로 Run 루프가 코루틴으로 분기(HandleFlow는 동기).
+        const string ReturnToTitleConfirmLabel = "확인";
+
+        static bool IsReturnToTitle(string value)
+            => string.Equals(HeadOf(value), "ReturnToTitle", StringComparison.OrdinalIgnoreCase);
+
+        IEnumerator PlayReturnToTitle(ScriptLine line)
+        {
+            string value = line.Value ?? "";
+            int ci = value.IndexOf(':');
+            string msg = (ci >= 0 ? value.Substring(ci + 1).Trim() : "").Replace("\\n", "\n");
+
+            var req = new ModalRequest();
+            EventBus.Publish(new ShowModalCommand(
+                null, msg,
+                new[] { new ModalButton(ReturnToTitleConfirmLabel, ModalButtonKind.Yes) },
+                req));
+            yield return new WaitUntil(() => req.IsComplete);
+            EventBus.Publish(new ReturnToTitleCommand());
         }
 
         static bool IsLockScreen(string value)
