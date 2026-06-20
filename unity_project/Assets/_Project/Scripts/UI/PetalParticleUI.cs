@@ -19,53 +19,53 @@ namespace LoveAlgo.UI
     {
         [Header("꽃잎 설정")]
         [SerializeField] Sprite petalSprite;
-        [SerializeField] int maxPetals = 55;              // 레퍼런스 이미지처럼 풍성하게
-        [SerializeField] float spawnInterval = 0.3f;       // 빠른 생성으로 밀도 확보
+        [SerializeField] int maxPetals = 30;
+        [SerializeField] float spawnInterval = 0.55f;
 
         [Header("크기")]
-        [SerializeField] float minSize = 6f;               // 아주 작은 꽃잎 (먼 거리 시뮬레이션)
-        [SerializeField] float maxSize = 30f;
+        [SerializeField] float minSize = 16f;              // 크고 또렷한 꽃잎(옛 버전 느낌)
+        [SerializeField] float maxSize = 36f;
 
         [Header("낙하 (기본 중력)")]
-        [SerializeField] float gravity = 5f;               // 부드러운 낙하
-        [SerializeField] float terminalSpeed = 12f;        // 최대 낙하 속도
-        [SerializeField] float airDrag = 2.2f;             // 공기 저항 약간 강화 — 더 떠다니는 느낌
+        [SerializeField] float gravity = 8f;               // 기본 중력 가속도 (px/s²)
+        [SerializeField] float terminalSpeed = 16f;        // 최대 낙하 속도
+        [SerializeField] float airDrag = 1.8f;             // 공기 저항 — 속도에 비례하는 감속
 
         [Header("바람 (Perlin noise 기반)")]
-        [SerializeField] float windDriftX = 5f;            // 레퍼런스: 오른쪽으로 은은히 흩날림
-        [SerializeField] float windNoiseStrength = 4f;     // Perlin 바람 — 과하지 않게
-        [SerializeField] float windNoiseSpeed = 0.12f;     // 느린 바람 변화
-        [SerializeField] float windVertStrength = 3f;      // 수직 바람 약화
-        [SerializeField] float windVertNoiseSpeed = 0.08f;  // 수직 변화도 느리게
+        [SerializeField] float windDriftX = 3f;            // 평균 횡방향 바람
+        [SerializeField] float windNoiseStrength = 6f;     // Perlin 바람 강도 (X)
+        [SerializeField] float windNoiseSpeed = 0.15f;     // Perlin 변화 속도
+        [SerializeField] float windVertStrength = 5f;      // 수직 바람 (부력)
+        [SerializeField] float windVertNoiseSpeed = 0.1f;  // 수직 Perlin 속도
 
         [Header("개별 흔들림 (Perlin noise)")]
-        [SerializeField] float swayStrength = 18f;         // 과하지 않은 흔들림
-        [SerializeField] float swaySpeed = 0.2f;           // 느긋한 흔들림
+        [SerializeField] float swayStrength = 30f;         // 흔들림 강도 (px)
+        [SerializeField] float swaySpeed = 0.3f;           // Perlin 스크롤 속도
 
         [Header("부유 (Hover)")]
         [Tooltip("Perlin 기반 부력 — 가끔 낙하를 거의 멈추고 떠다님")]
-        [SerializeField] float hoverStrength = 8f;         // 가끔 부유하되 지나치지 않게
-        [SerializeField] float hoverNoiseSpeed = 0.06f;    // 느린 호버 주기
+        [SerializeField] float hoverStrength = 12f;        // 부력 최대 강도
+        [SerializeField] float hoverNoiseSpeed = 0.08f;    // 부력 변화 주기
 
         [Header("3D 회전 시뮬레이션")]
-        [SerializeField] float flipMinScale = 0.35f;
-        [SerializeField] float flipNoiseSpeed = 0.18f;     // 느린 뒤집힘
-        [SerializeField] float tiltNoiseSpeed = 0.15f;
+        [SerializeField] float flipMinScale = 0.4f;
+        [SerializeField] float flipNoiseSpeed = 0.25f;     // Perlin 기반 뒤집힘 속도(입체감)
+        [SerializeField] float tiltNoiseSpeed = 0.2f;
 
         [Header("Z 회전")]
-        [SerializeField] float minZRotSpeed = 3f;
-        [SerializeField] float maxZRotSpeed = 10f;
-        [SerializeField] float zRotNoiseSpeed = 0.12f;
+        [SerializeField] float minZRotSpeed = 2f;
+        [SerializeField] float maxZRotSpeed = 8f;
+        [SerializeField] float zRotNoiseSpeed = 0.15f;     // Perlin 변조 — 회전 방향이 서서히 바뀜
 
         [Header("투명도")]
         [SerializeField] float startAlpha = 0f;
-        [SerializeField] float peakAlpha = 0.85f;          // 밝은 꽃잎 — 레퍼런스의 선명한 꽃잎
-        [SerializeField] float fadeInRatio = 0.12f;        // 빠른 등장
-        [SerializeField] float fadeOutRatio = 0.35f;       // 자연스러운 소멸
+        [SerializeField] float peakAlpha = 0.7f;
+        [SerializeField] float fadeInRatio = 0.2f;
+        [SerializeField] float fadeOutRatio = 0.3f;
 
         [Header("스폰 영역")]
         [SerializeField] float spawnMarginTop = 60f;
-        [SerializeField] float spawnMarginSide = 160f;     // 더 넓은 영역에서 생성
+        [SerializeField] float spawnMarginSide = 120f;
 
         [Header("웜업 (타이틀 진입 시 이미 흩날리는 상태)")]
         [Tooltip("OnEnable 시 화면 전체에 미리 배치할 꽃잎 수 (maxPetals의 비율 0~1)")]
@@ -100,9 +100,6 @@ namespace LoveAlgo.UI
             public float mass;                // 질량 (크기에 비례 → 큰 꽃잎은 더 느리게 반응)
             public float zRotSpeed;
             public float size;
-
-            // 깊이 시뮬레이션 (원근감)
-            public float depthAlpha;          // 0.4~1.0 — 작은(먼) 꽃잎은 더 투명
 
             // 수명
             public float lifetime, maxLifetime;
@@ -249,15 +246,14 @@ namespace LoveAlgo.UI
                 float rot = p.rect.localEulerAngles.z + p.zRotSpeed * zRotDir * dt;
                 p.rect.localEulerAngles = new Vector3(0f, 0f, rot);
 
-                // ── 알파 (깊이감 반영) ──
+                // ── 알파 ──
                 float lifeRatio = p.lifetime / p.maxLifetime;
-                float basePeak = peakAlpha * p.depthAlpha;  // 먼 꽃잎은 더 투명
                 if (lifeRatio < fadeInRatio)
-                    p.alpha = Mathf.Lerp(startAlpha, basePeak, lifeRatio / fadeInRatio);
+                    p.alpha = Mathf.Lerp(startAlpha, peakAlpha, lifeRatio / fadeInRatio);
                 else if (lifeRatio > (1f - fadeOutRatio))
-                    p.alpha = Mathf.Lerp(basePeak, 0f, (lifeRatio - (1f - fadeOutRatio)) / fadeOutRatio);
+                    p.alpha = Mathf.Lerp(peakAlpha, 0f, (lifeRatio - (1f - fadeOutRatio)) / fadeOutRatio);
                 else
-                    p.alpha = basePeak;
+                    p.alpha = peakAlpha;
 
                 var c = p.image.color;
                 c.a = p.alpha;
@@ -290,10 +286,8 @@ namespace LoveAlgo.UI
             img.raycastTarget = false;
             img.color = new Color(1f, 1f, 1f, 0f);
 
-            // 크기 — 작은 꽃잎(먼 거리)이 더 많이 나오도록 편향 분포
-            float sizeT = Random.Range(0f, 1f);
-            sizeT = sizeT * sizeT;  // 제곱 → 작은 쪽에 편향 (원근감)
-            float size = Mathf.Lerp(minSize, maxSize, sizeT);
+            // 크기 — 균등 분포(옛 버전: 크고 또렷한 꽃잎)
+            float size = Random.Range(minSize, maxSize);
             float aspect = Random.Range(0.65f, 1f);
             rt.sizeDelta = new Vector2(size, size * aspect);
 
@@ -307,10 +301,7 @@ namespace LoveAlgo.UI
 
             // 질량: 크기에 비례 — 큰 꽃잎은 관성이 커서 느리게 반응
             float normalizedSize = (size - minSize) / Mathf.Max(1f, maxSize - minSize);
-            float mass = Mathf.Lerp(0.5f, 1.5f, normalizedSize);
-
-            // 깊이감: 작은 꽃잎 = 먼 거리 = 더 투명 + 느림
-            float depthAlpha = Mathf.Lerp(0.35f, 1f, Mathf.Pow(normalizedSize, 0.6f));
+            float mass = Mathf.Lerp(0.6f, 1.4f, normalizedSize);
 
             // 낙하 거리 기준 수명 계산
             float topY = area.yMax + spawnMarginTop;
@@ -325,8 +316,7 @@ namespace LoveAlgo.UI
             float seed = Random.Range(0f, 1000f);
 
             // WarmUp 꽃잎은 이미 알파가 올라온 상태
-            float basePeak = peakAlpha * depthAlpha;
-            float startAlphaVal = lifeFraction > fadeInRatio ? basePeak : 0f;
+            float startAlphaVal = lifeFraction > fadeInRatio ? peakAlpha : 0f;
 
             var petal = new Petal
             {
@@ -351,8 +341,6 @@ namespace LoveAlgo.UI
                 mass = mass,
                 zRotSpeed = Random.Range(minZRotSpeed, maxZRotSpeed),
                 size = size,
-
-                depthAlpha = depthAlpha,
 
                 lifetime = startLife,
                 maxLifetime = maxLife,

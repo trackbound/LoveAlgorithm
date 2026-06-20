@@ -1096,34 +1096,34 @@ MonoBehaviour:
   m_Name:
   m_EditorClassIdentifier:
   petalSprite: {fileID: 21300000, guid: 1c5849883347bf540bebd85c1640cf25, type: 3}
-  maxPetals: 55
-  spawnInterval: 0.3
-  minSize: 6
-  maxSize: 30
-  gravity: 5
-  terminalSpeed: 12
-  airDrag: 2.2
-  windDriftX: 5
-  windNoiseStrength: 4
-  windNoiseSpeed: 0.12
-  windVertStrength: 3
-  windVertNoiseSpeed: 0.08
-  swayStrength: 18
-  swaySpeed: 0.2
-  hoverStrength: 8
-  hoverNoiseSpeed: 0.06
-  flipMinScale: 0.35
-  flipNoiseSpeed: 0.18
-  tiltNoiseSpeed: 0.15
-  minZRotSpeed: 3
-  maxZRotSpeed: 10
-  zRotNoiseSpeed: 0.12
+  maxPetals: 30
+  spawnInterval: 0.55
+  minSize: 16
+  maxSize: 36
+  gravity: 8
+  terminalSpeed: 16
+  airDrag: 1.8
+  windDriftX: 3
+  windNoiseStrength: 6
+  windNoiseSpeed: 0.15
+  windVertStrength: 5
+  windVertNoiseSpeed: 0.1
+  swayStrength: 30
+  swaySpeed: 0.3
+  hoverStrength: 12
+  hoverNoiseSpeed: 0.08
+  flipMinScale: 0.4
+  flipNoiseSpeed: 0.25
+  tiltNoiseSpeed: 0.2
+  minZRotSpeed: 2
+  maxZRotSpeed: 8
+  zRotNoiseSpeed: 0.15
   startAlpha: 0
-  peakAlpha: 0.85
-  fadeInRatio: 0.12
-  fadeOutRatio: 0.35
+  peakAlpha: 0.7
+  fadeInRatio: 0.2
+  fadeOutRatio: 0.3
   spawnMarginTop: 60
-  spawnMarginSide: 160
+  spawnMarginSide: 120
   warmUpFill: 0.7
 --- !u!1 &194900149
 GameObject:
