@@ -229,7 +229,7 @@ after_class,Text,,"...새 학기 첫 날인데, 긴 하루가 될 것 같다.",c
 pro_202,Text,,앞으로 두 개나 더 남은 수업에 한숨을 내쉬며 교재를 펼쳤다.,click
 pro_203,Place,,수업 종료 | 캠퍼스,>
 ,Flow,,Mark:scene:캠퍼스 — 예은 충돌,>
-,FX,,Setup:BG=캠퍼스_맑음|BGM=하예은,>
+,FX,,Setup:BGM=하예은,>
     pro_204,BG,,캠퍼스_맑음:Fade,await
 pro_205,Text,,드디어 학기 첫 날 모든 수업이 전부 끝났다.,click
 pro_206,Text,,전공과 교양을 일부러 모두 다른 날에 분리해 두었다.,click
@@ -347,7 +347,7 @@ pro_308,Char,,C:Exit,await
 pro_309,Flow,,Value:Schedule,>
 pro_310,Place,,새 학기 첫날 밤 | 자취방,>
 ,Flow,,Mark:scene:자취방 밤 — 로아와 일과정리,>
-,FX,,Setup:BG=자취방_밤_켜짐|BGM=로아,>
+,FX,,Setup:BGM=로아,>
 pro_311,BG,,자취방_밤_켜짐:Fade,await
 pro_312,Sound,,BGM:Daily1,>
 pro_313,Text,,"평소에 비해 그렇게 늦은 시간까지 깨어 있는 것도 아닌데, 피곤하다.\n역시 학교 수업 듣는 건 듣기만 해도 피곤한 게 맞다니까.",click
@@ -618,7 +618,7 @@ pro_563,Text,로아,<emote=눈웃음/>예은이라면 오랜만에 만났다는 
 pro_564,Text,로아,착한 친구잖아! 다행이야. 그럼 앞으로 4명인가? 힘내보자!,click
 pro_565,Char,,C:Exit,await
 ,Flow,,Mark:scene:자취방 모니터 — 로아,>
-,FX,,Setup:BG=자취방_책상|BGM=로아|Char=로아:C,>
+,FX,,Setup:BGM=로아|Char=로아:C,>
 pro_566,BG,,자취방_책상:Cross,await
 pro_567,Text,,하지만 솔직히 영 감이 오지 않는다.\n3명을 어디서 더 구하는 게 좋지?,click
 pro_568,Text,,로아의 코드를 이것저것 살펴보다가도 그 생각에 좀처럼 집중하기가 어려웠다.,click
@@ -640,7 +640,7 @@ pro_583,Char,,C:Exit,await
 pro_584,Place,,밤 | 집 앞 편의점,>
 pro_585,Sound,,BGM:일상2,>
 ,Flow,,Mark:scene:편의점 — 희원 만남,>
-,FX,,Setup:BG=편의점_밤|BGM=도희원,>
+,FX,,Setup:BGM=도희원,>
 pro_586,BG,,편의점_밤:Fade,await
 pro_587,Text,,학기 초라 그런지 늦은 시간인데도 제법 사람 많은 거리를 지나 편의점에 도착했다.,click
 pro_588,Text,,"늘 먹는 음료수가 진열된 냉장고 앞에 섰는데, 남은 게 3개밖에 없다.",click
