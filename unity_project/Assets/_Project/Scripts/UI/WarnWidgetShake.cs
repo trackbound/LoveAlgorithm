@@ -52,9 +52,11 @@ namespace LoveAlgo.UI
                 while (t < buzzDuration)
                 {
                     t += Time.deltaTime;
-                    float env = Mathf.Clamp01(1f - t / buzzDuration);
+                    // 양끝이 0인 사인 윈도우 → 버스트 시작/끝 모두 기준 위치에서 부드럽게(팝 없음)
+                    float env = Mathf.Sin(Mathf.PI * Mathf.Clamp01(t / buzzDuration));
+                    // X=Sin, Y=Cos(90° 위상차)로 두 축을 탈동조 → 한쪽 대각선 직선이 아닌 양방향 타원 진동
                     float ox = Mathf.Sin(t * frequencyX) * amplitude * env;
-                    float oy = Mathf.Sin(t * frequencyY) * amplitude * env;
+                    float oy = Mathf.Cos(t * frequencyY) * amplitude * env;
                     target.anchoredPosition = _base + new Vector2(ox, oy);
                     yield return null;
                 }
