@@ -25,6 +25,7 @@ namespace LoveAlgo.UI
         const int SortingOrderTop = 32000;         // 모든 캔버스 위(동결: 구 VideoLayer)
         const float PrepareTimeout = 8f;           // 준비 상한(코덱 불량/누락 시 무한대기 방지)
         const float SkipGrace = 0.3f;              // 시작 직후 이 시간은 클릭 스킵 무시(실수 즉시 스킵 방지)
+        const float EndFadeOut = 0.5f;             // 자연 종료 시 마지막 프레임 페이드 아웃(다음 CG와 크로스페이드)
 
         Canvas _canvas;
         RawImage _image;
@@ -116,6 +117,7 @@ namespace LoveAlgo.UI
             _player.isLooping = e.Loop;
             _player.targetTexture = _rt;
             _image.texture = _rt;
+            SetImageAlpha(1f); // 직전 종료 페이드가 중단돼 알파가 남아있을 수 있으니 원복.
 
             _reachedEnd = false;
             _skipRequested = false;
@@ -158,7 +160,39 @@ namespace LoveAlgo.UI
                 yield return null;
             }
 
-            FinishAndHide();
+            // 자연 종료: 마지막 프레임을 유지한 채 알파만 페이드 아웃 → 동일 그림의 다음 CG(아래 레이어)가
+            // 드러나며 부드럽게 이어진다(빈 배경 깜빡임 제거). 스킵/타임아웃은 응답성 위해 즉시 숨김.
+            if (_reachedEnd)
+                yield return FadeOutAndFinish();
+            else
+                FinishAndHide();
+        }
+
+        // 자연 종료 전용 크로스페이드: 핸들을 먼저 완료해 다음 CG를 영상 아래에 깔고(같은 그림),
+        // 그 위의 영상 알파를 0으로 낮춰 동일 이미지가 드러나게 한다. 페이드 끝에 정지/숨김 + 알파 원복.
+        IEnumerator FadeOutAndFinish()
+        {
+            SetGameAudioPaused(false);                          // 영상 사운드 종료 — 게임 오디오 복원.
+            var h = _pending; _pending = null; h?.Complete();  // 내러티브 진행(CG가 아래 레이어로 등장).
+
+            float t = 0f;
+            while (t < EndFadeOut)
+            {
+                t += Time.unscaledDeltaTime;
+                SetImageAlpha(1f - Mathf.Clamp01(t / EndFadeOut));
+                yield return null;
+            }
+
+            _routine = null;
+            if (_player != null) _player.Stop();
+            HideImmediate();
+            SetImageAlpha(1f); // 다음 재생 위해 알파 원복.
+        }
+
+        void SetImageAlpha(float a)
+        {
+            if (_image == null) return;
+            var c = _image.color; c.a = a; _image.color = c;
         }
 
         void OnLoopPointReached(VideoPlayer _) => _reachedEnd = true;
