@@ -25,6 +25,8 @@ namespace LoveAlgo.UI
         [SerializeField] GameObject overlay;
         [SerializeField] TMP_InputField input;
         [SerializeField] Button confirmButton;
+        [Tooltip("무효 입력 시 사유 표시(TMP). 미바인딩 시 메시지 생략.")]
+        [SerializeField] TMP_Text errorLabel;
 
         [Tooltip("시작 크로스페이드(페이드인) 지속(초). 0이면 즉시 표시. overlay의 CanvasGroup 알파 0→1로 부드럽게 진입(없으면 런타임 추가).")]
         [SerializeField] float fadeInDuration = 0.3f;
@@ -33,12 +35,14 @@ namespace LoveAlgo.UI
         public GameObject Overlay { get => overlay; set => overlay = value; }
         public TMP_InputField Input { get => input; set => input = value; }
         public Button ConfirmButton { get => confirmButton; set => confirmButton = value; }
+        public TMP_Text ErrorLabel { get => errorLabel; set => errorLabel = value; }
         public bool IsShown => overlay != null && overlay.activeSelf;
 
         readonly List<IDisposable> _subs = new();
         CompletionHandle _pending;
         CanvasGroup _cg;          // 페이드 대상(overlay의 CanvasGroup — get-or-add)
         Coroutine _fadeRoutine;
+        Coroutine _shakeCo;       // 오류 흔들림(UiNudge)
 
         void Awake()
         {
@@ -116,6 +120,16 @@ namespace LoveAlgo.UI
             string name = input != null ? input.text.Trim() : "";
             if (string.IsNullOrEmpty(name)) return; // 입력 강제 — {{Player}} 치환 전제
 
+            var result = NameValidator.Validate(name);
+            if (result != NameValidator.Result.Valid)
+            {
+                if (errorLabel != null) errorLabel.text = NameValidator.GetErrorMessage(result);
+                var rt = input != null ? input.transform as RectTransform : null;
+                if (rt != null) UiNudge.Shake(this, rt, ref _shakeCo);
+                return; // 무효 → 저장/숨김 안 함
+            }
+
+            if (errorLabel != null) errorLabel.text = "";
             if (state != null) state.Data.playerName = name;
             else Debug.LogError("[UsernameScreenView] state(GameStateSO) 미바인딩 — 이름 저장 불가.");
 

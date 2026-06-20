@@ -53,6 +53,9 @@ namespace LoveAlgo.Tests.PlayMode
             view.Overlay = overlay;
             view.Input = input;
             view.ConfirmButton = confirmGo.GetComponent<Button>();
+            var errGo = new GameObject("Error", typeof(RectTransform)).AddComponent<TextMeshProUGUI>();
+            errGo.transform.SetParent(overlay.transform, false);
+            view.ErrorLabel = errGo;
             _root.SetActive(true); // Awake(부팅 숨김)+OnEnable(구독)
             return view;
         }
@@ -80,6 +83,25 @@ namespace LoveAlgo.Tests.PlayMode
             Assert.AreEqual("철수", _state.Data.playerName, "트림된 이름 저장({{Player}} 치환 소스)");
             Assert.IsTrue(handle.IsComplete, "확인 → 핸들 완료(스토리 재개)");
             Assert.IsFalse(view.IsShown, "저장 후 숨김");
+        }
+
+        [UnityTest]
+        public IEnumerator InvalidName_NotSaved_AndErrorShown()
+        {
+            var view = CreateView();
+            yield return null;
+
+            var handle = new CompletionHandle();
+            EventBus.Publish(new ShowUsernameCommand(handle));
+            Assert.IsTrue(view.IsShown);
+
+            view.Input.text = "ㄱㄴ"; // 비문(미완성 자모) → InvalidCharacter
+            view.ConfirmButton.onClick.Invoke();
+
+            Assert.IsTrue(string.IsNullOrEmpty(_state.Data.playerName), "무효 이름은 저장 안 됨");
+            Assert.IsTrue(view.IsShown, "무효면 화면 유지");
+            Assert.IsFalse(handle.IsComplete, "무효면 핸들 미완료(스토리 대기)");
+            Assert.IsFalse(string.IsNullOrEmpty(view.ErrorLabel.text), "에러 메시지 표시");
         }
 
         [UnityTest]
