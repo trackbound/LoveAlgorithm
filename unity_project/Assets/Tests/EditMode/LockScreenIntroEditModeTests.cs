@@ -15,6 +15,15 @@ namespace LoveAlgo.Tests.EditMode
     public class LockScreenIntroEditModeTests
     {
         [Test]
+        public void IntroDirector_Advance_ClampsLargeDelta()
+        {
+            // 첫 진입 랜덤 점프 버그: 스폰/히치로 deltaTime이 커도(엔진 max 0.333s) 한 프레임에 maxStep만 진행해야
+            // 연출이 한 번에 끝나지 않는다.
+            Assert.AreEqual(0.25f, LockScreenIntroDirector.Advance(0.2f, 0.333f, 0.05f), 1e-5f, "큰 델타 → maxStep으로 클램프");
+            Assert.AreEqual(0.21f, LockScreenIntroDirector.Advance(0.2f, 0.01f, 0.05f), 1e-5f, "작은 델타 → 그대로 진행");
+        }
+
+        [Test]
         public void GuideText_SetState_Swaps_Label_Text()
         {
             var go = new GameObject("Guide");

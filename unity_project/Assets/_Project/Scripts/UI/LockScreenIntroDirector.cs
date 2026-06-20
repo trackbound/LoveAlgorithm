@@ -36,6 +36,9 @@ namespace LoveAlgo.UI
         [SerializeField] float dimTargetAlpha = 0.58f;
         [Tooltip("슬라이드아웃 이징(가속해서 빠져나감).")]
         [SerializeField] AnimationCurve slideEase = AnimationCurve.EaseInOut(0, 0, 1, 1);
+        [Tooltip("프레임 델타 클램프(초). 스폰/로딩 히치로 deltaTime이 커도(엔진 max 0.333s) 한 프레임에 연출이 끝나 " +
+                 "바로 딤+입력으로 점프하는 버그 방지 — 슬라이드/페이드가 최소 여러 프레임에 걸쳐 보이게 한다.")]
+        [SerializeField] float maxFrameStep = 0.05f;
 
         public Image Dim { get => dim; set => dim = value; }
         public CanvasGroup InputGroup { get => inputGroup; set => inputGroup = value; }
@@ -44,6 +47,10 @@ namespace LoveAlgo.UI
 
         readonly List<Vector2> _basePos = new();
         Coroutine _co;
+
+        /// <summary>한 프레임 진행 시간 누적(순수). deltaTime이 커도(스폰/히치, 엔진 max 0.333s) maxStep으로 제한해
+        /// 연출이 한 프레임에 끝나 점프하는 것을 막는다. EditMode 테스트 대상.</summary>
+        public static float Advance(float t, float deltaTime, float maxStep) => t + Mathf.Min(deltaTime, maxStep);
 
         /// <summary>테스트/부팅용 타이밍 일괄 주입.</summary>
         public void SetTimings(float hold, float slide, float dimF, float reveal)
@@ -93,7 +100,7 @@ namespace LoveAlgo.UI
             float t = 0f;
             while (t < slideDuration)
             {
-                t += Time.deltaTime;
+                t = Advance(t, Time.deltaTime, maxFrameStep); // 히치 프레임이 연출을 한 번에 끝내지 않도록 클램프
                 float k = slideDuration > 0f ? slideEase.Evaluate(Mathf.Clamp01(t / slideDuration)) : 1f;
                 for (int i = 0; i < widgets.Count; i++)
                     if (widgets[i].target != null)
@@ -123,7 +130,7 @@ namespace LoveAlgo.UI
             float t = 0f;
             while (t < dur)
             {
-                t += Time.deltaTime;
+                t = Advance(t, Time.deltaTime, maxFrameStep); // 히치 프레임이 페이드를 한 번에 끝내지 않도록 클램프
                 set(Mathf.Lerp(from, to, Mathf.Clamp01(t / dur)));
                 yield return null;
             }
