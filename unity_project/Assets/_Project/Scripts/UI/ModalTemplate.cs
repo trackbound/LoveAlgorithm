@@ -19,14 +19,14 @@ namespace LoveAlgo.UI
         [Tooltip("본문 TMP(선택).")]
         [SerializeField] TMP_Text message;
         [Tooltip("정적 틀: 미리 배치된 버튼 슬롯(좌→우). 폴백이면 비움.")]
-        [SerializeField] ChoiceSlot[] slots;
+        [SerializeField] ButtonSlot[] slots;
         [Tooltip("폴백 전용: 종류별 버튼을 스폰할 컨테이너. 정적 틀이면 비움.")]
         [SerializeField] Transform dynamicContainer;
 
         public ModalButtonKind[] Signature { get => signature; set => signature = value; }
         public TMP_Text Title { get => title; set => title = value; }
         public TMP_Text Message { get => message; set => message = value; }
-        public ChoiceSlot[] Slots { get => slots; set => slots = value; }
+        public ButtonSlot[] Slots { get => slots; set => slots = value; }
         public Transform DynamicContainer { get => dynamicContainer; set => dynamicContainer = value; }
 
         /// <summary>정적 틀이면 true(slots 사용), 폴백이면 false(dynamicContainer 사용).</summary>

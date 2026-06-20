@@ -6,7 +6,7 @@ using UnityEngine.TestTools;
 using UnityEngine.UI;
 using LoveAlgo.Common; // EventBus
 using LoveAlgo.Events; // ShowChoiceCommand, ChoiceRequest
-using LoveAlgo.UI;     // ChoiceView, ChoiceSlot
+using LoveAlgo.UI;     // ChoiceView, ButtonSlot
 
 namespace LoveAlgo.Tests.PlayMode
 {
@@ -40,7 +40,7 @@ namespace LoveAlgo.Tests.PlayMode
             // 직렬화 button 바인딩 — Instantiate가 클론 내부 참조로 재매핑한다.
             var slotTemplate = new GameObject("ChoiceSlotTemplate", typeof(RectTransform), typeof(Button));
             slotTemplate.transform.SetParent(_holder.transform, false);
-            var slot = slotTemplate.AddComponent<ChoiceSlot>();
+            var slot = slotTemplate.AddComponent<ButtonSlot>();
             slot.Button = slotTemplate.GetComponent<Button>();
 
             view.Root = visualRoot;
@@ -50,8 +50,8 @@ namespace LoveAlgo.Tests.PlayMode
             return view;
         }
 
-        static ChoiceSlot[] SpawnedSlots(ChoiceView view)
-            => view.SlotContainer.GetComponentsInChildren<ChoiceSlot>(true);
+        static ButtonSlot[] SpawnedSlots(ChoiceView view)
+            => view.SlotContainer.GetComponentsInChildren<ButtonSlot>(true);
 
         [UnityTest]
         public IEnumerator ConsecutiveChoices_SecondShowStillWorks()

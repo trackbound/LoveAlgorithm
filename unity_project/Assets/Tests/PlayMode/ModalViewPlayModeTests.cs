@@ -7,7 +7,7 @@ using UnityEngine.TestTools;
 using UnityEngine.UI;
 using LoveAlgo.Common; // EventBus
 using LoveAlgo.Events; // ShowModalCommand, ModalRequest, ModalButton, ModalButtonKind
-using LoveAlgo.UI;     // ModalView, ModalTemplate, ChoiceSlot
+using LoveAlgo.UI;     // ModalView, ModalTemplate, ButtonSlot
 
 namespace LoveAlgo.Tests.PlayMode
 {
@@ -17,12 +17,12 @@ namespace LoveAlgo.Tests.PlayMode
     /// </summary>
     public class ModalViewPlayModeTests
     {
-        // ChoiceSlot 슬롯 1개(Button + 라벨)를 가진 GameObject 생성.
-        static ChoiceSlot MakeSlot(Transform parent)
+        // ButtonSlot 슬롯 1개(Button + 라벨)를 가진 GameObject 생성.
+        static ButtonSlot MakeSlot(Transform parent)
         {
-            var go = new GameObject("Btn", typeof(RectTransform), typeof(Button), typeof(ChoiceSlot));
+            var go = new GameObject("Btn", typeof(RectTransform), typeof(Button), typeof(ButtonSlot));
             go.transform.SetParent(parent, false);
-            var slot = go.GetComponent<ChoiceSlot>();
+            var slot = go.GetComponent<ButtonSlot>();
             slot.Button = go.GetComponent<Button>();
             var labelGo = new GameObject("Label", typeof(RectTransform));
             labelGo.transform.SetParent(go.transform, false);
@@ -39,7 +39,7 @@ namespace LoveAlgo.Tests.PlayMode
             var msgGo = new GameObject("Message", typeof(RectTransform));
             msgGo.transform.SetParent(go.transform, false);
             tpl.Message = msgGo.AddComponent<TextMeshProUGUI>();
-            var slots = new ChoiceSlot[slotCount];
+            var slots = new ButtonSlot[slotCount];
             for (int i = 0; i < slotCount; i++) slots[i] = MakeSlot(go.transform);
             tpl.Slots = slots;
             return tpl;
@@ -57,11 +57,11 @@ namespace LoveAlgo.Tests.PlayMode
             var cont = new GameObject("Buttons", typeof(RectTransform));
             cont.transform.SetParent(go.transform, false);
             tpl.DynamicContainer = cont.transform;
-            tpl.Slots = new ChoiceSlot[0];
+            tpl.Slots = new ButtonSlot[0];
             return tpl;
         }
 
-        static ModalView BuildView(out GameObject viewGo, List<ModalTemplate> templates, ChoiceSlot dynamicButtonPrefab)
+        static ModalView BuildView(out GameObject viewGo, List<ModalTemplate> templates, ButtonSlot dynamicButtonPrefab)
         {
             viewGo = new GameObject("ModalView");
             viewGo.SetActive(false);
@@ -97,7 +97,7 @@ namespace LoveAlgo.Tests.PlayMode
                 yield return null;
 
                 // 정적 틀(YesNo)이 인스턴스화되어 슬롯 라벨이 채워졌는지
-                var slots = view.Root.GetComponentsInChildren<ChoiceSlot>(true);
+                var slots = view.Root.GetComponentsInChildren<ButtonSlot>(true);
                 Assert.AreEqual(2, slots.Length, "YesNo 틀 슬롯 2개");
                 slots[1].Button.onClick.Invoke(); // 우(예, index 1)
                 Assert.AreEqual(1, picked, "예(index 1) 클릭 → 핸들 회수");
@@ -124,7 +124,7 @@ namespace LoveAlgo.Tests.PlayMode
                     new[] { new ModalButton("예"), new ModalButton("아니오") }, handle));
                 yield return null;
 
-                var spawned = view.Root.GetComponentsInChildren<ChoiceSlot>(true);
+                var spawned = view.Root.GetComponentsInChildren<ButtonSlot>(true);
                 Assert.AreEqual(2, spawned.Length, "폴백 동적 스폰 2개");
                 spawned[0].Button.onClick.Invoke();
                 Assert.AreEqual(0, picked, "index 0 클릭 → 핸들 회수");

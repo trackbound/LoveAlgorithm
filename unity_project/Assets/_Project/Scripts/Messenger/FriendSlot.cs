@@ -6,7 +6,7 @@ using UnityEngine.UI;
 namespace LoveAlgo.Messenger
 {
     /// <summary>
-    /// 친구 목록 항목(*Slot, ChoiceSlot 패턴 미러 — 피처 응집이라 Messenger asmdef 소유).
+    /// 친구 목록 항목(*Slot, ButtonSlot 패턴 미러 — 피처 응집이라 Messenger asmdef 소유).
     /// 프로필/상태메시지는 옵션 바인딩(없으면 무시) — 비주얼 구성은 프리팹/감독 영역.
     /// </summary>
     public class FriendSlot : MonoBehaviour

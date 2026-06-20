@@ -10,7 +10,7 @@ namespace LoveAlgo.UI
     /// <summary>
     /// 범용 모달 표시 뷰(*View). <see cref="ShowModalCommand"/>를 구독해 버튼 종류 시그니처로 템플릿을 고르고
     /// 인스턴스화한다(<see cref="ModalTemplate"/>). 정적 틀은 미리 배치된 슬롯에 라벨·콜백만 Bind, 매칭 없으면
-    /// 빈 시그니처(폴백) 틀에 종류별 버튼을 동적 스폰(<see cref="ChoiceSlot"/> 재사용). 클릭/Esc 시 완료 핸들
+    /// 빈 시그니처(폴백) 틀에 종류별 버튼을 동적 스폰(<see cref="ButtonSlot"/> 재사용). 클릭/Esc 시 완료 핸들
     /// (<see cref="ModalRequest"/>)에 인덱스를 채운다(ADR-007: 표시만, 의미·아트 분리). 단일 모달 — 새 명령 시 재생성.
     /// </summary>
     public class ModalView : MonoBehaviour
@@ -20,7 +20,7 @@ namespace LoveAlgo.UI
         public struct KindPrefab
         {
             public ModalButtonKind kind;
-            public ChoiceSlot prefab;
+            public ButtonSlot prefab;
         }
 
         [Tooltip("모달 비주얼 루트(딤+템플릿 컨테이너). 표시 중에만 활성. 미바인딩 시 토글 생략.")]
@@ -32,19 +32,19 @@ namespace LoveAlgo.UI
         [Tooltip("폴백 동적 스폰: 종류별 버튼 프리팹.")]
         [SerializeField] List<KindPrefab> buttonPrefabs = new();
         [Tooltip("폴백 동적 스폰: 종류 매칭 없을 때 버튼 프리팹.")]
-        [SerializeField] ChoiceSlot defaultButtonPrefab;
+        [SerializeField] ButtonSlot defaultButtonPrefab;
 
         public GameObject Root { get => root; set => root = value; }
         public Transform TemplateContainer { get => templateContainer; set => templateContainer = value; }
         public List<ModalTemplate> TemplatePrefabs { get => templatePrefabs; set => templatePrefabs = value; }
         public List<KindPrefab> ButtonPrefabs => buttonPrefabs;
-        public ChoiceSlot DefaultButtonPrefab { get => defaultButtonPrefab; set => defaultButtonPrefab = value; }
+        public ButtonSlot DefaultButtonPrefab { get => defaultButtonPrefab; set => defaultButtonPrefab = value; }
 
         IDisposable _sub;
         ModalRequest _active;
         IReadOnlyList<ModalButton> _buttons;
         ModalTemplate _activeTemplate;                  // 인스턴스화된 템플릿(닫을 때 Destroy)
-        readonly List<ChoiceSlot> _boundSlots = new();  // Esc 취소 인덱스·라벨 로그용
+        readonly List<ButtonSlot> _boundSlots = new();  // Esc 취소 인덱스·라벨 로그용
 
         void Awake()
         {
@@ -147,7 +147,7 @@ namespace LoveAlgo.UI
             return sigs;
         }
 
-        ChoiceSlot PrefabFor(ModalButtonKind kind)
+        ButtonSlot PrefabFor(ModalButtonKind kind)
         {
             for (int i = 0; i < buttonPrefabs.Count; i++)
                 if (buttonPrefabs[i].kind == kind && buttonPrefabs[i].prefab != null)

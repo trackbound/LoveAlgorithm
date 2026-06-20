@@ -18,14 +18,14 @@ namespace LoveAlgo.UI
         [Tooltip("선택지 표시 중 화면을 어둡게 덮는 딤 배경(선택). root와 함께 토글 — 뒤 UI 클릭 차단용.")]
         [SerializeField] GameObject dim;
         [SerializeField] Transform slotContainer;
-        [SerializeField] ChoiceSlot slotPrefab;
+        [SerializeField] ButtonSlot slotPrefab;
 
         public GameObject Root { get => root; set => root = value; }
         public GameObject Dim { get => dim; set => dim = value; }
         public Transform SlotContainer { get => slotContainer; set => slotContainer = value; }
-        public ChoiceSlot SlotPrefab { get => slotPrefab; set => slotPrefab = value; }
+        public ButtonSlot SlotPrefab { get => slotPrefab; set => slotPrefab = value; }
 
-        readonly List<ChoiceSlot> _spawned = new();
+        readonly List<ButtonSlot> _spawned = new();
         IDisposable _sub;
         ChoiceRequest _active;
 

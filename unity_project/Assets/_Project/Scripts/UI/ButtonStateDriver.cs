@@ -14,7 +14,7 @@ namespace LoveAlgo.UI
     /// pressed는 활성 자식 Image에 틴트 곱, UI 사운드도 발행. raw 포인터 이벤트 구동(Selectable 미상속 → 포커스 가림 부재).
     ///
     /// <para>상태 자식은 <b>명시적 직렬화 참조</b>(normalState/hoverState/onState/disabledState). 비운 슬롯은 Normal로 폴백.
-    /// 라벨은 항상 켜진 단일 TMP — 텍스트는 외부(예: ChoiceSlot.Bind)가, 색은 이 드라이버가 구동(동적 텍스트 버튼 호환).</para>
+    /// 라벨은 항상 켜진 단일 TMP — 텍스트는 외부(예: ButtonSlot.Bind)가, 색은 이 드라이버가 구동(동적 텍스트 버튼 호환).</para>
     /// </summary>
     [RequireComponent(typeof(Button))]
     public class ButtonStateDriver : MonoBehaviour,

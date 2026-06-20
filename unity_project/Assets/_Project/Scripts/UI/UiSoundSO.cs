@@ -4,7 +4,7 @@ namespace LoveAlgo.UI
 {
     /// <summary>
     /// UI 효과음 등록 테이블(ADR-012: 매직 문자열 분산 금지). 상호작용별 SFX "클립 이름"을 한 곳에 모은다.
-    /// 트리거 지점(StyledButton·DialogueView·ChoiceSlot)이 이 SO를 읽어 이름을 PlaySfxCommand로 발행하고,
+    /// 트리거 지점(StyledButton·DialogueView·ButtonSlot)이 이 SO를 읽어 이름을 PlaySfxCommand로 발행하고,
     /// 실제 재생은 AudioManager가 담당한다(ADR-007: 재생 싱크 단일). 런타임 읽기 전용.
     ///
     /// <para>이름 규약 = AudioManager의 SFX 로딩 경로 Resources/Audio/SFX/{name}.
