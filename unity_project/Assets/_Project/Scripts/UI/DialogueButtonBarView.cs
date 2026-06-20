@@ -50,10 +50,12 @@ namespace LoveAlgo.UI
 
         IDisposable _autoSub;
         bool _auto;
+        ButtonStateDriver _autoDriver; // 오토 버튼 토글 ON 비주얼(onState 자식 스왑) 구동.
 
         void Awake()
         {
             if (dialogueView == null) dialogueView = GetComponentInParent<DialogueView>(true);
+            if (autoButton != null) _autoDriver = autoButton.GetComponent<ButtonStateDriver>();
             Bind(titleButton, () => EventBus.Publish(new ReturnToTitleCommand()));      // 기획서: 확인 팝업 없음(QuickMenu 미러)
             Bind(loadButton, () => EventBus.Publish(new ShowSaveLoadCommand(SaveLoadMode.Load)));
             Bind(configButton, () => EventBus.Publish(new ShowSettingsCommand()));
@@ -78,6 +80,9 @@ namespace LoveAlgo.UI
 
         void ApplyAutoIcon()
         {
+            // 정본: ButtonStateDriver의 토글 ON 상태(onState 자식 스왑, 호버보다 우선) 구동.
+            if (_autoDriver != null) _autoDriver.SetOn(_auto);
+            // 폴백: onState 미배선 프리팹용 단일 아이콘 스프라이트 스왑(둘 다 미설정이면 무동작).
             if (autoIcon == null) return;
             var sprite = _auto ? autoOnSprite : autoOffSprite;
             if (sprite != null) autoIcon.sprite = sprite;
