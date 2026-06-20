@@ -55,6 +55,8 @@ namespace LoveAlgo.UI
 
         [Tooltip("눌림 시 활성 자식 Image의 base 컬러에 곱하는 틴트(≈C7C7C7).")]
         [SerializeField] Color pressedTint = new Color(0.7803922f, 0.7803922f, 0.7803922f, 1f);
+        [Tooltip("눌림 시 버튼 전체 스케일 배수(1=비활성). 0.95 등으로 두면 누를 때 살짝 작아져 클릭감.")]
+        [SerializeField] float pressedScale = 1f;
 
         [Header("상태별 라벨 색")]
         [SerializeField] TextColorBlock textColors = TextColorBlock.Default;
@@ -79,6 +81,7 @@ namespace LoveAlgo.UI
         public GameObject OnState { get => onState; set => onState = value; }
         public GameObject DisabledState { get => disabledState; set => disabledState = value; }
         public Color PressedTint { get => pressedTint; set => pressedTint = value; }
+        public float PressedScale { get => pressedScale; set => pressedScale = value; }
         public TextColorBlock TextColors { get => textColors; set => textColors = value; }
         public TMP_Text Label { get => label; set => label = value; }
         public UiSoundRole SoundRole { get => soundRole; set => soundRole = value; }
@@ -98,6 +101,10 @@ namespace LoveAlgo.UI
         /// <summary>눌림(interactable &amp;&amp; pressed)일 때 baseColor*pressedTint(어두워짐), 아니면 baseColor 유지.</summary>
         public static Color ResolvePressedTint(bool interactable, bool pressed, Color baseColor, Color pressedTint)
             => (interactable && pressed) ? baseColor * pressedTint : baseColor;
+
+        /// <summary>눌림(interactable &amp;&amp; pressed)일 때 pressedScale, 아니면 1. 클릭감 스케일다운(순수).</summary>
+        public static float ResolvePressedScale(bool interactable, bool pressed, float pressedScale)
+            => (interactable && pressed) ? pressedScale : 1f;
 
         /// <summary>상태별 라벨 색(drive 판단은 호출 측 책임).</summary>
         public static Color ResolveTextColor(State state, in TextColorBlock c)
@@ -248,6 +255,10 @@ namespace LoveAlgo.UI
             // 라벨 색.
             if (textColors.drive && label != null)
                 label.color = ResolveTextColor(state, textColors);
+
+            // 눌림 스케일다운(옵트인: pressedScale=1이면 transform 미관여 — 기존 버튼 무영향).
+            if (!Mathf.Approximately(pressedScale, 1f))
+                transform.localScale = Vector3.one * ResolvePressedScale(interactable, _pressed, pressedScale);
         }
 
         static void SetActiveSafe(GameObject go, GameObject active)

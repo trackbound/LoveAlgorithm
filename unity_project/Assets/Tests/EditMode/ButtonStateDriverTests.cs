@@ -35,6 +35,14 @@ namespace LoveAlgo.Tests.EditMode
         }
 
         [Test]
+        public void ResolvePressedScale_OnlyWhenInteractableAndPressed()
+        {
+            Assert.AreEqual(0.95f, ButtonStateDriver.ResolvePressedScale(true, true, 0.95f));   // 눌림 → 축소
+            Assert.AreEqual(1f, ButtonStateDriver.ResolvePressedScale(true, false, 0.95f));     // 안 눌림 → 1
+            Assert.AreEqual(1f, ButtonStateDriver.ResolvePressedScale(false, true, 0.95f));     // 비활성 → 1
+        }
+
+        [Test]
         public void ResolveTextColor_Priority_DisabledOverOnOverHoverOverNormal()
         {
             var c = new ButtonStateDriver.TextColorBlock
