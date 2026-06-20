@@ -360,12 +360,16 @@ namespace LoveAlgo.UI
                     if (!string.IsNullOrEmpty(typeSfx) && ShouldTypeBlip(text, i, typeStride))
                         EventBus.Publish(new PlaySfxCommand(typeSfx));
 
-                    // 인라인 <wait>: i번째 글자 표시 직후 멈춤(스킵 중이면 무시).
+                    // 인라인 <wait>: i번째 글자 표시 직후 멈춤. 클릭(_skipTyping) 시 즉시 중단되도록 직접 타이머로
+                    // 센다 — WaitForSeconds는 진행 중 끊기지 않아 클릭해도 wait 끝까지 멈춰 "화면이 멎은" 인상을 줬다.
                     if (_pauses != null)
                     {
                         for (int p = 0; p < _pauses.Count && !_skipTyping; p++)
                             if (_pauses[p].CharIndex == i)
-                                yield return new WaitForSeconds(_pauses[p].Seconds);
+                            {
+                                float w = 0f;
+                                while (w < _pauses[p].Seconds && !_skipTyping) { w += Time.deltaTime; yield return null; }
+                            }
                     }
 
                     // 인라인 <emote>: i번째 글자 시점에 화자 표정 변경 명령 발행(StageView가 슬롯 해석·교체).
