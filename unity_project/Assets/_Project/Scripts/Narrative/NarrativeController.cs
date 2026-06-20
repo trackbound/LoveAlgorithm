@@ -280,6 +280,7 @@ namespace LoveAlgo.Story.StoryEngine
             d.storyEyeClosed = false;
             d.storySd = "";
             d.storyOverlay = "";
+            d.storyCg = "";
             d.storyRoaDevice = "";
         }
 
@@ -301,6 +302,15 @@ namespace LoveAlgo.Story.StoryEngine
                 if (chars[i] != null && string.Equals(chars[i].id, id, System.StringComparison.OrdinalIgnoreCase))
                     return chars[i].slot;
             return -1;
+        }
+
+        /// <summary>storyChars에서 해당 슬롯에 올라있는 캐릭터 id. 없으면 null(순수).</summary>
+        public static string FindCharIdForSlot(IReadOnlyList<GameStateData.StoryCharRecord> chars, CharSlot slot)
+        {
+            if (chars == null) return null;
+            for (int i = 0; i < chars.Count; i++)
+                if (chars[i] != null && chars[i].slot == (int)slot) return chars[i].id;
+            return null;
         }
 
         void RecordChar(CharSlot slot, CharAction action, string id, string emote)
@@ -344,10 +354,10 @@ namespace LoveAlgo.Story.StoryEngine
         void RecordLayer(StageLayerKind kind, bool isClose, string name)
         {
             if (state == null) return;
-            if (kind == StageLayerKind.CG) return; // CG 비저장(설계 §2)
             string value = isClose ? "" : (name ?? "");
             if (kind == StageLayerKind.SD) state.Data.storySd = value;
             else if (kind == StageLayerKind.Overlay) state.Data.storyOverlay = value;
+            else if (kind == StageLayerKind.CG) state.Data.storyCg = value;
         }
 
         IEnumerator PlayText(ScriptLine line)
@@ -601,6 +611,11 @@ namespace LoveAlgo.Story.StoryEngine
 
             float dur = ResolveCharDuration(intent.Action);
             var (ch, em) = ResolveCharEmote(intent.Character, intent.Emote, intent.Action);
+            // 슬롯 표정(C:Emote:표정) — 바에 캐릭터 id가 없어 ch=null인 경우, 슬롯에 올라있는 캐릭터를 끌어와
+            // 명령에 실어준다. 안 그러면 StageView가 빈 캐릭터로 스프라이트 로드에 실패해 거짓 "표정 없음" 토스트가
+            // 뜨고(예: /찌릿), RoaOverlayController도 IsRoa(null)로 오버레이 무드를 갱신하지 못한다.
+            if (intent.Action == CharAction.Emote && string.IsNullOrEmpty(ch) && state != null)
+                ch = FindCharIdForSlot(state.Data.storyChars, intent.Slot);
             RecordChar(intent.Slot, intent.Action, ch, em);
             var req = new CompletionHandle();
             EventBus.Publish(new ShowCharacterCommand(intent.Slot, intent.Action, ch, em, dur, req));
@@ -790,6 +805,16 @@ namespace LoveAlgo.Story.StoryEngine
 
         IEnumerator PlayLoading(ScriptLine line)
         {
+            // 일차 경계(로딩)에서 직전 씬의 잔여 캐릭터를 즉시 청소한다. 작가 스크립트가 다음 씬 전
+            // C:Exit를 빠뜨려도(예: 자취방 로아가 Exit 없이 LoadingScene으로 넘어감) 다음 씬 EyeOpen 때
+            // 이전 로아가 화면에 남는 버그 방지. 로딩 오버레이가 화면을 가리는 동안이라 청소는 보이지 않으며,
+            // 슬롯 Clear는 RoaOverlayController도 함께 무드 오버레이를 내리게 한다(슬롯=캐릭터 경유).
+            foreach (CharSlot slot in new[] { CharSlot.L, CharSlot.C, CharSlot.R })
+            {
+                RecordChar(slot, CharAction.Clear, null, null); // 세이브 상태도 비워 로드 시 잔여 캐릭터 재생성 방지
+                EventBus.Publish(new ShowCharacterCommand(slot, CharAction.Clear, null, null, 0f, new CompletionHandle()));
+            }
+
             // LoadingScene[:time][:key] — 헤드 뒤 토큰을 순회: 숫자면 표시시간, 그 외 첫 토큰은 스플래시 키(캐릭터 id).
             float secs = LoadingDefaultSeconds;
             string key = null;
