@@ -106,6 +106,12 @@ namespace LoveAlgo.UI
         public static float ResolvePressedScale(bool interactable, bool pressed, float pressedScale)
             => (interactable && pressed) ? pressedScale : 1f;
 
+        /// <summary>유효 누름 = 누른 채 포인터가 버튼 안에 있을 때만. 밖으로 벗어나면(드래그 아웃) 눌림 비주얼
+        /// 해제 — 그래야 "normal 이미지 + 누름 틴트"라는 어색한 조합이 안 생기고, 밖에서 떼면 클릭이
+        /// 발화 안 되는 네이티브 의미와도 일치(밖=눌림 비주얼 거둠).</summary>
+        public static bool ResolveEffectivePressed(bool pressed, bool pointerInside)
+            => pressed && pointerInside;
+
         /// <summary>상태별 라벨 색(drive 판단은 호출 측 책임).</summary>
         public static Color ResolveTextColor(State state, in TextColorBlock c)
         {
@@ -236,6 +242,7 @@ namespace LoveAlgo.UI
             EnsureRefs();
             CaptureBases();
             bool interactable = IsInteractable();
+            bool effectivePressed = ResolveEffectivePressed(_pressed, _pointerInside);
             var state = ResolveActiveState(interactable, _isOn, _pointerInside);
             var active = StateObject(state, out var baseColor);
 
@@ -249,7 +256,7 @@ namespace LoveAlgo.UI
             if (active != null)
             {
                 var img = active.GetComponent<Image>();
-                if (img != null) img.color = ResolvePressedTint(interactable, _pressed, baseColor, pressedTint);
+                if (img != null) img.color = ResolvePressedTint(interactable, effectivePressed, baseColor, pressedTint);
             }
 
             // 라벨 색.
@@ -258,7 +265,7 @@ namespace LoveAlgo.UI
 
             // 눌림 스케일다운(옵트인: pressedScale=1이면 transform 미관여 — 기존 버튼 무영향).
             if (!Mathf.Approximately(pressedScale, 1f))
-                transform.localScale = Vector3.one * ResolvePressedScale(interactable, _pressed, pressedScale);
+                transform.localScale = Vector3.one * ResolvePressedScale(interactable, effectivePressed, pressedScale);
         }
 
         static void SetActiveSafe(GameObject go, GameObject active)

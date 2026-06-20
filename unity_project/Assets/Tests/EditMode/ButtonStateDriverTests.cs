@@ -43,6 +43,15 @@ namespace LoveAlgo.Tests.EditMode
         }
 
         [Test]
+        public void ResolveEffectivePressed_OnlyWhenPressedAndPointerInside()
+        {
+            Assert.IsTrue(ButtonStateDriver.ResolveEffectivePressed(true, true));    // 누른 채 안 → 유효
+            Assert.IsFalse(ButtonStateDriver.ResolveEffectivePressed(true, false));  // 누른 채 벗어남 → 비유효(틴트 해제)
+            Assert.IsFalse(ButtonStateDriver.ResolveEffectivePressed(false, true));  // 안 눌림
+            Assert.IsFalse(ButtonStateDriver.ResolveEffectivePressed(false, false));
+        }
+
+        [Test]
         public void ResolveTextColor_Priority_DisabledOverOnOverHoverOverNormal()
         {
             var c = new ButtonStateDriver.TextColorBlock
