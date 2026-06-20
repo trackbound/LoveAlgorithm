@@ -110,6 +110,7 @@ namespace LoveAlgo.UI
         Coroutine _slideRoutine;
         IReadOnlyList<InlinePause> _pauses;
         IReadOnlyList<InlineEmote> _emotes;
+        IReadOnlyList<InlineSfx> _sfx;
         Coroutine _monoRoutine; // 독백 점 루프(타이핑 동안만).
         bool _isMono;           // 현재 라인이 독백(화자 빈 칸)인가.
         string _speaker;
@@ -324,6 +325,7 @@ namespace LoveAlgo.UI
             if (!_isMono) StopMonoDots(hide: true); // 일반 대사: 점 숨김(독백 시작은 타이핑 시점에).
             _pauses = e.Pauses; // 인라인 <wait> 멈춤 지점(없으면 null).
             _emotes = e.Emotes; // 인라인 <emote> 표정 지점(없으면 null).
+            _sfx = e.Sfx;       // 인라인 <sfx> 효과음 지점(없으면 null).
             _typeRoutine = StartCoroutine(TypeRoutine(e.Text ?? "", e.RequireClick));
         }
 
@@ -368,6 +370,8 @@ namespace LoveAlgo.UI
 
                     // 인라인 <emote>: i번째 글자 시점에 화자 표정 변경 명령 발행(StageView가 슬롯 해석·교체).
                     FireEmotesAt(i);
+                    // 인라인 <sfx>: i번째 글자 시점에 효과음 1회 발행.
+                    FireSfxAt(i);
 
                     yield return new WaitForSeconds(charInterval);
                 }
@@ -377,6 +381,9 @@ namespace LoveAlgo.UI
             // 즉시표시(루프 미실행)거나 스킵으로 끊긴 경우 — 못 발행한 표정을 최종 상태로 마저 발행.
             if (_emotes != null && (_skipTyping || charInterval <= 0f || total == 0))
                 FireAllEmotes();
+            // 효과음: 즉시표시(루프 미실행)일 때만 마저 발행. 스킵은 중간 효과음 생략(연타 방지).
+            if (_sfx != null && (charInterval <= 0f || total == 0))
+                FireAllSfx();
             _typing = false;
             StopMonoDots(hide: false); // 타이핑 완료 → 점 루프 정지(이름 위치엔 마지막 프레임으로 멈춰 유지).
 
@@ -409,20 +416,40 @@ namespace LoveAlgo.UI
         }
 
         // 인라인 <emote> 발행: charIndex 시점의 표정 변경 명령(화자→슬롯 해석은 StageView 구독자 몫).
+        // 지정형 <emote=대상:표정>이면 그 줄 화자가 아닌 대상(Target)에게 적용 — 내레이션 줄에서도 동작.
         void FireEmotesAt(int charIndex)
         {
             if (_emotes == null) return;
             for (int m = 0; m < _emotes.Count; m++)
                 if (_emotes[m].CharIndex == charIndex)
-                    EventBus.Publish(new ShowSpeakerEmoteCommand(EmoteSpeaker, _emotes[m].Emote));
+                    EventBus.Publish(new ShowSpeakerEmoteCommand(EmoteTargetOf(_emotes[m]), _emotes[m].Emote));
         }
 
         void FireAllEmotes()
         {
             if (_emotes == null) return;
             for (int m = 0; m < _emotes.Count; m++)
-                EventBus.Publish(new ShowSpeakerEmoteCommand(EmoteSpeaker, _emotes[m].Emote));
+                EventBus.Publish(new ShowSpeakerEmoteCommand(EmoteTargetOf(_emotes[m]), _emotes[m].Emote));
         }
+
+        // 인라인 <sfx> 발행: charIndex 시점의 효과음 1회(이름은 엔진이 별칭 해석해 채움).
+        void FireSfxAt(int charIndex)
+        {
+            if (_sfx == null) return;
+            for (int m = 0; m < _sfx.Count; m++)
+                if (_sfx[m].CharIndex == charIndex)
+                    EventBus.Publish(new PlaySfxCommand(_sfx[m].Name));
+        }
+
+        void FireAllSfx()
+        {
+            if (_sfx == null) return;
+            for (int m = 0; m < _sfx.Count; m++)
+                EventBus.Publish(new PlaySfxCommand(_sfx[m].Name));
+        }
+
+        // 표정 적용 대상: 지정형(Target)이 있으면 그 대상, 없으면 그 줄 화자(EmoteSpeaker).
+        string EmoteTargetOf(InlineEmote e) => string.IsNullOrEmpty(e.Target) ? EmoteSpeaker : e.Target;
 
         // 슬롯 매칭은 해석된 코드 ID 우선(StageView가 Char 명령의 코드 ID를 추적) — 미해석 시 원문 화자명 폴백.
         string EmoteSpeaker => string.IsNullOrEmpty(_speakerId) ? _speaker : _speakerId;

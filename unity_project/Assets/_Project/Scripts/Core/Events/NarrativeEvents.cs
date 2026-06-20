@@ -63,14 +63,28 @@ namespace LoveAlgo.Events
     }
 
     /// <summary>
-    /// 인라인 표정 지점. <see cref="CharIndex"/>번째 글자가 표시되는 시점에 화자의 캐릭터가 표정을
+    /// 인라인 표정 지점. <see cref="CharIndex"/>번째 글자가 표시되는 시점에 대상 캐릭터가 표정을
     /// <see cref="Emote"/>로 바꾼다(대사 본문의 <c>&lt;emote=표정/&gt;</c> 태그 위치). 표시 텍스트는 태그 제거 상태.
+    /// <see cref="Target"/>가 null이면 그 줄의 화자에게 적용하고, 지정형 <c>&lt;emote=대상:표정/&gt;</c>면
+    /// 내레이션 줄에서도 특정 캐릭터(코드 ID/별칭)의 표정을 바꾼다.
     /// </summary>
     public readonly struct InlineEmote
     {
         public readonly int CharIndex;
         public readonly string Emote;
-        public InlineEmote(int charIndex, string emote) { CharIndex = charIndex; Emote = emote; }
+        public readonly string Target;
+        public InlineEmote(int charIndex, string emote, string target = null) { CharIndex = charIndex; Emote = emote; Target = target; }
+    }
+
+    /// <summary>
+    /// 인라인 효과음 지점. <see cref="CharIndex"/>번째 글자가 표시되는 시점에 <see cref="Name"/> SFX를 1회 재생한다
+    /// (대사 본문의 <c>&lt;sfx=이름/&gt;</c> 태그 위치). 이름 해석은 Sound 행과 동일(엔진이 별칭 해석해 채움).
+    /// </summary>
+    public readonly struct InlineSfx
+    {
+        public readonly int CharIndex;
+        public readonly string Name;
+        public InlineSfx(int charIndex, string name) { CharIndex = charIndex; Name = name; }
     }
 
     /// <summary>
@@ -87,12 +101,14 @@ namespace LoveAlgo.Events
         public readonly CompletionHandle Handle;
         public readonly IReadOnlyList<InlinePause> Pauses;
         public readonly IReadOnlyList<InlineEmote> Emotes;
+        public readonly IReadOnlyList<InlineSfx> Sfx;
         /// <summary>화자의 캐릭터 코드 ID(엔진이 별칭 카탈로그로 해석, 예: "c01"). 인라인 &lt;emote&gt;의 슬롯
         /// 매칭용 — 표시는 <see cref="Speaker"/>(원문) 그대로. 미등록 화자/카탈로그 부재면 null(뷰는 Speaker 폴백).</summary>
         public readonly string SpeakerId;
 
         public ShowDialogueCommand(string speaker, string text, bool requireClick, CompletionHandle handle,
-            IReadOnlyList<InlinePause> pauses = null, IReadOnlyList<InlineEmote> emotes = null, string speakerId = null)
+            IReadOnlyList<InlinePause> pauses = null, IReadOnlyList<InlineEmote> emotes = null, string speakerId = null,
+            IReadOnlyList<InlineSfx> sfx = null)
         {
             Speaker = speaker;
             Text = text;
@@ -100,6 +116,7 @@ namespace LoveAlgo.Events
             Handle = handle;
             Pauses = pauses;
             Emotes = emotes;
+            Sfx = sfx;
             SpeakerId = speakerId;
         }
     }

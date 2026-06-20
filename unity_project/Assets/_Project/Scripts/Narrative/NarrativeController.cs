@@ -362,7 +362,8 @@ namespace LoveAlgo.Story.StoryEngine
             // 화자/표정 별칭 해석: 표시는 원문(Speaker), 슬롯 매칭은 코드 ID(SpeakerId)·표정 코드 — 뷰는 카탈로그를 모른다.
             EventBus.Publish(new ShowDialogueCommand(speaker, parsed.Text, requireClick, req,
                 parsed.Pauses, ResolveInlineEmotes(parsed.Emotes),
-                isPlayer ? PlayerNameFormat.PlayerSpeakerId : ResolveSpeakerId(line.Speaker)));
+                isPlayer ? PlayerNameFormat.PlayerSpeakerId : ResolveSpeakerId(line.Speaker),
+                ResolveInlineSfx(parsed.Sfx)));
 
             // 뷰가 타이핑/클릭을 마칠 때까지 대기(구독자 없으면 즉시 완료되지 않으므로 가드).
             yield return new WaitUntil(() => req.IsComplete);
@@ -638,7 +639,23 @@ namespace LoveAlgo.Story.StoryEngine
             if (aliasCatalog == null || emotes == null || emotes.Count == 0) return emotes;
             var resolved = new List<InlineEmote>(emotes.Count);
             for (int i = 0; i < emotes.Count; i++)
-                resolved.Add(new InlineEmote(emotes[i].CharIndex, aliasCatalog.ResolveEmote(emotes[i].Emote)));
+            {
+                // 표정 키는 별칭→코드, 지정형 대상(<emote=대상:표정>)도 캐릭터 코드 ID로 해석해 StageView 슬롯 매칭과 정합.
+                string target = emotes[i].Target;
+                if (!string.IsNullOrEmpty(target) && aliasCatalog.TryResolveCharacter(target, out string targetId))
+                    target = targetId;
+                resolved.Add(new InlineEmote(emotes[i].CharIndex, aliasCatalog.ResolveEmote(emotes[i].Emote), target));
+            }
+            return resolved;
+        }
+
+        // 인라인 <sfx=이름> — Sound 행과 동일하게 별칭 해석(ResolveSfxName) 후 뷰가 지점에서 PlaySfxCommand 발행.
+        IReadOnlyList<InlineSfx> ResolveInlineSfx(IReadOnlyList<InlineSfx> sfx)
+        {
+            if (sfx == null || sfx.Count == 0) return sfx;
+            var resolved = new List<InlineSfx>(sfx.Count);
+            for (int i = 0; i < sfx.Count; i++)
+                resolved.Add(new InlineSfx(sfx[i].CharIndex, ResolveSfxName(sfx[i].Name)));
             return resolved;
         }
 

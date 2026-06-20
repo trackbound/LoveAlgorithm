@@ -161,5 +161,62 @@ namespace LoveAlgo.Tests.Editor
             Assert.IsNull(p.Emotes);     // wait는 emote 아님
             Assert.IsNotNull(p.Pauses);
         }
+
+        // ── 통일 문법(<이름=값/>) + sfx + 지정 표정 ──
+
+        [Test]
+        public void Wait_Equals_Form_With_Slash_Records_Pause()
+        {
+            // 통일 문법: <wait=초/> (콜론형과 동등하게 멈춤 기록).
+            var p = InlineTagParser.Parse("a<wait=2.5/>b");
+            Assert.AreEqual("ab", p.Text);
+            Assert.IsNotNull(p.Pauses);
+            Assert.AreEqual(1, p.Pauses[0].CharIndex);
+            Assert.AreEqual(2.5f, p.Pauses[0].Seconds, 1e-4f);
+            Assert.IsNull(p.Emotes); // wait는 emote 아님
+        }
+
+        [Test]
+        public void Sfx_Records_At_CharIndex_With_And_Without_Slash()
+        {
+            var p = InlineTagParser.Parse("야<sfx=060_message/>호<sfx=200_pen>");
+            Assert.AreEqual("야호", p.Text);
+            Assert.IsNotNull(p.Sfx);
+            Assert.AreEqual(2, p.Sfx.Count);
+            Assert.AreEqual(1, p.Sfx[0].CharIndex);
+            Assert.AreEqual("060_message", p.Sfx[0].Name);
+            Assert.AreEqual(2, p.Sfx[1].CharIndex);
+            Assert.AreEqual("200_pen", p.Sfx[1].Name);
+        }
+
+        [Test]
+        public void Emote_Plain_Has_Null_Target()
+        {
+            var p = InlineTagParser.Parse("<emote=기본/>야");
+            Assert.AreEqual("기본", p.Emotes[0].Emote);
+            Assert.IsNull(p.Emotes[0].Target); // 대상 미지정 → 그 줄 화자
+        }
+
+        [Test]
+        public void Emote_Targeted_Splits_Target_And_Emote()
+        {
+            // 지정형 <emote=대상:표정/> — 내레이션 줄에서도 특정 캐릭터 표정 변경.
+            var p = InlineTagParser.Parse("그녀는 <emote=서다은:눈웃음/>웃었다");
+            Assert.AreEqual("그녀는 웃었다", p.Text);
+            Assert.AreEqual(1, p.Emotes.Count);
+            Assert.AreEqual("서다은", p.Emotes[0].Target);
+            Assert.AreEqual("눈웃음", p.Emotes[0].Emote);
+        }
+
+        [Test]
+        public void Unknown_Equals_Tag_Is_Stripped()
+        {
+            // 미지원 이름(예: TMP <color=..>)은 표시 텍스트에서 제거만, 작용 없음.
+            var p = InlineTagParser.Parse("a<color=red/>b");
+            Assert.AreEqual("ab", p.Text);
+            Assert.IsNull(p.Emotes);
+            Assert.IsNull(p.Sfx);
+            Assert.IsNull(p.Pauses);
+        }
     }
 }
