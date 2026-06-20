@@ -190,6 +190,7 @@ namespace LoveAlgo.Tests.PlayMode
             var input = inputGo.AddComponent<TMP_InputField>();
             view.Overlay = overlay;
             view.Input = input;
+            view.SetupCompleteHold = 0f; // 닫힘 타이밍 결정적 검증(설정완료 홀드 비활성)
             viewGo.SetActive(true);
             yield return null; // OnEnable 구독
 

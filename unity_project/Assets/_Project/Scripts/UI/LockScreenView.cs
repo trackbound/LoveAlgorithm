@@ -29,6 +29,9 @@ namespace LoveAlgo.UI
         [Tooltip("FadeOut 지속(초).")]
         [SerializeField] float fadeOutDuration = 0.5f;
 
+        [Tooltip("FirstSetup/Reset 제출 후 '설정 완료!' 안내를 게임화면 전환(페이드아웃) 전에 유지하는 시간(초).")]
+        [SerializeField] float setupCompleteHold = 0.8f;
+
         [Tooltip("시작 크로스페이드(페이드인) 지속(초). 0이면 즉시 표시. fadeGroup 알파 0→1로 스토리 위에 부드럽게 진입.")]
         [SerializeField] float fadeInDuration = 0.3f;
 
@@ -57,6 +60,7 @@ namespace LoveAlgo.UI
         public LoginButton LoginButton { get => loginButton; set => loginButton = value; }
         public KeyResetButton KeyButton { get => keyButton; set => keyButton = value; }
         public int LostThreshold { get => lostThreshold; set => lostThreshold = value; }
+        public float SetupCompleteHold { get => setupCompleteHold; set => setupCompleteHold = value; }
 
         IDisposable _sub, _finishSub, _resetSub, _failSub, _acceptSub, _resetReqSub;
         Coroutine _fadeRoutine;
@@ -168,12 +172,13 @@ namespace LoveAlgo.UI
                 if (input != null) input.ActivateInputField();
                 return;
             }
-            // FirstSetup/Reset 제출 시 '설정 완료!' 안내로 전환(닫힘 페이드 동안 노출).
+            // FirstSetup/Reset 제출 시 '설정 완료!' 안내로 전환(검은 배경 유지 동안 노출).
             if (guide != null && _mode != LockMode.Normal)
                 guide.SetState(LockScreenGuideText.LockGuideState.SetupComplete);
             EventBus.Publish(new SubmitPasswordCommand(pwd)); // 저장/검증은 Controller(ADR-007).
             // Normal은 검증 결과를 기다린다(불일치 재입력). 닫기는 PasswordAcceptedEvent 수신 시.
-            if (_mode != LockMode.Normal) Hide();
+            // FirstSetup/Reset: '설정 완료!'를 잠시 보여준 뒤(setupCompleteHold) 게임화면으로 페이드.
+            if (_mode != LockMode.Normal) HoldThenHide();
         }
 
         /// <summary>검증 실패 — 입력칸 진동 + 입력 초기화·재포커스(가이드는 S3에서 ≥3 분실 처리).</summary>
@@ -200,6 +205,24 @@ namespace LoveAlgo.UI
             if (keyButton != null) keyButton.SetVisible(false);
             if (input != null) { input.text = ""; input.ActivateInputField(); }
             else if (passwordField != null) passwordField.ResetField();
+        }
+
+        /// <summary>'설정 완료!' 안내를 setupCompleteHold초 유지한 뒤 닫기(페이드). 비활성/시간0이면 즉시 Hide.</summary>
+        void HoldThenHide()
+        {
+            if (setupCompleteHold > 0f && isActiveAndEnabled)
+            {
+                if (_fadeRoutine != null) { StopCoroutine(_fadeRoutine); _fadeRoutine = null; }
+                _fadeRoutine = StartCoroutine(HoldThenHideRoutine());
+            }
+            else Hide();
+        }
+
+        IEnumerator HoldThenHideRoutine()
+        {
+            yield return new WaitForSeconds(setupCompleteHold);
+            _fadeRoutine = null; // Hide가 페이드 코루틴을 새로 시작하므로 핸들 비움.
+            Hide();
         }
 
         void Hide()

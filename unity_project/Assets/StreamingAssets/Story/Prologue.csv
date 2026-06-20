@@ -127,6 +127,7 @@ pro_112,Text,로아,"<emote=기본/>그럼 잘 자, {{Player}}.",click
 pro_113,BG,,블랙:Cross,await
 pro_114,Text,로아,내일 다시 만나.,click
 pro_115,FX,,SceneEnd,await
+,FX,,DialogueHide,>
 pro_116,Flow,,LoadingScene,await
 ,Flow,,Mark:scene:다음날 기상 (침대),>
 ,FX,,Setup:BG=자취방_침대_낮|Eye=Close,>

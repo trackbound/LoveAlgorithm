@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ce3f32002271118458c1c887f36c3a8c, type: 3}
   m_Name: UiSound
   m_EditorClassIdentifier: LoveAlgo.UI::LoveAlgo.UI.UiSoundSO
-  buttonHover: 
-  buttonClick: 
-  choiceHover: 
+  buttonHover: ui_hover
+  buttonClick: ui_click
+  choiceHover: ui_choice_hover
   choiceClick: 001_Pop
-  dialogueAdvance: 
-  dialogueType: 
+  dialogueAdvance:
+  dialogueType: ui_typing
   typeStride: 2

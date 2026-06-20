@@ -1,0 +1,53 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c4f2a8d1e3b6470958a1c2d3e4f50617, type: 3}
+  m_Name: AudioBank
+  m_EditorClassIdentifier:
+  bgm:
+  - key: roa
+    clip: {fileID: 8300000, guid: 7ae5fe903e96fd543b5fefee877396b4, type: 3}
+  - key: whitenoise
+    clip: {fileID: 8300000, guid: 626663a0d7712d943ad92eba505a664c, type: 3}
+  - key: daily1
+    clip: {fileID: 8300000, guid: acda5c16009d69e478e869343688ebe1, type: 3}
+  - key: daily2
+    clip: {fileID: 8300000, guid: 9472a21bd372c1d4a817a981b6491085, type: 3}
+  - key: night
+    clip: {fileID: 8300000, guid: bd30294f43276174f876295ab7604477, type: 3}
+  - key: daeun
+    clip: {fileID: 8300000, guid: 14717baad671f344690220280e1d38cd, type: 3}
+  - key: yeeun
+    clip: {fileID: 8300000, guid: 9e93c4898f624114a94a4f55fa746b7c, type: 3}
+  - key: heewon
+    clip: {fileID: 8300000, guid: dff07e1e44a9f0641ae4db9f2d3ad21d, type: 3}
+  - key: bom
+    clip: {fileID: 8300000, guid: 8cd0e20e47d895443884cdb8fe519735, type: 3}
+  - key: title
+    clip: {fileID: 8300000, guid: 6478dfdd832a98d4383c64059105df6c, type: 3}
+  sfx:
+  - key: 060_message
+    clip: {fileID: 8300000, guid: 6b54c3c8df030224696c4caf23e53435, type: 3}
+  - key: 200_pen
+    clip: {fileID: 8300000, guid: ff0b5522250d3844aaaedcada138a81b, type: 3}
+  - key: ui_click
+    clip: {fileID: 8300000, guid: 90978a85b59bc2649bdff82dbd9a6a49, type: 3}
+  - key: ui_hover
+    clip: {fileID: 8300000, guid: da9dae809f05c1543a19534acca87e46, type: 3}
+  - key: ui_typing
+    clip: {fileID: 8300000, guid: dbb984f8c451c914f9e295501044a97b, type: 3}
+  - key: ui_choice_hover
+    clip: {fileID: 8300000, guid: 58ef954d328167a4b801833e7bb80042, type: 3}
+  - key: ui_choice_select
+    clip: {fileID: 8300000, guid: 35df3a5fe05ab0b4f9c916e1ff3fbe2f, type: 3}
+  - key: ui_dialoguenext
+    clip: {fileID: 8300000, guid: 3c01dd9e9fe05d04d911325a298f7837, type: 3}
+  voice: []

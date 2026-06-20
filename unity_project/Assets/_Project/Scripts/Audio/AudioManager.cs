@@ -29,12 +29,23 @@ namespace LoveAlgo.Audio
         [Tooltip("명령이 Fade<0을 줄 때 사용할 기본 페이드(초).")]
         [SerializeField] float defaultFade = 1f;
 
+        [Header("오디오 뱅크 (직접 바인딩 — 미바인딩 시 Resources/Data/AudioBank 자동 로드)")]
+        [Tooltip("키→AudioClip 직접 참조 SO. 여기서 먼저 찾고, 없으면 Resources/Audio/{category}/{name} 폴백.")]
+        [SerializeField] AudioBankSO bank;
+
         /// <summary>
-        /// clip 해석 주입점: (category, name) → AudioClip. 기본은 Resources/Audio/{category}/{name}.
-        /// 부팅 시 카탈로그 기반 로더로 교체하거나 테스트가 대체할 수 있다(순수 재생 로직 격리).
+        /// clip 해석 오버라이드 주입점: (category, name) → AudioClip. 설정 시 뱅크/Resources보다 우선한다
+        /// (테스트가 순수 재생 로직을 격리하려고 대체). 기본 null → <see cref="LoadClip"/>의 뱅크→Resources 경로.
         /// </summary>
-        public Func<string, string, AudioClip> ClipLoader =
-            (category, name) => Resources.Load<AudioClip>($"Audio/{category}/{name}");
+        public Func<string, string, AudioClip> ClipLoader;
+
+        /// <summary>clip 해석: ClipLoader 오버라이드 → 뱅크 직접 바인딩 → Resources/Audio/{category}/{name} 폴백.</summary>
+        AudioClip LoadClip(string category, string name)
+        {
+            if (ClipLoader != null) return ClipLoader(category, name);
+            var clip = bank != null ? bank.Resolve(category, name) : null;
+            return clip != null ? clip : Resources.Load<AudioClip>($"Audio/{category}/{name}");
+        }
 
         string _currentBgm;
         /// <summary>현재 재생 중인 BGM 이름(세이브/디버그용). 정지 시 null.</summary>
@@ -65,6 +76,7 @@ namespace LoveAlgo.Audio
         /// <summary>AudioSource가 미바인딩이면 런타임 생성(씬 바인딩 누락/테스트 대비).</summary>
         void EnsureSources()
         {
+            if (bank == null) bank = Resources.Load<AudioBankSO>("Data/AudioBank");
             if (bgmSource == null) { bgmSource = gameObject.AddComponent<AudioSource>(); bgmSource.playOnAwake = false; bgmSource.loop = true; }
             if (sfxSource == null) { sfxSource = gameObject.AddComponent<AudioSource>(); sfxSource.playOnAwake = false; }
             if (voiceSource == null) { voiceSource = gameObject.AddComponent<AudioSource>(); voiceSource.playOnAwake = false; }
@@ -77,7 +89,7 @@ namespace LoveAlgo.Audio
             EnsureSources();
             if (string.Equals(_currentBgm, name)) return;
 
-            var clip = ClipLoader?.Invoke("BGM", name);
+            var clip = LoadClip("BGM", name);
             if (clip == null) { Debug.LogWarning($"[AudioManager] BGM 없음: {name}"); return; }
 
             _currentBgm = name;
@@ -158,7 +170,7 @@ namespace LoveAlgo.Audio
         public void PlaySfx(string name)
         {
             EnsureSources();
-            var clip = ClipLoader?.Invoke("SFX", name);
+            var clip = LoadClip("SFX", name);
             if (clip == null) { Debug.LogWarning($"[AudioManager] SFX 없음: {name}"); return; }
             sfxSource.PlayOneShot(clip, _sfxVolume);
         }
@@ -166,7 +178,7 @@ namespace LoveAlgo.Audio
         public void PlayVoice(string name)
         {
             EnsureSources();
-            var clip = ClipLoader?.Invoke("Voice", name);
+            var clip = LoadClip("Voice", name);
             if (clip == null) { Debug.LogWarning($"[AudioManager] Voice 없음: {name}"); return; }
             voiceSource.Stop();
             voiceSource.clip = clip;

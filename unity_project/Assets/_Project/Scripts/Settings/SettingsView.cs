@@ -42,6 +42,16 @@ namespace LoveAlgo.Settings
         [SerializeField] Button resetButton;
         [SerializeField] Button closeButton;
 
+        [Header("문구 (토스트/확인 모달)")]
+        [SerializeField] string applyToastTitle = "적용";
+        [SerializeField] string applyToastMessage = "설정이 저장되었습니다";
+        [SerializeField] string resetConfirmTitle = "초기화";
+        [SerializeField] string resetConfirmMessage = "설정을 기본값으로 되돌릴까요?";
+        [SerializeField] string closeConfirmTitle = "알림";
+        [SerializeField] string closeConfirmMessage = "변경사항을 적용하지 않고 닫을까요?";
+        [SerializeField] string confirmYes = "예";
+        [SerializeField] string confirmNo = "아니오";
+
         [SerializeField] SettingsSO settings; // 미바인딩 시 Shared
 
         SettingsSO S => settings != null ? settings : (settings = SettingsSO.Shared);
@@ -85,9 +95,9 @@ namespace LoveAlgo.Settings
             Click(windowButton, () => StageFullscreen(false));
             Click(leftArrow, () => StageResolution(_pendingResIndex - 1));
             Click(rightArrow, () => StageResolution(_pendingResIndex + 1));
-            Click(applyButton, ApplyDisplay);
-            Click(resetButton, ResetAll);
-            Click(closeButton, () => SetVisible(false));
+            Click(applyButton, ApplyDisplayAndNotify);
+            Click(resetButton, ConfirmReset);
+            Click(closeButton, RequestClose);
         }
 
         static void Click(Button b, UnityAction a) { if (b != null) b.onClick.AddListener(a); }
@@ -143,7 +153,37 @@ namespace LoveAlgo.Settings
             if (_winSwap != null) _winSwap.SetOn(!_pendingFullscreen);
         }
 
-        void ApplyDisplay() => Publish(new ApplyDisplayCommand(_pendingResIndex, _pendingFullscreen));
+        // 적용: 스테이징된 화면설정을 발행 후 저장 완료를 토스트로 알린다(볼륨·속도는 이미 라이브 저장됨).
+        void ApplyDisplayAndNotify()
+        {
+            Publish(new ApplyDisplayCommand(_pendingResIndex, _pendingFullscreen));
+            Publish(new ShowToastCommand(applyToastMessage, applyToastTitle));
+        }
+
+        // 초기화: 되돌리기 전 확인 모달 — "예"(index 1)일 때만 실제 리셋(아니오·Esc는 무시).
+        void ConfirmReset() => Publish(new ShowModalCommand(
+            resetConfirmTitle, resetConfirmMessage,
+            new[] { new ModalButton(confirmNo, ModalButtonKind.No), new ModalButton(confirmYes, ModalButtonKind.Yes) },
+            new ModalRequest(i => { if (i == 1) ResetAll(); })));
+
+        // 닫기 요청(닫기 버튼·뒤로가기 공용): 미적용 화면설정이 있으면 확인 모달, 없으면 즉시 닫는다.
+        // 볼륨·속도는 라이브 저장이라 '변동사항'은 스테이징된 해상도/전체화면뿐(재표시 시 RefreshFromSettings가 폐기).
+        void RequestClose()
+        {
+            if (!HasStagedDisplayChanges()) { SetVisible(false); return; }
+            Publish(new ShowModalCommand(
+                closeConfirmTitle, closeConfirmMessage,
+                new[] { new ModalButton(confirmNo, ModalButtonKind.No), new ModalButton(confirmYes, ModalButtonKind.Yes) },
+                new ModalRequest(i => { if (i == 1) SetVisible(false); })));
+        }
+
+        bool HasStagedDisplayChanges()
+        {
+            var s = S;
+            if (s == null) return false;
+            int saved = Mathf.Clamp(s.ResolutionIndex, 0, GameConstants.Resolutions.Length - 1);
+            return _pendingResIndex != saved || _pendingFullscreen != s.Fullscreen;
+        }
 
         void ResetAll()
         {
@@ -160,7 +200,7 @@ namespace LoveAlgo.Settings
                 // 게이트 스택 맨 위로 재푸시(뒤로가기 CloseTop 대상 = 눈에 보이는 최상단 보장).
                 transform.SetAsLastSibling();
                 _gate?.Dispose();
-                _gate = OverlayGate.Push(() => SetVisible(false));
+                _gate = OverlayGate.Push(RequestClose); // 뒤로가기도 닫기 버튼과 동일한 확인 경로
                 _visible = true;
                 canvasGroup.interactable = true;
                 canvasGroup.blocksRaycasts = true;

@@ -22,6 +22,8 @@ namespace LoveAlgo.UI
         [SerializeField] Image splashImage;
         [Tooltip("Resources 하위 스플래시 폴더(LoadAll<Sprite>). 비우면 일러스트 교체 생략.")]
         [SerializeField] string splashFolder = "UI/Loading";
+        [Tooltip("로딩 화면 최소 표시 시간(초). 호출 Seconds가 이보다 짧아도 항상 이만큼은 보여준다.")]
+        [SerializeField] float minSeconds = 3f;
 
         public GameObject Overlay { get => overlay; set => overlay = value; }
 
@@ -63,7 +65,8 @@ namespace LoveAlgo.UI
         {
             ApplySplash(e.Key);
             overlay.SetActive(true);
-            if (e.Seconds > 0f) yield return new WaitForSeconds(e.Seconds);
+            float secs = Mathf.Max(e.Seconds, minSeconds); // 언제든 최소 표시 시간 보장(요구사항: 로딩은 최소 3초).
+            if (secs > 0f) yield return new WaitForSeconds(secs);
             overlay.SetActive(false);
 
             var h = _pending; _pending = null; _routine = null; h?.Complete();
