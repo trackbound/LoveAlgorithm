@@ -15,7 +15,7 @@ MonoBehaviour:
   buttonHover: 
   buttonClick: 
   choiceHover: 
-  choiceClick: 
+  choiceClick: 001_Pop
   dialogueAdvance: 
   dialogueType: 
   typeStride: 2
