@@ -39,7 +39,8 @@ namespace LoveAlgo.UI
 
         [Header("눈감김(아이마스크) 동안 정렬 상승")]
         [Tooltip("눈꺼풀 차폐 중에만 모달 Canvas를 이 정렬값으로 올려 암전 위에 모달이 보이고 클릭되게 한다. " +
-                 "눈꺼풀 바(95)·대사창 상승(96)보다 크고 ScreenFade(100)보다 작아야 함. 차폐 해제 시 authored 정렬(80)로 복원.")]
+                 "눈꺼풀 바(95)·대사창 상승(96)보다 크고 ScreenFade/Toast(100)보다 작아야 함. 차폐 해제 시 authored 정렬(96)로 복원. " +
+                 "(authored 96 = _Screen(90)·눈꺼풀(95) 위 — 설정·세이브로드·UsernameScreen 등 위에 모달이 보이게 하는 기본 정렬.)")]
         [SerializeField] int eyeMaskShroudSortingOrder = 98;
 
         public GameObject Root { get => root; set => root = value; }

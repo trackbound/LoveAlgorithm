@@ -63,6 +63,7 @@ MonoBehaviour:
   - kind: 1
     prefab: {fileID: 3873221320660520869, guid: ef4d394915d9c8849bc16658ce4936d2, type: 3}
   defaultButtonPrefab: {fileID: 3873221320660520869, guid: ef4d394915d9c8849bc16658ce4936d2, type: 3}
+  eyeMaskShroudSortingOrder: 98
 --- !u!223 &5611222992154429150
 Canvas:
   m_ObjectHideFlags: 0
@@ -85,7 +86,7 @@ Canvas:
   m_AdditionalShaderChannelsFlag: 25
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
-  m_SortingOrder: 80
+  m_SortingOrder: 96
   m_TargetDisplay: 0
 --- !u!114 &6433366985685334876
 MonoBehaviour:
