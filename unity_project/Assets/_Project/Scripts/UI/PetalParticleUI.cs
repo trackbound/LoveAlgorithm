@@ -19,12 +19,12 @@ namespace LoveAlgo.UI
     {
         [Header("꽃잎 설정")]
         [SerializeField] Sprite petalSprite;
-        [SerializeField] int maxPetals = 30;
+        [SerializeField] int maxPetals = 42;
         [SerializeField] float spawnInterval = 0.55f;
 
         [Header("크기")]
-        [SerializeField] float minSize = 16f;              // 크고 또렷한 꽃잎(옛 버전 느낌)
-        [SerializeField] float maxSize = 36f;
+        [SerializeField] float minSize = 20f;              // 크고 또렷한 꽃잎(옛 버전 느낌)
+        [SerializeField] float maxSize = 42f;
 
         [Header("낙하 (기본 중력)")]
         [SerializeField] float gravity = 8f;               // 기본 중력 가속도 (px/s²)

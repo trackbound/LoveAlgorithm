@@ -1096,10 +1096,10 @@ MonoBehaviour:
   m_Name:
   m_EditorClassIdentifier:
   petalSprite: {fileID: 21300000, guid: 1c5849883347bf540bebd85c1640cf25, type: 3}
-  maxPetals: 30
+  maxPetals: 42
   spawnInterval: 0.55
-  minSize: 16
-  maxSize: 36
+  minSize: 20
+  maxSize: 42
   gravity: 8
   terminalSpeed: 16
   airDrag: 1.8
