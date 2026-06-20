@@ -12,8 +12,9 @@ namespace LoveAlgo.UI
     ///
     /// 동작 범위:
     /// - New Game(Start) → <see cref="StartNewGameCommand"/>, Continue → <see cref="ContinueGameCommand"/>
-    ///   (둘 다 SceneFlowController가 받아 게임 씬 로드). Continue는 항상 활성(호버 작동); 클릭 시 오토세이브가
-    ///   없으면 이어하기 대신 안내 모달(확인 1버튼, Yes 스킨)을 띄운다.
+    ///   (둘 다 SceneFlowController가 받아 게임 씬 로드). New Game은 오토세이브가 있으면 덮어쓰기 경고
+    ///   모달(아니오/시작 2버튼)을 먼저 띄우고 "시작"일 때만 발행한다(자동저장 유실 방지). Continue는 항상
+    ///   활성(호버 작동); 클릭 시 오토세이브가 없으면 이어하기 대신 안내 모달(확인 1버튼, Yes 스킨)을 띄운다.
     /// - Exit → 확인 모달(<see cref="ShowModalCommand"/>) → "예"일 때만 <see cref="QuitGameCommand"/> 발행
     ///   (SceneFlowController가 받아 종료). 모달 뷰(ModalView)는 Title 씬에 배선해야 한다(없으면 콜백 미수신=종료 불가).
     /// - Settings(Config) → <see cref="ShowSettingsCommand"/>, Load → <see cref="ShowSaveLoadCommand"/>(Overlay 팝업; 각각
@@ -47,6 +48,13 @@ namespace LoveAlgo.UI
         [Tooltip("확인(Yes 스킨) 1버튼.")]
         [SerializeField] string noSaveConfirm = "확인";
 
+        [Header("새 게임 덮어쓰기 확인 모달")]
+        [SerializeField] string newGameConfirmTitle = "새 게임";
+        [SerializeField] string newGameConfirmMessage = "기존 자동 저장 데이터가 사라집니다.\n새 게임을 시작하시겠습니까?";
+        [Tooltip("버튼 0 = 취소(아니오), 버튼 1 = 시작(예).")]
+        [SerializeField] string newGameConfirmYes = "시작";
+        [SerializeField] string newGameConfirmNo = "취소";
+
         public Button NewGameButton { get => newGameButton; set => newGameButton = value; }
         public Button ContinueButton { get => continueButton; set => continueButton = value; }
         public Button SettingsButton { get => settingsButton; set => settingsButton = value; }
@@ -71,7 +79,24 @@ namespace LoveAlgo.UI
                 EventBus.Publish(new PlayBgmCommand(titleBgm));
         }
 
-        void OnNewGame() => EventBus.Publish(new StartNewGameCommand());
+        // 오토세이브가 없으면 즉시 새 게임, 있으면 덮어쓰기 경고 후 "시작"(index 1)일 때만 진입
+        // (OnExit과 같은 No/Yes 2버튼 모달 — 자동저장 유실 사고 방지).
+        void OnNewGame()
+        {
+            if (!JsonSaveStore.Exists(JsonSaveStore.AutoSaveSlot))
+            {
+                EventBus.Publish(new StartNewGameCommand());
+                return;
+            }
+            EventBus.Publish(new ShowModalCommand(
+                newGameConfirmTitle, newGameConfirmMessage,
+                new[]
+                {
+                    new ModalButton(newGameConfirmNo, ModalButtonKind.No),
+                    new ModalButton(newGameConfirmYes, ModalButtonKind.Yes),
+                },
+                new ModalRequest(i => { if (i == 1) EventBus.Publish(new StartNewGameCommand()); })));
+        }
         // 오토세이브가 있으면 이어하기, 없으면 확인(Yes) 1버튼 안내 모달.
         void OnContinue()
         {

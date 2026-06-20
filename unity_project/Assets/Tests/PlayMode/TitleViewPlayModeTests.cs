@@ -23,8 +23,9 @@ namespace LoveAlgo.Tests.PlayMode
         public void NeutralizeResidentSceneFlow() => ResidentSceneGuard.DisableSceneFlowControllers();
 
         [UnityTest]
-        public IEnumerator NewGameButton_Click_Publishes_StartNewGameCommand()
+        public IEnumerator NewGameButton_NoSave_Click_Publishes_StartNewGameCommand()
         {
+            var backup = JsonSaveStore.Load(JsonSaveStore.AutoSaveSlot); // 유저 세이브 보호
             var btnGo = new GameObject("NewGameButton", typeof(RectTransform), typeof(Button));
             var go = new GameObject("TitleView");
             go.SetActive(false);
@@ -33,16 +34,60 @@ namespace LoveAlgo.Tests.PlayMode
             go.SetActive(true); // Awake → onClick.AddListener(OnNewGame)
             yield return null;
 
-            bool published = false;
+            JsonSaveStore.Delete(JsonSaveStore.AutoSaveSlot); // 세이브 없음 보장 → 즉시 발행
+            bool published = false, gotModal = false;
             var sub = EventBus.Subscribe<StartNewGameCommand>(_ => published = true);
+            var modalSub = EventBus.Subscribe<ShowModalCommand>(_ => gotModal = true);
             try
             {
                 view.NewGameButton.onClick.Invoke();
-                Assert.IsTrue(published, "New Game 버튼 클릭 → StartNewGameCommand 발행");
+                Assert.IsTrue(published, "세이브 없음 + New Game 클릭 → StartNewGameCommand 즉시 발행");
+                Assert.IsFalse(gotModal, "세이브 없으면 덮어쓰기 확인 모달 안 띄움");
             }
             finally
             {
                 sub.Dispose();
+                modalSub.Dispose();
+                if (backup != null) JsonSaveStore.Save(JsonSaveStore.AutoSaveSlot, backup);
+                Object.DestroyImmediate(go);
+                Object.DestroyImmediate(btnGo);
+            }
+        }
+
+        [UnityTest]
+        public IEnumerator NewGameButton_WithSave_Click_ShowsConfirmModal_YesStarts()
+        {
+            // 오토세이브가 있으면 즉시 시작하지 않고 덮어쓰기 확인 모달(아니오/시작). "시작"(index 1)일 때만 발행.
+            var backup = JsonSaveStore.Load(JsonSaveStore.AutoSaveSlot); // 유저 세이브 보호
+            var btnGo = new GameObject("NewGameButton", typeof(RectTransform), typeof(Button));
+            var go = new GameObject("TitleView");
+            go.SetActive(false);
+            var view = go.AddComponent<TitleView>();
+            view.NewGameButton = btnGo.GetComponent<Button>();
+            go.SetActive(true);
+            yield return null;
+
+            JsonSaveStore.Save(JsonSaveStore.AutoSaveSlot, new SaveData()); // 세이브 존재 보장
+            ShowModalCommand captured = default;
+            bool gotModal = false, started = false;
+            var modalSub = EventBus.Subscribe<ShowModalCommand>(e => { captured = e; gotModal = true; });
+            var startSub = EventBus.Subscribe<StartNewGameCommand>(_ => started = true);
+            try
+            {
+                view.NewGameButton.onClick.Invoke();
+                Assert.IsTrue(gotModal, "세이브 있음 + New Game 클릭 → 덮어쓰기 확인 모달 발행");
+                Assert.AreEqual(2, captured.Buttons.Count, "아니오/시작 2버튼");
+                Assert.IsFalse(started, "모달만 떠선 새 게임 시작 안 함");
+
+                captured.Handle.Select(1); // "시작"(우, index 1) — 콜백 if(i==1)만 발행, 아니오(0)는 무동작
+                Assert.IsTrue(started, "시작 선택 → StartNewGameCommand 발행");
+            }
+            finally
+            {
+                modalSub.Dispose();
+                startSub.Dispose();
+                if (backup != null) JsonSaveStore.Save(JsonSaveStore.AutoSaveSlot, backup);
+                else JsonSaveStore.Delete(JsonSaveStore.AutoSaveSlot);
                 Object.DestroyImmediate(go);
                 Object.DestroyImmediate(btnGo);
             }
