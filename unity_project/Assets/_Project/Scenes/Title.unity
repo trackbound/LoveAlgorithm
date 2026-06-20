@@ -1112,9 +1112,10 @@ MonoBehaviour:
   swaySpeed: 0.3
   hoverStrength: 12
   hoverNoiseSpeed: 0.08
-  flipMinScale: 0.4
-  flipNoiseSpeed: 0.25
-  tiltNoiseSpeed: 0.2
+  tumbleSpeedYMin: 45
+  tumbleSpeedYMax: 100
+  tumbleSpeedXMin: 20
+  tumbleSpeedXMax: 55
   minZRotSpeed: 2
   maxZRotSpeed: 8
   zRotNoiseSpeed: 0.15

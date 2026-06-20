@@ -47,12 +47,15 @@ namespace LoveAlgo.UI
         [SerializeField] float hoverStrength = 12f;        // 부력 최대 강도
         [SerializeField] float hoverNoiseSpeed = 0.08f;    // 부력 변화 주기
 
-        [Header("3D 회전 시뮬레이션")]
-        [SerializeField] float flipMinScale = 0.4f;
-        [SerializeField] float flipNoiseSpeed = 0.25f;     // Perlin 기반 뒤집힘 속도(입체감)
-        [SerializeField] float tiltNoiseSpeed = 0.2f;
+        [Header("3D 텀블 (실제 X/Y 회전)")]
+        [Tooltip("Y축 텀블 각속도 범위(도/초) — 모서리·뒷면까지 뒤집히는 주 회전")]
+        [SerializeField] float tumbleSpeedYMin = 45f;
+        [SerializeField] float tumbleSpeedYMax = 100f;
+        [Tooltip("X축 틸트 각속도 범위(도/초) — 위아래로 기우뚱")]
+        [SerializeField] float tumbleSpeedXMin = 20f;
+        [SerializeField] float tumbleSpeedXMax = 55f;
 
-        [Header("Z 회전")]
+        [Header("Z 회전 (평면 스핀)")]
         [SerializeField] float minZRotSpeed = 2f;
         [SerializeField] float maxZRotSpeed = 8f;
         [SerializeField] float zRotNoiseSpeed = 0.15f;     // Perlin 변조 — 회전 방향이 서서히 바뀜
@@ -91,14 +94,16 @@ namespace LoveAlgo.UI
             public float noiseSeedY;
             public float noiseSeedSway;
             public float noiseSeedHover;
-            public float noiseSeedFlip;
-            public float noiseSeedTilt;
             public float noiseSeedZRot;
+
+            // 3D 텀블 (실제 오일러 각 누적 — euler 읽기 역계산이 불안정해 직접 보관)
+            public float rotX, rotY, rotZ;           // 현재 누적 X/Y/Z 각(도)
+            public float tumbleSpeedX, tumbleSpeedY; // X/Y 텀블 각속도(부호=회전 방향)
 
             // 개별 속성
             public float windSensitivity;     // 바람 감도
             public float mass;                // 질량 (크기에 비례 → 큰 꽃잎은 더 느리게 반응)
-            public float zRotSpeed;
+            public float zRotSpeed;            // Z(평면) 회전 드리프트 속도
             public float size;
 
             // 수명
@@ -231,20 +236,18 @@ namespace LoveAlgo.UI
 
                 p.rect.anchoredPosition = new Vector2(p.posX, p.posY);
 
-                // ── 3D 회전 시뮬레이션 (Perlin 기반) ──
-                float flipNoise = Mathf.PerlinNoise(t * flipNoiseSpeed + p.noiseSeedFlip, p.noiseSeedFlip);
-                float scaleX = Mathf.Lerp(flipMinScale, 1f, flipNoise);
+                // ── 3D 텀블 (실제 X/Y 오일러 회전 — 모서리·뒷면까지 뒤집힘) ──
+                // Overlay(직교) 캔버스라 원근은 없지만, 실제 회전은 edge-on을 지나
+                // 뒷면(UI 셰이더 Cull Off)까지 드러나 진짜 입체 텀블로 보인다.
+                p.rotY += p.tumbleSpeedY * dt;
+                p.rotX += p.tumbleSpeedX * dt;
 
-                float tiltNoise = Mathf.PerlinNoise(t * tiltNoiseSpeed + p.noiseSeedTilt, p.noiseSeedTilt + 30f);
-                float scaleY = Mathf.Lerp(flipMinScale + 0.15f, 1f, tiltNoise);
-
-                p.rect.localScale = new Vector3(scaleX, scaleY, 1f);
-
-                // ── Z 회전 (Perlin 변조 — 방향이 서서히 바뀜) ──
+                // ── Z(평면) 회전: Perlin 변조 — 방향이 서서히 바뀜 ──
                 float zRotNoise = Mathf.PerlinNoise(t * zRotNoiseSpeed + p.noiseSeedZRot, p.noiseSeedZRot + 40f);
                 float zRotDir = (zRotNoise - 0.5f) * 2f;  // -1 ~ +1
-                float rot = p.rect.localEulerAngles.z + p.zRotSpeed * zRotDir * dt;
-                p.rect.localEulerAngles = new Vector3(0f, 0f, rot);
+                p.rotZ += p.zRotSpeed * zRotDir * dt;
+
+                p.rect.localEulerAngles = new Vector3(p.rotX, p.rotY, p.rotZ);
 
                 // ── 알파 ──
                 float lifeRatio = p.lifetime / p.maxLifetime;
@@ -296,8 +299,13 @@ namespace LoveAlgo.UI
             float spawnY = float.IsNaN(overrideY) ? area.yMax + spawnMarginTop : overrideY;
             rt.anchoredPosition = new Vector2(spawnX, spawnY);
 
-            // 초기 Z 회전
-            rt.localEulerAngles = new Vector3(0f, 0f, Random.Range(0f, 360f));
+            // 초기 텀블 각(랜덤 위상) + 방향(좌/우 절반씩)
+            float initRotX = Random.Range(0f, 360f);
+            float initRotY = Random.Range(0f, 360f);
+            float initRotZ = Random.Range(0f, 360f);
+            float dirX = Random.value < 0.5f ? -1f : 1f;
+            float dirY = Random.value < 0.5f ? -1f : 1f;
+            rt.localEulerAngles = new Vector3(initRotX, initRotY, initRotZ);
 
             // 질량: 크기에 비례 — 큰 꽃잎은 관성이 커서 느리게 반응
             float normalizedSize = (size - minSize) / Mathf.Max(1f, maxSize - minSize);
@@ -333,9 +341,13 @@ namespace LoveAlgo.UI
                 noiseSeedY = seed + 100f,
                 noiseSeedSway = seed + 200f,
                 noiseSeedHover = seed + 300f,
-                noiseSeedFlip = seed + 400f,
-                noiseSeedTilt = seed + 500f,
                 noiseSeedZRot = seed + 600f,
+
+                rotX = initRotX,
+                rotY = initRotY,
+                rotZ = initRotZ,
+                tumbleSpeedX = dirX * Random.Range(tumbleSpeedXMin, tumbleSpeedXMax),
+                tumbleSpeedY = dirY * Random.Range(tumbleSpeedYMin, tumbleSpeedYMax),
 
                 windSensitivity = Random.Range(0.4f, 1.3f),
                 mass = mass,
