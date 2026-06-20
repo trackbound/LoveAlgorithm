@@ -53,7 +53,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: LoveAlgo.UI::LoveAlgo.UI.ModalTemplate
   signature: 01000000
-  title: {fileID: 7353256682293742128}
+  title: {fileID: 0}
   message: {fileID: 2709188311070558336}
   slots:
   - {fileID: 6390808224062690246}
@@ -287,7 +287,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &4952084302276787638
 RectTransform:
   m_ObjectHideFlags: 0
