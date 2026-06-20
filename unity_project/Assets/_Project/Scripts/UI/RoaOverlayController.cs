@@ -73,6 +73,7 @@ namespace LoveAlgo.UI
                     _slot = e.Slot;
                     _category = config.ResolveCategory(e.Emote);
                     _present = true;
+                    // 무드 배경 오버레이는 일반 Fade. 로아 캐릭터 figure의 등장 글리치는 StageView(CharFX)가 담당.
                     ShowOverlay();
                     break;
                 case CharAction.Emote:

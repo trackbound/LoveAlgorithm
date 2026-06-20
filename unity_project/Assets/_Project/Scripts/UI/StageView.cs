@@ -53,6 +53,14 @@ namespace LoveAlgo.UI
         [Tooltip("stageCatalog 미바인딩 시 Resources에서 찾을 경로(Resources 하위). 비우면 자동 로드 생략.")]
         [SerializeField] string stageCatalogPath = "Data/CharacterStageCatalog";
 
+        [Header("캐릭터 등장 글리치(CharFX) — 가상공간 순간이동 등장")]
+        [Tooltip("캐릭터 외곽 글리치 머티리얼(LoveAlgo/UICharacterGlitch). 미바인딩 시 일반 페이드 등장.")]
+        [SerializeField] Material characterGlitchMaterial;
+        [Tooltip("이 캐릭터 ID로 Enter할 때만 외곽 글리치로 등장(그 외는 일반 페이드). 로아 전용 시그니처.")]
+        [SerializeField] string glitchEnterCharId = "roa";
+        [Tooltip("외곽 글리치 등장 연출 시간(초). Enter duration과 무관하게 이 값으로 구동.")]
+        [SerializeField] float characterGlitchSeconds = 0.6f;
+
         public Image Backdrop { get => backdrop; set => backdrop = value; }
         public Image BgFront { get => bgFront; set => bgFront = value; }
         public CanvasGroup BgFrontGroup { get => bgFrontGroup; set => bgFrontGroup = value; }
@@ -63,6 +71,9 @@ namespace LoveAlgo.UI
         public SlotBinding SlotR { get => slotR; set => slotR = value; }
         public GameObject CharContainer { get => charContainer; set => charContainer = value; }
         public CharacterStageCatalogSO StageCatalog { get => stageCatalog; set => stageCatalog = value; }
+        public Material CharacterGlitchMaterial { get => characterGlitchMaterial; set => characterGlitchMaterial = value; }
+
+        static readonly int CharGlitchAmountId = Shader.PropertyToID("_GlitchAmount");
 
         IDisposable _bgSub, _charSub, _finishSub, _cgSub, _emoteSub, _resetSub;
         bool _cgHidden;
@@ -80,6 +91,10 @@ namespace LoveAlgo.UI
         readonly Vector3[] _baseScale = new Vector3[3];
         readonly Vector2[] _basePos = new Vector2[3];
         readonly bool[] _baseCaptured = new bool[3];
+
+        // CharFX 글리치: 슬롯별 글리치 머티리얼 런타임 인스턴스(공유 에셋 비변형) + 글리치 전 원본 머티리얼(복원용).
+        readonly Material[] _charGlitchInst = new Material[3];
+        readonly Material[] _charBaseMat = new Material[3];
 
         void OnEnable()
         {
@@ -105,6 +120,10 @@ namespace LoveAlgo.UI
         {
             _bgSub?.Dispose(); _charSub?.Dispose(); _finishSub?.Dispose(); _cgSub?.Dispose(); _emoteSub?.Dispose(); _resetSub?.Dispose();
             _bgSub = _charSub = _finishSub = _cgSub = _emoteSub = _resetSub = null;
+            for (int i = 0; i < _charGlitchInst.Length; i++)
+            {
+                if (_charGlitchInst[i] != null) { Destroy(_charGlitchInst[i]); _charGlitchInst[i] = null; }
+            }
         }
 
         // CG 컷신 진입 시 캐릭터를 일괄 숨기고 종료 시 복원(슬롯별 알파 보존 위해 컨테이너 토글). 대칭.
@@ -228,6 +247,13 @@ namespace LoveAlgo.UI
 
         IEnumerator CharRoutine(ShowCharacterCommand e, int idx, SlotBinding slot)
         {
+            // 직전 글리치가 중단된 채 다른 액션이 오면 슬롯 머티리얼을 원본으로 복원(글리치 눌어붙음 방지).
+            if (_charGlitchInst[idx] != null && slot.image != null && slot.image.material == _charGlitchInst[idx]
+                && !(e.Action == CharAction.Enter && UseGlitchEnter(e.Character)))
+            {
+                slot.image.material = _charBaseMat[idx];
+            }
+
             switch (e.Action)
             {
                 case CharAction.Enter:
@@ -241,7 +267,10 @@ namespace LoveAlgo.UI
                     slot.image.sprite = sprite;
                     slot.image.enabled = true;
                     ApplyPlacement(idx, slot, e.Character);
-                    yield return FadeGroup(slot.group, 0f, 1f, e.Duration);
+                    if (UseGlitchEnter(e.Character))
+                        yield return GlitchEnter(idx, slot);   // 가상공간 순간이동 등장(외곽 글리치 broken→clean)
+                    else
+                        yield return FadeGroup(slot.group, 0f, 1f, e.Duration);
                     break;
                 }
                 case CharAction.Emote:
@@ -326,6 +355,10 @@ namespace LoveAlgo.UI
         void ClearSlotVisual(SlotBinding slot)
         {
             if (slot?.image == null) return;
+            // 글리치 머티리얼이 걸린 채 비워지지 않도록 원본 머티리얼로 복원.
+            int idx = slot == slotL ? 0 : slot == slotR ? 2 : slot == slotC ? 1 : -1;
+            if (idx >= 0 && _charGlitchInst[idx] != null && slot.image.material == _charGlitchInst[idx])
+                slot.image.material = _charBaseMat[idx];
             slot.image.sprite = null;
             slot.image.enabled = false;
         }
@@ -339,7 +372,43 @@ namespace LoveAlgo.UI
             var rt = slot.image.rectTransform;
             _baseScale[idx] = rt.localScale;
             _basePos[idx] = rt.anchoredPosition;
+            _charBaseMat[idx] = slot.image.material; // 글리치 전 원본 머티리얼(보통 기본 UI) — 글리치 종료 시 복원.
             _baseCaptured[idx] = true;
+        }
+
+        // ── 캐릭터 등장 글리치(CharFX) ──
+
+        bool UseGlitchEnter(string character) =>
+            characterGlitchMaterial != null && !string.IsNullOrEmpty(glitchEnterCharId)
+            && !string.IsNullOrEmpty(character)
+            && string.Equals(character.Trim(), glitchEnterCharId.Trim(), StringComparison.OrdinalIgnoreCase);
+
+        // 슬롯 이미지에 외곽 글리치 머티리얼을 입히고 _GlitchAmount 1→0(깨짐→정착) 구동.
+        // 알파(CanvasGroup)는 빠르게(60%) 올려 등장은 즉시 보이고 외곽 글리치만 마저 풀린다. 종료 시 원본 머티리얼 복원.
+        IEnumerator GlitchEnter(int idx, SlotBinding slot)
+        {
+            var img = slot.image;
+            float dur = characterGlitchSeconds;
+            if (img == null || dur <= 0f) { yield return FadeGroup(slot.group, 0f, 1f, dur); yield break; }
+
+            var inst = _charGlitchInst[idx];
+            if (inst == null) { inst = new Material(characterGlitchMaterial); _charGlitchInst[idx] = inst; }
+            img.material = inst;
+
+            SetAlpha(slot.group, 0f);
+            inst.SetFloat(CharGlitchAmountId, 1f);
+            float t = 0f;
+            while (t < dur)
+            {
+                t += Time.deltaTime;
+                float k = Mathf.Clamp01(t / dur);
+                SetAlpha(slot.group, Mathf.Clamp01(k / 0.6f)); // 등장 알파는 빠르게 도달
+                inst.SetFloat(CharGlitchAmountId, 1f - k);     // 글리치는 전체 구간에 걸쳐 정착
+                yield return null;
+            }
+            SetAlpha(slot.group, 1f);
+            inst.SetFloat(CharGlitchAmountId, 0f);
+            img.material = _charBaseMat[idx]; // 정상 상태는 글리치 없음 — 원본 머티리얼 복귀.
         }
 
         // 캐릭터 Enter 시 히로인별 스케일·오프셋을 슬롯 기본 위에 적용(미등록·카탈로그 없음 = 항등 = 슬롯 기본 그대로).

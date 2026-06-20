@@ -9,8 +9,12 @@ namespace LoveAlgo.Events
     /// <summary>스테이지 이미지 레이어 종류. CG=전체화면 컷신(대사/캐릭터 숨김), SD=치비 부분, Overlay=무드 보조배경.</summary>
     public enum StageLayerKind { CG, SD, Overlay }
 
-    /// <summary>레이어 전환. 동일 이름 BG 전환(BgTransition)과 별개의 단순 2종.</summary>
-    public enum LayerTransition { Cut, Fade }
+    /// <summary>
+    /// 레이어 전환. 동일 이름 BG 전환(BgTransition)과 별개. Cut=즉시, Fade=알파 lerp,
+    /// Glitch=가상공간 순간이동 등장(UI 글리치 머티리얼로 RGB 분할·데이터모시·스캔라인을
+    /// broken→clean으로 풀며 알파를 함께 lerp). 로아 Enter가 사용(StageLayerView가 해석).
+    /// </summary>
+    public enum LayerTransition { Cut, Fade, Glitch }
 
     /// <summary>
     /// 스테이지 레이어 표시/종료 명령. <see cref="IsClose"/>=true면 현재 레이어를 페이드 아웃(이름 무시).
