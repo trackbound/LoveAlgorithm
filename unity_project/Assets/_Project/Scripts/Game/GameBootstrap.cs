@@ -1,3 +1,4 @@
+using System.Collections;
 using LoveAlgo.Common; // EventBus, Log
 using LoveAlgo.Core;   // GameStateSO
 using LoveAlgo.Events; // PlayScriptCommand
@@ -35,6 +36,7 @@ namespace LoveAlgo.Game
         public GameBalanceSO Balance { get => balance; set => balance = value; }
         public string PrologueCsv { get => prologueCsv; set => prologueCsv = value; }
         public GameManager Manager { get => gameManager; set => gameManager = value; }
+        public float BootLoadingSeconds { get => bootLoadingSeconds; set => bootLoadingSeconds = value; }
 
         void Start()
         {
@@ -51,9 +53,13 @@ namespace LoveAlgo.Game
             }
             // 타이틀→게임 진입 로딩 비트: 아래 복원/프롤로그가 스테이지를 즉시(dur=0) 세팅하며 한 프레임
             // 깜빡이므로, 그 위를 로딩 오버레이로 덮는다(ADR-007: 발행만, LoadingScreenView가 표시·자동 숨김).
-            // 부팅은 이 핸들을 await하지 않는다 — 콘텐츠는 곧장 발행되고 오버레이가 그 위에서 시간만큼 가린다.
+            // 이어하기는 이 핸들을 await하지 않는다 — 복원은 곧장 발행되고 오버레이가 그 위에서 시간만큼 가린다.
+            CompletionHandle loadingHandle = null;
             if (bootLoadingSeconds > 0f)
-                EventBus.Publish(new ShowLoadingCommand(bootLoadingSeconds, new CompletionHandle()));
+            {
+                loadingHandle = new CompletionHandle();
+                EventBus.Publish(new ShowLoadingCommand(bootLoadingSeconds, loadingHandle));
+            }
 
             int slot = GameEntry.SelectedSlot; // Consume이 리셋하므로 먼저 읽는다
             var mode = GameEntry.Consume();
@@ -63,7 +69,21 @@ namespace LoveAlgo.Game
                 return;
             }
             GameBoot.NewGame(state, balance); // NewGame이거나 Continue 폴백(세이브 없음/손상)
-            PlayPrologue();                   // 새 게임 1회: 프롤로그 자동 재생
+            // 새 게임 프롤로그 첫 컷은 인트로 영상(VideoView order 32000 = 최상위)이라, 로딩과 동시에 발행하면
+            // 영상이 로딩 오버레이를 즉시 덮어쓴다("바로 덮어버리는" 레이스). 로딩 완료까지 기다렸다 재생해
+            // 로딩 → 영상 순서를 보장한다. 로딩이 없으면(핸들 null) 종전대로 즉시 재생.
+            if (loadingHandle != null)
+                StartCoroutine(PlayPrologueAfterLoading(loadingHandle));
+            else
+                PlayPrologue(); // 새 게임 1회: 프롤로그 자동 재생
+        }
+
+        /// <summary>로딩 오버레이(<paramref name="loadingHandle"/>)가 완료된 뒤 프롤로그를 발행 — 인트로
+        /// 영상이 로딩을 즉시 덮지 않도록 순차화. 오버레이 미바인딩 시 핸들이 즉시 완료돼 다음 프레임 재생.</summary>
+        IEnumerator PlayPrologueAfterLoading(CompletionHandle loadingHandle)
+        {
+            while (!loadingHandle.IsComplete) yield return null;
+            PlayPrologue();
         }
 
         /// <summary>

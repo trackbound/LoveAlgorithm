@@ -52,6 +52,7 @@ namespace LoveAlgo.Tests.PlayMode
             go.SetActive(false); // Start 자동부팅 억제 — Boot() 직접 호출로 결정적 검증
             var boot = go.AddComponent<GameBootstrap>();
             boot.State = gs;
+            boot.BootLoadingSeconds = 0f; // 로딩 지연 없이 즉시 프롤로그 발행(이 검증의 관심사 아님 + 비활성 GO 코루틴 회피)
             try
             {
                 boot.Boot();
