@@ -1,90 +1,117 @@
 using System.Collections;
+using System.Collections.Generic;
 using NUnit.Framework;
 using TMPro;
 using UnityEngine;
 using UnityEngine.TestTools;
 using UnityEngine.UI;
 using LoveAlgo.Common; // EventBus
-using LoveAlgo.Events; // ShowModalCommand, ModalRequest
-using LoveAlgo.UI;     // ModalView, ChoiceSlot
+using LoveAlgo.Events; // ShowModalCommand, ModalRequest, ModalButton, ModalButtonKind
+using LoveAlgo.UI;     // ModalView, ModalTemplate, ChoiceSlot
 
 namespace LoveAlgo.Tests.PlayMode
 {
     /// <summary>
-    /// 범용 모달 뷰 PlayMode: ShowModalCommand 구독 → 제목/본문 세팅 + 버튼 동적 생성(ChoiceSlot 재사용),
-    /// 버튼 클릭 → 핸들에 인덱스 채움 + 콜백 호출 + 루트 숨김(ADR-007 표시만). ModalView가 OnEnable에서
-    /// 구독하므로 inactive GO에 바인딩한 뒤 활성화해 타이밍을 맞춘다(ChoiceView/TitleView 테스트와 동일).
+    /// 범용 모달 뷰 PlayMode: 버튼 종류 시그니처로 템플릿 선택 → 정적 틀은 슬롯 Bind, 폴백 틀은 동적 스폰.
+    /// ModalView가 OnEnable에서 구독하므로 inactive GO에 바인딩 후 활성화해 타이밍을 맞춘다.
     /// </summary>
     public class ModalViewPlayModeTests
     {
-        // ChoiceSlot 버튼 프리팹을 런타임 구성(Button + 라벨). Instantiate 대상이라 활성 상태로 둔다.
-        static ChoiceSlot MakeButtonPrefab()
+        // ChoiceSlot 슬롯 1개(Button + 라벨)를 가진 GameObject 생성.
+        static ChoiceSlot MakeSlot(Transform parent)
         {
-            var go = new GameObject("ModalButton", typeof(RectTransform), typeof(Button), typeof(ChoiceSlot));
+            var go = new GameObject("Btn", typeof(RectTransform), typeof(Button), typeof(ChoiceSlot));
+            go.transform.SetParent(parent, false);
             var slot = go.GetComponent<ChoiceSlot>();
             slot.Button = go.GetComponent<Button>();
             var labelGo = new GameObject("Label", typeof(RectTransform));
-            labelGo.transform.SetParent(go.transform);
+            labelGo.transform.SetParent(go.transform, false);
             slot.LabelText = labelGo.AddComponent<TextMeshProUGUI>();
             return slot;
         }
 
-        // ModalView를 완전 바인딩해 구성(inactive로 만들어 바인딩 후 활성화 → OnEnable 구독).
-        static ModalView BuildView(out GameObject viewGo, out Transform container)
+        // 정적 틀 프리팹 역할(Instantiate 대상). signature/slots/message 배선.
+        static ModalTemplate MakeStaticTemplate(string name, ModalButtonKind[] signature, int slotCount)
+        {
+            var go = new GameObject(name, typeof(RectTransform));
+            var tpl = go.AddComponent<ModalTemplate>();
+            tpl.Signature = signature;
+            var msgGo = new GameObject("Message", typeof(RectTransform));
+            msgGo.transform.SetParent(go.transform, false);
+            tpl.Message = msgGo.AddComponent<TextMeshProUGUI>();
+            var slots = new ChoiceSlot[slotCount];
+            for (int i = 0; i < slotCount; i++) slots[i] = MakeSlot(go.transform);
+            tpl.Slots = slots;
+            return tpl;
+        }
+
+        // 폴백 틀 프리팹 역할: signature 빈 + dynamicContainer.
+        static ModalTemplate MakeDynamicTemplate()
+        {
+            var go = new GameObject("Dynamic", typeof(RectTransform));
+            var tpl = go.AddComponent<ModalTemplate>();
+            tpl.Signature = new ModalButtonKind[0];
+            var msgGo = new GameObject("Message", typeof(RectTransform));
+            msgGo.transform.SetParent(go.transform, false);
+            tpl.Message = msgGo.AddComponent<TextMeshProUGUI>();
+            var cont = new GameObject("Buttons", typeof(RectTransform));
+            cont.transform.SetParent(go.transform, false);
+            tpl.DynamicContainer = cont.transform;
+            tpl.Slots = new ChoiceSlot[0];
+            return tpl;
+        }
+
+        static ModalView BuildView(out GameObject viewGo, List<ModalTemplate> templates, ChoiceSlot dynamicButtonPrefab)
         {
             viewGo = new GameObject("ModalView");
             viewGo.SetActive(false);
             var view = viewGo.AddComponent<ModalView>();
 
             var root = new GameObject("Root", typeof(RectTransform));
-            root.transform.SetParent(viewGo.transform);
+            root.transform.SetParent(viewGo.transform, false);
             view.Root = root;
+            var container = new GameObject("TemplateContainer", typeof(RectTransform));
+            container.transform.SetParent(root.transform, false);
 
-            var titleGo = new GameObject("Title", typeof(RectTransform));
-            titleGo.transform.SetParent(root.transform);
-            view.TitleText = titleGo.AddComponent<TextMeshProUGUI>();
-
-            var msgGo = new GameObject("Message", typeof(RectTransform));
-            msgGo.transform.SetParent(root.transform);
-            view.MessageText = msgGo.AddComponent<TextMeshProUGUI>();
-
-            var containerGo = new GameObject("Buttons", typeof(RectTransform));
-            containerGo.transform.SetParent(root.transform);
-            container = containerGo.transform;
-            view.ButtonContainer = container;
-
-            view.DefaultButtonPrefab = MakeButtonPrefab();
+            view.TemplateContainer = container.transform;
+            view.TemplatePrefabs = templates;
+            view.DefaultButtonPrefab = dynamicButtonPrefab;
             return view;
         }
 
         [UnityTest]
-        public IEnumerator ShowModal_SetsText_AndCreatesButtons()
+        public IEnumerator StaticTemplate_Selected_BindsSlots_AndReturnsIndex()
         {
-            var view = BuildView(out var viewGo, out var container);
-            viewGo.SetActive(true); // OnEnable → Subscribe<ShowModalCommand>
+            var yesNo = MakeStaticTemplate("YesNo", new[] { ModalButtonKind.No, ModalButtonKind.Yes }, 2);
+            var dynamic = MakeDynamicTemplate();
+            var view = BuildView(out var viewGo, new List<ModalTemplate> { yesNo, dynamic }, MakeSlot(null));
+            viewGo.SetActive(true); // OnEnable → Subscribe
             yield return null;
 
+            int picked = -1;
+            var handle = new ModalRequest(i => picked = i);
             try
             {
-                EventBus.Publish(new ShowModalCommand(
-                    "게임 종료", "정말 종료하시겠습니까?",
-                    new[] { new ModalButton("예"), new ModalButton("아니오") }, new ModalRequest()));
+                EventBus.Publish(new ShowModalCommand("종료", "정말?",
+                    new[] { new ModalButton("아니오", ModalButtonKind.No), new ModalButton("예", ModalButtonKind.Yes) }, handle));
+                yield return null;
 
-                Assert.AreEqual("게임 종료", view.TitleText.text, "제목 세팅");
-                Assert.AreEqual("정말 종료하시겠습니까?", view.MessageText.text, "본문 세팅");
-                Assert.AreEqual(2, container.GetComponentsInChildren<Button>().Length, "라벨 수만큼 버튼 생성");
-                Assert.IsTrue(view.Root.activeSelf, "표시 중 루트 활성");
+                // 정적 틀(YesNo)이 인스턴스화되어 슬롯 라벨이 채워졌는지
+                var slots = view.Root.GetComponentsInChildren<ChoiceSlot>(true);
+                Assert.AreEqual(2, slots.Length, "YesNo 틀 슬롯 2개");
+                slots[1].Button.onClick.Invoke(); // 우(예, index 1)
+                Assert.AreEqual(1, picked, "예(index 1) 클릭 → 핸들 회수");
+                Assert.IsFalse(view.Root.activeSelf, "선택 후 루트 숨김");
             }
-            finally
-            {
-                Object.DestroyImmediate(viewGo);
-            }
+            finally { Object.DestroyImmediate(viewGo); }
         }
 
         [UnityTest]
-        public IEnumerator ButtonClick_FillsHandle_InvokesCallback_HidesRoot()
+        public IEnumerator NoMatch_FallsBackToDynamic_SpawnsByKind()
         {
-            var view = BuildView(out var viewGo, out var container);
+            var yesNo = MakeStaticTemplate("YesNo", new[] { ModalButtonKind.No, ModalButtonKind.Yes }, 2);
+            var dynamic = MakeDynamicTemplate();
+            var view = BuildView(out var viewGo, new List<ModalTemplate> { yesNo, dynamic }, MakeSlot(null));
             viewGo.SetActive(true);
             yield return null;
 
@@ -92,22 +119,17 @@ namespace LoveAlgo.Tests.PlayMode
             var handle = new ModalRequest(i => picked = i);
             try
             {
-                EventBus.Publish(new ShowModalCommand(
-                    "확인", "선택", new[] { new ModalButton("예"), new ModalButton("아니오") }, handle));
+                // 종류 Default 2개 → YesNo 미매칭 → 폴백(Dynamic)
+                EventBus.Publish(new ShowModalCommand("확인", "선택",
+                    new[] { new ModalButton("예"), new ModalButton("아니오") }, handle));
                 yield return null;
 
-                var buttons = container.GetComponentsInChildren<Button>();
-                buttons[1].onClick.Invoke(); // "아니오"(index 1)
-
-                Assert.AreEqual(1, picked, "콜백에 클릭 인덱스 전달");
-                Assert.AreEqual(1, handle.SelectedIndex, "핸들에 인덱스 회수");
-                Assert.IsTrue(handle.IsComplete);
-                Assert.IsFalse(view.Root.activeSelf, "선택 후 루트 숨김");
+                var spawned = view.Root.GetComponentsInChildren<ChoiceSlot>(true);
+                Assert.AreEqual(2, spawned.Length, "폴백 동적 스폰 2개");
+                spawned[0].Button.onClick.Invoke();
+                Assert.AreEqual(0, picked, "index 0 클릭 → 핸들 회수");
             }
-            finally
-            {
-                Object.DestroyImmediate(viewGo);
-            }
+            finally { Object.DestroyImmediate(viewGo); }
         }
     }
 }

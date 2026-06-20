@@ -56,11 +56,15 @@ namespace LoveAlgo.Tests.PlayMode
                 yield return null;
 
                 Assert.IsTrue(modal.Root.activeSelf, "운동 탭 클릭 → 확인 모달 표시");
-                Assert.AreEqual(ScheduleTable.FormatEffect(ScheduleType.Exercise_A), modal.MessageText.text,
-                    "두 번째 메시지 = 효과 요약");
+                // 효과 요약 메시지가 모달 어딘가에 표시되는지(템플릿 구조 무관 — Root 하위 TMP 탐색).
+                var effect = ScheduleTable.FormatEffect(ScheduleType.Exercise_A);
+                bool msgShown = false;
+                foreach (var t in modal.Root.GetComponentsInChildren<TMPro.TMP_Text>(true))
+                    if (t.text == effect) { msgShown = true; break; }
+                Assert.IsTrue(msgShown, "두 번째 메시지 = 효과 요약");
                 Assert.IsNull(selected, "확인(예) 전엔 스케줄 미실행");
 
-                var buttons = modal.ButtonContainer.GetComponentsInChildren<Button>();
+                var buttons = modal.Root.GetComponentsInChildren<Button>(true);
                 Assert.AreEqual(2, buttons.Length, "아니오/예 2버튼 생성");
                 buttons[1].onClick.Invoke(); // 예(index 1)
                 yield return null;
