@@ -15,6 +15,10 @@ namespace LoveAlgo.UI
     ///
     /// 의미는 각 오버레이가 게이트 등록 시 정한다: 설정/세이브로드/Extra는 닫기액션만(Enter 무동작),
     /// yes/no 모달은 닫기=아니오·확인=예(ModalView). 라우터는 어느 버튼인지 모르고 "최상단에 ESC/Enter"만 전달.
+    ///
+    /// <para>한 프레임 가드: 키는 <b>직전 프레임에 이미 떠 있던</b> 오버레이에만 전달한다. 이름 입력 Enter가
+    /// 입력칸 onSubmit으로 확인 모달을 여는 바로 그 프레임에, 같은 Enter가 라우터의 ConfirmTop(=예)까지 먹어
+    /// 모달이 뜨자마자 확정되던 버그를 막는다(모달은 한 번 더 Enter/클릭해야 확정).</para>
     /// </summary>
     sealed class OverlayHotkeyRouter : MonoBehaviour
     {
@@ -26,16 +30,23 @@ namespace LoveAlgo.UI
             go.AddComponent<OverlayHotkeyRouter>();
         }
 
+        // 직전 프레임 종료 시점의 차단 상태. 이번 프레임에 "막 열린" 오버레이를, 그걸 연 바로 그 키가
+        // 같은 프레임에 다시 작동시키지 않도록 한다(예: 이름 입력 Enter가 onSubmit으로 확인 모달을 열면서
+        // 동시에 그 모달의 ConfirmTop=예까지 먹어 곧장 넘어가던 버그). 키는 "이전부터 떠 있던" 오버레이에만 전달.
+        bool _wasBlockedLastFrame;
+
         void Update()
         {
             var kb = Keyboard.current;
-            if (kb == null) return;
-            if (!OverlayGate.IsBlocked) return; // 오버레이 없을 땐 키를 가로채지 않음(게임플레이 입력 보호).
-
-            if (kb.escapeKey.wasPressedThisFrame)
-                OverlayGate.CloseTop();
-            else if (kb.enterKey.wasPressedThisFrame || kb.numpadEnterKey.wasPressedThisFrame)
-                OverlayGate.ConfirmTop();
+            bool blockedNow = OverlayGate.IsBlocked;
+            if (kb != null && _wasBlockedLastFrame) // 이번 프레임에 새로 열린 오버레이엔 키를 전달하지 않음
+            {
+                if (kb.escapeKey.wasPressedThisFrame)
+                    OverlayGate.CloseTop();
+                else if (kb.enterKey.wasPressedThisFrame || kb.numpadEnterKey.wasPressedThisFrame)
+                    OverlayGate.ConfirmTop();
+            }
+            _wasBlockedLastFrame = blockedNow;
         }
     }
 }

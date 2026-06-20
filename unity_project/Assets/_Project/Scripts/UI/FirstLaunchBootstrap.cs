@@ -24,16 +24,25 @@ namespace LoveAlgo.UI
             // 앱 진입 씬(빌드 인덱스 0 = 타이틀)에서만 표시 — 에디터에서 게임 씬을 직접 Play할 때 오버레이가 끼어들지 않게.
             if (SceneManager.GetActiveScene().buildIndex != 0) return;
 
+            if (SpawnOverlay() == null) return; // 프리팹 없음 → 미마킹(프리팹이 생기면 다음 첫 구동에 표시)
+            FirstLaunchFlag.MarkSeen(); // 표시 성공 후 기록 — 중도 종료해도 이후 구동은 타이틀
+        }
+
+        /// <summary>
+        /// 인트로 오버레이 프리팹을 로드·생성해 인스턴스를 반환(플래그 무관 — 순수 스폰).
+        /// 첫 구동 경로(<see cref="OnStartup"/>)와 테스트 빌드의 온디맨드 트리거(DevFirstLaunchTrigger)가 공유한다.
+        /// 프리팹이 없으면 경고 후 null.
+        /// </summary>
+        public static GameObject SpawnOverlay()
+        {
             var prefab = Resources.Load<GameObject>(OverlayResourcePath);
             if (prefab == null)
             {
                 Log.Warn($"[FirstLaunch] 오버레이 프리팹 없음: Resources/{OverlayResourcePath} — 스킵(타이틀로). " +
-                         "프리팹 추가 시 다음 첫 구동에 표시.");
-                return; // 미마킹: 프리팹이 생기면 그때 표시
+                         "프리팹 추가 시 표시.");
+                return null;
             }
-
-            Object.Instantiate(prefab);
-            FirstLaunchFlag.MarkSeen(); // 표시 성공 후 기록 — 중도 종료해도 이후 구동은 타이틀
+            return Object.Instantiate(prefab);
         }
     }
 }

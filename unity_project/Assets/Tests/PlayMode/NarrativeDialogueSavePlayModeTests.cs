@@ -130,5 +130,54 @@ namespace LoveAlgo.Tests.PlayMode
             Assert.IsFalse(_saveSeen, "Value는 세이브 등 부수효과 없음");
             Assert.IsTrue(_finished);
         }
+
+        [UnityTest]
+        public IEnumerator Setup_Bg_Then_First_Text_Fires_Checkpoint_Autosave()
+        {
+            // 씬 전환(Setup BG=) 직후 첫 대기 라인에서 1회 오토세이브(체크포인트). 전환 전 첫 대사는 저장 안 함.
+            const string csv =
+                "LineID,Type,Speaker,Value,Next\n" +
+                ",Text,,인트로,click\n" +
+                ",FX,,Setup:BG=bg1,>\n" +
+                ",Text,,새장면,click\n" +
+                ",Flow,,End,>\n";
+
+            var player = SetUp();
+            yield return null;
+
+            EventBus.Publish(new PlayScriptCommand(csv, "checkpoint-setup"));
+            yield return WaitUntilDone(player);
+
+            Assert.IsTrue(_saveSeen, "Setup BG= 후 첫 대사에서 오토세이브 발행");
+            Assert.AreEqual(0, _saveSlot, "자동저장 슬롯(0)");
+            Assert.AreEqual("story-save", _saveReason);
+            CollectionAssert.AreEqual(new[] { "인트로", "새장면" }, _dialogues, "체크포인트는 흐름을 끊지 않음");
+            Assert.IsTrue(_finished);
+        }
+
+        [UnityTest]
+        public IEnumerator LoadingScene_Then_First_Text_Fires_Checkpoint_Autosave()
+        {
+            // 일차 경계(LoadingScene) 직후 첫 대기 라인에서 1회 오토세이브. 로딩 핸들은 뷰 부재라 테스트가 즉시 완료.
+            const string csv =
+                "LineID,Type,Speaker,Value,Next\n" +
+                ",Text,,낮,click\n" +
+                ",Flow,,LoadingScene:0,await\n" +
+                ",Text,,밤,click\n" +
+                ",Flow,,End,>\n";
+
+            var player = SetUp();
+            _subs.Add(EventBus.Subscribe<ShowLoadingCommand>(e => e.Handle?.Complete())); // 로딩 뷰 대역(hang 방지)
+            yield return null;
+
+            EventBus.Publish(new PlayScriptCommand(csv, "checkpoint-loading"));
+            yield return WaitUntilDone(player);
+
+            Assert.IsTrue(_saveSeen, "LoadingScene 후 첫 대사에서 오토세이브 발행");
+            Assert.AreEqual(0, _saveSlot, "자동저장 슬롯(0)");
+            Assert.AreEqual("story-save", _saveReason);
+            CollectionAssert.AreEqual(new[] { "낮", "밤" }, _dialogues, "체크포인트는 흐름을 끊지 않음");
+            Assert.IsTrue(_finished);
+        }
     }
 }

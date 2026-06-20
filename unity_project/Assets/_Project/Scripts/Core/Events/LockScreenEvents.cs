@@ -53,4 +53,10 @@ namespace LoveAlgo.Events
 
     /// <summary>비밀번호 재설정 요청(분실 모달 '예') — KeyResetButton→Controller(_mode=Reset)·View(Reset UI 재구성). 핸들은 유지(현 잠금 세션 그대로).</summary>
     public readonly struct RequestPasswordResetCommand { }
+
+    /// <summary>
+    /// 잠금화면이 화면에서 완전히 사라졌음을 통지 — View(오버레이 비활성, 페이드아웃까지 완료) → Controller(핸들 완료 = 엔진 진행).
+    /// 입력 확정(Submit) 시점이 아니라 **닫힘 연출이 끝난 뒤** 다음 대사가 시작되도록(설정 완료 홀드/페이드 동안 선진행 방지).
+    /// </summary>
+    public readonly struct LockScreenClosedEvent { }
 }

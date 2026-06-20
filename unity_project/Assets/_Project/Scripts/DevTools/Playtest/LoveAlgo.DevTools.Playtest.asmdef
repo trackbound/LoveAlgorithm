@@ -1,0 +1,19 @@
+{
+    "name": "LoveAlgo.DevTools.Playtest",
+    "rootNamespace": "LoveAlgo.DevTools.Playtest",
+    "references": [
+        "LoveAlgo.Core",
+        "LoveAlgo.Narrative",
+        "LoveAlgo.UI",
+        "Unity.InputSystem"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

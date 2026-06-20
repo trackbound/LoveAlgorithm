@@ -75,6 +75,17 @@ namespace LoveAlgo.Story.StoryEngine
         IDisposable _sub;
         Coroutine _currentRun;
 
+        // 일차 경계(LoadingScene)/씬 전환(Setup BG=) 직후, 다음 대기 라인(Text/Choice)에서 1회 오토세이브를 예약한다.
+        // 대기 라인에서 잡아야 스토리 위치 앵커(storyLineIndex)와 무대 스냅샷(BG/BGM/Char/틴트 등)이 일치해
+        // 로드 시 그 장면에서 정확히 재개된다(FX 라인에서 저장하면 앵커가 직전 대사라 중간 효과가 이중 적용될 위험).
+        bool _checkpointPending;
+
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        // 플레이테스트 헬퍼(엔딩 직행 점프)용. 다음 루프 반복 시점에 해당 라벨로 커서를 점프시킨다(회차 분기 우회).
+        string _devPendingJumpLabel;
+        public void DevJumpToLabel(string label) => _devPendingJumpLabel = label;
+#endif
+
         void OnEnable() => _sub = EventBus.Subscribe<PlayScriptCommand>(OnPlayScript);
 
         void OnDisable()
@@ -128,20 +139,33 @@ namespace LoveAlgo.Story.StoryEngine
             if (startIndex > 0 && !cursor.JumpToIndex(startIndex))
                 Log.Warn($"[NarrativeController] 시작 인덱스 {startIndex} 범위 밖 — 처음부터 재생 (name='{scriptName}').");
             bool end = false;
+            _checkpointPending = false; // 새 스크립트 시작 — 직전 스크립트의 예약 잔류 방지
 
             while (!end && cursor.HasCurrent)
             {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                // 플레이테스트 헬퍼: 엔딩 직행 점프 예약이 있으면 회차 분기를 우회해 해당 라벨로 이동.
+                if (_devPendingJumpLabel != null)
+                {
+                    string lbl = _devPendingJumpLabel;
+                    _devPendingJumpLabel = null;
+                    if (cursor.TryJump(lbl)) continue;
+                    Log.Warn($"[NarrativeController] DevJumpToLabel 대상 '{lbl}' 없음 — 무시.");
+                }
+#endif
                 var line = cursor.Current;
                 switch (line.Type)
                 {
                     case LineType.Text:
                         RecordStoryAnchor(scriptName, cursor.Index); // 대기 라인 = 재개 앵커(세이브가 이 줄을 가리킴)
+                        yield return FireCheckpointIfPending(); // 일차 경계/씬 전환 후 첫 대사에서 오토세이브(예약 시)
                         yield return PlayText(line);
                         cursor.MoveNext();
                         break;
 
                     case LineType.Choice:
                         RecordStoryAnchor(scriptName, cursor.Index); // 선택 중 세이브 → 로드 시 선택지 재표시
+                        yield return FireCheckpointIfPending();
                         yield return PlayChoice(cursor);
                         // PlayChoice가 점프했으면 커서는 이미 대상; 아니면 Choice+Option 블록을 건너뛴다.
                         // 점프 여부는 _lastChoiceJumped로 전달(코루틴은 반환값을 못 주므로 필드 경유).
@@ -827,6 +851,10 @@ namespace LoveAlgo.Story.StoryEngine
                 else if (key == null) key = t;
             }
 
+            // 일차 경계 = 오토세이브 체크포인트. 다음 씬을 세운 첫 대사에서 저장(여기서 바로 저장하면
+            // 슬롯이 막 Clear돼 무대가 비어 썸네일/복원이 어긋난다 — 그래서 첫 Text/Choice로 미룬다).
+            _checkpointPending = true;
+
             var req = new CompletionHandle();
             EventBus.Publish(new ShowLoadingCommand(secs, req, key));
             yield return WaitNext(line, () => req.IsComplete);
@@ -879,6 +907,16 @@ namespace LoveAlgo.Story.StoryEngine
             int guard = 0;
             while (!handle.IsComplete && guard++ < 10) yield return null;
             EventBus.Publish(new SaveRequestedEvent(JsonSaveStore.AutoSaveSlot, "story-save"));
+        }
+
+        /// <summary>일차 경계(LoadingScene)/씬 전환(Setup BG=) 직후 예약된 오토세이브를 첫 대기 라인에서 1회 발동.
+        /// 무대(BG/BGM/Char)가 서 있고 스토리 앵커가 막 잡힌 시점이라 로드 시 그 장면에서 정확히 재개된다.
+        /// 명시적 <c>Flow,,Save</c>(작가 의도 세이브)와 동일한 캡처+저장 경로(<see cref="PlayAutosave"/>)를 재사용한다.</summary>
+        IEnumerator FireCheckpointIfPending()
+        {
+            if (!_checkpointPending) yield break;
+            _checkpointPending = false;
+            yield return PlayAutosave();
         }
 
         /// <summary>이름 입력 Flow(<c>Username</c>) — 확인(저장)까지 핸들 대기(LockScreen 미러, 뷰 미배선=hang 주의).</summary>
@@ -1062,6 +1100,8 @@ namespace LoveAlgo.Story.StoryEngine
                 string bgName = ResolveBgName(s.Bg);
                 RecordBg(bgName);
                 EventBus.Publish(new ShowBackgroundCommand(bgName, BgTransition.Cut, 0f, new CompletionHandle()));
+                // BG 교체 = 씬 전환 → 다음 첫 대사에서 오토세이브 예약(BGM/캐릭터까지 세운 뒤 일관 저장).
+                _checkpointPending = true;
             }
             if (s.Bgm != null)
             {

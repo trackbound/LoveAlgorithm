@@ -45,6 +45,7 @@ namespace LoveAlgo.Tests.EditMode
                 storyEyeClosed = true,
                 storySd = "sd_x",
                 storyOverlay = "ov_y",
+                storyCg = "cg_c01_01",
             };
 
             var back = JsonUtility.FromJson<GameStateData>(JsonUtility.ToJson(d));
@@ -54,6 +55,7 @@ namespace LoveAlgo.Tests.EditMode
             Assert.IsTrue(back.storyEyeClosed, "아이마스크 닫힘 왕복");
             Assert.AreEqual("sd_x", back.storySd);
             Assert.AreEqual("ov_y", back.storyOverlay);
+            Assert.AreEqual("cg_c01_01", back.storyCg, "CG 레이어 왕복");
         }
 
         [Test]

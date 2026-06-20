@@ -76,16 +76,16 @@ namespace LoveAlgo.Core
         public int storyLineIndex;
 
         // 무대 스냅샷(장면 정체성: BG/BGM/슬롯 캐릭터). 엔진이 명령 발행 시점에 "해석된 코드ID"로 미러 —
-        // 별칭 카탈로그가 바뀌어도 복원이 흔들리지 않는다. 연출 순간값(틴트/아이마스크/흔들림)은 비저장,
-        // CG도 비저장(CG 중엔 대사창과 인포 바가 숨어 세이브 UI 접근 자체가 불가).
+        // 별칭 카탈로그가 바뀌어도 복원이 흔들리지 않는다. 연출 순간값(틴트/흔들림)은 비저장.
+        // CG는 storyCg로 저장(대사창이 CG 위에 떠 진행되는 동안 오토세이브가 잡힐 수 있어 복원 필요).
         public string storyBg = "";
         public string storyBgm = "";
         public List<StoryCharRecord> storyChars = new();
 
         // ── 연출 지속 상태(스테이지 상태 세이브, 2026-06-17) ──
-        // 로드 시 장면 시각 동일 재현: BG/Char에 더해 화면 색 보정/눈꺼풀 닫힘/SD·Overlay 레이어를 미러.
-        // 발행 직전 해석된 최종값으로 기록 — 별칭/튜닝 변경 면역. 흔들림(순간값)·CG(CG 중 세이브 UI 접근
-        // 구조적 차단)는 비저장. 가산적 확장이라 구버전 세이브는 기본값(0/false/빈)으로 로드 = 마이그레이션 무해.
+        // 로드 시 장면 시각 동일 재현: BG/Char에 더해 화면 색 보정/눈꺼풀 닫힘/SD·Overlay·CG 레이어를 미러.
+        // 발행 직전 해석된 최종값으로 기록 — 별칭/튜닝 변경 면역. 흔들림(순간값)만 비저장.
+        // 가산적 확장이라 구버전 세이브는 기본값(0/false/빈)으로 로드 = 마이그레이션 무해.
         public float storyTintR;
         public float storyTintG;
         public float storyTintB;
@@ -93,6 +93,7 @@ namespace LoveAlgo.Core
         public bool storyEyeClosed; // Close/CloseImmediate=true, Open=false (Blink는 순간이라 상태 불변)
         public string storySd = "";      // 현재 SD 레이어 이름(해석된 코드ID). 빈=없음
         public string storyOverlay = ""; // 현재 Overlay 레이어 이름(해석된 코드ID). 빈=없음
+        public string storyCg = "";      // 현재 CG 레이어 이름(해석된 코드ID). 빈=없음. CG 표시 중 세이브(대사창 위 CG)→로드 복원용
         public string storyRoaDevice = ""; // 로아 디바이스(pc/모바일). 빈=미설정(컨트롤러 기본). 가산 확장
 
         /// <summary>스토리 무대 슬롯 1칸의 캐릭터 기록. slot = CharSlot enum 정수값(L=0/C=1/R=2).</summary>

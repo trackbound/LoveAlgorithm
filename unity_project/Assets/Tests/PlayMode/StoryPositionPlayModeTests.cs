@@ -249,28 +249,35 @@ namespace LoveAlgo.Tests.PlayMode
             var d = _gs.Data;
             d.storyScriptId = "prologue"; // 무대 재발행은 스크립트 분기 전에 일어남(분기는 무관)
             d.storyLineIndex = 0;
+            d.storyBgm = "daily1";
             d.storyTintR = 0.5f; d.storyTintG = 0.4f; d.storyTintB = 0.3f; d.storyTintA = 0.25f;
             d.storyEyeClosed = true;
             d.storySd = "sd_x";
             d.storyOverlay = "ov_y";
+            d.storyCg = "cg_c01_01";
 
             ColorTintCommand? tint = null;
             EyeMaskCommand? eye = null;
+            PlayBgmCommand? bgm = null;
             var layers = new List<ShowStageLayerCommand>();
             _subs.Add(EventBus.Subscribe<ColorTintCommand>(e => { tint = e; e.Handle?.Complete(); }));
             _subs.Add(EventBus.Subscribe<EyeMaskCommand>(e => { eye = e; e.Handle?.Complete(); }));
+            _subs.Add(EventBus.Subscribe<PlayBgmCommand>(e => bgm = e));
             _subs.Add(EventBus.Subscribe<ShowStageLayerCommand>(e => { layers.Add(e); e.Handle?.Complete(); }));
 
             boot.TryResumeStory();
 
+            Assert.IsTrue(bgm.HasValue, "BGM 재발행(로드 시 BGM 복원)");
+            Assert.AreEqual("daily1", bgm.Value.Name, "저장된 BGM 코드ID 그대로 재생");
             Assert.IsTrue(tint.HasValue, "틴트 재발행");
             Assert.AreEqual(0.25f, tint.Value.Alpha, 0.001f);
             Assert.IsFalse(tint.Value.Clear, "활성 틴트(클리어 아님)");
             Assert.IsTrue(eye.HasValue, "아이마스크 재발행");
             Assert.AreEqual(EyeMaskAction.CloseImmediate, eye.Value.Action, "닫힘 상태 = 즉시 감김 복원");
-            Assert.AreEqual(2, layers.Count, "SD+Overlay 재발행");
+            Assert.AreEqual(3, layers.Count, "SD+Overlay+CG 재발행");
             Assert.IsTrue(layers.Exists(l => l.Kind == StageLayerKind.SD && l.Name == "sd_x"), "SD 재발행");
             Assert.IsTrue(layers.Exists(l => l.Kind == StageLayerKind.Overlay && l.Name == "ov_y"), "Overlay 재발행");
+            Assert.IsTrue(layers.Exists(l => l.Kind == StageLayerKind.CG && l.Name == "cg_c01_01"), "CG 재발행(로드 시 CG 복원)");
             yield return null;
         }
 

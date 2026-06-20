@@ -22,7 +22,7 @@ namespace LoveAlgo.Story.StoryEngine.Flow
         /// <summary>상태 SO 바인딩. 인스펙터 또는 부팅 시퀀스가 주입.</summary>
         public GameStateSO State { get => state; set => state = value; }
 
-        IDisposable _showSub, _submitSub, _finishSub, _resetSub, _resetReqSub;
+        IDisposable _showSub, _submitSub, _finishSub, _resetSub, _resetReqSub, _closedSub;
         CompletionHandle _pending;
         LockMode _mode;
         int _errorCount; // Normal 누적 입력 실패(세션 런타임, 세이브 비저장). 새 Show 시 0.
@@ -35,12 +35,14 @@ namespace LoveAlgo.Story.StoryEngine.Flow
             _finishSub = EventBus.Subscribe<NarrativeFinishedEvent>(_ => ReleasePending());
             _resetSub  = EventBus.Subscribe<ResetNarrativeViewsCommand>(_ => ReleasePending());
             _resetReqSub = EventBus.Subscribe<RequestPasswordResetCommand>(_ => OnResetRequested());
+            // 입력 확정이 아니라 잠금화면이 완전히 닫힌 뒤 핸들을 풀어 엔진을 진행시킨다(설정 완료 홀드/페이드 동안 선진행 방지).
+            _closedSub = EventBus.Subscribe<LockScreenClosedEvent>(_ => ReleasePending());
         }
 
         void OnDisable()
         {
-            _showSub?.Dispose(); _submitSub?.Dispose(); _finishSub?.Dispose(); _resetSub?.Dispose(); _resetReqSub?.Dispose();
-            _showSub = _submitSub = _finishSub = _resetSub = _resetReqSub = null;
+            _showSub?.Dispose(); _submitSub?.Dispose(); _finishSub?.Dispose(); _resetSub?.Dispose(); _resetReqSub?.Dispose(); _closedSub?.Dispose();
+            _showSub = _submitSub = _finishSub = _resetSub = _resetReqSub = _closedSub = null;
         }
 
         /// <summary>잠금화면 표시 명령 수신 — 활성 핸들·모드 보관. 직접 호출도 가능(테스트/부팅).</summary>
@@ -60,7 +62,10 @@ namespace LoveAlgo.Story.StoryEngine.Flow
             _errorCount = 0;
         }
 
-        /// <summary>비번 확정 수신 — 모드별 처리 후 핸들 완료. 직접 호출도 가능(테스트/부팅).</summary>
+        /// <summary>
+        /// 비번 확정 수신 — 모드별 처리(저장/검증). 핸들 완료는 여기서 하지 않고 잠금화면이 완전히 닫힌 뒤
+        /// <see cref="LockScreenClosedEvent"/>에서 한다(설정 완료 홀드/페이드 동안 다음 대사 선진행 방지). 직접 호출도 가능(테스트/부팅).
+        /// </summary>
         public void OnSubmit(SubmitPasswordCommand e)
         {
             if (_pending == null) return; // 활성 잠금화면 없음 — 무시.
@@ -70,8 +75,7 @@ namespace LoveAlgo.Story.StoryEngine.Flow
                 case LockMode.Normal:
                     if (state != null && state.Password == e.Password)
                     {
-                        EventBus.Publish(new PasswordAcceptedEvent()); // View 닫기 신호.
-                        ReleasePending(); // 로그인 성공 → 엔진 진행.
+                        EventBus.Publish(new PasswordAcceptedEvent()); // View 닫기 신호 → 닫힘 완료 시 핸들 완료.
                     }
                     else
                     {
@@ -90,10 +94,10 @@ namespace LoveAlgo.Story.StoryEngine.Flow
                         state.Password = e.Password; // 평문 저장(해싱은 후속).
                         Log.Info($"[LockScreenController] {_mode} 비번 설정 완료(len={e.Password?.Length ?? 0}).");
                     }
-                    ReleasePending();
+                    // 저장만 즉시. 핸들 완료는 View 닫힘(LockScreenClosedEvent)까지 대기.
                     break;
 
-                default: // Auto/GameStart 등 — 핸들만 풀어 진행(후속 구현).
+                default: // Auto/GameStart 등 — 닫힘 연출 미구현이라 즉시 진행(후속 구현).
                     ReleasePending();
                     break;
             }

@@ -68,6 +68,7 @@ namespace LoveAlgo.UI
         IDisposable _sub, _finishSub, _resetSub, _failSub, _acceptSub, _resetReqSub;
         Coroutine _fadeRoutine;
         bool _fadeOut;
+        bool _shown; // 현재 Show로 표시 중인지(닫힘 이벤트 1회 보장 — 부팅/정리용 HideImmediate와 구분).
         LockMode _mode;
 
         void OnEnable()
@@ -108,6 +109,7 @@ namespace LoveAlgo.UI
             if (overlay == null) return; // 효과 생략 — Controller가 Submit으로 핸들 완료(여기선 막지 않음).
             if (_fadeRoutine != null) { StopCoroutine(_fadeRoutine); _fadeRoutine = null; }
             overlay.SetActive(true);
+            _shown = true; // 닫힐 때 LockScreenClosedEvent를 정확히 1회 발행하기 위한 마킹.
             // 화면을 덮는 동안 공용 백색소음 보장(idempotent — 이미 재생 중이면 AudioManager가 no-op 처리).
             if (!string.IsNullOrEmpty(lockBgm)) EventBus.Publish(new PlayBgmCommand(lockBgm));
             if (input != null) input.text = "";
@@ -256,6 +258,13 @@ namespace LoveAlgo.UI
         {
             if (_fadeRoutine != null) { StopCoroutine(_fadeRoutine); _fadeRoutine = null; }
             if (overlay != null) overlay.SetActive(false);
+            // 표시 중이던 잠금화면이 완전히 닫힌 순간에만 통지(부팅/정리용 HideImmediate는 제외).
+            // Controller는 이 시점에 핸들을 풀어 다음 대사를 시작한다(닫힘 연출 동안 선진행 방지).
+            if (_shown)
+            {
+                _shown = false;
+                EventBus.Publish(new LockScreenClosedEvent());
+            }
         }
     }
 }

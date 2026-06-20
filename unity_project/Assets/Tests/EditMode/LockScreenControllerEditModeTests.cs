@@ -40,7 +40,7 @@ namespace LoveAlgo.Tests.EditMode
         }
 
         [Test]
-        public void Normal_Match_Publishes_Accepted_And_Completes_Handle()
+        public void Normal_Match_Publishes_Accepted_And_Completes_Handle_On_Close()
         {
             _gs.Password = "1234";
             bool accepted = false;
@@ -50,8 +50,11 @@ namespace LoveAlgo.Tests.EditMode
 
             _ctrl.OnSubmit(new SubmitPasswordCommand("1234"));
 
-            Assert.IsTrue(accepted, "일치 → PasswordAcceptedEvent 발행");
-            Assert.IsTrue(handle.IsComplete, "일치 → 핸들 완료(로그인 진행)");
+            Assert.IsTrue(accepted, "일치 → PasswordAcceptedEvent 발행(View 닫기)");
+            Assert.IsFalse(handle.IsComplete, "닫힘 전엔 핸들 유지(닫힘 연출 동안 선진행 방지)");
+
+            EventBus.Publish(new LockScreenClosedEvent()); // View가 완전히 닫힘
+            Assert.IsTrue(handle.IsComplete, "닫힘 완료 → 핸들 완료(로그인 진행)");
         }
 
         [Test]
@@ -105,7 +108,10 @@ namespace LoveAlgo.Tests.EditMode
 
             _ctrl.OnSubmit(new SubmitPasswordCommand("5555")); // Reset 저장
             Assert.AreEqual("5555", _gs.Password, "Reset → 새 비번 저장");
-            Assert.IsTrue(handle.IsComplete, "Reset 저장 후 핸들 완료(진행)");
+            Assert.IsFalse(handle.IsComplete, "저장은 즉시지만 닫힘 전엔 핸들 유지");
+
+            EventBus.Publish(new LockScreenClosedEvent()); // View가 완전히 닫힘
+            Assert.IsTrue(handle.IsComplete, "Reset 닫힘 완료 후 핸들 완료(진행)");
         }
     }
 }

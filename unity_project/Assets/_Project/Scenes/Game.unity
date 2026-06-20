@@ -832,7 +832,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 04f3012628daeea41b01221d648e901b, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 1d7e0c9a3b4f5a6c8d2e1f0b9c7a6e51, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -2329,7 +2329,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 400fd5bf3d5d68d4ba0b969430ba08ba, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 2e8f1d0b4c5a6b7d9e3f2a1c0d8b7f62, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -2606,6 +2606,7 @@ MonoBehaviour:
   glitchEnterCharId: roa
   characterGlitchSeconds: 0.6
   emoteCrossfadeSeconds: 0.12
+  fallbackEmote: "\uAE30\uBCF8"
 --- !u!114 &1058573350
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4775,6 +4776,14 @@ PrefabInstance:
     - target: {fileID: 2086240170972786520, guid: 223b3b3b48971f94d8aee00de24e61da, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3925664777243429521, guid: 223b3b3b48971f94d8aee00de24e61da, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 700
+      objectReference: {fileID: 0}
+    - target: {fileID: 3925664777243429521, guid: 223b3b3b48971f94d8aee00de24e61da, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 80
       objectReference: {fileID: 0}
     - target: {fileID: 5508085510737645871, guid: 223b3b3b48971f94d8aee00de24e61da, type: 3}
       propertyPath: slotC

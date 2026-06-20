@@ -125,6 +125,10 @@ namespace LoveAlgo.Game
                 EventBus.Publish(new ShowStageLayerCommand(StageLayerKind.SD, false, d.storySd, LayerTransition.Cut, 0f, new CompletionHandle()));
             if (!string.IsNullOrEmpty(d.storyOverlay))
                 EventBus.Publish(new ShowStageLayerCommand(StageLayerKind.Overlay, false, d.storyOverlay, LayerTransition.Cut, 0f, new CompletionHandle()));
+            // CG 복원 — 캐릭터 위를 덮는 풀스크린 컷신. 재발행 시 StageLayerView가 SetCgModeCommand(true)도 함께
+            // 발행해 대사창/메뉴를 CG 모드로 되돌린다(재개 Text 라인이 대사창을 다시 띄움). 아이마스크보다 먼저.
+            if (!string.IsNullOrEmpty(d.storyCg))
+                EventBus.Publish(new ShowStageLayerCommand(StageLayerKind.CG, false, d.storyCg, LayerTransition.Cut, 0f, new CompletionHandle()));
             if (d.storyEyeClosed)
                 EventBus.Publish(new EyeMaskCommand(EyeMaskAction.CloseImmediate, 0f, 0f, 0f, new CompletionHandle())); // 최상위 가림 → 마지막
 

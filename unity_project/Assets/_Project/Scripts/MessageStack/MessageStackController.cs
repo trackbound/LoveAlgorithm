@@ -28,7 +28,9 @@ namespace LoveAlgo.MessageStack
         [SerializeField] Vector2 anchorPos = Vector2.zero;
         [Tooltip("동시에 겹쳐 보일 최대 카드 수.")]
         [SerializeField] int maxVisible = 4;
-        [Tooltip("슬롯이 하나 뒤로 갈 때마다 위로 올리는 픽셀. 작게 둘수록 카드가 거의 겹쳐 쌓인다.")]
+        [Tooltip("슬롯0(최전면 풀 카드)→슬롯1(첫 접힘 카드) 간격(px). 풀 카드 본문 위로 헤더가 떠야 하므로 stepY보다 크게.")]
+        [SerializeField] float firstStepY = 56f;
+        [Tooltip("접힘 카드끼리 한 슬롯 뒤로 갈 때마다 위로 올리는 픽셀. 작게 둘수록 오래된 헤더가 촘촘히 겹쳐 쌓인다.")]
         [SerializeField] float stepY = 28f;
         [Tooltip("슬롯별 알파(index0=최전면). 길이 maxVisible+1 권장 — 마지막은 퇴장 직전 값.")]
         [SerializeField] float[] alphaBySlot = { 1f, 0.55f, 0.3f, 0.15f, 0f };
@@ -97,9 +99,13 @@ namespace LoveAlgo.MessageStack
             _active.Insert(0, card);
 
             // 생존 카드(0..maxVisible-1) 슬롯 재배정: 신규는 아래→슬롯0 상승, 기존은 한 슬롯 뒤로.
+            // 슬롯0만 풀 카드, 나머지는 접힘(헤더만) — 오래될수록 촘촘+연하게.
             int survivors = Mathf.Min(_active.Count, maxVisible);
             for (int i = 0; i < survivors; i++)
+            {
+                _active[i].SetCollapsed(i != 0);
                 _active[i].AnimateTo(PoseForSlot(i), i == 0 ? riseDuration : shiftDuration);
+            }
 
             // 렌더 순서: 최신이 위로 그려지도록 뒤→앞 SetAsLastSibling(index0이 마지막=최상단).
             for (int i = survivors - 1; i >= 0; i--)
@@ -127,7 +133,9 @@ namespace LoveAlgo.MessageStack
         MessageCardView.Pose PoseForSlot(int slot)
         {
             // 크기 변화 없음(scale 고정 1) — 위로 이동 + 알파 감소만으로 스택.
-            Vector2 pos = anchorPos + new Vector2(0f, slot * stepY);
+            // 슬롯0=기준, 슬롯1=firstStepY(풀 카드 위), 이후 접힘 카드끼리는 stepY로 촘촘히.
+            float y = slot <= 0 ? 0f : firstStepY + (slot - 1) * stepY;
+            Vector2 pos = anchorPos + new Vector2(0f, y);
             return new MessageCardView.Pose(pos, 1f, AlphaForSlot(slot));
         }
 

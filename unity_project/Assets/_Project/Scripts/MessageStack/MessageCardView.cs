@@ -17,8 +17,15 @@ namespace LoveAlgo.MessageStack
         [SerializeField] TMP_Text senderLabel;
         [Tooltip("대사 본문 라벨.")]
         [SerializeField] TMP_Text messageLabel;
+        [Tooltip("접힘(collapsed) 시 숨길 파츠들(예: Label, Text). Header는 항상 표시 — 오래된 메시지는 헤더만 남는다.")]
+        [SerializeField] GameObject[] collapsibleParts;
+
+        [Header("Slide Feel")]
+        [Tooltip("이동 보간 오버슈트(EaseOutBack) 강도. 0=오버슈트 없는 부드러운 감속, 클수록 끝에서 톡 튀는 손맛.")]
+        [SerializeField] float overshoot = 1.4f;
 
         Coroutine _move;
+        bool _collapsed;
 
         /// <summary>카드의 목표 자세: anchoredPosition / 균일 스케일 / CanvasGroup 알파.</summary>
         public struct Pose
@@ -53,6 +60,16 @@ namespace LoveAlgo.MessageStack
             if (messageLabel != null) messageLabel.text = message;
         }
 
+        /// <summary>접힘 토글. 접히면 collapsibleParts(Label/Text 등)를 끄고 Header만 남긴다(오래된 메시지 표현).</summary>
+        public void SetCollapsed(bool collapsed)
+        {
+            if (_collapsed == collapsed) return;
+            _collapsed = collapsed;
+            if (collapsibleParts == null) return;
+            foreach (var go in collapsibleParts)
+                if (go != null) go.SetActive(!collapsed);
+        }
+
         /// <summary>등장 직전 시작 자세를 즉시 적용(진행 중 이동은 중단).</summary>
         public void SetPoseInstant(Pose p)
         {
@@ -80,15 +97,26 @@ namespace LoveAlgo.MessageStack
             while (t < duration)
             {
                 t += Time.deltaTime;
-                float k = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(t / duration));
+                float lin = Mathf.Clamp01(t / duration);
+                // 위치/스케일은 EaseOutBack로 끝에서 살짝 넘었다 정착(손맛), 알파는 SmoothStep로 깜빡임 없이 감쇠.
+                float kPos = EaseOutBack(lin, overshoot);
+                float kFade = Mathf.SmoothStep(0f, 1f, lin);
                 ApplyPose(new Pose(
-                    Vector2.Lerp(from.pos, target.pos, k),
-                    Mathf.Lerp(from.scale, target.scale, k),
-                    Mathf.Lerp(from.alpha, target.alpha, k)));
+                    Vector2.LerpUnclamped(from.pos, target.pos, kPos),
+                    Mathf.LerpUnclamped(from.scale, target.scale, kPos),
+                    Mathf.Lerp(from.alpha, target.alpha, kFade)));
                 yield return null;
             }
             ApplyPose(target);
             _move = null;
+        }
+
+        /// <summary>EaseOutBack: x∈[0,1]에서 끝부분이 1을 살짝 넘었다가 되돌아온다. s=오버슈트 강도(0이면 오버슈트 없음).</summary>
+        static float EaseOutBack(float x, float s)
+        {
+            float c3 = s + 1f;
+            float xm = x - 1f;
+            return 1f + c3 * xm * xm * xm + s * xm * xm;
         }
 
         Pose CurrentPose() => new Pose(rect.anchoredPosition, rect.localScale.x, canvasGroup.alpha);

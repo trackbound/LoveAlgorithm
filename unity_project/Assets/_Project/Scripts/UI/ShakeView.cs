@@ -99,10 +99,15 @@ namespace LoveAlgo.UI
             float omega = 2f * Mathf.PI * Mathf.Max(1f, p.FrequencyHz);
             float safeDamping = Mathf.Max(0.1f, p.Damping);
 
-            // 완전 랜덤 방향(좌우뿐 아니라 2D 전 방향).
+            // 완전 랜덤 방향(좌우뿐 아니라 2D 전 방향) — 초기 임팩트 킥용.
             float angle = UnityEngine.Random.Range(0f, 2f * Mathf.PI);
             float dirX = Mathf.Cos(angle);
             float dirY = Mathf.Sin(angle);
+
+            // 채널별 독립 노이즈 시드 — X·Y·회전이 같은 파형을 공유하지 않게(단일축 사인 진자 → 다방향 난류 = 지진 체감).
+            float seedX = UnityEngine.Random.value * 1000f;
+            float seedY = UnityEngine.Random.value * 1000f;
+            float seedR = UnityEngine.Random.value * 1000f;
 
             // Hitlag: 충격 직후 변위 고정(프리즈 프레임). 지속의 10% 상한.
             float hitlag = Mathf.Min(p.HitlagSeconds, safeDuration * 0.10f);
@@ -120,13 +125,14 @@ namespace LoveAlgo.UI
                 }
                 else
                 {
-                    // Phase 2 — 감쇠 진동(시간 기준 → duration 무관 일정 체감).
+                    // Phase 2 — 감쇠 난류(2-옥타브 Perlin). 매끈한 단일 사인이 아니라 불규칙·다방향 고주파 떨림 = 지진 체감.
+                    // 연속 노이즈라 프레임당 점프 없이 깔끔하고, exp 감쇠로 빠르게 잦아든다.
                     float t2 = elapsed - hitlag;
                     float decay = Mathf.Exp(-safeDamping * t2);
-                    float wave = Mathf.Sin(t2 * omega);
-                    x = dirX * wave * strength * p.XMultiplier * decay;
-                    y = dirY * wave * strength * p.YMultiplier * decay;
-                    zRot = wave * strength * p.RotationMultiplier * decay;
+                    float nt = t2 * omega / (2f * Mathf.PI); // 노이즈 시간(초당 ~FrequencyHz 특징 변화).
+                    x = FractalNoise(seedX, nt) * strength * p.XMultiplier * decay;
+                    y = FractalNoise(seedY, nt) * strength * p.YMultiplier * decay;
+                    zRot = FractalNoise(seedR, nt) * strength * p.RotationMultiplier * decay;
                 }
 
                 rt.anchoredPosition = _restPos + new Vector2(x, y);
@@ -139,6 +145,17 @@ namespace LoveAlgo.UI
             rt.anchoredPosition = _restPos;
             rt.localRotation = _restRot;
             Finish();
+        }
+
+        /// <summary>
+        /// 2-옥타브 Perlin 난류, 대략 [-1,1]. 단일 사인보다 날카롭고 불규칙한 다방향 떨림(지진형)을 주되,
+        /// 연속 노이즈라 프레임 점프 없이 깔끔하다. 게인 1.4로 체감 진폭을 사인 수준으로 맞춤(드물게 살짝 초과 = 더 큰 충격).
+        /// </summary>
+        static float FractalNoise(float seed, float x)
+        {
+            float n  = Mathf.PerlinNoise(seed, x) * 2f - 1f;              // 1옥타브(기저)
+            n += (Mathf.PerlinNoise(seed + 37.2f, x * 2.3f) * 2f - 1f) * 0.5f; // 2옥타브(고주파 디테일)
+            return (n / 1.5f) * 1.4f;
         }
 
         void StopCurrent()

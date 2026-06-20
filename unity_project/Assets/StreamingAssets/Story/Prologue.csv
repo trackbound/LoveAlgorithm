@@ -399,8 +399,6 @@ pro_352,Char,,C:Exit,await
 pro_353,Flow,,Save,await
 pro_354,Place,,수업 시작 전 | 공대 학생복지실,>
 pro_355,Sound,,BGM:Daily1,>
-,Flow,,Mark:scene:복지실 — 희원 첫만남,>
-,FX,,Setup:BGM=도희원,>
 pro_356,BG,,공대_학생복지실:Fade,await
 pro_357,Text,,"로아의 말이 정말 맞았다.\n나왔을 때는 따뜻한가 싶더니, 공대 근처에 오니 찬바람이 분다.",click
 pro_358,Text,,공대 지하에는 전공 교재를 쌓아놓고 팔면서 프린트도 할 수 있는 곳이 있다.,click
@@ -491,7 +489,6 @@ pro_437,Text,{{Player}},"아, 아니… 죄송합니다.",click
 pro_438,Text,,어리둥절해 보이는 직원의 표정에 한숨을 푹 내쉬었다.,click
 pro_439,Place,,연장 신청 실패! | 캠퍼스,>
 ,Flow,,Mark:scene:학생회관 앞 — 예은 입부,>
-,FX,,Setup:BGM=하예은,>
 pro_440,BG,,학관_낮:Fade,await
 pro_441,Text,,다시 돌려받은 신청서를 가지고 학생회관을 나섰다.,click
 pro_442,Text,,4명이나 모아 올 자신이 없는데.\n이제서야 과 생활을 열심히 하지 않은 게 후회된다.,click
@@ -618,8 +615,6 @@ pro_562,Text,{{Player}},안해줄 것 같았는데 의외로 해 주더라고.,c
 pro_563,Text,로아,<emote=눈웃음/>예은이라면 오랜만에 만났다는 그 친구지?,click
 pro_564,Text,로아,착한 친구잖아! 다행이야. 그럼 앞으로 4명인가? 힘내보자!,click
 pro_565,Char,,C:Exit,await
-,Flow,,Mark:scene:자취방 모니터 — 로아,>
-,FX,,Setup:BGM=로아|Char=로아:C,>
 pro_566,BG,,자취방_책상:Cross,await
 pro_567,Text,,하지만 솔직히 영 감이 오지 않는다.\n3명을 어디서 더 구하는 게 좋지?,click
 pro_568,Text,,로아의 코드를 이것저것 살펴보다가도 그 생각에 좀처럼 집중하기가 어려웠다.,click
@@ -640,8 +635,6 @@ pro_582,Text,,편의점을 가기 위해 자리에서 일어나 기지개를 켰
 pro_583,Char,,C:Exit,await
 pro_584,Place,,밤 | 집 앞 편의점,>
 pro_585,Sound,,BGM:일상2,>
-,Flow,,Mark:scene:편의점 — 희원 만남,>
-,FX,,Setup:BGM=도희원,>
 pro_586,BG,,편의점_밤:Fade,await
 pro_587,Text,,학기 초라 그런지 늦은 시간인데도 제법 사람 많은 거리를 지나 편의점에 도착했다.,click
 pro_588,Text,,"늘 먹는 음료수가 진열된 냉장고 앞에 섰는데, 남은 게 3개밖에 없다.",click
@@ -706,13 +699,12 @@ pro_648,FX,,EyeClose:0.5,await
 ,FX,,DialogueHide,>
 pro_649,Flow,,LoadingScene,await
 pro_650,Place,,새 학기 셋째 날 | 학생회관 게시판,>
-,Flow,,Mark:scene:게시판 — 봄,>
-,FX,,Setup:BG=학관_게시판|BGM=이봄,>
+,FX,,Setup:BG=학관_게시판,>
 pro_651,FX,,EyeOpen:0.6,await
 ,FX,,Wait:0.4,await
 pro_652,Sound,,BGM:일상2,>
 pro_653,Place,,[3일차 오후] | 학생회관 게시판 앞,>
-pro_654,FX,,Wait:0.5,await
+pro_654,FX,,Wait:0.3,await
 pro_655,Text,,어제 밤에 침대에 누워서 잠들기 직전까지 고민한 게 무색하게 전혀 답을 찾지 못했다.,click
 pro_656,Text,,다른 동아리들은 어떻게 모집하는지 조금이라도 알아봐야겠다.\n그래서 수업이 끝나자마자 학생회관으로 왔다.,click
 pro_657,Text,,학생회관 구석진 곳에 있는 동아리 게시판에는 온갖 홍보지가 덕지덕지 붙어 있었다.,click
@@ -812,8 +804,7 @@ pro_748,Text,,"그냥 한 말일 것이긴 하겠지만, 홍보지를 어떻게 
 pro_749,Text,,알고리즘 메이커의 동방으로 가기 위해 계단으로 걸음을 옮기며 핸드폰을 들었다.,click
 pro_750,Sound,,BGM:로아,>
 pro_751,Char,,C:Enter:Roa:기본:모바일,await
-,Flow,,Mark:scene:동아리방,>
-pro_752,BG,,동방:Fade,await
+pro_752,BG,,동방:Cross,await
 pro_753,Text,로아,{{Player}}! 홍보지는 붙였어?,click
 pro_754,Text,{{Player}},"아니, 아직. 다른 동아리들 홍보지가 너무 화려해서.",click
 pro_755,Text,로아,<emote=눈웃음/>내가 만들어 줄까? 나 그런 거 생성 잘 하잖아!,click
@@ -862,7 +853,7 @@ pro_791,Char,,C:Exit,await
 pro_792,Flow,,ReturnToTitle:프롤로그가 종료되었습니다.\n타이틀로 돌아갑니다,await
 ending_4,Flow,,MetaInc:prologueClears,>
 pro_794,Char,,C:Enter:Roa:기본:pc,click
-pro_795,Text,로아,또 만나. 기다릴게.,click
+pro_795,Text,로아,또 만나. 기다릴게.,click 
 pro_796,Char,,C:Exit,await
 ,FX,,EyeClose:0.5,await
 pro_797,Flow,,ReturnToTitle:프롤로그가 종료되었습니다.\n타이틀로 돌아갑니다,await

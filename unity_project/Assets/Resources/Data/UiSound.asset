@@ -18,5 +18,5 @@ MonoBehaviour:
   choiceClick: 001_Pop
   dialogueAdvance:
   dialogueType: ui_typing
-  settingsSliderChange: 009_Notification
+  settingsSliderChange: 015_Ding
   typeStride: 2

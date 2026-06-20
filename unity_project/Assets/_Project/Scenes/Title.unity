@@ -1833,7 +1833,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5951788034665454710, guid: e4a3af889da071742821351ad250f9bf, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7826784500346418504, guid: e4a3af889da071742821351ad250f9bf, type: 3}
       propertyPath: m_Pivot.x
@@ -3476,10 +3476,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: ExtraPopup
       objectReference: {fileID: 0}
-    - target: {fileID: 1083119479632026784, guid: c0b1d3f7e1c7a6344b47e2e35123fd23, type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 2482904109558815516, guid: c0b1d3f7e1c7a6344b47e2e35123fd23, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -3560,18 +3556,6 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 4427667533651367587, guid: c0b1d3f7e1c7a6344b47e2e35123fd23, type: 3}
-      propertyPath: slide
-      value: 
-      objectReference: {fileID: 1840257404}
-    - target: {fileID: 8749699102481804643, guid: c0b1d3f7e1c7a6344b47e2e35123fd23, type: 3}
-      propertyPath: canvasGroup
-      value: 
-      objectReference: {fileID: 1840257406}
-    - target: {fileID: 8749699102481804643, guid: c0b1d3f7e1c7a6344b47e2e35123fd23, type: 3}
-      propertyPath: slideTarget
-      value: 
-      objectReference: {fileID: 2147387253}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -3585,22 +3569,6 @@ RectTransform:
 --- !u!1 &1840257403 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1083119479632026784, guid: c0b1d3f7e1c7a6344b47e2e35123fd23, type: 3}
-  m_PrefabInstance: {fileID: 1840257401}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &1840257404 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 8749699102481804643, guid: c0b1d3f7e1c7a6344b47e2e35123fd23, type: 3}
-  m_PrefabInstance: {fileID: 1840257401}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1840257403}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a8c1975a3bc5dc44a987f1fe8f51d8ca, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: LoveAlgo.UI::LoveAlgo.UI.PopupSlideAnimator
---- !u!225 &1840257406 stripped
-CanvasGroup:
-  m_CorrespondingSourceObject: {fileID: 4233451445994051213, guid: c0b1d3f7e1c7a6344b47e2e35123fd23, type: 3}
   m_PrefabInstance: {fileID: 1840257401}
   m_PrefabAsset: {fileID: 0}
 --- !u!1 &1842994227
@@ -4008,11 +3976,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: LoveAlgo.Settings::LoveAlgo.Settings.SettingsController
   settings: {fileID: 11400000, guid: bb9dd603ff7e13b42b3fa6cfd69e686b, type: 2}
---- !u!224 &2147387253 stripped
-RectTransform:
-  m_CorrespondingSourceObject: {fileID: 2706315439137656158, guid: c0b1d3f7e1c7a6344b47e2e35123fd23, type: 3}
-  m_PrefabInstance: {fileID: 1840257401}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &6821497780702462025
 PrefabInstance:
   m_ObjectHideFlags: 0

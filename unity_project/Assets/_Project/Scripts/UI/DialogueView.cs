@@ -102,7 +102,13 @@ namespace LoveAlgo.UI
         bool _cgHidden;
         bool _hiddenByUser; // 인포 바 "숨기기" — CSV SetDialogueVisibleCommand(연출 채널)와 분리된 로컬 상태.
         bool _endMarkShown;
-        bool _fastForward; // 시프트 홀드 빠른 진행 중 — 진행음/디버그 로그 억제용.
+        bool _fastForward; // 시프트 홀드/터보 빠른 진행 중 — 진행음/디버그 로그 억제용.
+
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        /// <summary>플레이테스트 헬퍼(터보)용 전역 빠른진행 플래그. 시프트 홀드와 같은 경로로 매 프레임 자동 진행한다
+        /// (타이핑 즉시 완성 + 클릭/오토 대기 자동 통과). 텍스트 입력 포커스/오버레이 중엔 시프트와 동일하게 비활성.</summary>
+        public static bool ForceFastForward;
+#endif
         float _endMarkBaseY;
         RectTransform _slideRt;     // 슬라이드 대상(slidePanel 또는 root)
         float _panelHomeY;          // 슬라이드 홈 y(첫 숨김 전 캡처)
@@ -210,6 +216,16 @@ namespace LoveAlgo.UI
             _sub = _autoSub = _cgSub = _visSub = _textSpeedSub = _autoSpeedSub = _finishSub = _resetSub = _eyeShroudSub = null;
             // 차폐 정렬 상승이 남지 않도록 원복(다음 진입/도구화면에서 기본 정렬로 시작).
             if (_canvas != null) _canvas.overrideSorting = false;
+            // 시프트를 누른 채 뷰가 비활성(씬 전환 등)되면 인디케이터가 켜진 채 멈추지 않도록 끔.
+            SetFastForward(false);
+        }
+
+        // 빠른 진행 상태가 실제로 바뀐 프레임에만 인디케이터 이벤트 발행(매 프레임 스팸 방지).
+        void SetFastForward(bool active)
+        {
+            if (_fastForward == active) return;
+            _fastForward = active;
+            EventBus.Publish(new FastForwardChanged(active));
         }
 
         // ── 설정 속도(정규화 0=느림~1=빠름 → 초) ──
@@ -516,13 +532,16 @@ namespace LoveAlgo.UI
             // 시프트 홀드 = 빠른 진행(테스트 편의). 누르고 있는 동안 매 프레임 Advance를 호출해
             // 타이핑은 즉시 완성·완료 줄은 자동으로 다음으로 넘긴다(오토 대기 포함). 진행음/디버그 로그는 억제.
             bool shiftHeld = kb != null && (kb.leftShiftKey.isPressed || kb.rightShiftKey.isPressed);
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            shiftHeld |= ForceFastForward; // 터보(플레이테스트 헬퍼): 시프트 홀드와 동일 경로로 자동 진행.
+#endif
             if (shiftHeld && !IsTextInputFocused() && !OverlayGate.IsBlocked)
             {
-                _fastForward = true;
+                SetFastForward(true);
                 Advance("시프트");
                 return;
             }
-            _fastForward = false;
+            SetFastForward(false);
 
             if (kb == null || !kb.spaceKey.wasPressedThisFrame) return;
             if (IsTextInputFocused()) return;

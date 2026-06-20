@@ -81,15 +81,24 @@ namespace LoveAlgo.Tests.PlayMode
 
             var saveModes = new List<SaveLoadMode>();
             int logOpens = 0, titleReturns = 0, settingsOpens = 0;
+            ShowModalCommand? titleModal = null;
             var autoLog = new List<bool>();
             _subs.Add(EventBus.Subscribe<ShowSaveLoadCommand>(e => saveModes.Add(e.Mode)));
             _subs.Add(EventBus.Subscribe<OpenDialogueLogCommand>(_ => logOpens++));
             _subs.Add(EventBus.Subscribe<SetAutoModeCommand>(e => autoLog.Add(e.On)));
             _subs.Add(EventBus.Subscribe<ReturnToTitleCommand>(_ => titleReturns++));
+            _subs.Add(EventBus.Subscribe<ShowModalCommand>(e => titleModal = e));
             _subs.Add(EventBus.Subscribe<ShowSettingsCommand>(_ => settingsOpens++));
 
+            // 타이틀 버튼 → 확인 모달(즉시 복귀 아님). "예"(index 1)일 때만 ReturnToTitle.
             bar.TitleButton.onClick.Invoke();
-            Assert.AreEqual(1, titleReturns, "타이틀 버튼 → ReturnToTitle(QuickMenu 미러, 확인 팝업 없음)");
+            Assert.AreEqual(0, titleReturns, "타이틀 버튼 클릭만으론 복귀 안 함(확인 모달 경유)");
+            Assert.IsTrue(titleModal.HasValue, "타이틀 버튼 → 확인 모달 발행");
+            titleModal.Value.Handle.Select(0); // 아니오 → 복귀 없음
+            Assert.AreEqual(0, titleReturns, "아니오 선택 시 타이틀 복귀 없음");
+            bar.TitleButton.onClick.Invoke();
+            titleModal.Value.Handle.Select(1); // 예 → 복귀
+            Assert.AreEqual(1, titleReturns, "예 선택 시 → ReturnToTitle");
 
             bar.ConfigButton.onClick.Invoke();
             Assert.AreEqual(1, settingsOpens, "설정 버튼 → 설정 열기 명령");

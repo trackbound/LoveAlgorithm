@@ -126,7 +126,10 @@ namespace LoveAlgo.Tests.PlayMode
 
             Assert.AreEqual("9876", _gs.Password, "FirstSetup 비번 저장");
             Assert.IsTrue(_gs.IsPasswordSet);
-            Assert.IsTrue(handle.IsComplete, "핸들 완료(엔진 진행 재개)");
+            Assert.IsFalse(handle.IsComplete, "저장은 즉시지만 닫힘 전엔 핸들 유지(선진행 방지)");
+
+            EventBus.Publish(new LockScreenClosedEvent()); // 잠금화면 닫힘 연출 완료(헤드리스 시뮬레이션)
+            Assert.IsTrue(handle.IsComplete, "닫힘 완료 → 핸들 완료(엔진 진행 재개)");
         }
 
         // ── 컨트롤러: 활성 잠금화면(Show) 없이 들어온 Submit은 무시 ──

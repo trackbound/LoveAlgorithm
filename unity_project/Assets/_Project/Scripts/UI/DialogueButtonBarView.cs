@@ -1,7 +1,7 @@
 using System;
 using LoveAlgo.Common; // EventBus
 using LoveAlgo.Core;   // SaveLoadMode
-using LoveAlgo.Events; // ShowSaveLoadCommand, OpenDialogueLogCommand, SetAutoModeCommand, ReturnToTitleCommand, ShowSettingsCommand
+using LoveAlgo.Events; // ShowSaveLoadCommand, OpenDialogueLogCommand, SetAutoModeCommand, ReturnToTitleCommand, ShowSettingsCommand, ShowModalCommand/ModalButton/ModalRequest/ModalButtonKind
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -36,6 +36,12 @@ namespace LoveAlgo.UI
         [Tooltip("숨기기 대상 대사 뷰(같은 트리). 미바인딩 시 부모에서 자동 탐색.")]
         [SerializeField] DialogueView dialogueView;
 
+        [Header("타이틀 복귀 확인 모달 (QuickMenu 종료 확인 미러)")]
+        [SerializeField] string titleConfirmTitle = "타이틀로 돌아가기";
+        [SerializeField] string titleConfirmMessage = "저장하지 않은 진행은 사라집니다.\n타이틀 화면으로 돌아가시겠습니까?";
+        [SerializeField] string titleConfirmYes = "예";
+        [SerializeField] string titleConfirmNo = "아니오";
+
         public Button TitleButton { get => titleButton; set => titleButton = value; }
         public Button LoadButton { get => loadButton; set => loadButton = value; }
         public Button ConfigButton { get => configButton; set => configButton = value; }
@@ -56,7 +62,7 @@ namespace LoveAlgo.UI
         {
             if (dialogueView == null) dialogueView = GetComponentInParent<DialogueView>(true);
             if (autoButton != null) _autoDriver = autoButton.GetComponent<ButtonStateDriver>();
-            Bind(titleButton, () => EventBus.Publish(new ReturnToTitleCommand()));      // 기획서: 확인 팝업 없음(QuickMenu 미러)
+            Bind(titleButton, OnTitle);                                                 // 스토리 중 오조작 방지: 예/아니오 확인 모달 경유
             Bind(loadButton, () => EventBus.Publish(new ShowSaveLoadCommand(SaveLoadMode.Load)));
             Bind(configButton, () => EventBus.Publish(new ShowSettingsCommand()));
             Bind(saveButton, () => EventBus.Publish(new ShowSaveLoadCommand(SaveLoadMode.Save)));
@@ -87,6 +93,16 @@ namespace LoveAlgo.UI
             var sprite = _auto ? autoOnSprite : autoOffSprite;
             if (sprite != null) autoIcon.sprite = sprite;
         }
+
+        // 타이틀 복귀는 즉시가 아니라 확인 모달 — 아니오(좌)·예(우), "예"(index 1)일 때만 ReturnToTitleCommand 발행.
+        void OnTitle() => EventBus.Publish(new ShowModalCommand(
+            titleConfirmTitle, titleConfirmMessage,
+            new[]
+            {
+                new ModalButton(titleConfirmNo, ModalButtonKind.No),
+                new ModalButton(titleConfirmYes, ModalButtonKind.Yes),
+            },
+            new ModalRequest(i => { if (i == 1) EventBus.Publish(new ReturnToTitleCommand()); })));
 
         static void Bind(Button button, UnityEngine.Events.UnityAction onClick)
         {
