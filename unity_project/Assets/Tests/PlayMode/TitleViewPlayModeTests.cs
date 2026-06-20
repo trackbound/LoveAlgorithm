@@ -12,8 +12,8 @@ namespace LoveAlgo.Tests.PlayMode
 {
     /// <summary>
     /// 타이틀 뷰 PlayMode: 얇은 TitleView가 버튼 클릭/진입 시 EventBus 의도를 발행하고(ADR-007 표시만),
-    /// Continue는 오토세이브 존재 여부로 interactable을 결정하는지. Awake에서 리스너/상태를 거므로
-    /// inactive GO에 컴포넌트를 붙이고 버튼 주입 후 활성화해 Awake 타이밍을 맞춘다.
+    /// Continue는 항상 활성(호버 작동)이고 클릭 시 오토세이브 유무로 이어하기/안내 모달을 가르는지. Awake에서
+    /// 리스너를 거므로 inactive GO에 컴포넌트를 붙이고 버튼 주입 후 활성화해 Awake 타이밍을 맞춘다.
     /// </summary>
     public class TitleViewPlayModeTests
     {
@@ -72,8 +72,9 @@ namespace LoveAlgo.Tests.PlayMode
         }
 
         [UnityTest]
-        public IEnumerator ContinueButton_Click_Publishes_ContinueGameCommand()
+        public IEnumerator ContinueButton_WithSave_Click_Publishes_ContinueGameCommand()
         {
+            var backup = JsonSaveStore.Load(JsonSaveStore.AutoSaveSlot); // 유저 세이브 보호
             var btnGo = new GameObject("ContinueButton", typeof(RectTransform), typeof(Button));
             var go = new GameObject("TitleView");
             go.SetActive(false);
@@ -82,16 +83,22 @@ namespace LoveAlgo.Tests.PlayMode
             go.SetActive(true); // Awake → onClick.AddListener(OnContinue)
             yield return null;
 
-            bool published = false;
+            JsonSaveStore.Save(JsonSaveStore.AutoSaveSlot, new SaveData()); // 세이브 존재 보장
+            bool published = false, gotModal = false;
             var sub = EventBus.Subscribe<ContinueGameCommand>(_ => published = true);
+            var modalSub = EventBus.Subscribe<ShowModalCommand>(_ => gotModal = true);
             try
             {
                 view.ContinueButton.onClick.Invoke();
-                Assert.IsTrue(published, "Continue 버튼 클릭 → ContinueGameCommand 발행");
+                Assert.IsTrue(published, "세이브 있음 + Continue 클릭 → ContinueGameCommand 발행");
+                Assert.IsFalse(gotModal, "세이브 있으면 안내 모달 안 띄움");
             }
             finally
             {
                 sub.Dispose();
+                modalSub.Dispose();
+                if (backup != null) JsonSaveStore.Save(JsonSaveStore.AutoSaveSlot, backup);
+                else JsonSaveStore.Delete(JsonSaveStore.AutoSaveSlot);
                 Object.DestroyImmediate(go);
                 Object.DestroyImmediate(btnGo);
             }
@@ -165,26 +172,38 @@ namespace LoveAlgo.Tests.PlayMode
         }
 
         [UnityTest]
-        public IEnumerator ContinueButton_Interactable_Matches_SaveExistence()
+        public IEnumerator ContinueButton_NoSave_Click_ShowsNotice_StaysInteractable()
         {
-            // Continue는 오토세이브가 있을 때만 활성(세이브 유무와 무관하게 일치 검증).
+            // Continue는 항상 활성(호버 작동). 세이브가 없으면 클릭 시 이어하기 대신 확인(Yes) 1버튼 안내 모달.
+            var backup = JsonSaveStore.Load(JsonSaveStore.AutoSaveSlot); // 유저 세이브 보호
             var btnGo = new GameObject("ContinueButton", typeof(RectTransform), typeof(Button));
             var go = new GameObject("TitleView");
             go.SetActive(false);
             var view = go.AddComponent<TitleView>();
             view.ContinueButton = btnGo.GetComponent<Button>();
-            go.SetActive(true); // Awake → interactable = Exists(AutoSaveSlot)
+            go.SetActive(true);
             yield return null;
 
+            JsonSaveStore.Delete(JsonSaveStore.AutoSaveSlot); // 세이브 없음 보장
+            ShowModalCommand captured = default;
+            bool gotModal = false, continued = false;
+            var modalSub = EventBus.Subscribe<ShowModalCommand>(e => { captured = e; gotModal = true; });
+            var contSub = EventBus.Subscribe<ContinueGameCommand>(_ => continued = true);
             try
             {
-                Assert.AreEqual(
-                    JsonSaveStore.Exists(JsonSaveStore.AutoSaveSlot),
-                    view.ContinueButton.interactable,
-                    "Continue interactable은 오토세이브 존재 여부와 일치");
+                Assert.IsTrue(view.ContinueButton.interactable, "Continue는 항상 활성(호버 작동)");
+
+                view.ContinueButton.onClick.Invoke();
+                Assert.IsTrue(gotModal, "세이브 없음 + 클릭 → 안내 모달 발행");
+                Assert.AreEqual(1, captured.Buttons.Count, "확인(Yes) 1버튼");
+                Assert.IsFalse(continued, "세이브 없으면 이어하기 발행 안 함");
             }
             finally
             {
+                modalSub.Dispose();
+                contSub.Dispose();
+                if (backup != null) JsonSaveStore.Save(JsonSaveStore.AutoSaveSlot, backup);
+                else JsonSaveStore.Delete(JsonSaveStore.AutoSaveSlot);
                 Object.DestroyImmediate(go);
                 Object.DestroyImmediate(btnGo);
             }

@@ -12,7 +12,8 @@ namespace LoveAlgo.UI
     ///
     /// 동작 범위:
     /// - New Game(Start) → <see cref="StartNewGameCommand"/>, Continue → <see cref="ContinueGameCommand"/>
-    ///   (둘 다 SceneFlowController가 받아 게임 씬 로드). Continue는 오토세이브가 없으면 비활성(interactable=false).
+    ///   (둘 다 SceneFlowController가 받아 게임 씬 로드). Continue는 항상 활성(호버 작동); 클릭 시 오토세이브가
+    ///   없으면 이어하기 대신 안내 모달(확인 1버튼, Yes 스킨)을 띄운다.
     /// - Exit → 확인 모달(<see cref="ShowModalCommand"/>) → "예"일 때만 <see cref="QuitGameCommand"/> 발행
     ///   (SceneFlowController가 받아 종료). 모달 뷰(ModalView)는 Title 씬에 배선해야 한다(없으면 콜백 미수신=종료 불가).
     /// - Settings(Config) → <see cref="ShowSettingsCommand"/>, Load → <see cref="ShowSaveLoadCommand"/>(Overlay 팝업; 각각
@@ -40,6 +41,12 @@ namespace LoveAlgo.UI
         [SerializeField] string exitConfirmYes = "예";
         [SerializeField] string exitConfirmNo = "아니오";
 
+        [Header("이어하기 없음 안내 모달")]
+        [SerializeField] string noSaveTitle = "이어하기";
+        [SerializeField] string noSaveMessage = "이어할 저장 데이터가 없습니다.";
+        [Tooltip("확인(Yes 스킨) 1버튼.")]
+        [SerializeField] string noSaveConfirm = "확인";
+
         public Button NewGameButton { get => newGameButton; set => newGameButton = value; }
         public Button ContinueButton { get => continueButton; set => continueButton = value; }
         public Button SettingsButton { get => settingsButton; set => settingsButton = value; }
@@ -50,12 +57,8 @@ namespace LoveAlgo.UI
         void Awake()
         {
             if (newGameButton != null) newGameButton.onClick.AddListener(OnNewGame);
-            if (continueButton != null)
-            {
-                continueButton.onClick.AddListener(OnContinue);
-                // 오토세이브가 없으면 이어하기 비활성(ScheduleSlot 패턴: 미바인딩 버튼은 무시).
-                continueButton.interactable = JsonSaveStore.Exists(JsonSaveStore.AutoSaveSlot);
-            }
+            // Continue는 항상 활성(호버 작동) — 세이브 유무 판단은 클릭 시 OnContinue에서.
+            if (continueButton != null) continueButton.onClick.AddListener(OnContinue);
             if (exitButton != null) exitButton.onClick.AddListener(OnExit);
             if (settingsButton != null) settingsButton.onClick.AddListener(OnSettings);
             if (loadButton != null) loadButton.onClick.AddListener(OnLoad);
@@ -69,7 +72,19 @@ namespace LoveAlgo.UI
         }
 
         void OnNewGame() => EventBus.Publish(new StartNewGameCommand());
-        void OnContinue() => EventBus.Publish(new ContinueGameCommand());
+        // 오토세이브가 있으면 이어하기, 없으면 확인(Yes) 1버튼 안내 모달.
+        void OnContinue()
+        {
+            if (JsonSaveStore.Exists(JsonSaveStore.AutoSaveSlot))
+            {
+                EventBus.Publish(new ContinueGameCommand());
+                return;
+            }
+            EventBus.Publish(new ShowModalCommand(
+                noSaveTitle, noSaveMessage,
+                new[] { new ModalButton(noSaveConfirm, ModalButtonKind.Yes) },
+                new ModalRequest()));
+        }
         // Exit은 즉시 종료하지 않고 확인 모달을 띄운다 — 아니오(좌, No)·예(우, Yes) 순서, "예"(index 1)일 때만
         // QuitGameCommand 발행(ADR-007: 표시·아트는 ModalView/프리팹, 종료 동작은 콜백→구독자). 첫 범용 모달 소비처.
         void OnExit() => EventBus.Publish(new ShowModalCommand(
