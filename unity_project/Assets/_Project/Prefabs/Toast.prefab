@@ -101,6 +101,7 @@ GameObject:
   - component: {fileID: 7826784500346418504}
   - component: {fileID: 7016196956412636548}
   - component: {fileID: 4845577687126624801}
+  - component: {fileID: 909131133439549642}
   m_Layer: 5
   m_Name: Toast
   m_TagString: Untagged
@@ -148,6 +149,24 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5951788034665454710}
   m_CullTransparentMesh: 1
+--- !u!114 &909131133439549642
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5951788034665454710}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dfb6c2603e85b1c4e8728133b3a90c3a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: LoveAlgo.UI::LoveAlgo.UI.ToastView
+  canvasGroup: {fileID: 7016196956412636548}
+  titleText: {fileID: 1340188591385943061}
+  messageText: {fileID: 1739694595484911657}
+  fadeIn: 0.2
+  hold: 1.6
+  fadeOut: 0.4
 --- !u!1 &6962661390325397182
 GameObject:
   m_ObjectHideFlags: 0

@@ -22,7 +22,7 @@ namespace LoveAlgo.Tests.PlayMode
         {
             // 잔존 Game 씬의 DialogueView 제거 — 부팅 내러티브가 켜져 있으면 같은 명령을 같이 처리해
             // 발행 수가 이중 계상된다(HANDOFF PlayMode 격리 주의, DialogueEndMark Build 가드 미러).
-            foreach (var v in Object.FindObjectsByType<DialogueView>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            foreach (var v in Object.FindObjectsByType<DialogueView>(FindObjectsInactive.Include))
                 Object.DestroyImmediate(v.gameObject);
 
             var go = new GameObject("DialogueView");

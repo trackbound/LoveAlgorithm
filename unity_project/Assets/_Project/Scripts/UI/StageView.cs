@@ -65,6 +65,9 @@ namespace LoveAlgo.UI
         [Tooltip("Emote/<emote> 표정 교체 시 이전 표정을 위에 겹쳐 페이드아웃하는 디졸브 시간(초). 0이면 즉시 하드 스왑(구 동작).")]
         [SerializeField] float emoteCrossfadeSeconds = 0.12f;
 
+        [Tooltip("요청한 표정 스프라이트가 없을 때 대신 로드할 기본 표정 코드. 비우면 폴백 없음(구 동작). 폴백 적용 시 개발 토스트로 알림.")]
+        [SerializeField] string fallbackEmote = "기본";
+
         public Image Backdrop { get => backdrop; set => backdrop = value; }
         public Image BgFront { get => bgFront; set => bgFront = value; }
         public CanvasGroup BgFrontGroup { get => bgFrontGroup; set => bgFrontGroup = value; }
@@ -271,10 +274,11 @@ namespace LoveAlgo.UI
             {
                 case CharAction.Enter:
                 {
-                    var sprite = LoadCharSprite(e.Character, e.Emote);
+                    var sprite = LoadCharSpriteOrFallback(e.Character, e.Emote);
                     if (sprite == null)
                     {
                         Log.Warn($"[StageView] 캐릭터 스프라이트 없음: {e.Character}/{e.Emote}");
+                        DevToast.Error($"캐릭터 스프라이트 없음: {e.Character}/{e.Emote}");
                         break;
                     }
                     CancelEmoteFade(idx); // 새 등장 위에 이전 표정 오버레이가 남지 않도록.
@@ -294,8 +298,9 @@ namespace LoveAlgo.UI
                         Log.Warn($"[StageView] Emote 대상 슬롯이 비어있음: {e.Slot}");
                         break;
                     }
-                    var sprite = LoadCharSprite(e.Character, e.Emote);
+                    var sprite = LoadCharSpriteOrFallback(e.Character, e.Emote);
                     if (sprite != null) CrossfadeEmote(idx, slot, sprite); // 깜빡임 없이 디졸브 교체.
+                    else DevToast.Error($"표정 스프라이트 없음: {e.Character}/{e.Emote}");
                     // duration은 미사용(크로스페이드 시간은 emoteCrossfadeSeconds).
                     break;
                 }
@@ -336,9 +341,13 @@ namespace LoveAlgo.UI
             }
             var slot = GetSlot((CharSlot)idx);
             if (slot?.image == null || !slot.image.enabled) return;
-            var sprite = LoadCharSprite(_slotChar[idx], e.Emote);
+            var sprite = LoadCharSpriteOrFallback(_slotChar[idx], e.Emote);
             if (sprite != null) CrossfadeEmote(idx, slot, sprite); // 타이핑 중 인라인 표정도 디졸브.
-            else Log.Warn($"[StageView] <emote> 스프라이트 없음: {_slotChar[idx]}/{e.Emote}");
+            else
+            {
+                Log.Warn($"[StageView] <emote> 스프라이트 없음: {_slotChar[idx]}/{e.Emote}");
+                DevToast.Error($"인라인 표정 없음: {_slotChar[idx]}/{e.Emote}");
+            }
         }
 
         /// <summary>화자 문자열과 일치하는(직접·대소문자 무시) 캐릭터가 올라간 슬롯 인덱스. 없으면 -1(순수).</summary>
@@ -587,6 +596,20 @@ namespace LoveAlgo.UI
         {
             string key = CharSpriteKey(character, emote);
             return key == null ? null : LoadSprite($"{charRoot}/{key}");
+        }
+
+        // 표정 스프라이트 로드 + 누락 시 기본 표정(fallbackEmote) 폴백. 작가 스크립트가 정본이라 연출을 멈추지 않고
+        // 기본 표정으로 대체하되, 누락 사실을 개발 토스트(우측 상단)로 남겨 에셋 추가를 유도한다(릴리즈 빌드선 호출 제거).
+        Sprite LoadCharSpriteOrFallback(string character, string emote)
+        {
+            var sprite = LoadCharSprite(character, emote);
+            if (sprite != null) return sprite;
+            if (string.IsNullOrEmpty(character) || string.IsNullOrEmpty(fallbackEmote)) return null;
+            if (string.Equals(emote, fallbackEmote, StringComparison.OrdinalIgnoreCase)) return null; // 기본조차 없으면 폴백 무의미
+
+            var fb = LoadCharSprite(character, fallbackEmote);
+            if (fb != null) DevToast.Warn($"표정 없음: {character}/{emote} → {fallbackEmote}");
+            return fb;
         }
 
         Sprite LoadSprite(string path) => Resources.Load<Sprite>(path);

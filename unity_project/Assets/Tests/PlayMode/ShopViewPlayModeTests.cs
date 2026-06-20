@@ -39,11 +39,11 @@ namespace LoveAlgo.Tests.PlayMode
         {
             // 잔존/상주 Game 씬의 ShopView 제거 — 같은 ShowShopCommand에 함께 반응해 게이트·모달이
             // 이중 계상된다(HANDOFF PlayMode 격리 주의, DialogueView 가드 미러).
-            foreach (var v in UnityEngine.Object.FindObjectsByType<ShopView>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            foreach (var v in UnityEngine.Object.FindObjectsByType<ShopView>(FindObjectsInactive.Include))
                 UnityEngine.Object.DestroyImmediate(v.gameObject);
             // 상주 ShopController 비활성 — 이 픽스처의 PurchaseRequestedCommand를 실처리해 결과 이벤트를
             // 추가 발행하고 실 GameState SO 소지금을 변형한다(컨트롤러 응답은 테스트가 직접 모사).
-            foreach (var c in UnityEngine.Object.FindObjectsByType<ShopController>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            foreach (var c in UnityEngine.Object.FindObjectsByType<ShopController>(FindObjectsInactive.Include))
                 c.enabled = false;
 
             _state = ScriptableObject.CreateInstance<GameStateSO>();

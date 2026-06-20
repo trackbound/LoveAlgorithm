@@ -22,7 +22,7 @@ namespace LoveAlgo.Tests.PlayMode
         // 지정 타입의 정적 액션 버튼을 찾는다(비활성 포함).
         static ScheduleActionButton FindAction(ScheduleType type)
         {
-            foreach (var b in Object.FindObjectsByType<ScheduleActionButton>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            foreach (var b in Object.FindObjectsByType<ScheduleActionButton>(FindObjectsInactive.Include))
                 if (b.Type == type) return b;
             return null;
         }

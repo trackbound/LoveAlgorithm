@@ -33,13 +33,13 @@ namespace LoveAlgo.Tests.PlayMode
 
         void BaseSetUp()
         {
-            foreach (var p in UnityEngine.Object.FindObjectsByType<NarrativeController>(FindObjectsSortMode.None))
+            foreach (var p in UnityEngine.Object.FindObjectsByType<NarrativeController>())
                 UnityEngine.Object.DestroyImmediate(p.gameObject);
-            foreach (var pc in UnityEngine.Object.FindObjectsByType<PhaseController>(FindObjectsSortMode.None))
+            foreach (var pc in UnityEngine.Object.FindObjectsByType<PhaseController>())
                 UnityEngine.Object.DestroyImmediate(pc.gameObject);
-            foreach (var c in UnityEngine.Object.FindObjectsByType<LockScreenController>(FindObjectsSortMode.None))
+            foreach (var c in UnityEngine.Object.FindObjectsByType<LockScreenController>())
                 UnityEngine.Object.DestroyImmediate(c.gameObject);
-            foreach (var v in UnityEngine.Object.FindObjectsByType<LockScreenView>(FindObjectsSortMode.None))
+            foreach (var v in UnityEngine.Object.FindObjectsByType<LockScreenView>())
                 UnityEngine.Object.DestroyImmediate(v.gameObject);
 
             _dialogues.Clear();

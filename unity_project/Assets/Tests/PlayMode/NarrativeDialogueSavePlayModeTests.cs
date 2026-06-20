@@ -30,9 +30,9 @@ namespace LoveAlgo.Tests.PlayMode
 
         NarrativeController SetUp()
         {
-            foreach (var p in UnityEngine.Object.FindObjectsByType<NarrativeController>(FindObjectsSortMode.None))
+            foreach (var p in UnityEngine.Object.FindObjectsByType<NarrativeController>())
                 UnityEngine.Object.DestroyImmediate(p.gameObject);
-            foreach (var pc in UnityEngine.Object.FindObjectsByType<PhaseController>(FindObjectsSortMode.None))
+            foreach (var pc in UnityEngine.Object.FindObjectsByType<PhaseController>())
                 UnityEngine.Object.DestroyImmediate(pc.gameObject);
 
             _dialogues.Clear(); _visible.Clear();

@@ -35,6 +35,9 @@ namespace LoveAlgo.UI
         [Tooltip("시작 크로스페이드(페이드인) 지속(초). 0이면 즉시 표시. fadeGroup 알파 0→1로 스토리 위에 부드럽게 진입.")]
         [SerializeField] float fadeInDuration = 0.3f;
 
+        [Tooltip("잠금화면이 화면을 덮는 동안 보장할 공용 BGM(백색소음). 비우면 재생 안 함. 이미 같은 BGM이면 무해한 no-op(프롤로그 pro_021이 선재생). 정지는 다음 BGM 크로스페이드/씬 전환에 위임.")]
+        [SerializeField] string lockBgm = "whitenoise";
+
         [Header("Custom System (선택 — 미바인딩 시 기존 즉시 경로 폴백)")]
         [Tooltip("진입 연출 오케스트레이터. 바인딩 시 위젯 슬라이드아웃→딤→입력 reveal 후 입력 활성.")]
         [SerializeField] LockScreenIntroDirector intro;
@@ -105,6 +108,8 @@ namespace LoveAlgo.UI
             if (overlay == null) return; // 효과 생략 — Controller가 Submit으로 핸들 완료(여기선 막지 않음).
             if (_fadeRoutine != null) { StopCoroutine(_fadeRoutine); _fadeRoutine = null; }
             overlay.SetActive(true);
+            // 화면을 덮는 동안 공용 백색소음 보장(idempotent — 이미 재생 중이면 AudioManager가 no-op 처리).
+            if (!string.IsNullOrEmpty(lockBgm)) EventBus.Publish(new PlayBgmCommand(lockBgm));
             if (input != null) input.text = "";
             if (passwordField != null) passwordField.ResetField();
 

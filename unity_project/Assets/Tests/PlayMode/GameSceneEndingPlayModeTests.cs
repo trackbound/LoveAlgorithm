@@ -25,7 +25,7 @@ namespace LoveAlgo.Tests.PlayMode
     {
         static ScheduleActionButton FindAction(ScheduleType type)
         {
-            foreach (var b in UnityEngine.Object.FindObjectsByType<ScheduleActionButton>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            foreach (var b in UnityEngine.Object.FindObjectsByType<ScheduleActionButton>(FindObjectsInactive.Include))
                 if (b.Type == type) return b;
             return null;
         }

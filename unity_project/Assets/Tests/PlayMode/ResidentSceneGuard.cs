@@ -16,7 +16,7 @@ namespace LoveAlgo.Tests.PlayMode
         public static void DisableSceneFlowControllers()
         {
             foreach (var c in Object.FindObjectsByType<SceneFlowController>(
-                         FindObjectsInactive.Exclude, FindObjectsSortMode.None))
+                         FindObjectsInactive.Exclude))
                 c.enabled = false;
         }
     }

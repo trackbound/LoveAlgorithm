@@ -21,7 +21,7 @@ namespace LoveAlgo.Tests.PlayMode
 
         GameObject Build(out DialogueView dlg, out RectTransform mark)
         {
-            foreach (var v in Object.FindObjectsByType<DialogueView>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            foreach (var v in Object.FindObjectsByType<DialogueView>(FindObjectsInactive.Include))
                 Object.DestroyImmediate(v.gameObject);
 
             var canvasGo = new GameObject("Canvas", typeof(Canvas));

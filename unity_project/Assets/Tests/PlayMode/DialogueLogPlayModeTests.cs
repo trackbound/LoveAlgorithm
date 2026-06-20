@@ -42,7 +42,7 @@ namespace LoveAlgo.Tests.PlayMode
         public IEnumerator Recorder_Collects_OneBoxPerAdvance()
         {
             // 상주 Game 씬의 Recorder와 이중 적재 방지 — 테스트 전용 인스턴스만 남긴다.
-            foreach (var r in UnityEngine.Object.FindObjectsByType<DialogueLogRecorder>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            foreach (var r in UnityEngine.Object.FindObjectsByType<DialogueLogRecorder>(FindObjectsInactive.Include))
                 UnityEngine.Object.DestroyImmediate(r.gameObject);
             DialogueLogStore.Reset(); // Awake 리셋과 별개로 직전 상태 제거
 

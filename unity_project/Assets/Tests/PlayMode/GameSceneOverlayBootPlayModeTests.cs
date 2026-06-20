@@ -56,14 +56,14 @@ namespace LoveAlgo.Tests.PlayMode
 
             // 홀더-비주얼 분리 무결성: root류가 뷰 GO 자신이면 숨김이 구독까지 죽인다
             // (Modal·Choice 2회 실증 사고 — 씬 재배선 시 여기서 먼저 깨지게 못박는다).
-            foreach (var m in Object.FindObjectsByType<ModalView>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            foreach (var m in Object.FindObjectsByType<ModalView>(FindObjectsInactive.Include))
                 Assert.AreNotEqual(m.gameObject, m.Root, $"{m.name}: ModalView.Root는 비주얼 자식이어야 함");
-            foreach (var c in Object.FindObjectsByType<ChoiceView>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            foreach (var c in Object.FindObjectsByType<ChoiceView>(FindObjectsInactive.Include))
             {
                 Assert.AreNotEqual(c.gameObject, c.Root, $"{c.name}: ChoiceView.Root는 비주얼 자식이어야 함");
                 Assert.AreNotEqual(c.gameObject, c.Dim, $"{c.name}: ChoiceView.Dim은 비주얼 자식이어야 함");
             }
-            foreach (var mv in Object.FindObjectsByType<LoveAlgo.Messenger.MessengerView>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            foreach (var mv in Object.FindObjectsByType<LoveAlgo.Messenger.MessengerView>(FindObjectsInactive.Include))
                 Assert.AreNotEqual(mv.gameObject, mv.Root, $"{mv.name}: MessengerView.Root는 비주얼 자식이어야 함");
 
             // ② 페이즈 그룹 불침범(UIManager 영역) — Story/Ending inactive·Simulation active 유지

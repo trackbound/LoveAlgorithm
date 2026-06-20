@@ -303,8 +303,18 @@ MonoBehaviour:
   - {fileID: 21300000, guid: 99a541bf0b3b30b4aa1a126105ed6b3f, type: 3}
   - {fileID: 21300000, guid: b2e5eae8e284d014a8cd36009da912fa, type: 3}
   applyButton: {fileID: 4943690978090989936}
+  confirmButton: {fileID: 1083210237327846345}
   resetButton: {fileID: 4782938047641702677}
   closeButton: {fileID: 5885208991269153451}
+  applyToastTitle: "\uC801\uC6A9"
+  applyToastMessage: "\uC124\uC815\uC774 \uC800\uC7A5\uB418\uC5C8\uC2B5\uB2C8\uB2E4"
+  resetConfirmTitle: "\uCD08\uAE30\uD654"
+  resetConfirmMessage: "\uC124\uC815\uC744 \uAE30\uBCF8\uAC12\uC73C\uB85C \uB418\uB3CC\uB9B4\uAE4C\uC694?"
+  closeConfirmTitle: "\uC54C\uB9BC"
+  closeConfirmMessage: "\uBCC0\uACBD\uC0AC\uD56D\uC744 \uC801\uC6A9\uD558\uC9C0 \uC54A\uACE0
+    \uB2EB\uC744\uAE4C\uC694?"
+  confirmYes: "\uC608"
+  confirmNo: "\uC544\uB2C8\uC624"
   settings: {fileID: 11400000, guid: bb9dd603ff7e13b42b3fa6cfd69e686b, type: 2}
 --- !u!114 &3970796487497272299
 MonoBehaviour:

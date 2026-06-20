@@ -51,11 +51,11 @@ namespace LoveAlgo.Tests.PlayMode
             // 격리: GameScene 테스트가 Game.unity를 Single 로드한 채 언로드하지 않아, 그 씬의
             // NarrativeController/FlowCommandController가 남아 있을 수 있다. 남으면 PlayScriptCommand/
             // FlowCommandRequestedEvent를 중복 처리(대사 2배·호감도 2배)하므로 먼저 제거한다.
-            foreach (var p in UnityEngine.Object.FindObjectsByType<NarrativeController>(FindObjectsSortMode.None))
+            foreach (var p in UnityEngine.Object.FindObjectsByType<NarrativeController>())
                 UnityEngine.Object.DestroyImmediate(p.gameObject);
-            foreach (var r in UnityEngine.Object.FindObjectsByType<FlowCommandController>(FindObjectsSortMode.None))
+            foreach (var r in UnityEngine.Object.FindObjectsByType<FlowCommandController>())
                 UnityEngine.Object.DestroyImmediate(r.gameObject);
-            foreach (var pc in UnityEngine.Object.FindObjectsByType<PhaseController>(FindObjectsSortMode.None))
+            foreach (var pc in UnityEngine.Object.FindObjectsByType<PhaseController>())
                 UnityEngine.Object.DestroyImmediate(pc.gameObject);
 
             // NUnit은 픽스처 인스턴스를 테스트 간 공유한다 — 캡처 상태를 매 테스트 초기화(누수 방지).

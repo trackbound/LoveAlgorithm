@@ -20,9 +20,9 @@ namespace LoveAlgo.Tests.PlayMode
 
         NarrativeController Make()
         {
-            foreach (var p in UnityEngine.Object.FindObjectsByType<NarrativeController>(FindObjectsSortMode.None))
+            foreach (var p in UnityEngine.Object.FindObjectsByType<NarrativeController>())
                 UnityEngine.Object.DestroyImmediate(p.gameObject);
-            foreach (var r in UnityEngine.Object.FindObjectsByType<FlowCommandController>(FindObjectsSortMode.None))
+            foreach (var r in UnityEngine.Object.FindObjectsByType<FlowCommandController>())
                 UnityEngine.Object.DestroyImmediate(r.gameObject);
 
             _gs = ScriptableObject.CreateInstance<GameStateSO>();

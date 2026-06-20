@@ -34,6 +34,12 @@ namespace LoveAlgo.UI
         [Tooltip("버블 등장 시 재생할 효과음. 비우면 무음.")]
         [SerializeField] AudioClip messageSfx;
 
+        [Header("Ambience BGM")]
+        [Tooltip("오버레이가 화면을 덮는 동안 깔 공용 BGM(백색소음). 비우면 재생 안 함 — Title 씬 AudioManager가 재생. 전환은 TransitionBridge가 페이드아웃.")]
+        [SerializeField] string overlayBgm = "whitenoise";
+        [Tooltip("overlayBgm 페이드인 시간(초). -1이면 AudioManager 기본 페이드.")]
+        [SerializeField] float overlayBgmFade = 1.2f;
+
         [Header("Timing")]
         [Tooltip("콘텐츠 페이드인 시간(초).")]
         [SerializeField] float fadeIn = 0.6f;
@@ -68,6 +74,10 @@ namespace LoveAlgo.UI
         IEnumerator Run()
         {
             if (warnShake != null) warnShake.enabled = true;
+            // 한 프레임 양보: 같은 프레임의 TitleView.Start(타이틀 BGM)보다 뒤에 발행돼야 백색소음이 크로스페이드로 이긴다.
+            yield return null;
+            if (!string.IsNullOrEmpty(overlayBgm))
+                EventBus.Publish(new PlayBgmCommand(overlayBgm, overlayBgmFade));
             yield return FadeInContent();
             if (messages != null) messages.Play();
             else OnSequenceCompleted(); // 메시지 없음 → 바로 핸드오프

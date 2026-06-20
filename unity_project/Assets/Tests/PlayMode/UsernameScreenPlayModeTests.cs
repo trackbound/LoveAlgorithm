@@ -30,7 +30,7 @@ namespace LoveAlgo.Tests.PlayMode
         UsernameScreenView CreateView()
         {
             // 상주 Game 씬 인스턴스 중화 — 같은 명령에 함께 반응하면 핸들/저장 이중 처리.
-            foreach (var v in Object.FindObjectsByType<UsernameScreenView>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            foreach (var v in Object.FindObjectsByType<UsernameScreenView>(FindObjectsInactive.Include))
                 Object.DestroyImmediate(v.gameObject);
 
             _state = ScriptableObject.CreateInstance<GameStateSO>();

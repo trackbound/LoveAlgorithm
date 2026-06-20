@@ -238,7 +238,7 @@ MonoBehaviour:
   bridgePrefab: {fileID: 6976349311384815643, guid: 0c8f7e144dc9bbf4798feac93b93574a, type: 3}
   clickCatcher: {fileID: 5360871537511792082}
   sfxSource: {fileID: 3128228472061440886}
-  messageSfx: {fileID: 0}
+  messageSfx: {fileID: 8300000, guid: 3f7a56e6128392c49be8d28376b91090, type: 3}
   fadeIn: 0.6
   clickEnableDelay: 1
 --- !u!1 &1377381258508749596

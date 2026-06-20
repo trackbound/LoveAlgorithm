@@ -38,7 +38,10 @@ namespace LoveAlgo.Settings
         [SerializeField] Sprite[] resolutionLabels;
 
         [Header("액션")]
+        [Tooltip("화면설정(해상도/전체화면) 적용 버튼 — 적용 + 토스트(변동 플래그는 유지).")]
         [SerializeField] Button applyButton;
+        [Tooltip("전체 적용(확인) 버튼 — 적용 + 토스트 + 변동 플래그 해제(닫기 확인의 기준).")]
+        [SerializeField] Button confirmButton;
         [SerializeField] Button resetButton;
         [SerializeField] Button closeButton;
 
@@ -59,6 +62,7 @@ namespace LoveAlgo.Settings
         IDisposable _gate; // OverlayGate 토큰(표시 중에만 non-null — 뒤로가기 CloseTop이 닫기 호출)
         bool _wiring; // 슬라이더 초기화 중 onValueChanged 발행 가드
         bool _visible; // OverlayGate 토큰 전이 추적
+        bool _dirty;  // 열린 뒤 사용자 변경 발생 + 확인(Confirm) 미수행 → 닫기 시 확인 모달
         int _pendingResIndex;
         bool _pendingFullscreen;
         ButtonSpriteSwap _fsSwap, _winSwap, _leftSwap, _rightSwap;
@@ -96,6 +100,7 @@ namespace LoveAlgo.Settings
             Click(leftArrow, () => StageResolution(_pendingResIndex - 1));
             Click(rightArrow, () => StageResolution(_pendingResIndex + 1));
             Click(applyButton, ApplyDisplayAndNotify);
+            Click(confirmButton, OnConfirm);
             Click(resetButton, ConfirmReset);
             Click(closeButton, RequestClose);
         }
@@ -103,7 +108,7 @@ namespace LoveAlgo.Settings
         static void Click(Button b, UnityAction a) { if (b != null) b.onClick.AddListener(a); }
         void BindSlider(Slider s, Action<float> onChange)
         {
-            if (s != null) s.onValueChanged.AddListener(v => { if (!_wiring) onChange(v); });
+            if (s != null) s.onValueChanged.AddListener(v => { if (!_wiring) { onChange(v); _dirty = true; } });
         }
 
         static void Publish<T>(T cmd) where T : struct => EventBus.Publish(cmd);
@@ -127,14 +132,16 @@ namespace LoveAlgo.Settings
             _wiring = false;
             _pendingResIndex = Mathf.Clamp(s.ResolutionIndex, 0, GameConstants.Resolutions.Length - 1);
             _pendingFullscreen = s.Fullscreen;
+            _dirty = false; // 설정값으로 재동기화한 깨끗한 상태(열기·초기화 직후)
             RefreshDisplayVisual();
         }
 
-        void StageFullscreen(bool fs) { _pendingFullscreen = fs; RefreshDisplayVisual(); }
+        void StageFullscreen(bool fs) { _pendingFullscreen = fs; _dirty = true; RefreshDisplayVisual(); }
 
         void StageResolution(int idx)
         {
             _pendingResIndex = Mathf.Clamp(idx, 0, GameConstants.Resolutions.Length - 1);
+            _dirty = true;
             RefreshDisplayVisual();
         }
 
@@ -153,11 +160,19 @@ namespace LoveAlgo.Settings
             if (_winSwap != null) _winSwap.SetOn(!_pendingFullscreen);
         }
 
-        // 적용: 스테이징된 화면설정을 발행 후 저장 완료를 토스트로 알린다(볼륨·속도는 이미 라이브 저장됨).
+        // 화면설정 적용(Apply Button): 스테이징된 해상도/전체화면 커밋 + 토스트. 변동 플래그는 유지한다 —
+        // '전체 적용'은 확인(Confirm) 버튼이며, 닫기 확인 모달의 기준은 Confirm(아래 RequestClose).
         void ApplyDisplayAndNotify()
         {
             Publish(new ApplyDisplayCommand(_pendingResIndex, _pendingFullscreen));
             Publish(new ShowToastCommand(applyToastMessage, applyToastTitle));
+        }
+
+        // 전체 적용(확인 버튼): 화면설정 커밋 + 토스트 + 변동 플래그 해제(이후 닫으면 확인 모달 없이 닫힘).
+        void OnConfirm()
+        {
+            ApplyDisplayAndNotify();
+            _dirty = false;
         }
 
         // 초기화: 되돌리기 전 확인 모달 — "예"(index 1)일 때만 실제 리셋(아니오·Esc는 무시).
@@ -166,23 +181,15 @@ namespace LoveAlgo.Settings
             new[] { new ModalButton(confirmNo, ModalButtonKind.No), new ModalButton(confirmYes, ModalButtonKind.Yes) },
             new ModalRequest(i => { if (i == 1) ResetAll(); })));
 
-        // 닫기 요청(닫기 버튼·뒤로가기 공용): 미적용 화면설정이 있으면 확인 모달, 없으면 즉시 닫는다.
-        // 볼륨·속도는 라이브 저장이라 '변동사항'은 스테이징된 해상도/전체화면뿐(재표시 시 RefreshFromSettings가 폐기).
+        // 닫기 요청(닫기 버튼·뒤로가기 공용): 변경 후 확인(Confirm) 미수행이면 확인 모달, 아니면 즉시 닫는다.
+        // 기준은 확인 버튼 — 변경했어도 Confirm을 누르면 _dirty=false라 바로 닫힌다(재표시 시 RefreshFromSettings가 재동기화).
         void RequestClose()
         {
-            if (!HasStagedDisplayChanges()) { SetVisible(false); return; }
+            if (!_dirty) { SetVisible(false); return; }
             Publish(new ShowModalCommand(
                 closeConfirmTitle, closeConfirmMessage,
                 new[] { new ModalButton(confirmNo, ModalButtonKind.No), new ModalButton(confirmYes, ModalButtonKind.Yes) },
                 new ModalRequest(i => { if (i == 1) SetVisible(false); })));
-        }
-
-        bool HasStagedDisplayChanges()
-        {
-            var s = S;
-            if (s == null) return false;
-            int saved = Mathf.Clamp(s.ResolutionIndex, 0, GameConstants.Resolutions.Length - 1);
-            return _pendingResIndex != saved || _pendingFullscreen != s.Fullscreen;
         }
 
         void ResetAll()

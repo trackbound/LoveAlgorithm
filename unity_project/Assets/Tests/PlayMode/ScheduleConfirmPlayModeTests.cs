@@ -20,7 +20,7 @@ namespace LoveAlgo.Tests.PlayMode
     {
         static ScheduleConfirmButton FindConfirm(ScheduleType type)
         {
-            foreach (var c in UnityEngine.Object.FindObjectsByType<ScheduleConfirmButton>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            foreach (var c in UnityEngine.Object.FindObjectsByType<ScheduleConfirmButton>(FindObjectsInactive.Include))
                 if (c.Type == type) return c;
             return null;
         }

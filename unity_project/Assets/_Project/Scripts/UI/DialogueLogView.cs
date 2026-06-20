@@ -54,7 +54,7 @@ namespace LoveAlgo.UI
         [Tooltip("같은 화자 버블 사이 세로 간격(run 내부).")]
         [SerializeField] float lineSpacing = 20f;
         [Tooltip("화자가 바뀌는 run 사이 세로 간격 — 구분이 나게 lineSpacing보다 크게.")]
-        [SerializeField] float runSpacing = 44f;
+        [SerializeField] float runSpacing = 66f;
 
         [Tooltip("히로인 초상(SpeakerId c01~c05 → 스프라이트). 미등록 화자 = 초상 없음(엑스트라).")]
         [SerializeField] List<PortraitPair> portraits = new();

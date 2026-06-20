@@ -21,6 +21,8 @@ namespace LoveAlgo.UI
         [SerializeField] float postLoadHold = 0.2f;
         [Tooltip("블랙 페이드아웃 시간(초).")]
         [SerializeField] float blackOut = 0.8f;
+        [Tooltip("전환 시작 시 오버레이 BGM(백색소음)을 블랙 인과 같은 길이로 페이드아웃해 인게임으로 자연 전환.")]
+        [SerializeField] bool stopBgmOnTransition = true;
 
         bool _begun;
 
@@ -36,6 +38,8 @@ namespace LoveAlgo.UI
 
         IEnumerator Run()
         {
+            // 백색소음을 블랙 인과 같은 길이로 페이드아웃(씬 로드 전에 자연스럽게 끈다 — 하드컷 방지).
+            if (stopBgmOnTransition) EventBus.Publish(new StopBgmCommand(blackIn));
             yield return Fade(0f, 1f, blackIn);
             EventBus.Publish(new StartNewGameCommand());
             yield return null; // 동기 LoadScene 교체 프레임 양보
