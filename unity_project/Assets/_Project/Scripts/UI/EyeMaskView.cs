@@ -31,6 +31,8 @@ namespace LoveAlgo.UI
         [SerializeField, Range(1f, 3f)] float closeEase = 1.4f;
         [Tooltip("뜨기 감속도(ease-out 지수). 1=선형, 클수록 빠르게 열리다 끝에서 스르륵 멈춤.")]
         [SerializeField, Range(1f, 3f)] float openEase = 1.7f;
+        [Tooltip("상안검 주도 정도. 1=상하 대칭(조리개식 축소), 클수록 윗눈꺼풀이 먼저·더 많이 내려오고 아랫눈꺼풀이 늦게 따라와 '눈꺼풀이 닫히는' 느낌. 두 바의 최종 위치는 불변이라 완전 암전은 유지.")]
+        [SerializeField, Range(1f, 3f)] float upperLidLead = 1.9f;
 
         public RectTransform TopBar { get => topBar; set => topBar = value; }
         public RectTransform BottomBar { get => bottomBar; set => bottomBar = value; }
@@ -152,11 +154,17 @@ namespace LoveAlgo.UI
         }
 
         // closeAmount: 0=완전히 뜸(두 눈꺼풀이 화면 밖), 1=감김(둘 다 화면을 덮어 곡선 가장자리가 중앙에서 합류).
+        // 상하 비대칭: 같은 t에서 윗눈꺼풀(tTop)이 더 닫히고 아랫눈꺼풀(tBot)이 덜 닫혀 윗눈꺼풀이 동작을 주도한다.
+        // 양끝(t=0,1)에선 tTop=tBot=t라 열림/완전 암전 위치는 대칭과 동일 — 닫힘 보장 불변.
         void ApplyCloseAmount(float t)
         {
             if (topBar == null || bottomBar == null) return;
-            topBar.anchoredPosition = new Vector2(0f, Mathf.Lerp(_barHeight, 0f, t));
-            bottomBar.anchoredPosition = new Vector2(0f, Mathf.Lerp(-_barHeight, 0f, t));
+            t = Mathf.Clamp01(t);
+            float p = Mathf.Max(1f, upperLidLead);
+            float tTop = Mathf.Pow(t, 1f / p); // 상안검 선행
+            float tBot = Mathf.Pow(t, p);      // 하안검 후행
+            topBar.anchoredPosition = new Vector2(0f, Mathf.Lerp(_barHeight, 0f, tTop));
+            bottomBar.anchoredPosition = new Vector2(0f, Mathf.Lerp(-_barHeight, 0f, tBot));
         }
 
         void SetBarsActive(bool active)
