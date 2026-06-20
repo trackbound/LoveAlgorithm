@@ -1,4 +1,5 @@
 using System.Collections;
+using LoveAlgo.Core; // HangulQwerty
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -45,11 +46,13 @@ namespace LoveAlgo.UI
         public bool Masked { get; private set; }
 
         Coroutine _shakeCo;
+        bool _suppress; // onValueChanged 재진입 가드(text 재설정 → 콜백 재호출 방지)
 
         void OnEnable()
         {
             ApplyCharacterLimit();
             if (eyeButton != null) eyeButton.onClick.AddListener(ToggleEye);
+            if (input != null) input.onValueChanged.AddListener(OnValueChangedConvert);
         }
 
         /// <summary>7자 제한 적용. 인스펙터 배선·런타임 셋업 어느 경로에서도 즉시 반영(OnEnable 타이밍 비의존).</summary>
@@ -61,6 +64,19 @@ namespace LoveAlgo.UI
         void OnDisable()
         {
             if (eyeButton != null) eyeButton.onClick.RemoveListener(ToggleEye);
+            if (input != null) input.onValueChanged.RemoveListener(OnValueChangedConvert);
+        }
+
+        // 한글 입력을 두벌식 QWERTY 영문으로 실시간 통일 + 표준 ASCII 외 제거.
+        void OnValueChangedConvert(string value)
+        {
+            if (_suppress) return;
+            string converted = HangulQwerty.ToQwerty(value);
+            if (converted == value) return;
+            _suppress = true;
+            input.text = converted;
+            input.caretPosition = converted.Length;
+            _suppress = false;
         }
 
         /// <summary>마스킹 on/off — contentType 전환 + 라벨 갱신 + 눈 스프라이트 동기.</summary>
