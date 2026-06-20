@@ -530,6 +530,7 @@ GameObject:
   - component: {fileID: 7085509932460405881}
   - component: {fileID: 8097403889221906700}
   - component: {fileID: 4011897981939501893}
+  - component: {fileID: 4365809976269489406}
   m_Layer: 0
   m_Name: Collect Button
   m_TagString: Untagged
@@ -638,6 +639,22 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &4365809976269489406
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4086658569760166631}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7554c5f5aae52254cb02179c35b8babc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: LoveAlgo.UI::LoveAlgo.UI.ButtonHoverLift
+  targetImage: {fileID: 8097403889221906700}
+  hoverSprite: {fileID: 21300000, guid: e8b061328ff8c154cba313c8953a343c, type: 3}
+  liftPixels: 16
+  duration: 0.12
 --- !u!1 &4380220597727861096
 GameObject:
   m_ObjectHideFlags: 0
@@ -787,6 +804,7 @@ GameObject:
   - component: {fileID: 7604639749215354725}
   - component: {fileID: 4578027416263909065}
   - component: {fileID: 6853625309038840761}
+  - component: {fileID: 4631367542171397704}
   m_Layer: 0
   m_Name: Scene Button
   m_TagString: Untagged
@@ -895,6 +913,22 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &4631367542171397704
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6886949764608236169}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7554c5f5aae52254cb02179c35b8babc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: LoveAlgo.UI::LoveAlgo.UI.ButtonHoverLift
+  targetImage: {fileID: 4578027416263909065}
+  hoverSprite: {fileID: 21300000, guid: f3cbb4f3d25f54146b60bcdad5be9555, type: 3}
+  liftPixels: 16
+  duration: 0.12
 --- !u!1 &7839323341154208461
 GameObject:
   m_ObjectHideFlags: 0
@@ -907,6 +941,7 @@ GameObject:
   - component: {fileID: 6793994429171572297}
   - component: {fileID: 4522872358273017133}
   - component: {fileID: 4718413748751847806}
+  - component: {fileID: 5721789691936457560}
   m_Layer: 0
   m_Name: CG Button
   m_TagString: Untagged
@@ -1015,3 +1050,19 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &5721789691936457560
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7839323341154208461}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7554c5f5aae52254cb02179c35b8babc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: LoveAlgo.UI::LoveAlgo.UI.ButtonHoverLift
+  targetImage: {fileID: 4522872358273017133}
+  hoverSprite: {fileID: 21300000, guid: 78fb767dd7602e4488318fc2ec8dbe39, type: 3}
+  liftPixels: 16
+  duration: 0.12
